@@ -1,7 +1,12 @@
+#if os(Linux)
+
 import XCTest
+@testable import SQLTests
 
-import SQLTests
+XCTMain([
+    // SQL
+    testCase(DataTests.allTests),
+    testCase(SchemaTests.allTests),
+])
 
-var tests = [XCTestCaseEntry]()
-tests += SQLTests.allTests()
-XCTMain(tests)
+#endif
