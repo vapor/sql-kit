@@ -12,8 +12,8 @@ final class DataTests: XCTestCase {
 
     func testCustomColumnSelect() {
         let select = DataQuery(statement: .select, table: "foo", columns: [
-            DataColumn(table: "foo", name: "d"),
-            DataColumn(table: "foo", name: "l")
+                DataColumn(table: "foo", name: "d"),
+                DataColumn(table: "foo", name: "l")
             ]
         )
         
