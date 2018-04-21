@@ -34,8 +34,8 @@ jobs:
           command: git clone -b master https://github.com/vapor/vapor.git
           working_directory: ~/
       - run:
-          name: Switch Vapor to this DatabaseKit revision
-          command: swift package edit DatabaseKit --revision $CIRCLE_SHA1
+          name: Switch Vapor to this SQL revision
+          command: swift package edit SQL --revision $CIRCLE_SHA1
           working_directory: ~/vapor
       - run:
           name: Run Vapor unit tests
@@ -52,8 +52,8 @@ jobs:
           command: git clone -b master https://github.com/vapor/fluent.git
           working_directory: ~/
       - run:
-          name: Switch Fluent to this DatabaseKit revision
-          command: swift package edit DatabaseKit --revision $CIRCLE_SHA1
+          name: Switch Fluent to this SQL revision
+          command: swift package edit SQL --revision $CIRCLE_SHA1
           working_directory: ~/fluent
       - run:
           name: Run Vapor unit tests
@@ -69,8 +69,8 @@ jobs:
           command: git clone -b master https://github.com/vapor/fluent-sqlite.git
           working_directory: ~/
       - run:
-          name: Switch Fluent SQLite to this DatabaseKit revision
-          command: swift package edit DatabaseKit --revision $CIRCLE_SHA1
+          name: Switch Fluent SQLite to this SQL revision
+          command: swift package edit SQL --revision $CIRCLE_SHA1
           working_directory: ~/fluent-sqlite
       - run:
           name: Run Fluent SQLite unit tests
@@ -93,8 +93,8 @@ jobs:
           command: git clone -b master https://github.com/vapor/fluent-mysql.git
           working_directory: ~/
       - run:
-          name: Switch Fluent MySQL to this DatabaseKit revision
-          command: swift package edit DatabaseKit --revision $CIRCLE_SHA1
+          name: Switch Fluent MySQL to this SQL revision
+          command: swift package edit SQL --revision $CIRCLE_SHA1
           working_directory: ~/fluent-mysql
       - run:
           name: Run Fluent MySQL unit tests
@@ -114,31 +114,13 @@ jobs:
           command: git clone -b master https://github.com/vapor/fluent-postgresql.git
           working_directory: ~/
       - run:
-          name: Switch Fluent PostgreSQL to this DatabaseKit revision
-          command: swift package edit DatabaseKit --revision $CIRCLE_SHA1
+          name: Switch Fluent PostgreSQL to this SQL revision
+          command: swift package edit SQL --revision $CIRCLE_SHA1
           working_directory: ~/fluent-postgresql
       - run:
           name: Run Fluent PostgreSQL unit tests
           command: swift test
           working_directory: ~/fluent-postgresql
-
-  linux-redis:
-    docker:
-      - image: codevapor/swift:4.1
-      - image: redis:3.2
-    steps:
-      - run:
-          name: Clone Redis
-          command: git clone -b master https://github.com/vapor/redis.git
-          working_directory: ~/
-      - run:
-          name: Switch Redis to this DatabaseKit revision
-          command: swift package edit DatabaseKit --revision $CIRCLE_SHA1
-          working_directory: ~/redis
-      - run:
-          name: Run Redis unit tests
-          command: swift test
-          working_directory: ~/redis
 
 
 workflows:
@@ -151,7 +133,6 @@ workflows:
       - linux-fluent-sqlite
       - linux-fluent-mysql
       - linux-fluent-postgresql
-      - linux-redis
       # - macos
 
   nightly:
