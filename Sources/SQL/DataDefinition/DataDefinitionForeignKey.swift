@@ -15,6 +15,7 @@ public struct DataDefinitionForeignKey {
     /// An optional `DataDefinitionForeignKeyAction` to apply on delete.
     public var onDelete: DataDefinitionForeignKeyAction?
 
+    /// Creates a new `DataDefinitionForeignKey`.
     public init(
         name: String,
         local: DataColumn,
