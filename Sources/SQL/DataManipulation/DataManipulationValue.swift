@@ -1,13 +1,7 @@
-/// All supported values for a SQL `DataPredicate`.
-public enum DataPredicateValue {
-    /// No value.
-    case none
-
-    /// One or more placeholders.
-    case placeholders(count: Int)
-
-    /// A single placeholder.
-    public static let placeholder: DataPredicateValue = .placeholders(count: 1)
+/// All supported values for a SQL `DataManipulationValue`.
+public enum DataManipulationValue {
+    /// A value placeholder.
+    case placeholder
 
     /// Compare to another column in the database.
     case column(DataColumn)

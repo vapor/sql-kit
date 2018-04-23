@@ -10,7 +10,7 @@ public struct DataPredicate {
     public var value: DataPredicateValue
 
     /// Creates a SQL `DataPredicate`.
-    public init(column: DataColumn, comparison: DataPredicateComparison, value: DataPredicateValue = .none) {
+    public init(column: DataColumn, comparison: DataPredicateComparison, value: DataPredicateValue = .placeholder) {
         self.column = column
         self.comparison = comparison
         self.value = value

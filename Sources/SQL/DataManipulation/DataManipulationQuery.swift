@@ -7,7 +7,7 @@ public struct DataManipulationQuery {
     public var table: String
 
     /// List of columns to manipulate.
-    public var columns: [DataColumn]
+    public var columns: [DataManipulationColumn]
 
     /// List of joins to execute.
     public var joins: [DataJoin]
@@ -22,7 +22,7 @@ public struct DataManipulationQuery {
     public init(
         statement: DataManipulationStatement,
         table: String,
-        columns: [DataColumn] = [],
+        columns: [DataManipulationColumn] = [],
         joins: [DataJoin] = [],
         predicates: [DataPredicateItem] = [],
         limit: Int? = nil

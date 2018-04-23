@@ -1,7 +1,7 @@
 import SQL
 import XCTest
 
-final class DataManipulationTests: XCTestCase {
+final class DataQueryTests: XCTestCase {
     func testBasicSelectStar() {
         let select = DataQuery(table: "foo")
         XCTAssertEqual(
@@ -12,17 +12,17 @@ final class DataManipulationTests: XCTestCase {
 
     func testCustomColumnSelect() {
         let select = DataQuery(table: "foo", columns: [
-                .column(DataColumn(table: "foo", name: "d"), key: nil),
-                .column(DataColumn(table: "foo", name: "l"), key: nil)
+            .column(DataColumn(table: "foo", name: "d"), key: nil),
+            .column(DataColumn(table: "foo", name: "l"), key: nil)
             ]
         )
-        
+
         XCTAssertEqual(
             GeneralSQLSerializer.shared.serialize(query: select),
             "SELECT `foo`.`d`, `foo`.`l` FROM `foo`"
         )
     }
-    
+
     func testSelectWithPredicates() {
         var select = DataQuery(table: "foo")
 
@@ -48,27 +48,27 @@ final class DataManipulationTests: XCTestCase {
 
     func testSelectWithGroupByColumn() {
         var select = DataQuery(table: "foo")
-        
+
         select.groupBys = [DataGroupBy.column(DataColumn(table: "foo", name: "name"))]
-        
+
         XCTAssertEqual(
             GeneralSQLSerializer.shared.serialize(query: select),
             "SELECT * FROM `foo` GROUP BY `foo`.`name`"
         )
     }
-    
+
     func testSelectWithCustomGroupBy() {
         var select = DataQuery(table: "foo")
 
         let column = DataComputedColumn(function: "YEAR", columns: [.init(table: "foo", name: "date")])
         select.groupBys = [.computed(column)]
-        
+
         XCTAssertEqual(
             GeneralSQLSerializer.shared.serialize(query: select),
             "SELECT * FROM `foo` GROUP BY YEAR(`foo`.`date`)"
         )
     }
-    
+
     func testSelectWithMultipleGroupBy() {
         var select = DataQuery(table: "foo")
 
@@ -77,13 +77,13 @@ final class DataManipulationTests: XCTestCase {
             .computed(column),
             .column(DataColumn(table: "foo", name: "name"))
         ]
-        
+
         XCTAssertEqual(
             GeneralSQLSerializer.shared.serialize(query: select),
             "SELECT * FROM `foo` GROUP BY YEAR(`foo`.`date`), `foo`.`name`"
         )
     }
-    
+
     func testSelectWithJoins() {
         var select = DataQuery(table: "foo")
 

@@ -89,37 +89,23 @@ extension SQLSerializer {
         switch predicate.value {
         case .column(let col):
             statement.append(serialize(column: col))
+        case .computed(let col):
+            statement.append(serialize(column: col))
         case .subquery(let subquery):
             let sub = serialize(query: subquery)
             statement.append("(" + sub + ")")
         case .placeholders(let length):
             if length == 1 {
-                statement.append(makePlaceholder(predicate: predicate))
+                statement.append(makePlaceholder())
             } else {
                 var placeholders: [String] = []
                 for _ in 0..<length {
-                    placeholders.append(makePlaceholder(predicate: predicate))
+                    placeholders.append(makePlaceholder())
                 }
                 statement.append("(" + placeholders.joined(separator: ", ") + ")")
             }
         case .custom(let string): statement.append(string)
         case .none: break
-        }
-
-        return statement.joined(separator: " ")
-    }
-
-    /// See `SQLSerializer`.
-    public func makePlaceholder(predicate: DataPredicate) -> String {
-        var statement: [String] = []
-
-        switch predicate.comparison {
-        case .between:
-            statement.append(makePlaceholder(name: predicate.column.name + ".min"))
-            statement.append("AND")
-            statement.append(makePlaceholder(name: predicate.column.name + ".max"))
-        default:
-            statement.append(makePlaceholder(name: predicate.column.name))
         }
 
         return statement.joined(separator: " ")

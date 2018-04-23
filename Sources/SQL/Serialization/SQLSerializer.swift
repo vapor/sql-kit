@@ -5,7 +5,7 @@
 /// You are expected to implement only the methods that require
 /// different serialization logic for your given SQL flavor.
 public protocol SQLSerializer {
-    // MARK: DataQuery + DataManipulation
+    // MARK: DataQuery
 
     /// Serializes a SQL `DataQuery` to a string.
     ///
@@ -15,15 +15,6 @@ public protocol SQLSerializer {
     ///         as it is complex. Much of what this method
     ///         serializes can be modified by overriding other methods.
     func serialize(query: DataQuery) -> String
-
-    /// Serializes a SQL `DataManipulationQuery` to a string.
-    ///
-    ///     INSERT INTO `users` (`name`) VALUES (?)
-    ///
-    /// - note: Avoid overriding this method if possible
-    ///         as it is complex. Much of what this method
-    ///         serializes can be modified by overriding other methods.
-    func serialize(query: DataManipulationQuery) -> String
 
     /// Serializes a SQL `DataQueryColumn` to a string.
     ///
@@ -97,17 +88,29 @@ public protocol SQLSerializer {
     ///
     func serialize(predicate: DataPredicate) -> String
 
-    /// Serializes a placeholder for the supplied predicate.
-    ///
-    ///     ?
-    ///
-    func makePlaceholder(predicate: DataPredicate) -> String
-
     /// Serializes a SQL `DataPredicateComparison` to a string.
     ///
     ///     =
     ///
     func serialize(comparison: DataPredicateComparison) -> String
+
+    // MARK: DataManipulation
+
+    /// Serializes a SQL `DataManipulationQuery` to a string.
+    ///
+    ///     INSERT INTO `users` (`name`) VALUES (?)
+    ///
+    /// - note: Avoid overriding this method if possible
+    ///         as it is complex. Much of what this method
+    ///         serializes can be modified by overriding other methods.
+    func serialize(query: DataManipulationQuery) -> String
+
+
+    /// Serializes a SQL `DataManipulationValue` to a string.
+    ///
+    ///     ?
+    ///
+    func serialize(value: DataManipulationValue) -> String
 
     // MARK: DataDefinition
 
@@ -137,11 +140,11 @@ public protocol SQLSerializer {
 
     // MARK: Utility
 
-    /// Creates a placeholder for the supplied column name.
+    /// Creates a placeholder.
     ///
     ///     ?
     ///
-    func makePlaceholder(name: String) -> String
+    func makePlaceholder() -> String
 
     /// Escapes the supplied string.
     ///

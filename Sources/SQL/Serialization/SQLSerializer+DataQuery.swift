@@ -56,19 +56,22 @@ extension SQLSerializer {
             statement.append("INSERT INTO")
             statement.append(table)
 
-            let columns = query.columns.map { makeEscapedString(from: $0.name) }
+            let columns = query.columns.map { makeEscapedString(from: $0.column.name) }
             statement.append("(" + columns.joined(separator: ", ") + ")")
             statement.append("VALUES")
 
-            let placeholders = query.columns.map { makePlaceholder(name: $0.name) }
+            let placeholders = query.columns.map { serialize(value: $0.value) }
             statement.append("(" + placeholders.joined(separator: ", ") + ")")
         case .update:
             statement.append("UPDATE")
             statement.append(table)
             statement.append("SET")
 
-            let columns = query.columns.map { makeEscapedString(from: $0.name) }
-            let set = columns.map { "\($0) = " + makePlaceholder(name: $0) }
+            let set = query.columns.map { col -> String in
+                let column = makeEscapedString(from: col.column.name)
+                let value = serialize(value: col.value)
+                return "\(column) = \(value)"
+            }
             statement.append(set.joined(separator: ", "))
         }
 
@@ -87,5 +90,21 @@ extension SQLSerializer {
         }
 
         return statement.joined(separator: " ")
+    }
+
+    /// See `SQLSerializer`.
+    public func serialize(value: DataManipulationValue) -> String {
+        switch value {
+        case .column(let col): return serialize(column: col)
+        case .computed(let col): return serialize(column: col)
+        case .placeholder: return makePlaceholder()
+        case .subquery(let subquery): return "(" + serialize(query: subquery) + ")"
+        case .custom(let sql): return sql
+        }
+    }
+
+    /// See `SQLSerializer`.
+    public func makePlaceholder() -> String {
+        return "?"
     }
 }
