@@ -1,6 +1,50 @@
 extension SQLSerializer {
     /// See `SQLSerializer`.
-    public func serialize(data query: DataQuery) -> String {
+    public func serialize(query: DataQuery) -> String {
+        let table = makeEscapedString(from: query.table)
+        var statement: [String] = []
+        statement.append("SELECT")
+        if query.distinct == true {
+            statement.append("DISTINCT")
+        }
+
+        let columns: [String] = query.columns.map { serialize(column: $0) }
+        statement.append(columns.joined(separator: ", "))
+
+        statement.append("FROM")
+        statement.append(table)
+
+
+        if !query.joins.isEmpty {
+            statement.append(serialize(joins: query.joins))
+        }
+
+        if !query.predicates.isEmpty {
+            statement.append("WHERE")
+            let group = DataPredicateGroup(relation: .and, predicates: query.predicates)
+            statement.append(serialize(predicateGroup: group))
+        }
+
+        if !query.orderBys.isEmpty {
+            statement.append(serialize(orderBys: query.orderBys))
+        }
+
+        if !query.groupBys.isEmpty {
+            statement.append(serialize(groupBys: query.groupBys))
+        }
+
+        if let limit = query.limit {
+            statement.append("LIMIT \(limit)")
+            if let offset = query.offset {
+                statement.append("OFFSET \(offset)")
+            }
+        }
+
+        return statement.joined(separator: " ")
+    }
+
+    /// See `SQLSerializer`.
+    public func serialize(query: DataManipulationQuery) -> String {
         let table = makeEscapedString(from: query.table)
         var statement: [String] = []
 
@@ -18,26 +62,6 @@ extension SQLSerializer {
 
             let placeholders = query.columns.map { makePlaceholder(name: $0.name) }
             statement.append("(" + placeholders.joined(separator: ", ") + ")")
-        case .select:
-            statement.append("SELECT")
-            if query.distinct == true {
-                statement.append("DISTINCT")
-            }
-
-            var columns: [String] = query.columns.map { serialize(column: $0) }
-
-            if !query.computed.isEmpty {
-                columns += query.computed.map { serialize(computed: $0) }
-            }
-
-            if columns.isEmpty {
-                columns += ["*"]
-            }
-
-            statement.append(columns.joined(separator: ", "))
-
-            statement.append("FROM")
-            statement.append(table)
         case .update:
             statement.append("UPDATE")
             statement.append(table)
@@ -57,20 +81,9 @@ extension SQLSerializer {
             let group = DataPredicateGroup(relation: .and, predicates: query.predicates)
             statement.append(serialize(predicateGroup: group))
         }
-
-        if !query.orderBys.isEmpty {
-            statement.append(serialize(orderBys: query.orderBys))
-        }
-
-        if !query.groupBys.isEmpty {
-            statement.append(serialize(groupBys: query.groupBys))
-        }
         
         if let limit = query.limit {
             statement.append("LIMIT \(limit)")
-            if let offset = query.offset {
-                statement.append("OFFSET \(offset)")
-            }
         }
 
         return statement.joined(separator: " ")

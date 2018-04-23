@@ -1,6 +1,6 @@
 extension SQLSerializer {
     /// See `SQLSerializer`.
-    public func serialize(schema query: SchemaQuery) -> String {
+    public func serialize(query: DataDefinitionQuery) -> String {
         var statement: [String] = []
         let table = makeEscapedString(from: query.table)
 
@@ -33,23 +33,27 @@ extension SQLSerializer {
         case .drop:
             statement.append("DROP TABLE")
             statement.append(table)
+        case .truncate:
+            statement.append("TRUNCATE")
+            statement.append(table)
         }
 
         return statement.joined(separator: " ")
     }
 
     /// See `SQLSerializer`.
-    public func serialize(column: SchemaColumn) -> String {
+    public func serialize(column: DataDefinitionColumn) -> String {
         var sql: [String] = []
 
         let name = makeEscapedString(from: column.name)
         sql.append(name)
         sql.append(column.dataType)
+        sql += column.attributes
         return sql.joined(separator: " ")
     }
 
     /// See `SQLSerializer`.
-    public func serialize(foreignKey: SchemaForeignKey) -> String {
+    public func serialize(foreignKey: DataDefinitionForeignKey) -> String {
         // FOREIGN KEY(trackartist) REFERENCES artist(artistid)
         var sql: [String] = []
 
@@ -81,7 +85,7 @@ extension SQLSerializer {
     }
 
     /// See `SQLSerializer`.
-    public func serialize(foreignKeyAction: SchemaForeignKeyAction) -> String {
+    public func serialize(foreignKeyAction: DataDefinitionForeignKeyAction) -> String {
         switch foreignKeyAction {
         case .noAction: return "NO ACTION"
         case .restrict: return "RESTRICT"

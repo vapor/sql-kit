@@ -25,7 +25,6 @@ extension SQLSerializer {
         switch orderByDirection {
         case .ascending: return "ASC"
         case .descending: return "DESC"
-        case .custom(let string): return string
         }
     }
 }

@@ -7,7 +7,7 @@ public enum DataPredicateValue {
     case placeholders(count: Int)
 
     /// A single placeholder.
-    public static let placeholder = DataPredicateValue.placeholders(count: 1)
+    public static let placeholder: DataPredicateValue = .placeholders(count: 1)
 
     /// Compare to another column in the database.
     case column(DataColumn)
@@ -17,5 +17,5 @@ public enum DataPredicateValue {
 
     /// Custom string that will be interpolated into the SQL query.
     /// - warning: Be careful about SQL injection when using this.
-    case custom(String)
+    case custom(sql: String)
 }

@@ -2,6 +2,7 @@
 public enum DataPredicateItem {
     /// A collection of `DataPredicate` items joined by AND or OR.
     case group(DataPredicateGroup)
-    /// A single data predicate.
+    
+    /// A single `DataPredicate`.
     case predicate(DataPredicate)
 }

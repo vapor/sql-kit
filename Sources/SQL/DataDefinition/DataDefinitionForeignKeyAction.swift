@@ -1,6 +1,5 @@
-/// Foreign key actions to apply when data related via a
-/// foreign key is updated or deleted.
-public enum SchemaForeignKeyAction {
+/// Foreign key actions to apply when data related via a foreign key is updated or deleted.
+public enum DataDefinitionForeignKeyAction {
     /// Do nothing.
     case noAction
 

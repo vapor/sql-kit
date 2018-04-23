@@ -6,10 +6,8 @@ extension SQLSerializer {
         statement.append("GROUP BY")
         statement.append(groupBys.map({
             switch $0 {
-            case .column(let column):
-                return serialize(column: column)
-            case .custom(let string):
-                return string
+            case .column(let column): return serialize(column: column)
+            case .computed(let computed): return serialize(column: computed)
             }
         }).joined(separator: ", "))
         

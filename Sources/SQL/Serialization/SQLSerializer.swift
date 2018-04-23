@@ -5,54 +5,69 @@
 /// You are expected to implement only the methods that require
 /// different serialization logic for your given SQL flavor.
 public protocol SQLSerializer {
-    // MARK: Data
+    // MARK: DataQuery + DataManipulation
 
     /// Serializes a SQL `DataQuery` to a string.
     ///
     ///     SELECT `users`.* FROM `users`
     ///
-    /// Note: Avoid overriding this method if possible
-    /// as it is the most complex. Much of what this method
-    /// serializes can be modified by overriding other methods.
-    func serialize(data query: DataQuery) -> String
+    /// - note: Avoid overriding this method if possible
+    ///         as it is complex. Much of what this method
+    ///         serializes can be modified by overriding other methods.
+    func serialize(query: DataQuery) -> String
 
-    /// Serializes a SQL `DataColumn` to a string.
+    /// Serializes a SQL `DataManipulationQuery` to a string.
+    ///
+    ///     INSERT INTO `users` (`name`) VALUES (?)
+    ///
+    /// - note: Avoid overriding this method if possible
+    ///         as it is complex. Much of what this method
+    ///         serializes can be modified by overriding other methods.
+    func serialize(query: DataManipulationQuery) -> String
+
+    /// Serializes a SQL `DataQueryColumn` to a string.
+    ///
+    ///     `foo`.`id` as `fooid`
+    ///
+    func serialize(column: DataQueryColumn) -> String
+
+    /// Serializes a SQL `DataManipulationColumn` to a string.
     ///
     ///     `foo`.`id`
     ///
     func serialize(column: DataColumn) -> String
 
-    /// Serializes a SQL `DataComputed` to a string.
+    /// Serializes a SQL `DataComputedColumn` to a string.
     ///
     ///     average(`users`.`age`) as `averageAge`
     ///
-    func serialize(computed: DataComputed) -> String
+    func serialize(column: DataComputedColumn) -> String
 
-    /// Serializes multiple SQL `DataJoin`s to a string.
+    /// Serializes multiple SQL `DataManipulationJoin`s to a string.
     ///
     ///     JOIN `bar` ON `foo`.`bar_id` = `bar`.`id`
     ///
     func serialize(joins: [DataJoin]) -> String
 
-    /// Serializes a single SQL `DataJoin` to a string.
+    /// Serializes a single SQL `DataManipulationJoin` to a string.
     ///
     ///     JOIN `bar` ON `foo`.`bar_id` = `bar`.`id`
     ///
     func serialize(join: DataJoin) -> String
 
-    /// Serializes multiple SQL `DataOrderBy`s to a string.
+    /// Serializes multiple SQL `DataManipulationOrderBy`s to a string.
     ///
     ///     ORDER BY `users`.`age` DESC, `foo`.`bar` ASC
     ///
     func serialize(orderBys: [DataOrderBy]) -> String
 
-    /// Serializes a single SQL `DataOrderBy` to a string.
+    /// Serializes a single SQL `DataManipulationOrderBy` to a string.
     ///
     ///     `users`.`age` DESC
     ///
     func serialize(orderBy: DataOrderBy) -> String
     
-    /// Serializes multiple SQL `DataGroupBy`s to a string.
+    /// Serializes multiple SQL `DataManipulationGroupBy`s to a string.
     ///
     ///     GROUP BY YEAR(`users`.`born`), `users`.`sex`
     ///
@@ -94,31 +109,31 @@ public protocol SQLSerializer {
     ///
     func serialize(comparison: DataPredicateComparison) -> String
 
-    // MARK: Schema
+    // MARK: DataDefinition
 
-    /// Serializes a SQL `SchemaQuery` to a string.
+    /// Serializes a SQL `DataDefinitionQuery` to a string.
     ///
     ///     CREATE TABLE `foo` (`id` INT PRIMARY KEY)
     ///
-    func serialize(schema query: SchemaQuery) -> String
+    func serialize(query: DataDefinitionQuery) -> String
 
-    /// Serializes a SQL `SchemaColumn` to a string.
+    /// Serializes a SQL `DataDefinitionColumn` to a string.
     ///
     ///     `id` INT PRIMARY KEY
     ///
-    func serialize(column: SchemaColumn) -> String
+    func serialize(column: DataDefinitionColumn) -> String
 
-    /// Serializes a SQL `SchemaColumn` to a string.
+    /// Serializes a SQL `DataDefinitionColumn` to a string.
     ///
     ///     FOREIGN KEY (`trackartist`) REFERENCES `artist`(`artistid`) ON UPDATE RESTRICT ON DELETE RESTRICT
     ///
-    func serialize(foreignKey: SchemaForeignKey) -> String
+    func serialize(foreignKey: DataDefinitionForeignKey) -> String
 
-    /// Serializes a SQL `SchemaForeignKeyAction` to a string.
+    /// Serializes a SQL `DataDefinitionForeignKeyAction` to a string.
     ///
     ///     ON UPDATE RESTRICT ON DELETE RESTRICT
     ///
-    func serialize(foreignKeyAction: SchemaForeignKeyAction) -> String
+    func serialize(foreignKeyAction: DataDefinitionForeignKeyAction) -> String
 
     // MARK: Utility
 

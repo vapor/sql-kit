@@ -10,11 +10,27 @@ extension SQLSerializer {
         } else {
             string = escapedName
         }
+        return string
+    }
 
-        if let key = column.key {
-            return string + " as " + makeEscapedString(from: key)
-        } else {
-            return string
+    /// See `SQLSerializer`.
+    public func serialize(column: DataQueryColumn) -> String {
+        switch column {
+        case .all: return "*"
+        case .column(let column, let key):
+            let string = serialize(column: column)
+            if let key = key {
+                return string + " as " + makeEscapedString(from: key)
+            } else {
+                return string
+            }
+        case .computed(let computed, let key):
+            let string = serialize(column: computed)
+            if let key = key {
+                return string + " as " + makeEscapedString(from: key)
+            } else {
+                return string
+            }
         }
     }
 }

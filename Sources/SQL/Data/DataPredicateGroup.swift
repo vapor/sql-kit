@@ -12,13 +12,3 @@ public struct DataPredicateGroup {
         self.predicates = predicates
     }
 }
-
-/// Supported data predicate relations.
-public enum DataPredicateGroupRelation {
-    /// AND
-    case and
-    /// OR
-    case or
-    /// custom
-    case custom(String)
-}

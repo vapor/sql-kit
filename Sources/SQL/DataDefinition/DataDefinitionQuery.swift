@@ -1,34 +1,34 @@
 /// SQL schema manipulation query (DDL: data-definition language).
-public struct SchemaQuery {
+public struct DataDefinitionQuery {
     /// Statement type to perform, e.g., create or alter.
-    public var statement: SchemaStatement
+    public var statement: DataDefinitionStatement
 
     /// Table name to create, modify, or delete.
     public var table: String
 
     /// A collection of columns to be added when this query is executed.
-    /// - note: This property may be ignored by some `SchemaStatement` types.
-    public var addColumns: [SchemaColumn]
+    /// - note: This property may be ignored by some `DataDefinitionStatement` types.
+    public var addColumns: [DataDefinitionColumn]
 
     /// A collection of column names to be removed when this query is executed.
-    /// - note: This property may be ignored by some `SchemaStatement` types.
+    /// - note: This property may be ignored by some `DataDefinitionStatement` types.
     public var removeColumns: [String]
 
     /// A collection of foreign keys to be added when this query is executed.
-    /// - note: This property may be ignored by some `SchemaStatement` types.
-    public var addForeignKeys: [SchemaForeignKey]
+    /// - note: This property may be ignored by some `DataDefinitionStatement` types.
+    public var addForeignKeys: [DataDefinitionForeignKey]
 
     /// A collection of foreign key names to be removed when this query is executed.
-    /// - note: This property may be ignored by some `SchemaStatement` types.
+    /// - note: This property may be ignored by some `DataDefinitionStatement` types.
     public var removeForeignKeys: [String]
 
-    /// Creates a new `SchemaQuery`.
+    /// Creates a new `DataDefinitionQuery`.
     public init(
-        statement: SchemaStatement,
+        statement: DataDefinitionStatement,
         table: String,
-        addColumns: [SchemaColumn] = [],
+        addColumns: [DataDefinitionColumn] = [],
         removeColumns: [String] = [],
-        addForeignKeys: [SchemaForeignKey] = [],
+        addForeignKeys: [DataDefinitionForeignKey] = [],
         removeForeignKeys: [String] = []
     ) {
         self.statement = statement

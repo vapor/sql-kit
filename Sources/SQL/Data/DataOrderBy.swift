@@ -1,4 +1,4 @@
-/// A SQL `DataOrderBy`, determines the order of results.
+/// A SQL `ORDER BY` that determines the order of results.
 public struct DataOrderBy {
     /// The columns to order.
     public var columns: [DataColumn]
@@ -11,17 +11,4 @@ public struct DataOrderBy {
         self.columns = columns
         self.direction = direction
     }
-}
-
-/// Available order by directions for a `DataOrderBy`.
-public enum DataOrderByDirection {
-    /// DESC
-    case ascending
-
-    /// ASC
-    case descending
-
-    /// Custom string that will be interpolated into the SQL query.
-    /// note: Be careful about SQL injection when using this.
-    case custom(String)
 }

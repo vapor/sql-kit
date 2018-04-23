@@ -16,4 +16,3 @@ public struct DataJoin {
         self.foreign = foreign
     }
 }
-

@@ -44,8 +44,8 @@ extension SQLSerializer {
                 case 0:
                     /// if serializing a subset filter with 0 values, we must use true or false
                     switch predicate.comparison {
-                    case .notIn: predicate.value = .custom("1")
-                    case .in: predicate.value = .custom("0")
+                    case .notIn: predicate.value = .custom(sql: "1")
+                    case .in: predicate.value = .custom(sql: "0")
                     default: break
                     }
                     predicate.column.name = ""
@@ -90,7 +90,7 @@ extension SQLSerializer {
         case .column(let col):
             statement.append(serialize(column: col))
         case .subquery(let subquery):
-            let sub = serialize(data: subquery)
+            let sub = serialize(query: subquery)
             statement.append("(" + sub + ")")
         case .placeholders(let length):
             if length == 1 {

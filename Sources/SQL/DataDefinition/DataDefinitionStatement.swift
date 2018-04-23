@@ -1,5 +1,5 @@
-/// Supported `SchemaQuery` action types.
-public enum SchemaStatement {
+/// Supported `DataDefinitionQuery` action types.
+public enum DataDefinitionStatement {
     /// `CREATE` a table. Define a table, adding columns.
     case create
 
@@ -8,4 +8,7 @@ public enum SchemaStatement {
 
     /// `DROP` a table. Removes all columns (and data).
     case drop
+
+    /// `TRUNCATE` a table. Removes all data.
+    case truncate
 }
