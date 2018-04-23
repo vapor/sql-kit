@@ -115,6 +115,72 @@ final class DataQueryTests: XCTestCase {
         )
     }
 
+    func testDocs() {
+        do {
+            var users = DataQuery(table: "users")
+            let name = DataPredicate(column: "name", comparison: .equal, value: .placeholder)
+            users.predicates.append(.predicate(name))
+            XCTAssertEqual(
+                GeneralSQLSerializer.shared.serialize(query: users),
+                "SELECT * FROM `users` WHERE (`name` = ?)"
+            )
+        }
+        do {
+            var users = DataManipulationQuery(statement: .insert, table: "users")
+
+            let name = DataManipulationColumn(column: "name", value: .placeholder)
+            users.columns.append(name)
+
+            XCTAssertEqual(
+                GeneralSQLSerializer.shared.serialize(query: users),
+                "INSERT INTO `users` (`name`) VALUES (?)"
+            )
+
+            users.statement = .update
+
+            XCTAssertEqual(
+                GeneralSQLSerializer.shared.serialize(query: users),
+                "UPDATE `users` SET `name` = ?"
+            )
+        }
+
+        do {
+            var users = DataDefinitionQuery(statement: .create, table: "users")
+
+            let id = DataDefinitionColumn(name: "id", dataType: "INTEGER", attributes: ["PRIMARY KEY"])
+            users.addColumns.append(id)
+
+            let name = DataDefinitionColumn(name: "name", dataType: "TEXT")
+            users.addColumns.append(name)
+
+            XCTAssertEqual(
+                GeneralSQLSerializer.shared.serialize(query: users),
+                "CREATE TABLE `users` (`id` INTEGER PRIMARY KEY, `name` TEXT)"
+            )
+        }
+
+        final class PostgreSQLSerializer: SQLSerializer {
+            var count: Int
+            init() {
+                self.count = 1
+            }
+            func makePlaceholder() -> String {
+                defer { count += 1 }
+                return "$\(count)"
+            }
+        }
+        do {
+
+            var users = DataQuery(table: "users")
+            let name = DataPredicate(column: "name", comparison: .equal, value: .placeholder)
+            users.predicates.append(.predicate(name))
+            XCTAssertEqual(
+                PostgreSQLSerializer().serialize(query: users),
+                "SELECT * FROM `users` WHERE (`name` = $1)"
+            )
+        }
+    }
+
     static let allTests = [
         ("testBasicSelectStar", testBasicSelectStar),
         ("testSelectWithPredicates", testSelectWithPredicates),
