@@ -15,7 +15,7 @@ extension SQLSerializer {
 
     /// See `SQLSerializer`.
     public func serialize(column: DataQueryColumn) -> String {
-        switch column {
+        switch column.storage {
         case .all: return "*"
         case .column(let column, let key):
             let string = serialize(column: column)
