@@ -5,9 +5,16 @@ final class DataQueryTests: XCTestCase {
     
     static let allTests = [
         ("testBasicSelectStar", testBasicSelectStar),
+        ("testCustomColumnSelect", testCustomColumnSelect),
+        ("testComputedColumnSelectWithAlias", testComputedColumnSelectWithAlias),
+        ("testSubqueryColumnSelect", testSubqueryColumnSelect),
         ("testSelectWithPredicates", testSelectWithPredicates),
+        ("testSelectWithGroupByColumn", testSelectWithGroupByColumn),
+        ("testSelectWithCustomGroupBy", testSelectWithCustomGroupBy),
+        ("testSelectWithMultipleGroupBy", testSelectWithMultipleGroupBy),
         ("testSelectWithJoins", testSelectWithJoins),
         ("testSubsetEdgecases", testSubsetEdgecases),
+        ("testDocs", testDocs)
     ]
     
     func testBasicSelectStar() {
