@@ -2,6 +2,14 @@ import SQL
 import XCTest
 
 final class DataQueryTests: XCTestCase {
+    
+    static let allTests = [
+        ("testBasicSelectStar", testBasicSelectStar),
+        ("testSelectWithPredicates", testSelectWithPredicates),
+        ("testSelectWithJoins", testSelectWithJoins),
+        ("testSubsetEdgecases", testSubsetEdgecases),
+    ]
+    
     func testBasicSelectStar() {
         let select = DataQuery(table: "foo")
         XCTAssertEqual(
@@ -16,13 +24,48 @@ final class DataQueryTests: XCTestCase {
             .column(DataColumn(table: "foo", name: "l"), key: nil)
             ]
         )
-
+        
         XCTAssertEqual(
             GeneralSQLSerializer.shared.serialize(query: select),
             "SELECT `foo`.`d`, `foo`.`l` FROM `foo`"
         )
     }
-
+    
+    func testComputedColumnSelectWithAlias() {
+        let select = DataQuery(table: "foo", columns: [
+            .computed(DataComputedColumn(function: "CONCAT", columns: [
+                DataColumn(table: "foo", name: "A"),
+                DataColumn(name: "B")
+            ]), key: "BIG_WIN"),
+            .column(DataColumn(table: "foo", name: "l"), key: nil)
+            ]
+        )
+        
+        XCTAssertEqual(
+            GeneralSQLSerializer.shared.serialize(query: select),
+            "SELECT CONCAT(`foo`.`A`, `B`) AS `BIG_WIN`, `foo`.`l` FROM `foo`"
+        )
+    }
+    
+    func testSubqueryColumnSelect() {
+        let serializer = GeneralSQLSerializer()
+        let subquery = DataQuery(table: "bar", columns: [
+            .column(DataColumn(table: "bar", name: "food"), key: nil)
+            ]
+        )
+        let select = DataQuery(table: "foo", columns: [
+            .subquery(DataSubqueryColumn("SELECT f FROM fun LIMIT 1"), key: "sub"),
+            .subquery(DataSubqueryColumn(subquery, on: serializer), key: "sub2"),
+            .column(DataColumn(table: "foo", name: "l"), key: nil)
+            ]
+        )
+        
+        XCTAssertEqual(
+            GeneralSQLSerializer.shared.serialize(query: select),
+            "SELECT (SELECT f FROM fun LIMIT 1) AS `sub`, (SELECT `bar`.`food` FROM `bar` LIMIT 1) AS `sub2`, `foo`.`l` FROM `foo`"
+        )
+    }
+    
     func testSelectWithPredicates() {
         var select = DataQuery(table: "foo")
 
@@ -181,10 +224,4 @@ final class DataQueryTests: XCTestCase {
         }
     }
 
-    static let allTests = [
-        ("testBasicSelectStar", testBasicSelectStar),
-        ("testSelectWithPredicates", testSelectWithPredicates),
-        ("testSelectWithJoins", testSelectWithJoins),
-        ("testSubsetEdgecases", testSubsetEdgecases),
-    ]
 }

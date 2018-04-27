@@ -11,26 +11,34 @@ public struct DataQueryColumn {
         
         /// A single `DataComputedColumn` with optional key.
         case computed(DataComputedColumn, key: String?)
+        
+        /// A single `DataSubqueryColumn`
+        case subquery(DataSubqueryColumn, key: String)
     }
     
     /// Internal storage
     let storage: Storage
     
     /// Internal initializer
-    init(stored: Storage) {
+    init(_ stored: Storage) {
         storage = stored
     }
     
     /// All columns, `*`.
-    public static var all = DataQueryColumn(stored: .all)
+    public static var all = DataQueryColumn(.all)
 
     /// A single `DataColumn` with optional key.
     public static func column(_ column: DataColumn, key: String? = nil) -> DataQueryColumn {
-        return .column(column, key: key)
+        return .init(.column(column, key: key))
     }
 
     /// A single `DataComputedColumn` with optional key.
     public static func computed(_ column: DataComputedColumn, key: String? = nil) -> DataQueryColumn {
-        return .computed(column, key: key)
+        return .init(.computed(column, key: key))
+    }
+    
+    /// A single `DataSubqueryColumn`
+    public static func subquery(_ column: DataSubqueryColumn, key: String) -> DataQueryColumn {
+        return .init(.subquery(column, key: key))
     }
 }
