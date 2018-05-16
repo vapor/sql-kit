@@ -55,21 +55,19 @@ final class DataQueryTests: XCTestCase {
     }
     
     func testSubqueryColumnSelect() {
-        let serializer = GeneralSQLSerializer()
         let subquery = DataQuery(table: "bar", columns: [
             .column(DataColumn(table: "bar", name: "food"), key: nil)
             ]
         )
         let select = DataQuery(table: "foo", columns: [
-            .subquery(DataSubqueryColumn("SELECT f FROM fun LIMIT 1"), key: "sub"),
-            .subquery(DataSubqueryColumn(subquery, on: serializer), key: "sub2"),
+            .subquery(DataSubqueryColumn(subquery), key: "sub"),
             .column(DataColumn(table: "foo", name: "l"), key: nil)
             ]
         )
         
         XCTAssertEqual(
             GeneralSQLSerializer.shared.serialize(query: select),
-            "SELECT (SELECT f FROM fun LIMIT 1) AS `sub`, (SELECT `bar`.`food` FROM `bar` LIMIT 1) AS `sub2`, `foo`.`l` FROM `foo`"
+            "SELECT (SELECT `bar`.`food` FROM `bar` LIMIT 1) AS `sub`, `foo`.`l` FROM `foo`"
         )
     }
     
