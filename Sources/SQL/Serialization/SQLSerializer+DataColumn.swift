@@ -15,22 +15,25 @@ extension SQLSerializer {
 
     /// See `SQLSerializer`.
     public func serialize(column: DataQueryColumn) -> String {
-        switch column {
+        switch column.storage {
         case .all: return "*"
         case .column(let column, let key):
             let string = serialize(column: column)
             if let key = key {
-                return string + " as " + makeEscapedString(from: key)
+                return string + " AS " + makeEscapedString(from: key)
             } else {
                 return string
             }
         case .computed(let computed, let key):
             let string = serialize(column: computed)
             if let key = key {
-                return string + " as " + makeEscapedString(from: key)
+                return string + " AS " + makeEscapedString(from: key)
             } else {
                 return string
             }
+        case .subquery(let subquery, let key):
+            let string = serialize(column: subquery)
+            return string + " AS " + makeEscapedString(from: key)
         }
     }
 }

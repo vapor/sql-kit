@@ -2,6 +2,21 @@ import SQL
 import XCTest
 
 final class DataQueryTests: XCTestCase {
+    
+    static let allTests = [
+        ("testBasicSelectStar", testBasicSelectStar),
+        ("testCustomColumnSelect", testCustomColumnSelect),
+        ("testComputedColumnSelectWithAlias", testComputedColumnSelectWithAlias),
+        ("testSubqueryColumnSelect", testSubqueryColumnSelect),
+        ("testSelectWithPredicates", testSelectWithPredicates),
+        ("testSelectWithGroupByColumn", testSelectWithGroupByColumn),
+        ("testSelectWithCustomGroupBy", testSelectWithCustomGroupBy),
+        ("testSelectWithMultipleGroupBy", testSelectWithMultipleGroupBy),
+        ("testSelectWithJoins", testSelectWithJoins),
+        ("testSubsetEdgecases", testSubsetEdgecases),
+        ("testDocs", testDocs)
+    ]
+    
     func testBasicSelectStar() {
         let select = DataQuery(table: "foo")
         XCTAssertEqual(
@@ -16,13 +31,46 @@ final class DataQueryTests: XCTestCase {
             .column(DataColumn(table: "foo", name: "l"), key: nil)
             ]
         )
-
+        
         XCTAssertEqual(
             GeneralSQLSerializer.shared.serialize(query: select),
             "SELECT `foo`.`d`, `foo`.`l` FROM `foo`"
         )
     }
-
+    
+    func testComputedColumnSelectWithAlias() {
+        let select = DataQuery(table: "foo", columns: [
+            .computed(DataComputedColumn(function: "CONCAT", columns: [
+                DataColumn(table: "foo", name: "A"),
+                DataColumn(name: "B")
+            ]), key: "BIG_WIN"),
+            .column(DataColumn(table: "foo", name: "l"), key: nil)
+            ]
+        )
+        
+        XCTAssertEqual(
+            GeneralSQLSerializer.shared.serialize(query: select),
+            "SELECT CONCAT(`foo`.`A`, `B`) AS `BIG_WIN`, `foo`.`l` FROM `foo`"
+        )
+    }
+    
+    func testSubqueryColumnSelect() {
+        let subquery = DataQuery(table: "bar", columns: [
+            .column(DataColumn(table: "bar", name: "food"), key: nil)
+            ]
+        )
+        let select = DataQuery(table: "foo", columns: [
+            .subquery(DataSubqueryColumn(subquery), key: "sub"),
+            .column(DataColumn(table: "foo", name: "l"), key: nil)
+            ]
+        )
+        
+        XCTAssertEqual(
+            GeneralSQLSerializer.shared.serialize(query: select),
+            "SELECT (SELECT `bar`.`food` FROM `bar` LIMIT 1) AS `sub`, `foo`.`l` FROM `foo`"
+        )
+    }
+    
     func testSelectWithPredicates() {
         var select = DataQuery(table: "foo")
 
@@ -181,10 +229,4 @@ final class DataQueryTests: XCTestCase {
         }
     }
 
-    static let allTests = [
-        ("testBasicSelectStar", testBasicSelectStar),
-        ("testSelectWithPredicates", testSelectWithPredicates),
-        ("testSelectWithJoins", testSelectWithJoins),
-        ("testSubsetEdgecases", testSubsetEdgecases),
-    ]
 }
