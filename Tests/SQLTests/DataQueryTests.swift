@@ -62,10 +62,11 @@ final class DataQueryTests: XCTestCase {
 
         let column = DataComputedColumn(function: "YEAR", columns: [.init(table: "foo", name: "date")])
         select.groupBys = [.computed(column)]
+        select.orderBys = [DataOrderBy(columns: [DataColumn(table: "foo", name: "name")], direction: .descending)]
 
         XCTAssertEqual(
             GeneralSQLSerializer.shared.serialize(query: select),
-            "SELECT * FROM `foo` GROUP BY YEAR(`foo`.`date`)"
+            "SELECT * FROM `foo` GROUP BY YEAR(`foo`.`date`) ORDER BY `foo`.`name` DESC"
         )
     }
 
