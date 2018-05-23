@@ -79,33 +79,42 @@ extension SQLSerializer {
 
         }
 
-        /// Serialize the predicate comparison.
-        let comparisonSQL = serialize(comparison: predicate.comparison)
-        if comparisonSQL.count > 0 {
-            statement.append(comparisonSQL)
-        }
-
-        /// Serialize the predicate value.
         switch predicate.value {
-        case .column(let col):
-            statement.append(serialize(column: col))
-        case .computed(let col):
-            statement.append(serialize(column: col))
-        case .subquery(let subquery):
-            let sub = serialize(query: subquery)
-            statement.append("(" + sub + ")")
-        case .placeholders(let length):
-            if length == 1 {
-                statement.append(makePlaceholder())
-            } else {
-                var placeholders: [String] = []
-                for _ in 0..<length {
-                    placeholders.append(makePlaceholder())
-                }
-                statement.append("(" + placeholders.joined(separator: ", ") + ")")
+        case .null:
+            switch predicate.comparison {
+            case .equal: statement.append("IS NULL")
+            case .notEqual: statement.append("IS NOT NULL")
+            default: break
             }
-        case .custom(let string): statement.append(string)
-        case .none: break
+        default:
+            /// Serialize the predicate comparison.
+            let comparisonSQL = serialize(comparison: predicate.comparison)
+            if comparisonSQL.count > 0 {
+                statement.append(comparisonSQL)
+            }
+
+            /// Serialize the predicate value.
+            switch predicate.value {
+            case .column(let col):
+                statement.append(serialize(column: col))
+            case .computed(let col):
+                statement.append(serialize(column: col))
+            case .subquery(let subquery):
+                let sub = serialize(query: subquery)
+                statement.append("(" + sub + ")")
+            case .placeholders(let length):
+                if length == 1 {
+                    statement.append(makePlaceholder())
+                } else {
+                    var placeholders: [String] = []
+                    for _ in 0..<length {
+                        placeholders.append(makePlaceholder())
+                    }
+                    statement.append("(" + placeholders.joined(separator: ", ") + ")")
+                }
+            case .custom(let string): statement.append(string)
+            case .none, .null: break
+            }
         }
 
         return statement.joined(separator: " ")
