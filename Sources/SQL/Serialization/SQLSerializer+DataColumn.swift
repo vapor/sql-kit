@@ -17,6 +17,9 @@ extension SQLSerializer {
     public func serialize(column: DataQueryColumn) -> String {
         switch column {
         case .all: return "*"
+        case .tableAll(let table):
+            let escapedTable = makeEscapedString(from: table)
+            return escapedTable + ".*"
         case .column(let column, let key):
             let string = serialize(column: column)
             if let key = key {
