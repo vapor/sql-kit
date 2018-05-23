@@ -18,6 +18,9 @@ public enum DataPredicateValue {
     /// Serializes a complete sub-query as this predicate's value.
     case subquery(DataQuery)
 
+    /// NULL value (different from no value).
+    case null
+
     /// Custom string that will be interpolated into the SQL query.
     /// - warning: Be careful about SQL injection when using this.
     case custom(sql: String)
