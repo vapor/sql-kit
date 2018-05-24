@@ -45,7 +45,7 @@ public struct DataManipulationQuery {
     ) {
         self.statement = statement
         self.table = table
-        self.keys = []
+        self.keys = keys
         self.columns = columns
         self.joins = joins
         self.predicates = predicates

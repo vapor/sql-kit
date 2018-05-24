@@ -17,12 +17,20 @@ extension SQLSerializer {
             statement.append("INTO")
             statement.append(table)
 
-            let columns = query.columns.map { makeEscapedString(from: $0.column.name) }
-            statement.append("(" + columns.joined(separator: ", ") + ")")
-            statement.append("VALUES")
+            // no need to pass `NULL` values during INSERT
+            let columns = query.columns.filter { column in
+                switch column.value {
+                case .null: return false
+                default: return true
+                }
+            }
 
+            statement.append(
+                "(" + columns.map { makeEscapedString(from: $0.column.name) }.joined(separator: ", ") + ")"
+            )
+            statement.append("VALUES")
             var placeholders: [String] = []
-            for column in query.columns {
+            for column in columns {
                 let (placeholder, values) = serialize(value: column.value)
                 placeholders.append(placeholder)
                 binds += values
@@ -38,8 +46,9 @@ extension SQLSerializer {
 
             let set = query.columns.map { col -> String in
                 let column = makeEscapedString(from: col.column.name)
-                let value = serialize(value: col.value)
-                return "\(column) = \(value)"
+                let (string, values) = serialize(value: col.value)
+                binds += values
+                return "\(column) = \(string)"
             }
             statement.append(set.joined(separator: ", "))
         default:

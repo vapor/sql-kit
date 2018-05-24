@@ -48,11 +48,9 @@ extension SQLSerializer {
         sql.append(name)
         sql.append(column.dataType.name)
         if !column.dataType.parameters.isEmpty {
-            sql.append("(")
-            sql.append(column.dataType.parameters.joined(separator: ","))
-            sql.append(")")
+            sql.append("(" + column.dataType.parameters.joined(separator: ",") + ")")
         }
-        sql += column.attributes
+        sql += column.dataType.attributes
         return sql.joined(separator: " ")
     }
 
@@ -62,7 +60,7 @@ extension SQLSerializer {
 
         // CONSTRAINT galleries_gallery_tmpltid_fk
         sql.append("CONSTRAINT")
-        sql.append(makeName(for: constraint))
+        sql.append(makeEscapedString(from: makeName(for: constraint)))
 
         switch constraint {
         case .foreignKey(let foreignKey):

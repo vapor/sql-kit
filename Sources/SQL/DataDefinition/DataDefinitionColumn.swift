@@ -6,21 +6,27 @@ public struct DataDefinitionColumn {
     /// The column's data type.
     public var dataType: DataDefinitionDataType
 
-    /// A collection of attributes to apply to this column.
-    public var attributes: [String]
-
     /// Creates a new `DataDefinitionColumn`.
-    public init(name: String, dataType: DataDefinitionDataType, attributes: [String] = []) {
+    public init(name: String, dataType: DataDefinitionDataType) {
         self.name = name
         self.dataType = dataType
-        self.attributes = attributes
     }
 }
 
 public struct DataDefinitionDataType {
     /// VARCHAR
-    public let name: String
+    public var name: String
 
     /// (a, b, c)
-    public let parameters: [String]
+    public var parameters: [String]
+
+    /// UNSIGNED, PRIMARY KEY
+    public var attributes: [String]
+
+    /// Creates a new `DataDefinitionDataType`.
+    public init(name: String, parameters: [String] = [], attributes: [String] = []) {
+        self.name = name
+        self.parameters = parameters
+        self.attributes = attributes
+    }
 }
