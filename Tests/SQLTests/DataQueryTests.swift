@@ -16,6 +16,18 @@ final class DataQueryTests: XCTestCase {
         let (sql, _) = GeneralSQLSerializer.shared.serialize(query: select)
         XCTAssertEqual(sql, "SELECT `foo`.`d`, `foo`.`l` FROM `foo`")
     }
+    
+    func testCustomColumnSelectAll() {
+        let select = DataQuery(table: "foo", columns: [
+            .tableAll(table: "foo")
+            ]
+        )
+        
+        XCTAssertEqual(
+            GeneralSQLSerializer.shared.serialize(query: select),
+            "SELECT `foo`.* FROM `foo`"
+        )
+    }
 
     func testSelectWithPredicates() {
         var select = DataManipulationQuery(table: "foo")

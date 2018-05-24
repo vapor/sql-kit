@@ -2,6 +2,9 @@
 public enum DataManipulationKey {
     /// All columns, `*`.
     case all
+    
+    /// All columns of a table, `foo`.*
+    case tableAll(table: String)
 
     /// A single `DataColumn` with optional key.
     case column(DataColumn, key: String?)
