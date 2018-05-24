@@ -25,14 +25,14 @@ extension SQLSerializer {
             statement.append(serialize(predicateGroup: group))
         }
 
-        if !query.orderBys.isEmpty {
-            statement.append(serialize(orderBys: query.orderBys))
-        }
-
         if !query.groupBys.isEmpty {
             statement.append(serialize(groupBys: query.groupBys))
         }
 
+        if !query.orderBys.isEmpty {
+            statement.append(serialize(orderBys: query.orderBys))
+        }
+        
         if let limit = query.limit {
             statement.append("LIMIT \(limit)")
             if let offset = query.offset {
