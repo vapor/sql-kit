@@ -1,11 +1,42 @@
 /// Supported SQL data statement types.
-public enum DataManipulationStatement {
+public struct DataManipulationStatement: ExpressibleByStringLiteral {
+    /// `SELECT`
+    ///
+    /// - parameters:
+    ///     - distinct: If `true`, only select distinct columns.
+    public static func select(distinct: Bool = false) -> DataManipulationStatement {
+        return .init(verb: "SELECT", modifiers: distinct ? ["DISTINCT"] : [])
+    }
+
     /// `INSERT`
-    case insert
+    public static func insert() -> DataManipulationStatement {
+        return "INSERT"
+    }
 
     /// `UPDATE`
-    case update
+    public static func update() -> DataManipulationStatement {
+        return "UPDATE"
+    }
 
     /// `DELETE`
-    case delete
+    public static func delete() -> DataManipulationStatement {
+        return "DELETE"
+    }
+
+    /// Statement verb, i.e., SELECT, INSERT, etc.
+    public var verb: String
+
+    /// Statement modifiers, i.e., IGNORE, IF NOT EXISTS
+    public var modifiers: [String]
+
+    /// Creates a new `DataManipulationStatement`.
+    public init(verb: String, modifiers: [String] = []) {
+        self.verb = verb.uppercased()
+        self.modifiers = modifiers.map { $0.uppercased() }
+    }
+
+    /// See `ExpressibleByStringLiteral`.
+    public init(stringLiteral value: String) {
+        self.init(verb: value)
+    }
 }

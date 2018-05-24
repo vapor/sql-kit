@@ -1,10 +1,7 @@
 /// Supported column types in a `DataQuery`.
-public enum DataQueryColumn {
-    /// All columns, `*`.
-    case all
-    
-    /// All columns of a table, `foo`.*
-    case tableAll(table: String)
+public enum DataManipulationKey {
+    /// All columns, `*`., or all columns of a table, `foo`.*
+    case all(table: String?)
 
     /// A single `DataColumn` with optional key.
     case column(DataColumn, key: String?)

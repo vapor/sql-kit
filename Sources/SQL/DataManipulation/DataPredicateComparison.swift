@@ -22,12 +22,6 @@ public enum DataPredicateComparison: Equatable {
     case like
     /// NOT LIKE
     case notLike
-    /// IS NULL
-    case isNull
-    /// IS NOT NULL
-    case isNotNull
-    /// No comparison type
-    case none
     /// Raw SQL string
-    case sql(String)
+    case custom(String)
 }

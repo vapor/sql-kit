@@ -5,22 +5,38 @@
 /// You are expected to implement only the methods that require
 /// different serialization logic for your given SQL flavor.
 public protocol SQLSerializer {
-    // MARK: DataQuery
+    // MARK: Data Manipulation
 
-    /// Serializes a SQL `DataQuery` to a string.
+    /// Serializes a SQL `DataManipulationQuery` to a string.
+    ///
+    ///     INSERT INTO `users` (`name`) VALUES (?)
+    ///
+    /// And read statements.
     ///
     ///     SELECT `users`.* FROM `users`
     ///
     /// - note: Avoid overriding this method if possible
     ///         as it is complex. Much of what this method
     ///         serializes can be modified by overriding other methods.
-    func serialize(query: DataQuery) -> String
+    func serialize(query: DataManipulationQuery, binds: inout Binds) -> String
 
-    /// Serializes a SQL `DataQueryColumn` to a string.
+    /// Serializes a SQL `DataManipulationKey` to a string.
     ///
     ///     `foo`.`id` as `fooid`
     ///
-    func serialize(column: DataQueryColumn) -> String
+    func serialize(key: DataManipulationKey) -> String
+
+    /// Serializes a SQL `DataManipulationColumn` to a string.
+    ///
+    ///     `foo`.`id` = ?
+    ///
+    func serialize(column: DataManipulationColumn, binds: inout Binds) -> String
+
+    /// Serializes a SQL `DataManipulationValue` to a string.
+    ///
+    ///     ?
+    ///
+    func serialize(value: DataManipulationValue, binds: inout Binds) -> String
 
     /// Serializes a SQL `DataManipulationColumn` to a string.
     ///
@@ -70,23 +86,29 @@ public protocol SQLSerializer {
     ///
     func serialize(orderByDirection: DataOrderByDirection) -> String
 
+    /// Serializes a SQL `DataPredicate` to a string.
+    ///
+    ///     `user`.`id` = ?
+    ///
+    func serialize(predicate: DataPredicate, binds: inout Binds) -> String
+
+    /// Serializes a SQL `DataPredicateItem` to a string.
+    ///
+    ///     `user`.`id` = ?
+    ///
+    func serialize(predicate: DataPredicateItem, binds: inout Binds) -> String
+
     /// Serializes a SQL `DataPredicateGroup` to a string.
     ///
     ///     (`id` = ? AND `age` = ?)
     ///
-    func serialize(predicateGroup: DataPredicateGroup) -> String
+    func serialize(predicate: DataPredicateGroup, binds: inout Binds) -> String
 
     /// Serializes a SQL `DataPredicateGroupRelation` to a string.
     ///
     ///     AND
     ///
-    func serialize(predicateGroupRelation: DataPredicateGroupRelation) -> String
-
-    /// Serializes a SQL `DataPredicate` to a string.
-    ///
-    ///     `user`.`id` = ?
-    ///
-    func serialize(predicate: DataPredicate) -> String
+    func serialize(predicate: DataPredicateGroupRelation) -> String
 
     /// Serializes a SQL `DataPredicateComparison` to a string.
     ///
@@ -94,25 +116,8 @@ public protocol SQLSerializer {
     ///
     func serialize(comparison: DataPredicateComparison) -> String
 
-    // MARK: DataManipulation
 
-    /// Serializes a SQL `DataManipulationQuery` to a string.
-    ///
-    ///     INSERT INTO `users` (`name`) VALUES (?)
-    ///
-    /// - note: Avoid overriding this method if possible
-    ///         as it is complex. Much of what this method
-    ///         serializes can be modified by overriding other methods.
-    func serialize(query: DataManipulationQuery) -> String
-
-
-    /// Serializes a SQL `DataManipulationValue` to a string.
-    ///
-    ///     ?
-    ///
-    func serialize(value: DataManipulationValue) -> String
-
-    // MARK: DataDefinition
+    // MARK: Data Definition
 
     /// Serializes a SQL `DataDefinitionQuery` to a string.
     ///
@@ -126,6 +131,18 @@ public protocol SQLSerializer {
     ///
     func serialize(column: DataDefinitionColumn) -> String
 
+    /// Serializes a SQL `DataDefinitionConstraint` to a string.
+    ///
+    ///     CONSTRAINT UC_Person UNIQUE (ID,LastName)
+    ///
+    func serialize(constraint: DataDefinitionConstraint) -> String
+
+    /// Serializes a SQL `DataDefinitionUnique` to a string.
+    ///
+    ///     CONSTRAINT UC_Person UNIQUE (ID,LastName)
+    ///
+    func serialize(unique: DataDefinitionUnique) -> String
+
     /// Serializes a SQL `DataDefinitionColumn` to a string.
     ///
     ///     FOREIGN KEY (`trackartist`) REFERENCES `artist`(`artistid`) ON UPDATE RESTRICT ON DELETE RESTRICT
@@ -137,6 +154,7 @@ public protocol SQLSerializer {
     ///     ON UPDATE RESTRICT ON DELETE RESTRICT
     ///
     func serialize(foreignKeyAction: DataDefinitionForeignKeyAction) -> String
+
 
     // MARK: Utility
 
@@ -157,16 +175,10 @@ public protocol SQLSerializer {
     ///     `foo`
     ///
     func makeEscapedString(from string: String) -> String
+
+    /// Creates a name for the supplied constraint.
+    ///
+    ///     persons_fk
+    ///
+    func makeName(for constraint: DataDefinitionConstraint) -> String
 }
-
-
-
-
-
-
-
-
-
-
-
-

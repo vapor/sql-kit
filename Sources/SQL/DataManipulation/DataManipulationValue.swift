@@ -1,7 +1,12 @@
-/// All supported values for a SQL `DataManipulationValue`.
+/// All supported values for a SQL `DataPredicate`.
 public enum DataManipulationValue {
-    /// A value placeholder.
-    case placeholder
+    /// A single placeholder.
+    public static func bind(_ encodable: Encodable) -> DataManipulationValue {
+        return .binds([encodable])
+    }
+
+    /// One or more placeholders.
+    case binds([Encodable])
 
     /// Compare to another column in the database.
     case column(DataColumn)
@@ -10,9 +15,12 @@ public enum DataManipulationValue {
     case computed(DataComputedColumn)
 
     /// Serializes a complete sub-query as this predicate's value.
-    case subquery(DataQuery)
+    case subquery(DataManipulationQuery)
+
+    /// NULL value.
+    case null
 
     /// Custom string that will be interpolated into the SQL query.
     /// - warning: Be careful about SQL injection when using this.
-    case custom(sql: String)
+    case unescaped(String)
 }
