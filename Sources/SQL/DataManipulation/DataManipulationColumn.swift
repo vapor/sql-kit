@@ -7,7 +7,7 @@ public struct DataManipulationColumn: ExpressibleByStringLiteral {
     public var value: DataManipulationValue
 
     /// Creates a new `DataManipulationColumn`.
-    public init(column: DataColumn, value: DataManipulationValue = .placeholder) {
+    public init(column: DataColumn, value: DataManipulationValue = .null) {
         self.column = column
         self.value = value
     }

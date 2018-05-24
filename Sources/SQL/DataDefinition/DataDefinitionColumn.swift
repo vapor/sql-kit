@@ -4,15 +4,23 @@ public struct DataDefinitionColumn {
     public var name: String
 
     /// The column's data type.
-    public var dataType: String
+    public var dataType: DataDefinitionDataType
 
     /// A collection of attributes to apply to this column.
     public var attributes: [String]
 
     /// Creates a new `DataDefinitionColumn`.
-    public init(name: String, dataType: String, attributes: [String] = []) {
+    public init(name: String, dataType: DataDefinitionDataType, attributes: [String] = []) {
         self.name = name
         self.dataType = dataType
         self.attributes = attributes
     }
+}
+
+public struct DataDefinitionDataType {
+    /// VARCHAR
+    public let name: String
+
+    /// (a, b, c)
+    public let parameters: [String]
 }

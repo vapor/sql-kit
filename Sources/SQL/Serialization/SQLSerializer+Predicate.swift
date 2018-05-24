@@ -1,14 +1,20 @@
 extension SQLSerializer {
     /// See `SQLSerializer`.
-    public func serialize(predicateGroup: DataPredicateGroup) -> String {
-        let method = serialize(predicateGroupRelation: predicateGroup.relation)
-        let group = predicateGroup.predicates.map(serialize).joined(separator: " \(method) ")
-        return "(" + group + ")"
+    public func serialize(predicate group: DataPredicateGroup) -> (String, [Encodable]) {
+        let method = serialize(predicate: group.relation)
+        var statement: [String] = []
+        var binds: [Encodable] = []
+        for predicate in group.predicates {
+            let (string, values) = serialize(predicate: predicate)
+            statement.append(string)
+            binds += values
+        }
+        return ("(" + statement.joined(separator: " \(method) ") + ")", binds)
     }
 
     /// See `SQLSerializer`.
-    public func serialize(predicateGroupRelation: DataPredicateGroupRelation) -> String {
-        switch predicateGroupRelation {
+    public func serialize(predicate: DataPredicateGroupRelation) -> String {
+        switch predicate {
         case .and: return "AND"
         case .or: return "OR"
         case .custom(let string): return string
@@ -20,104 +26,61 @@ extension SQLSerializer {
     ///     - `serialize(predicate:)`
     /// This should likely not need to be overridden.
     /// See `SQLSerializer`.
-    public func serialize(predicateItem: DataPredicateItem) -> String {
-        switch predicateItem {
-        case .group(let group): return serialize(predicateGroup: group)
-        case .predicate(let predicate): return serialize(predicate: predicate)
+    public func serialize(predicate relation: DataPredicateItem) -> (String, [Encodable]) {
+        switch relation {
+        case .group(let group): return serialize(predicate: group)
+        case .predicate(let item): return serialize(predicate: item)
         }
     }
 
     /// See `SQLSerializer`.
-    public func serialize(predicate: DataPredicate) -> String {
-        var statement: [String] = []
-
-        /// Cleanup the predicate, fixing high-level invalid or un-optimized SQL.
-        /// For example:
-        ///     "IN ()" -> "false"
-        ///     "IN (?)" -> "= ?"
-        var predicate = predicate
+    public func serialize(predicate: DataPredicate) -> (String, [Encodable]) {
+        // Cleanup the predicate, fixing high-level invalid or un-optimized SQL.
+        // For example:
+        //     "IN ()" -> "false"
+        //     "IN (?)" -> "= ?"
         switch predicate.comparison {
         case .notIn, .in:
             switch predicate.value {
-            case .placeholders(let count):
-                switch count {
+            case .values(let values):
+                switch values.count {
                 case 0:
                     /// if serializing a subset filter with 0 values, we must use true or false
                     switch predicate.comparison {
-                    case .notIn: predicate.value = .custom(sql: "1")
-                    case .in: predicate.value = .custom(sql: "0")
+                    case .notIn: return ("1", [])
+                    case .in: return ("0", [])
                     default: break
                     }
-                    predicate.column.name = ""
-                    predicate.comparison = .none
                 case 1:
+                    var statement: [String] = []
+                    statement.append(serialize(column: predicate.column))
                     /// if serializing a subset filter with 1 value, we should use just equals
                     switch predicate.comparison {
-                    case .notIn: predicate.comparison = .notEqual
-                    case .in: predicate.comparison = .equal
+                    case .notIn: statement.append(serialize(comparison: .notEqual))
+                    case .in: statement.append(serialize(comparison: .equal))
                     default: break
                     }
+                    let (string, binds) = serialize(value: predicate.value)
+                    statement.append(string)
+                    return (statement.joined(separator: " "), binds)
                 default: break
                 }
             default: break
             }
-        case .isNotNull, .isNull:
-            // no values should follow IS NULL / IS NOT NULL
-            predicate.value = .none
         default: break
         }
 
-        /// Serialize the predicate column.
-        if predicate.column.name.count > 0 {
-            let escapedColumn = makeEscapedString(from: predicate.column.name)
-            if let table = predicate.column.table {
-                let escaped = makeEscapedString(from: table)
-                statement.append("\(escaped).\(escapedColumn)")
-            } else {
-                statement.append(escapedColumn)
-            }
-
+        // Normal serialization continues here
+        var statement: [String] = []
+        statement.append(serialize(column: predicate.column))
+        switch (predicate.comparison, predicate.value) {
+        case (.equal, .null): statement.append("IS")
+        case (.notEqual, .null): statement.append("IS NOT")
+        default: statement.append(serialize(comparison: predicate.comparison))
         }
-
-        switch predicate.value {
-        case .null:
-            switch predicate.comparison {
-            case .equal: statement.append("IS NULL")
-            case .notEqual: statement.append("IS NOT NULL")
-            default: break
-            }
-        default:
-            /// Serialize the predicate comparison.
-            let comparisonSQL = serialize(comparison: predicate.comparison)
-            if comparisonSQL.count > 0 {
-                statement.append(comparisonSQL)
-            }
-
-            /// Serialize the predicate value.
-            switch predicate.value {
-            case .column(let col):
-                statement.append(serialize(column: col))
-            case .computed(let col):
-                statement.append(serialize(column: col))
-            case .subquery(let subquery):
-                let sub = serialize(query: subquery)
-                statement.append("(" + sub + ")")
-            case .placeholders(let length):
-                if length == 1 {
-                    statement.append(makePlaceholder())
-                } else {
-                    var placeholders: [String] = []
-                    for _ in 0..<length {
-                        placeholders.append(makePlaceholder())
-                    }
-                    statement.append("(" + placeholders.joined(separator: ", ") + ")")
-                }
-            case .custom(let string): statement.append(string)
-            case .none, .null: break
-            }
-        }
-
-        return statement.joined(separator: " ")
+        let (string, binds) = serialize(value: predicate.value)
+        statement.append(string)
+        return (statement.joined(separator: " "), binds)
     }
 
     /// See `SQLSerializer`.
@@ -134,9 +97,6 @@ extension SQLSerializer {
         case .between: return "BETWEEN"
         case .like: return "LIKE"
         case .notLike: return "NOT LIKE"
-        case .isNull: return "IS NULL"
-        case .isNotNull: return "IS NOT NULL"
-        case .none: return ""
         case .sql(let sql): return sql
         }
     }

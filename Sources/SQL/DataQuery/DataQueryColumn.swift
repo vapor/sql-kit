@@ -1,5 +1,5 @@
 /// Supported column types in a `DataQuery`.
-public enum DataQueryColumn {
+public enum DataManipulationKey {
     /// All columns, `*`.
     case all
 

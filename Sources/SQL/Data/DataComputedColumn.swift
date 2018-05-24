@@ -4,11 +4,11 @@ public struct DataComputedColumn {
     public var function: String
 
     /// The SQL data column parameters to the function. Can be none.
-    public var columns: [DataColumn]
+    public var keys: [DataManipulationKey]
 
     /// Creates a new SQL `DataComputedColumn`.
-    public init(function: String, columns: [DataColumn] = []) {
+    public init(function: String, keys: [DataManipulationKey] = []) {
         self.function = function
-        self.columns = columns
+        self.keys = keys
     }
 }

@@ -9,26 +9,25 @@ extension SQLSerializer {
             statement.append("CREATE TABLE")
             statement.append(table)
 
-            let columns = query.addColumns.map { serialize(column: $0) }
-                + query.addForeignKeys.map { serialize(foreignKey: $0) }
+            let columns = query.createColumns.map { serialize(column: $0) }
+                + query.createConstraints.map { serialize(constraint: $0) }
             statement.append("(" + columns.joined(separator: ", ") + ")")
         case .alter:
             statement.append("ALTER TABLE")
             statement.append(table)
 
-            let adds = query.addColumns.map { "ADD " + serialize(column: $0) }
-            if adds.count > 0 {
-                statement.append(adds.joined(separator: ", "))
+            if !query.createColumns.isEmpty {
+                statement.append(query.createColumns.map { "ADD " + serialize(column: $0) }.joined(separator: ", "))
+            }
+            if !query.deleteColumns.isEmpty {
+                statement.append(query.deleteColumns.map { "DROP " + serialize(column: $0) }.joined(separator: ", "))
             }
 
-            let deletes = query.removeColumns.map { "DROP " + makeEscapedString(from: $0) }
-            if deletes.count > 0 {
-                statement.append(deletes.joined(separator: ", "))
+            if !query.createConstraints.isEmpty {
+                statement.append(query.deleteConstraints.map { "ADD " + serialize(constraint: $0) }.joined(separator: ", "))
             }
-
-            let deleteFKs = query.removeForeignKeys.map { "DROP FOREIGN KEY " + makeEscapedString(from: $0) }
-            if deleteFKs.count > 0 {
-                statement.append(deleteFKs.joined(separator: ", "))
+            if !query.deleteConstraints.isEmpty {
+                statement.append(query.deleteConstraints.map { "DROP CONSTRAINT " + makeName(for: $0) }.joined(separator: ", "))
             }
         case .drop:
             statement.append("DROP TABLE")
@@ -47,8 +46,40 @@ extension SQLSerializer {
 
         let name = makeEscapedString(from: column.name)
         sql.append(name)
-        sql.append(column.dataType)
+        sql.append(column.dataType.name)
+        if !column.dataType.parameters.isEmpty {
+            sql.append("(")
+            sql.append(column.dataType.parameters.joined(separator: ","))
+            sql.append(")")
+        }
         sql += column.attributes
+        return sql.joined(separator: " ")
+    }
+
+    /// See `SQLSerializer`.
+    public func serialize(constraint: DataDefinitionConstraint) -> String {
+        var sql: [String] = []
+
+        // CONSTRAINT galleries_gallery_tmpltid_fk
+        sql.append("CONSTRAINT")
+        sql.append(makeName(for: constraint))
+
+        switch constraint {
+        case .foreignKey(let foreignKey):
+            sql.append(serialize(foreignKey: foreignKey))
+        case .unique(let unique):
+            sql.append(serialize(unique: unique))
+        }
+
+        return sql.joined(separator: " ")
+    }
+
+    /// See `SQLSerializer`.
+    public func serialize(unique: DataDefinitionUnique) -> String {
+        // UNIQUE (ID,LastName);
+        var sql: [String] = []
+        sql.append("UNIQUE")
+        sql.append(unique.columns.map { serialize(column: $0) }.joined(separator: ", "))
         return sql.joined(separator: " ")
     }
 
@@ -56,32 +87,35 @@ extension SQLSerializer {
     public func serialize(foreignKey: DataDefinitionForeignKey) -> String {
         // FOREIGN KEY(trackartist) REFERENCES artist(artistid)
         var sql: [String] = []
-
         sql.append("FOREIGN KEY")
-
         if let table = foreignKey.local.table {
             sql.append(makeEscapedString(from: table))
         }
         sql.append("(" + makeEscapedString(from: foreignKey.local.name) + ")")
-
         sql.append("REFERENCES")
-
         if let table = foreignKey.foreign.table {
             sql.append(makeEscapedString(from: table))
         }
         sql.append("(" + makeEscapedString(from: foreignKey.foreign.name) + ")")
-
         if let onUpdate = foreignKey.onUpdate {
             sql.append("ON UPDATE")
             sql.append(serialize(foreignKeyAction: onUpdate))
         }
-
         if let onDelete = foreignKey.onDelete {
             sql.append("ON DELETE")
             sql.append(serialize(foreignKeyAction: onDelete))
         }
-
         return sql.joined(separator: " ")
+    }
+
+    /// See `SQLSerializer`.
+    public func makeName(for constraint: DataDefinitionConstraint) -> String {
+        switch constraint {
+        case .foreignKey(let foreignKey):
+            return "fk:\(foreignKey.local.table ?? "").\(foreignKey.local.name)_\(foreignKey.foreign.table ?? "").\(foreignKey.foreign.name)"
+        case .unique(let unique):
+            return "uq:" + unique.columns.map { "\($0.table ?? "").\($0.name)" }.joined(separator: "_")
+        }
     }
 
     /// See `SQLSerializer`.

@@ -7,10 +7,10 @@ public struct DataPredicate {
     public var comparison: DataPredicateComparison
 
     /// The value to compare to. Can be another column, static value, or more SQL.
-    public var value: DataPredicateValue
+    public var value: DataManipulationValue
 
     /// Creates a SQL `DataPredicate`.
-    public init(column: DataColumn, comparison: DataPredicateComparison, value: DataPredicateValue = .placeholder) {
+    public init(column: DataColumn, comparison: DataPredicateComparison, value: DataManipulationValue = .null) {
         self.column = column
         self.comparison = comparison
         self.value = value

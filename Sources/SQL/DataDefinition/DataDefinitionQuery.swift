@@ -8,34 +8,50 @@ public struct DataDefinitionQuery {
 
     /// A collection of columns to be added when this query is executed.
     /// - note: This property may be ignored by some `DataDefinitionStatement` types.
-    public var addColumns: [DataDefinitionColumn]
+    public var createColumns: [DataDefinitionColumn]
 
     /// A collection of column names to be removed when this query is executed.
     /// - note: This property may be ignored by some `DataDefinitionStatement` types.
-    public var removeColumns: [String]
+    public var deleteColumns: [DataColumn]
 
     /// A collection of foreign keys to be added when this query is executed.
     /// - note: This property may be ignored by some `DataDefinitionStatement` types.
-    public var addForeignKeys: [DataDefinitionForeignKey]
+    public var createConstraints: [DataDefinitionConstraint]
 
     /// A collection of foreign key names to be removed when this query is executed.
     /// - note: This property may be ignored by some `DataDefinitionStatement` types.
-    public var removeForeignKeys: [String]
+    public var deleteConstraints: [DataDefinitionConstraint]
 
     /// Creates a new `DataDefinitionQuery`.
     public init(
         statement: DataDefinitionStatement,
         table: String,
-        addColumns: [DataDefinitionColumn] = [],
-        removeColumns: [String] = [],
-        addForeignKeys: [DataDefinitionForeignKey] = [],
-        removeForeignKeys: [String] = []
+        createColumns: [DataDefinitionColumn] = [],
+        deleteColumns: [DataColumn] = [],
+        createConstraints: [DataDefinitionConstraint] = [],
+        deleteConstraints: [DataDefinitionConstraint] = []
     ) {
         self.statement = statement
         self.table = table
-        self.addColumns = addColumns
-        self.removeColumns = removeColumns
-        self.addForeignKeys = addForeignKeys
-        self.removeForeignKeys = removeForeignKeys
+        self.createColumns = createColumns
+        self.deleteColumns = deleteColumns
+        self.createConstraints = createConstraints
+        self.deleteConstraints = deleteConstraints
+    }
+}
+
+public enum DataDefinitionConstraint {
+    case foreignKey(DataDefinitionForeignKey)
+    case unique(DataDefinitionUnique)
+}
+
+/// A unique column.
+public struct DataDefinitionUnique {
+    /// The column to be made unique
+    public var columns: [DataColumn]
+
+    /// Creates a new `DataDefinitionUnique`.
+    public init(columns: [DataColumn]) {
+        self.columns = columns
     }
 }
