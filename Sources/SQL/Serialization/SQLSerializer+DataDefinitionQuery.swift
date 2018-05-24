@@ -77,7 +77,7 @@ extension SQLSerializer {
         // UNIQUE (ID,LastName);
         var sql: [String] = []
         sql.append("UNIQUE")
-        sql.append(unique.columns.map { serialize(column: $0) }.joined(separator: ", "))
+        sql.append("(" + unique.columns.map { makeEscapedString(from: $0.name) }.joined(separator: ", ") + ")")
         return sql.joined(separator: " ")
     }
 
