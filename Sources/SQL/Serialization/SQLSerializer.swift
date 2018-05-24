@@ -18,7 +18,7 @@ public protocol SQLSerializer {
     /// - note: Avoid overriding this method if possible
     ///         as it is complex. Much of what this method
     ///         serializes can be modified by overriding other methods.
-    func serialize(query: DataManipulationQuery) -> (String, [Encodable])
+    func serialize(query: DataManipulationQuery, binds: inout Binds) -> String
 
     /// Serializes a SQL `DataManipulationKey` to a string.
     ///
@@ -30,13 +30,13 @@ public protocol SQLSerializer {
     ///
     ///     `foo`.`id` = ?
     ///
-    func serialize(column: DataManipulationColumn) -> (String, [Encodable])
+    func serialize(column: DataManipulationColumn, binds: inout Binds) -> String
 
     /// Serializes a SQL `DataManipulationValue` to a string.
     ///
     ///     ?
     ///
-    func serialize(value: DataManipulationValue) -> (String, [Encodable])
+    func serialize(value: DataManipulationValue, binds: inout Binds) -> String
 
     /// Serializes a SQL `DataManipulationColumn` to a string.
     ///
@@ -90,19 +90,19 @@ public protocol SQLSerializer {
     ///
     ///     `user`.`id` = ?
     ///
-    func serialize(predicate: DataPredicate) -> (String, [Encodable])
+    func serialize(predicate: DataPredicate, binds: inout Binds) -> String
 
     /// Serializes a SQL `DataPredicateItem` to a string.
     ///
     ///     `user`.`id` = ?
     ///
-    func serialize(predicate: DataPredicateItem) -> (String, [Encodable])
+    func serialize(predicate: DataPredicateItem, binds: inout Binds) -> String
 
     /// Serializes a SQL `DataPredicateGroup` to a string.
     ///
     ///     (`id` = ? AND `age` = ?)
     ///
-    func serialize(predicate: DataPredicateGroup) -> (String, [Encodable])
+    func serialize(predicate: DataPredicateGroup, binds: inout Binds) -> String
 
     /// Serializes a SQL `DataPredicateGroupRelation` to a string.
     ///
@@ -182,15 +182,3 @@ public protocol SQLSerializer {
     ///
     func makeName(for constraint: DataDefinitionConstraint) -> String
 }
-
-
-
-
-
-
-
-
-
-
-
-

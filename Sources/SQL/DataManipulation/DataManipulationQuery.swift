@@ -34,7 +34,7 @@ public struct DataManipulationQuery {
     public init(
         statement: DataManipulationStatement = .select(),
         table: String,
-        keys: [DataManipulationKey] = [.all],
+        keys: [DataManipulationKey] = [.all(table: nil)],
         columns: [DataManipulationColumn] = [],
         joins: [DataJoin] = [],
         predicates: [DataPredicateItem] = [],

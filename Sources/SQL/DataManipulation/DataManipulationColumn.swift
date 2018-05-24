@@ -1,5 +1,5 @@
 /// A DML column and value.
-public struct DataManipulationColumn: ExpressibleByStringLiteral {
+public struct DataManipulationColumn {
     /// Column to update.
     public var column: DataColumn
 
@@ -7,13 +7,8 @@ public struct DataManipulationColumn: ExpressibleByStringLiteral {
     public var value: DataManipulationValue
 
     /// Creates a new `DataManipulationColumn`.
-    public init(column: DataColumn, value: DataManipulationValue = .null) {
+    public init(column: DataColumn, value: DataManipulationValue) {
         self.column = column
         self.value = value
-    }
-
-    /// See `ExpressibleByStringLiteral`.
-    public init(stringLiteral value: String) {
-        self.init(column: .init(stringLiteral: value))
     }
 }

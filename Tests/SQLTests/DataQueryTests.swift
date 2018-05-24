@@ -4,7 +4,8 @@ import XCTest
 final class DataQueryTests: XCTestCase {
     func testBasicSelectStar() {
         let select = DataManipulationQuery(table: "foo")
-        let (sql, _) = GeneralSQLSerializer.shared.serialize(query: select)
+        var binds = Binds()
+        let sql = GeneralSQLSerializer.shared.serialize(query: select, binds: &binds)
         XCTAssertEqual(sql,  "SELECT * FROM `foo`")
     }
 
@@ -13,20 +14,16 @@ final class DataQueryTests: XCTestCase {
             .column(DataColumn(table: "foo", name: "d"), key: nil),
             .column(DataColumn(table: "foo", name: "l"), key: nil)
         ])
-        let (sql, _) = GeneralSQLSerializer.shared.serialize(query: select)
+        var binds = Binds()
+        let sql = GeneralSQLSerializer.shared.serialize(query: select, binds: &binds)
         XCTAssertEqual(sql, "SELECT `foo`.`d`, `foo`.`l` FROM `foo`")
     }
     
     func testCustomColumnSelectAll() {
-        let select = DataQuery(table: "foo", columns: [
-            .tableAll(table: "foo")
-            ]
-        )
-        
-        XCTAssertEqual(
-            GeneralSQLSerializer.shared.serialize(query: select),
-            "SELECT `foo`.* FROM `foo`"
-        )
+        let select = DataManipulationQuery(table: "foo", keys: [.all(table: "foo")])
+        var binds = Binds()
+        let sql = GeneralSQLSerializer.shared.serialize(query: select, binds: &binds)
+        XCTAssertEqual(sql, "SELECT `foo`.* FROM `foo`")
     }
 
     func testSelectWithPredicates() {
@@ -46,14 +43,16 @@ final class DataQueryTests: XCTestCase {
         )
         select.predicates.append(.predicate(predicateB))
 
-        let (sql, _) = GeneralSQLSerializer.shared.serialize(query: select)
+        var binds = Binds()
+        let sql = GeneralSQLSerializer.shared.serialize(query: select, binds: &binds)
         XCTAssertEqual(sql, "SELECT * FROM `foo` WHERE (`id` = ? AND `foo`.`name` = ?)")
     }
 
     func testSelectWithGroupByColumn() {
         var select = DataManipulationQuery(table: "foo")
         select.groupBys.append(.column(DataColumn(table: "foo", name: "name")))
-        let (sql, _) = GeneralSQLSerializer.shared.serialize(query: select)
+        var binds = Binds()
+        let sql = GeneralSQLSerializer.shared.serialize(query: select, binds: &binds)
         XCTAssertEqual(sql, "SELECT * FROM `foo` GROUP BY `foo`.`name`")
     }
 
@@ -66,7 +65,8 @@ final class DataQueryTests: XCTestCase {
         select.groupBys.append(.computed(column))
         select.orderBys.append(.init(columns: [DataColumn(table: "foo", name: "name")], direction: .descending))
 
-        let (sql, _) = GeneralSQLSerializer.shared.serialize(query: select)
+        var binds = Binds()
+        let sql = GeneralSQLSerializer.shared.serialize(query: select, binds: &binds)
         XCTAssertEqual(sql, "SELECT * FROM `foo` GROUP BY YEAR(`foo`.`date`) ORDER BY `foo`.`name` DESC")
     }
 
@@ -81,7 +81,8 @@ final class DataQueryTests: XCTestCase {
             .computed(column),
             .column(DataColumn(table: "foo", name: "name"))
         ]
-        let (sql, _) = GeneralSQLSerializer.shared.serialize(query: select)
+        var binds = Binds()
+        let sql = GeneralSQLSerializer.shared.serialize(query: select, binds: &binds)
         XCTAssertEqual(sql, "SELECT * FROM `foo` GROUP BY YEAR(`foo`.`date`), `foo`.`name`")
     }
 
@@ -95,7 +96,8 @@ final class DataQueryTests: XCTestCase {
         )
         select.joins.append(joinA)
 
-        let (sql, _) = GeneralSQLSerializer.shared.serialize(query: select)
+        var binds = Binds()
+        let sql = GeneralSQLSerializer.shared.serialize(query: select, binds: &binds)
         XCTAssertEqual(sql, "SELECT * FROM `foo` JOIN `bar` ON `foo`.`id` = `bar`.`foo_id`")
     }
 
@@ -107,7 +109,8 @@ final class DataQueryTests: XCTestCase {
         select.predicates.append(.predicate(.init(column: "d", comparison: .in, value: .bind("a"))))
         select.predicates.append(.predicate(.init(column: "e", comparison: .notIn, value:.binds(["a", "b"]))))
         select.predicates.append(.predicate(.init(column: "f", comparison: .in, value: .binds(["a", "b"]))))
-        let (sql, _) = GeneralSQLSerializer.shared.serialize(query: select)
+        var binds = Binds()
+        let sql = GeneralSQLSerializer.shared.serialize(query: select, binds: &binds)
         XCTAssertEqual(sql, "SELECT * FROM `foo` WHERE (1 AND 0 AND `c` != ? AND `d` = ? AND `e` NOT IN (?, ?) AND `f` IN (?, ?))")
     }
 
@@ -116,7 +119,8 @@ final class DataQueryTests: XCTestCase {
             var users = DataManipulationQuery(table: "users")
             let name = DataPredicate(column: "name", comparison: .equal, value: .bind("a"))
             users.predicates.append(.predicate(name))
-            let (sql, _) = GeneralSQLSerializer.shared.serialize(query: users)
+            var binds = Binds()
+            let sql = GeneralSQLSerializer.shared.serialize(query: users, binds: &binds)
             XCTAssertEqual(sql, "SELECT * FROM `users` WHERE (`name` = ?)")
         }
         do {
@@ -125,12 +129,14 @@ final class DataQueryTests: XCTestCase {
             users.columns.append(name)
 
             do {
-                let (sql, _) = GeneralSQLSerializer.shared.serialize(query: users)
+                var binds = Binds()
+                let sql = GeneralSQLSerializer.shared.serialize(query: users, binds: &binds)
                 XCTAssertEqual(sql, "INSERT INTO `users` (`name`) VALUES (?)")
             }
             users.statement = .update()
             do {
-                let (sql, _) = GeneralSQLSerializer.shared.serialize(query: users)
+                var binds = Binds()
+                let sql = GeneralSQLSerializer.shared.serialize(query: users, binds: &binds)
                 XCTAssertEqual(sql, "UPDATE `users` SET `name` = ?")
             }
         }
@@ -162,7 +168,8 @@ final class DataQueryTests: XCTestCase {
             var users = DataManipulationQuery(table: "users")
             let name = DataPredicate(column: "name", comparison: .equal, value: .bind("a"))
             users.predicates.append(.predicate(name))
-            let (sql, _) = PostgreSQLSerializer().serialize(query: users)
+            var binds = Binds()
+            let sql = PostgreSQLSerializer().serialize(query: users, binds: &binds)
             XCTAssertEqual(sql, "SELECT * FROM `users` WHERE (`name` = $1)")
         }
     }

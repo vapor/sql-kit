@@ -1,15 +1,11 @@
 extension SQLSerializer {
     /// See `SQLSerializer`.
-    public func serialize(predicate group: DataPredicateGroup) -> (String, [Encodable]) {
+    public func serialize(predicate group: DataPredicateGroup, binds: inout Binds) -> String {
         let method = serialize(predicate: group.relation)
-        var statement: [String] = []
-        var binds: [Encodable] = []
-        for predicate in group.predicates {
-            let (string, values) = serialize(predicate: predicate)
-            statement.append(string)
-            binds += values
+        let statement = group.predicates.map { predicate in
+            return serialize(predicate: predicate, binds: &binds)
         }
-        return ("(" + statement.joined(separator: " \(method) ") + ")", binds)
+        return "(" + statement.joined(separator: " \(method) ") + ")"
     }
 
     /// See `SQLSerializer`.
@@ -26,15 +22,15 @@ extension SQLSerializer {
     ///     - `serialize(predicate:)`
     /// This should likely not need to be overridden.
     /// See `SQLSerializer`.
-    public func serialize(predicate relation: DataPredicateItem) -> (String, [Encodable]) {
+    public func serialize(predicate relation: DataPredicateItem, binds: inout Binds) -> String {
         switch relation {
-        case .group(let group): return serialize(predicate: group)
-        case .predicate(let item): return serialize(predicate: item)
+        case .group(let group): return serialize(predicate: group, binds: &binds)
+        case .predicate(let item): return serialize(predicate: item, binds: &binds)
         }
     }
 
     /// See `SQLSerializer`.
-    public func serialize(predicate: DataPredicate) -> (String, [Encodable]) {
+    public func serialize(predicate: DataPredicate, binds: inout Binds) -> String {
         // Cleanup the predicate, fixing high-level invalid or un-optimized SQL.
         // For example:
         //     "IN ()" -> "false"
@@ -47,8 +43,8 @@ extension SQLSerializer {
                 case 0:
                     /// if serializing a subset filter with 0 values, we must use true or false
                     switch predicate.comparison {
-                    case .notIn: return ("1", [])
-                    case .in: return ("0", [])
+                    case .notIn: return "1"
+                    case .in: return "0"
                     default: break
                     }
                 case 1:
@@ -60,9 +56,8 @@ extension SQLSerializer {
                     case .in: statement.append(serialize(comparison: .equal))
                     default: break
                     }
-                    let (string, binds) = serialize(value: predicate.value)
-                    statement.append(string)
-                    return (statement.joined(separator: " "), binds)
+                    statement.append(serialize(value: predicate.value, binds: &binds))
+                    return statement.joined(separator: " ")
                 default: break
                 }
             default: break
@@ -78,9 +73,8 @@ extension SQLSerializer {
         case (.notEqual, .null): statement.append("IS NOT")
         default: statement.append(serialize(comparison: predicate.comparison))
         }
-        let (string, binds) = serialize(value: predicate.value)
-        statement.append(string)
-        return (statement.joined(separator: " "), binds)
+        statement.append(serialize(value: predicate.value, binds: &binds))
+        return statement.joined(separator: " ")
     }
 
     /// See `SQLSerializer`.
@@ -97,7 +91,7 @@ extension SQLSerializer {
         case .between: return "BETWEEN"
         case .like: return "LIKE"
         case .notLike: return "NOT LIKE"
-        case .sql(let sql): return sql
+        case .custom(let sql): return sql
         }
     }
 }

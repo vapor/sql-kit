@@ -1,6 +1,9 @@
 /// Supported SQL data statement types.
 public struct DataManipulationStatement: ExpressibleByStringLiteral {
     /// `SELECT`
+    ///
+    /// - parameters:
+    ///     - distinct: If `true`, only select distinct columns.
     public static func select(distinct: Bool = false) -> DataManipulationStatement {
         return .init(verb: "SELECT", modifiers: distinct ? ["DISTINCT"] : [])
     }

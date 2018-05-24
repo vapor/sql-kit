@@ -23,5 +23,5 @@ public enum DataPredicateComparison: Equatable {
     /// NOT LIKE
     case notLike
     /// Raw SQL string
-    case sql(String)
+    case custom(String)
 }

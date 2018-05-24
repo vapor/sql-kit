@@ -5,7 +5,8 @@ final class DataManipulationTests: XCTestCase {
     func testInsert() {
         var insert = DataManipulationQuery(statement: .insert(), table: "foo")
         insert.columns.append(.init(column: "name", value: .bind("vapor")))
-        let (sql, _) = GeneralSQLSerializer.shared.serialize(query: insert)
+        var binds = Binds()
+        let sql = GeneralSQLSerializer.shared.serialize(query: insert, binds: &binds)
         XCTAssertEqual(sql, "INSERT INTO `foo` (`name`) VALUES (?)")
     }
 
@@ -13,14 +14,16 @@ final class DataManipulationTests: XCTestCase {
         var insert = DataManipulationQuery(statement: .update(), table: "foo")
         insert.columns.append(.init(column: "name", value: .bind("vapor")))
         insert.columns.append(.init(column: "bar", value: .column("baz")))
-        let (sql, _) = GeneralSQLSerializer.shared.serialize(query: insert)
+        var binds = Binds()
+        let sql = GeneralSQLSerializer.shared.serialize(query: insert, binds: &binds)
         XCTAssertEqual(sql, "UPDATE `foo` SET `name` = ?, `bar` = `baz`")
     }
 
     func testDelete() {
         var insert = DataManipulationQuery(statement: .delete(), table: "foo")
         insert.predicates.append(.predicate(.init(column: "name", comparison: .equal, value: .bind("vapor"))))
-        let (sql, _) = GeneralSQLSerializer.shared.serialize(query: insert)
+        var binds = Binds()
+        let sql = GeneralSQLSerializer.shared.serialize(query: insert, binds: &binds)
         XCTAssertEqual(sql, "DELETE FROM `foo` WHERE (`name` = ?)")
     }
 
