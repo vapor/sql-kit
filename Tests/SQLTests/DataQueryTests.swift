@@ -52,9 +52,10 @@ final class DataQueryTests: XCTestCase {
             keys: [.column(.init(table: "foo", name: "date"), key: nil)]
         )
         select.groupBys.append(.computed(column))
+        select.orderBys.append(.init(columns: [DataColumn(table: "foo", name: "name")], direction: .descending))
 
         let (sql, _) = GeneralSQLSerializer.shared.serialize(query: select)
-        XCTAssertEqual(sql, "SELECT * FROM `foo` GROUP BY YEAR(`foo`.`date`)")
+        XCTAssertEqual(sql, "SELECT * FROM `foo` GROUP BY YEAR(`foo`.`date`) ORDER BY `foo`.`name` DESC")
     }
 
     func testSelectWithMultipleGroupBy() {
