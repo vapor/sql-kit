@@ -32,7 +32,7 @@ public struct DataManipulationQuery {
 
     /// Creates a new `DataManipulationQuery`
     public init(
-        statement: DataManipulationStatement,
+        statement: DataManipulationStatement = .select(),
         table: String,
         keys: [DataManipulationKey] = [.all],
         columns: [DataManipulationColumn] = [],

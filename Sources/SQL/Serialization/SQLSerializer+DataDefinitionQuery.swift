@@ -110,9 +110,9 @@ extension SQLSerializer {
     public func makeName(for constraint: DataDefinitionConstraint) -> String {
         switch constraint {
         case .foreignKey(let foreignKey):
-            return "fk:\(foreignKey.local.table ?? "").\(foreignKey.local.name)_\(foreignKey.foreign.table ?? "").\(foreignKey.foreign.name)"
+            return "fk:\(foreignKey.local.table ?? "").\(foreignKey.local.name)+\(foreignKey.foreign.table ?? "").\(foreignKey.foreign.name)"
         case .unique(let unique):
-            return "uq:" + unique.columns.map { "\($0.table ?? "").\($0.name)" }.joined(separator: "_")
+            return "uq:" + unique.columns.map { "\($0.table ?? "").\($0.name)" }.joined(separator: "+")
         }
     }
 

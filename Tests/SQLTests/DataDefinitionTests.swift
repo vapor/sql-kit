@@ -5,16 +5,16 @@ final class DataDefinitionTests: XCTestCase {
     func testCreate() {
         var columns: [DataDefinitionColumn] = []
 
-        let id = DataDefinitionColumn(name: "id", dataType: "UUID", attributes: ["PRIMARY KEY"])
+        let id = DataDefinitionColumn(name: "id", dataType: .init(name: "UUID", attributes: ["PRIMARY KEY"]))
         columns.append(id)
 
-        let name = DataDefinitionColumn(name: "name", dataType: "STRING", attributes: ["NOT NULL"])
+        let name = DataDefinitionColumn(name: "name", dataType:  .init(name: "STRING", attributes: ["NOT NULL"]))
         columns.append(name)
 
-        let age = DataDefinitionColumn(name: "age", dataType: "INT", attributes: ["NOT NULL"])
+        let age = DataDefinitionColumn(name: "age", dataType:  .init(name: "INT", attributes: ["NOT NULL"]))
         columns.append(age)
 
-        let create = DataDefinitionQuery(statement: .create, table: "users", addColumns: columns)
+        let create = DataDefinitionQuery(statement: .create, table: "users", createColumns: columns)
         XCTAssertEqual(
             GeneralSQLSerializer.shared.serialize(query: create),
             "CREATE TABLE `users` (`id` UUID PRIMARY KEY, `name` STRING NOT NULL, `age` INT NOT NULL)"
@@ -32,20 +32,19 @@ final class DataDefinitionTests: XCTestCase {
 
     func testForeignKeys() {
         var create = DataDefinitionQuery(statement: .create, table: "users")
-        create.addColumns.append(.init(name: "id", dataType: "INT"))
-        create.addColumns.append(.init(name: "name", dataType: "TEXT"))
+        create.createColumns.append(.init(name: "id", dataType: .init(name: "INT")))
+        create.createColumns.append(.init(name: "name", dataType: .init(name: "TEXT")))
         let fk = DataDefinitionForeignKey(
-            name: "_id_fk",
             local: DataColumn(table: "users", name: "id"),
             foreign: DataColumn(table: "pets", name: "user_id"),
             onUpdate: .cascade,
             onDelete: .restrict
         )
-        create.addForeignKeys.append(fk)
+        create.createConstraints.append(.foreignKey(fk))
 
         XCTAssertEqual(
             GeneralSQLSerializer.shared.serialize(query: create),
-            "CREATE TABLE `users` (`id` INT, `name` TEXT, FOREIGN KEY `users` (`id`) REFERENCES `pets` (`user_id`) ON UPDATE CASCADE ON DELETE RESTRICT)"
+            "CREATE TABLE `users` (`id` INT, `name` TEXT, CONSTRAINT `fk:users.id+pets.user_id` FOREIGN KEY `users` (`id`) REFERENCES `pets` (`user_id`) ON UPDATE CASCADE ON DELETE RESTRICT)"
         )
     }
 

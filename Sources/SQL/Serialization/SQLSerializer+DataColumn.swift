@@ -48,7 +48,7 @@ extension SQLSerializer {
         switch value {
         case .column(let col): string = serialize(column: col)
         case .computed(let col): string = serialize(column: col)
-        case .values(let values):
+        case .binds(let values):
             switch values.count {
             case 1: string = makePlaceholder()
             default:

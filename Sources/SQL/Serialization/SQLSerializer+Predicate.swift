@@ -42,7 +42,7 @@ extension SQLSerializer {
         switch predicate.comparison {
         case .notIn, .in:
             switch predicate.value {
-            case .values(let values):
+            case .binds(let values):
                 switch values.count {
                 case 0:
                     /// if serializing a subset filter with 0 values, we must use true or false

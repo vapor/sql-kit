@@ -13,7 +13,7 @@ public struct DataDefinitionColumn {
     }
 }
 
-public struct DataDefinitionDataType {
+public struct DataDefinitionDataType: ExpressibleByStringLiteral {
     /// VARCHAR
     public var name: String
 
@@ -28,5 +28,10 @@ public struct DataDefinitionDataType {
         self.name = name
         self.parameters = parameters
         self.attributes = attributes
+    }
+
+    /// See `ExpressibleByStringLiteral`.
+    public init(stringLiteral value: String) {
+        self.init(name: value)
     }
 }

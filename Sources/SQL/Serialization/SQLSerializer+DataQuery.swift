@@ -35,9 +35,7 @@ extension SQLSerializer {
                 placeholders.append(placeholder)
                 binds += values
             }
-            statement.append("(")
-            statement.append(placeholders.joined(separator: ", "))
-            statement.append(")")
+            statement.append("(" + placeholders.joined(separator: ", ") + ")")
         case "UPDATE":
             statement.append(query.statement.verb)
             statement += query.statement.modifiers
