@@ -16,7 +16,7 @@ public struct DataManipulationQuery {
     public var joins: [DataJoin]
 
     /// List of predicates to filter by.
-    public var predicates: [DataPredicateItem]
+    public var predicates: [DataPredicates]
 
     /// List of columns to order by.
     public var orderBys: [DataOrderBy]
@@ -34,10 +34,10 @@ public struct DataManipulationQuery {
     public init(
         statement: DataManipulationStatement = .select(),
         table: String,
-        keys: [DataManipulationKey] = [.all(table: nil)],
+        keys: [DataManipulationKey] = [],
         columns: [DataManipulationColumn] = [],
         joins: [DataJoin] = [],
-        predicates: [DataPredicateItem] = [],
+        predicates: [DataPredicates] = [],
         orderBys: [DataOrderBy] = [],
         groupBys: [DataGroupBy] = [],
         limit: Int? = nil,

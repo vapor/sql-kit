@@ -4,10 +4,10 @@ public struct DataPredicateGroup {
     public var relation: DataPredicateGroupRelation
 
     /// One or more sub-predicates.
-    public var predicates: [DataPredicateItem]
+    public var predicates: [DataPredicates]
 
     /// Creates a new `DataPredicateGroup`
-    public init(relation: DataPredicateGroupRelation, predicates: [DataPredicateItem]) {
+    public init(relation: DataPredicateGroupRelation, predicates: [DataPredicates]) {
         self.relation = relation
         self.predicates = predicates
     }

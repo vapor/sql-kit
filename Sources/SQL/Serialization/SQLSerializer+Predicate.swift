@@ -3,7 +3,7 @@ extension SQLSerializer {
     public func serialize(predicate group: DataPredicateGroup, binds: inout Binds) -> String {
         let method = serialize(predicate: group.relation)
         let statement = group.predicates.map { predicate in
-            return serialize(predicate: predicate, binds: &binds)
+            return serialize(predicates: predicate, binds: &binds)
         }
         return "(" + statement.joined(separator: " \(method) ") + ")"
     }
@@ -22,7 +22,7 @@ extension SQLSerializer {
     ///     - `serialize(predicate:)`
     /// This should likely not need to be overridden.
     /// See `SQLSerializer`.
-    public func serialize(predicate relation: DataPredicateItem, binds: inout Binds) -> String {
+    public func serialize(predicates relation: DataPredicates, binds: inout Binds) -> String {
         switch relation {
         case .group(let group): return serialize(predicate: group, binds: &binds)
         case .predicate(let item): return serialize(predicate: item, binds: &binds)

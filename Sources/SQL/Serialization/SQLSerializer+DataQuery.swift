@@ -37,7 +37,8 @@ extension SQLSerializer {
                 serialize(column: $0, binds: &binds)
             }.joined(separator: ", "))
         default: // SELECT + others
-            statement.append(query.keys.map { serialize(key: $0) }.joined(separator: ", "))
+            let keys = query.keys.isEmpty ? [.all(table: nil)] : query.keys
+            statement.append(keys.map { serialize(key: $0) }.joined(separator: ", "))
             statement.append("FROM")
             statement.append(table)
         }

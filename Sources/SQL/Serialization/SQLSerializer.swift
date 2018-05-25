@@ -86,17 +86,17 @@ public protocol SQLSerializer {
     ///
     func serialize(orderByDirection: DataOrderByDirection) -> String
 
+    /// Serializes a SQL `DataPredicates` to a string.
+    ///
+    ///     `user`.`id` = ?
+    ///
+    func serialize(predicates: DataPredicates, binds: inout Binds) -> String
+
     /// Serializes a SQL `DataPredicate` to a string.
     ///
     ///     `user`.`id` = ?
     ///
     func serialize(predicate: DataPredicate, binds: inout Binds) -> String
-
-    /// Serializes a SQL `DataPredicateItem` to a string.
-    ///
-    ///     `user`.`id` = ?
-    ///
-    func serialize(predicate: DataPredicateItem, binds: inout Binds) -> String
 
     /// Serializes a SQL `DataPredicateGroup` to a string.
     ///
