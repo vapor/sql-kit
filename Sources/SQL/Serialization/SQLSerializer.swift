@@ -5,6 +5,11 @@
 /// You are expected to implement only the methods that require
 /// different serialization logic for your given SQL flavor.
 public protocol SQLSerializer {
+    // MARK: All
+    
+    /// Serializes both `DataManipulationQuery` and `DataDefinitionQuery`.
+    func serialize(query: DataQuery, binds: inout Binds) -> String
+    
     // MARK: Data Manipulation
 
     /// Serializes a SQL `DataManipulationQuery` to a string.
@@ -24,97 +29,91 @@ public protocol SQLSerializer {
     ///
     ///     `foo`.`id` as `fooid`
     ///
-    func serialize(key: DataManipulationKey) -> String
+    func serialize(key: DataManipulationQuery.Key) -> String
 
     /// Serializes a SQL `DataManipulationColumn` to a string.
     ///
     ///     `foo`.`id` = ?
     ///
-    func serialize(column: DataManipulationColumn, binds: inout Binds) -> String
+    func serialize(column: DataManipulationQuery.Column, value: DataManipulationQuery.Value, binds: inout Binds) -> String
 
     /// Serializes a SQL `DataManipulationValue` to a string.
     ///
     ///     ?
     ///
-    func serialize(value: DataManipulationValue, binds: inout Binds) -> String
+    func serialize(value: DataManipulationQuery.Value, binds: inout Binds) -> String
 
     /// Serializes a SQL `DataManipulationColumn` to a string.
     ///
     ///     `foo`.`id`
     ///
-    func serialize(column: DataColumn) -> String
+    func serialize(column: DataManipulationQuery.Column) -> String
 
     /// Serializes a SQL `DataComputedColumn` to a string.
     ///
     ///     average(`users`.`age`) as `averageAge`
     ///
-    func serialize(column: DataComputedColumn) -> String
+    func serialize(column: DataManipulationQuery.ComputedColumn) -> String
 
     /// Serializes multiple SQL `DataManipulationJoin`s to a string.
     ///
     ///     JOIN `bar` ON `foo`.`bar_id` = `bar`.`id`
     ///
-    func serialize(joins: [DataJoin]) -> String
+    func serialize(joins: [DataManipulationQuery.Join]) -> String
 
     /// Serializes a single SQL `DataManipulationJoin` to a string.
     ///
     ///     JOIN `bar` ON `foo`.`bar_id` = `bar`.`id`
     ///
-    func serialize(join: DataJoin) -> String
+    func serialize(join: DataManipulationQuery.Join) -> String
 
     /// Serializes multiple SQL `DataManipulationOrderBy`s to a string.
     ///
     ///     ORDER BY `users`.`age` DESC, `foo`.`bar` ASC
     ///
-    func serialize(orderBys: [DataOrderBy]) -> String
+    func serialize(orderBys: [DataManipulationQuery.OrderBy]) -> String
 
     /// Serializes a single SQL `DataManipulationOrderBy` to a string.
     ///
     ///     `users`.`age` DESC
     ///
-    func serialize(orderBy: DataOrderBy) -> String
+    func serialize(orderBy: DataManipulationQuery.OrderBy) -> String
     
     /// Serializes multiple SQL `DataManipulationGroupBy`s to a string.
     ///
     ///     GROUP BY YEAR(`users`.`born`), `users`.`sex`
     ///
-    func serialize(groupBys: [DataGroupBy]) -> String
+    func serialize(groupBys: [DataManipulationQuery.GroupBy]) -> String
 
     /// Serializes a SQL `OrderByDirection` to a string.
     ///
     ///     DESC
     ///
-    func serialize(orderByDirection: DataOrderByDirection) -> String
+    func serialize(orderByDirection: DataManipulationQuery.OrderBy.Direction) -> String
 
     /// Serializes a SQL `DataPredicates` to a string.
     ///
     ///     `user`.`id` = ?
     ///
-    func serialize(predicates: DataPredicates, binds: inout Binds) -> String
+    func serialize(predicates: DataManipulationQuery.Predicates, binds: inout Binds) -> String
 
     /// Serializes a SQL `DataPredicate` to a string.
     ///
     ///     `user`.`id` = ?
     ///
-    func serialize(predicate: DataPredicate, binds: inout Binds) -> String
-
-    /// Serializes a SQL `DataPredicateGroup` to a string.
-    ///
-    ///     (`id` = ? AND `age` = ?)
-    ///
-    func serialize(predicate: DataPredicateGroup, binds: inout Binds) -> String
+    func serialize(predicate: DataManipulationQuery.Predicate, binds: inout Binds) -> String
 
     /// Serializes a SQL `DataPredicateGroupRelation` to a string.
     ///
     ///     AND
     ///
-    func serialize(predicate: DataPredicateGroupRelation) -> String
+    func serialize(predicate: DataManipulationQuery.Predicates.Relation) -> String
 
     /// Serializes a SQL `DataPredicateComparison` to a string.
     ///
     ///     =
     ///
-    func serialize(comparison: DataPredicateComparison) -> String
+    func serialize(comparison: DataManipulationQuery.Predicate.Comparison) -> String
 
 
     // MARK: Data Definition

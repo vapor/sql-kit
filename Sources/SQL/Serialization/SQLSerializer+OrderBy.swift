@@ -1,6 +1,6 @@
 extension SQLSerializer {
     /// See `SQLSerializer`.
-    public func serialize(orderBys: [DataOrderBy]) -> String {
+    public func serialize(orderBys: [DataManipulationQuery.OrderBy]) -> String {
         var statement: [String] = []
 
         statement.append("ORDER BY")
@@ -10,7 +10,7 @@ extension SQLSerializer {
     }
 
     /// See `SQLSerializer`.
-    public func serialize(orderBy: DataOrderBy) -> String {
+    public func serialize(orderBy: DataManipulationQuery.OrderBy) -> String {
         var statement: [String] = []
 
         let columns = orderBy.columns.map(serialize).joined(separator: ", ")
@@ -21,7 +21,7 @@ extension SQLSerializer {
     }
 
     /// See `SQLSerializer`.
-    public func serialize(orderByDirection: DataOrderByDirection) -> String {
+    public func serialize(orderByDirection: DataManipulationQuery.OrderBy.Direction) -> String {
         switch orderByDirection {
         case .ascending: return "ASC"
         case .descending: return "DESC"

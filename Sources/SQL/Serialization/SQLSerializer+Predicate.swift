@@ -1,19 +1,9 @@
 extension SQLSerializer {
     /// See `SQLSerializer`.
-    public func serialize(predicate group: DataPredicateGroup, binds: inout Binds) -> String {
-        let method = serialize(predicate: group.relation)
-        let statement = group.predicates.map { predicate in
-            return serialize(predicates: predicate, binds: &binds)
-        }
-        return "(" + statement.joined(separator: " \(method) ") + ")"
-    }
-
-    /// See `SQLSerializer`.
-    public func serialize(predicate: DataPredicateGroupRelation) -> String {
+    public func serialize(predicate: DataManipulationQuery.Predicates.Relation) -> String {
         switch predicate {
         case .and: return "AND"
         case .or: return "OR"
-        case .custom(let string): return string
         }
     }
 
@@ -22,15 +12,20 @@ extension SQLSerializer {
     ///     - `serialize(predicate:)`
     /// This should likely not need to be overridden.
     /// See `SQLSerializer`.
-    public func serialize(predicates relation: DataPredicates, binds: inout Binds) -> String {
+    public func serialize(predicates relation: DataManipulationQuery.Predicates, binds: inout Binds) -> String {
         switch relation {
-        case .group(let group): return serialize(predicate: group, binds: &binds)
-        case .predicate(let item): return serialize(predicate: item, binds: &binds)
+        case .group(let relation, let predicates):
+            let method = serialize(predicate: relation)
+            let statement = predicates.map { predicate in
+                return serialize(predicates: predicate, binds: &binds)
+            }
+            return "(" + statement.joined(separator: " \(method) ") + ")"
+        case .unit(let item): return serialize(predicate: item, binds: &binds)
         }
     }
 
     /// See `SQLSerializer`.
-    public func serialize(predicate: DataPredicate, binds: inout Binds) -> String {
+    public func serialize(predicate: DataManipulationQuery.Predicate, binds: inout Binds) -> String {
         // Cleanup the predicate, fixing high-level invalid or un-optimized SQL.
         // For example:
         //     "IN ()" -> "false"
@@ -78,7 +73,7 @@ extension SQLSerializer {
     }
 
     /// See `SQLSerializer`.
-    public func serialize(comparison: DataPredicateComparison) -> String {
+    public func serialize(comparison: DataManipulationQuery.Predicate.Comparison) -> String {
         switch comparison {
         case .equal: return "="
         case .notEqual: return "!="

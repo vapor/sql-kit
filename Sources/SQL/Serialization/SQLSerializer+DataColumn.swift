@@ -1,6 +1,6 @@
 extension SQLSerializer {
     /// See `SQLSerializer`.
-    public func serialize(column: DataColumn) -> String {
+    public func serialize(column: DataManipulationQuery.Column) -> String {
         let escapedName = makeEscapedString(from: column.name)
 
         let string: String
@@ -14,8 +14,8 @@ extension SQLSerializer {
     }
 
     /// See `SQLSerializer`.
-    public func serialize(key: DataManipulationKey) -> String {
-        switch key {
+    public func serialize(key: DataManipulationQuery.Key) -> String {
+        switch key.storage {
         case .all(let table):
             if let table = table {
                 let escapedTable = makeEscapedString(from: table)
@@ -41,12 +41,12 @@ extension SQLSerializer {
     }
 
     /// See `SQLSerializer`.
-    public func serialize(column: DataManipulationColumn, binds: inout Binds) -> String {
-        return serialize(column: column.column) + " = " + serialize(value: column.value, binds: &binds)
+    public func serialize(column: DataManipulationQuery.Column, value: DataManipulationQuery.Value, binds: inout Binds) -> String {
+        return serialize(column: column) + " = " + serialize(value: value, binds: &binds)
     }
 
     /// See `SQLSerializer`.
-    public func serialize(value: DataManipulationValue, binds: inout Binds) -> String {
+    public func serialize(value: DataManipulationQuery.Value, binds: inout Binds) -> String {
         switch value {
         case .column(let col): return serialize(column: col)
         case .computed(let col): return serialize(column: col)

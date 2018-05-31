@@ -1,10 +1,10 @@
 /// A single foreign key, referencing two columns.
 public struct DataDefinitionForeignKey {
     /// The local column being referenced.
-    public var local: DataColumn
+    public var local: DataManipulationQuery.Column
 
     /// The foreign column being referenced.
-    public var foreign: DataColumn
+    public var foreign: DataManipulationQuery.Column
 
     /// An optional `DataDefinitionForeignKeyAction` to apply on updates.
     public var onUpdate: DataDefinitionForeignKeyAction?
@@ -14,8 +14,8 @@ public struct DataDefinitionForeignKey {
 
     /// Creates a new `DataDefinitionForeignKey`.
     public init(
-        local: DataColumn,
-        foreign: DataColumn,
+        local: DataManipulationQuery.Column,
+        foreign: DataManipulationQuery.Column,
         onUpdate: DataDefinitionForeignKeyAction? = nil,
         onDelete: DataDefinitionForeignKeyAction? = nil
     ) {

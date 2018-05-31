@@ -1,11 +1,11 @@
 extension SQLSerializer {
     /// See `SQLSerializer`.
-    public func serialize(joins: [DataJoin]) -> String {
+    public func serialize(joins: [DataManipulationQuery.Join]) -> String {
         return joins.map(serialize).joined(separator: " ")
     }
 
     /// See `SQLSerializer`.
-    public func serialize(join: DataJoin) -> String {
+    public func serialize(join: DataManipulationQuery.Join) -> String {
         var statement: [String] = []
         statement.append("JOIN")
 

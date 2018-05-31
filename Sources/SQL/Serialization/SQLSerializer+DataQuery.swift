@@ -1,5 +1,13 @@
 extension SQLSerializer {
     /// See `SQLSerializer`.
+    public func serialize(query: DataQuery, binds: inout Binds) -> String {
+        switch query.storage {
+        case .ddl(let ddl): return serialize(query: ddl)
+        case .dml(let dml): return serialize(query: dml, binds: &binds)
+        }
+    }
+    
+    /// See `SQLSerializer`.
     public func serialize(query: DataManipulationQuery, binds: inout Binds) -> String {
         let table = makeEscapedString(from: query.table)
         var statement: [String] = []
@@ -16,14 +24,14 @@ extension SQLSerializer {
             var columns: [String] = []
             var values: [String] = []
 
-            for column in query.columns {
-                switch column.value {
+            for (column, value) in query.columns {
+                switch value {
                 case .null:
                     // no need to pass `NULL` values during INSERT
                     break
                 default:
-                    columns.append(serialize(column: column.column))
-                    values.append(serialize(value: column.value, binds: &binds))
+                    columns.append(serialize(column: column))
+                    values.append(serialize(value: value, binds: &binds))
                 }
             }
 
@@ -33,8 +41,8 @@ extension SQLSerializer {
         case "UPDATE":
             statement.append(table)
             statement.append("SET")
-            statement.append(query.columns.map {
-                serialize(column: $0, binds: &binds)
+            statement.append(query.columns.map { data in
+                serialize(column: data.key, value: data.value, binds: &binds)
             }.joined(separator: ", "))
         default: // SELECT + others
             let keys = query.keys.isEmpty ? [.all(table: nil)] : query.keys
@@ -49,8 +57,7 @@ extension SQLSerializer {
 
         if !query.predicates.isEmpty {
             statement.append("WHERE")
-            let group = DataPredicateGroup(relation: .and, predicates: query.predicates)
-            statement.append(serialize(predicate: group, binds: &binds))
+            statement.append(serialize(predicates: .group(relation: .and, query.predicates), binds: &binds))
         }
 
         if !query.groupBys.isEmpty {
