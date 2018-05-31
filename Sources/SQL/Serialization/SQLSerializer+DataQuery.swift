@@ -1,6 +1,6 @@
 extension SQLSerializer {
     /// See `SQLSerializer`.
-    public func serialize(query: DataQuery, binds: inout Binds) -> String {
+    public func serialize(query: Query, binds: inout Binds) -> String {
         switch query.storage {
         case .ddl(let ddl): return serialize(query: ddl)
         case .dml(let dml): return serialize(query: dml, binds: &binds)
@@ -8,7 +8,7 @@ extension SQLSerializer {
     }
     
     /// See `SQLSerializer`.
-    public func serialize(query: DataManipulationQuery, binds: inout Binds) -> String {
+    public func serialize(query: DML, binds: inout Binds) -> String {
         let table = makeEscapedString(from: query.table)
         var statement: [String] = []
         statement.append(query.statement.verb)
@@ -25,7 +25,7 @@ extension SQLSerializer {
             var values: [String] = []
 
             for (column, value) in query.columns {
-                switch value {
+                switch value.storage {
                 case .null:
                     // no need to pass `NULL` values during INSERT
                     break
@@ -55,9 +55,15 @@ extension SQLSerializer {
             statement.append(serialize(joins: query.joins))
         }
 
-        if !query.predicates.isEmpty {
+        switch query.predicate.storage {
+        case .group(_, let predicates):
+            if !predicates.isEmpty {
+                statement.append("WHERE")
+                statement.append(serialize(predicate: query.predicate, binds: &binds))
+            }
+        case .unit:
             statement.append("WHERE")
-            statement.append(serialize(predicates: .group(relation: .and, query.predicates), binds: &binds))
+            statement.append(serialize(predicate: query.predicate, binds: &binds))
         }
 
         if !query.groupBys.isEmpty {

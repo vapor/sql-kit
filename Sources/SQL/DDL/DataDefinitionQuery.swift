@@ -12,7 +12,7 @@ public struct DataDefinitionQuery {
 
     /// A collection of column names to be removed when this query is executed.
     /// - note: This property may be ignored by some `DataDefinitionStatement` types.
-    public var deleteColumns: [DataManipulationQuery.Column]
+    public var deleteColumns: [DML.Column]
 
     /// A collection of foreign keys to be added when this query is executed.
     /// - note: This property may be ignored by some `DataDefinitionStatement` types.
@@ -27,7 +27,7 @@ public struct DataDefinitionQuery {
         statement: DataDefinitionStatement,
         table: String,
         createColumns: [DataDefinitionColumn] = [],
-        deleteColumns: [DataManipulationQuery.Column] = [],
+        deleteColumns: [DML.Column] = [],
         createConstraints: [DataDefinitionConstraint] = [],
         deleteConstraints: [DataDefinitionConstraint] = []
     ) {

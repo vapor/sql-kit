@@ -1,39 +1,15 @@
 /// SQL data manipulation query (DML)
-public struct DataManipulationQuery {
-    /// A SQL data column with optional table name.
-    public struct Column: ExpressibleByStringLiteral, Hashable {
-        /// See `Hashable.`
-        public var hashValue: Int {
-            if let table = table {
-                return table.hashValue &+ name.hashValue
-            } else {
-                return name.hashValue
-            }
-        }
-        
-        /// The table name for this column. If `nil`, it will be omitted.
-        public var table: String?
-        
-        /// This column's name.
-        public var name: String
-        
-        /// Creates a new SQL `DataColumn`.
-        public init(table: String? = nil, name: String) {
-            self.table = table
-            self.name = name
-        }
-        
-        /// See `ExpressibleByStringLiteral`.
-        public init(stringLiteral value: String) {
-            self.init(name: value)
-        }
-    }
-    
+public struct DML {
     /// A computed SQL column.
     public struct ComputedColumn {
         /// Creates a new SQL `DataComputedColumn`.
-        public static func function(_ function: String, keys: [Key] = []) -> ComputedColumn {
+        public static func function(_ function: String, _ keys: Key...) -> ComputedColumn {
             return .init(function: function, keys: keys)
+        }
+        
+        /// Creates a new SQL `DataComputedColumn`.
+        public static func function(_ function: String) -> ComputedColumn {
+            return .init(function: function, keys: [])
         }
         
         /// The SQL function to call.
@@ -47,15 +23,6 @@ public struct DataManipulationQuery {
             self.function = function
             self.keys = keys
         }
-    }
-    
-    /// Available methods for `GROUP BY`, either column or custom.
-    public enum GroupBy {
-        /// Group by a particular column.
-        case column(Column)
-        
-        /// Group by a computed column.
-        case computed(ComputedColumn)
     }
     
     /// Represents a SQL join.
@@ -170,97 +137,36 @@ public struct DataManipulationQuery {
         }
     }
     
-    /// Either a single SQL `DataPredicate` or a group (AND/OR) of them.
-    public enum Predicates {
-        public static func predicate(_ column: Column, _ comparison: Predicate.Comparison, _ value: Value) -> Predicates {
-            return .unit(.init(column: column, comparison: comparison, value: value))
-        }
-        
-        /// Supported data predicate relations.
-        public enum Relation {
-            /// AND
-            case and
-            /// OR
-            case or
-        }
-        
-        /// A collection of `DataPredicate` items joined by AND or OR.
-        case group(relation: Relation, [Predicates])
-        
-        /// A single `DataPredicate`.
-        case unit(Predicate)
-    }
-
-
-    /// A SQL search predicate (a.k.a, filter). Listed after `WHERE` in a SQL statement.
-    public struct Predicate {
-        /// All suported SQL `DataPredicate` comparisons.
-        public enum Comparison: Equatable {
-            /// =
-            case equal
-            /// !=, <>
-            case notEqual
-            /// <
-            case lessThan
-            /// >
-            case greaterThan
-            /// <=
-            case lessThanOrEqual
-            /// >=
-            case greaterThanOrEqual
-            /// IN
-            case `in`
-            /// NOT IN
-            case notIn
-            /// BETWEEN
-            case between
-            /// LIKE
-            case like
-            /// NOT LIKE
-            case notLike
-            /// Raw SQL string
-            case custom(String)
-        }
-
-        /// The left-hand side of the predicate. References a column being fetched.
-        public var column: Column
-        
-        /// The method of comparison to use. Usually `=`, `<`, etc.
-        public var comparison: Comparison
-        
-        /// The value to compare to. Can be another column, static value, or more SQL.
-        public var value: Value
-        
-        /// Creates a SQL `DataPredicate`.
-        public init(column: Column, comparison: Comparison, value: Value) {
-            self.column = column
-            self.comparison = comparison
-            self.value = value
-        }
-    }
-    
     /// Supported SQL data statement types.
     public struct Statement: ExpressibleByStringLiteral {
         /// `SELECT`
         ///
         /// - parameters:
         ///     - distinct: If `true`, only select distinct columns.
-        public static func select(distinct: Bool = false) -> Statement {
+        public static var select: Statement {
+            return .select(distinct: false)
+        }
+        
+        /// `SELECT`
+        ///
+        /// - parameters:
+        ///     - distinct: If `true`, only select distinct columns.
+        public static func select(distinct: Bool) -> Statement {
             return .init(verb: "SELECT", modifiers: distinct ? ["DISTINCT"] : [])
         }
         
         /// `INSERT`
-        public static func insert() -> Statement {
+        public static var insert: Statement {
             return "INSERT"
         }
         
         /// `UPDATE`
-        public static func update() -> Statement {
+        public static var update: Statement {
             return "UPDATE"
         }
         
         /// `DELETE`
-        public static func delete() -> Statement {
+        public static var delete: Statement {
             return "DELETE"
         }
         
@@ -283,30 +189,48 @@ public struct DataManipulationQuery {
     }
 
     /// All supported values for a SQL `DataPredicate`.
-    public enum Value {
+    public struct Value {
         /// A single placeholder.
         public static func bind(_ encodable: Encodable) -> Value {
             return .binds([encodable])
         }
         
+        public static func column(_ column: Column) -> Value {
+            return self.init(storage: .column(column))
+        }
+        
         /// One or more placeholders.
-        case binds([Encodable])
+        public static func binds(_ encodables: [Encodable]) -> Value {
+            return self.init(storage: .binds(encodables))
+        }
         
-        /// Compare to another column in the database.
-        case column(Column)
+        public static var null: Value {
+            return self.init(storage: .null)
+        }
         
-        /// Compare to a computed column.
-        case computed(ComputedColumn)
+        public static func unescaped(_ sql: String) -> Value {
+            return self.init(storage: .unescaped(sql))
+        }
         
-        /// Serializes a complete sub-query as this predicate's value.
-        case subquery(DataManipulationQuery)
+        /// Internal storage enum.
+        enum Storage {
+            /// One or more placeholders.
+            case binds([Encodable])
+            /// Compare to another column in the database.
+            case column(Column)
+            /// Compare to a computed column.
+            case computed(ComputedColumn)
+            /// Serializes a complete sub-query as this predicate's value.
+            case subquery(DML)
+            /// NULL value.
+            case null
+            /// Custom string that will be interpolated into the SQL query.
+            /// - warning: Be careful about SQL injection when using this.
+            case unescaped(String)
+        }
         
-        /// NULL value.
-        case null
-        
-        /// Custom string that will be interpolated into the SQL query.
-        /// - warning: Be careful about SQL injection when using this.
-        case unescaped(String)
+        /// Internal storage.
+        let storage: Storage
     }
     
     /// The statement type: `INSERT`, `UPDATE`, `DELETE`.
@@ -325,7 +249,7 @@ public struct DataManipulationQuery {
     public var joins: [Join]
 
     /// List of predicates to filter by.
-    public var predicates: [Predicates]
+    public var predicate: Predicate
     
     /// `GROUP BY YEAR(date)`.
     public var groupBys: [GroupBy]
@@ -340,13 +264,13 @@ public struct DataManipulationQuery {
     public var offset: Int?
 
     /// Creates a new `DataManipulationQuery`
-    public init(statement: Statement, table: String, keys: [Key], columns: [Column: Value], joins: [Join], predicates: [Predicates], groupBys: [GroupBy], orderBys: [OrderBy], limit: Int?, offset: Int?) {
+    public init(statement: Statement, table: String, keys: [Key], columns: [Column: Value], joins: [Join], predicate: Predicate, groupBys: [GroupBy], orderBys: [OrderBy], limit: Int?, offset: Int?) {
         self.statement = statement
         self.table = table
         self.keys = keys
         self.columns = columns
         self.joins = joins
-        self.predicates = predicates
+        self.predicate = predicate
         self.orderBys = orderBys
         self.groupBys = groupBys
         self.limit = limit

@@ -35,8 +35,8 @@ final class DataDefinitionTests: XCTestCase {
         create.createColumns.append(.init(name: "id", dataType: .init(name: "INT")))
         create.createColumns.append(.init(name: "name", dataType: .init(name: "TEXT")))
         let fk = DataDefinitionForeignKey(
-            local: DataColumn(table: "users", name: "id"),
-            foreign: DataColumn(table: "pets", name: "user_id"),
+            local: .init(table: "users", name: "id"),
+            foreign: .init(table: "pets", name: "user_id"),
             onUpdate: .cascade,
             onDelete: .restrict
         )
