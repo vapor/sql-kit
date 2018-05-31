@@ -1,4 +1,4 @@
-extension DDL {
+extension Query.DDL {
     /// `CONSTRAINT`
     public struct Constraint {
         public static func foreignKey(from local: DML.Column, to foreign: DML.Column, onUpdate: ForeignKey.Action? = nil, onDelete: ForeignKey.Action? = nil) -> Constraint {

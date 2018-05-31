@@ -1,4 +1,8 @@
-public struct Query {
+public protocol SQLSupporting {
+    associatedtype ColumnType
+}
+
+public struct Query<Database> where Database: SQLSupporting {
     /// MARK: DML
     
     /// Creates a `SELECT` query.
@@ -69,6 +73,13 @@ public struct Query {
         constraints: [DDL.Constraint] = []
     ) -> Query {
         return ddl(statement: .create(ifNotExists: ifNotExists), table: table, createColumns: columns, createConstraints: constraints)
+    }
+    
+    public static func drop(
+        ifExists: Bool = false,
+        _ table: String
+    ) -> Query {
+        return ddl(statement: .drop(ifExists: ifExists), table: table)
     }
     
     public static func ddl(

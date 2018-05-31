@@ -1,4 +1,4 @@
-extension DDL {
+extension Query.DDL {
     /// A single column in a DDL statement.
     public struct ColumnDefinition {
         public struct DataType: ExpressibleByStringLiteral {

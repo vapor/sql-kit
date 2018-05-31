@@ -3,19 +3,17 @@ extension SQLSerializer {
     public func serialize(ddl: DDL) -> String {
         var statement: [String] = []
         let table = makeEscapedString(from: ddl.table)
+        statement.append(ddl.statement.verb)
+        statement.append("TABLE")
+        statement += ddl.statement.modifiers
+        statement.append(table)
 
         switch ddl.statement.verb {
         case "CREATE":
-            statement.append("CREATE TABLE")
-            statement.append(table)
-
             let columns = ddl.createColumns.map { serialize(column: $0) }
                 + ddl.createConstraints.map { serialize(constraint: $0) }
             statement.append("(" + columns.joined(separator: ", ") + ")")
         case "ALTER":
-            statement.append("ALTER TABLE")
-            statement.append(table)
-
             if !ddl.createColumns.isEmpty {
                 statement.append(ddl.createColumns.map { "ADD " + serialize(column: $0) }.joined(separator: ", "))
             }
@@ -29,12 +27,6 @@ extension SQLSerializer {
             if !ddl.deleteConstraints.isEmpty {
                 statement.append(ddl.deleteConstraints.map { "DROP CONSTRAINT " + makeName(for: $0) }.joined(separator: ", "))
             }
-        case "DROP":
-            statement.append("DROP TABLE")
-            statement.append(table)
-        case "TRUNCATE":
-            statement.append("TRUNCATE")
-            statement.append(table)
         default: break
         }
 

@@ -1,4 +1,4 @@
-extension DDL {
+extension Query.DDL {
     /// Supported `DataDefinitionQuery` action types.
     public struct Statement: ExpressibleByStringLiteral {
         /// `CREATE` a table. Define a table, adding columns.
@@ -17,6 +17,14 @@ extension DDL {
         
         /// `DROP` a table. Removes all columns (and data).
         public static var drop: Statement { return "DROP" }
+        
+        /// `DROP IF EXISTS`
+        ///
+        /// - parameters:
+        ///     - ifExists: If `true`, the table will only be dropped if it currently exists.
+        public static func drop(ifExists: Bool) -> Statement {
+            return .init(verb: "DROP", modifiers: ifExists ? ["IF EXISTS"] : [])
+        }
         
         /// `TRUNCATE` a table. Removes all data.
         public static var truncate: Statement { return "TRUNCATE" }
