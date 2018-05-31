@@ -48,7 +48,7 @@ public struct Query {
     public static func dml(
         statement: DML.Statement = .select,
         table: String,
-        keys: [DML.Key],
+        keys: [DML.Key] = [],
         columns: [DML.Column: DML.Value] = [:],
         joins: [DML.Join] = [],
         predicate: DML.Predicate = .and(),
