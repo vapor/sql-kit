@@ -1,4 +1,4 @@
-extension DML {
+extension Query.DML {
     /// A SQL `ORDER BY` that determines the order of results.
     public struct OrderBy {
         public static func ascending(_ columns: [Column]) -> OrderBy {

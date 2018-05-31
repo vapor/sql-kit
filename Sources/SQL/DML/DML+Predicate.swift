@@ -1,4 +1,4 @@
-extension DML {
+extension Query.DML {
     /// Represents one or more nestable SQL predicates joined by `AND` or `OR`.
     public struct Predicate {
         public static func or(_ predicates: Predicate...) -> Predicate {
@@ -74,14 +74,14 @@ extension DML {
     }
 }
 
-public func && (_ lhs: DML.Predicate, _ rhs: DML.Predicate) -> DML.Predicate {
+public func &&<Database>(_ lhs: Query<Database>.DML.Predicate, _ rhs: Query<Database>.DML.Predicate) -> Query<Database>.DML.Predicate {
     return .and(lhs, rhs)
 }
 
-public func || (_ lhs: DML.Predicate, _ rhs: DML.Predicate) -> DML.Predicate {
+public func ||<Database>(_ lhs: Query<Database>.DML.Predicate, _ rhs: Query<Database>.DML.Predicate) -> Query<Database>.DML.Predicate {
     return .or([lhs, rhs])
 }
 
-public func == (_ column: DML.Column, _ value: DML.Value) -> DML.Predicate {
+public func ==<Database>(_ column: Query<Database>.DML.Column, _ value: Query<Database>.DML.Value) -> Query<Database>.DML.Predicate {
     return .predicate(column, .equal, value)
 }

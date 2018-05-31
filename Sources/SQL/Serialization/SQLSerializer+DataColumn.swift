@@ -1,6 +1,6 @@
 extension SQLSerializer {
     /// See `SQLSerializer`.
-    public func serialize(column: DML.Column) -> String {
+    public func serialize(column: Query<Database>.DML.Column) -> String {
         let escapedName = makeEscapedString(from: column.name)
 
         let string: String
@@ -14,7 +14,7 @@ extension SQLSerializer {
     }
 
     /// See `SQLSerializer`.
-    public func serialize(key: DML.Key) -> String {
+    public func serialize(key: Query<Database>.DML.Key) -> String {
         switch key.storage {
         case .all(let table):
             if let table = table {
@@ -41,12 +41,12 @@ extension SQLSerializer {
     }
 
     /// See `SQLSerializer`.
-    public func serialize(column: DML.Column, value: DML.Value, binds: inout Binds) -> String {
+    public func serialize(column: Query<Database>.DML.Column, value: Query<Database>.DML.Value, binds: inout Binds) -> String {
         return serialize(column: column) + " = " + serialize(value: value, binds: &binds)
     }
 
     /// See `SQLSerializer`.
-    public func serialize(value: DML.Value, binds: inout Binds) -> String {
+    public func serialize(value: Query<Database>.DML.Value, binds: inout Binds) -> String {
         switch value.storage {
         case .column(let col): return serialize(column: col)
         case .computed(let col): return serialize(column: col)

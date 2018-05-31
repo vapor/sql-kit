@@ -1,4 +1,4 @@
-extension DML {
+extension Query.DML {
     /// A computed SQL column.
     public struct ComputedColumn {
         /// Creates a new SQL `DataComputedColumn`.

@@ -1,4 +1,4 @@
-extension DML {
+extension Query.DML {
     /// Represents a SQL join.
     public struct Join {
         /// Supported SQL `DataJoin` methods.

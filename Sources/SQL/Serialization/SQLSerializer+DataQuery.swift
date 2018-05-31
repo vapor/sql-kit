@@ -1,6 +1,6 @@
 extension SQLSerializer {
     /// See `SQLSerializer`.
-    public func serialize(query: Query, binds: inout Binds) -> String {
+    public func serialize(query: Query<Database>, binds: inout Binds) -> String {
         switch query.storage {
         case .ddl(let ddl): return serialize(ddl: ddl)
         case .dml(let dml): return serialize(dml: dml, binds: &binds)
@@ -8,7 +8,7 @@ extension SQLSerializer {
     }
     
     /// See `SQLSerializer`.
-    public func serialize(dml: DML, binds: inout Binds) -> String {
+    public func serialize(dml: Query<Database>.DML, binds: inout Binds) -> String {
         let table = makeEscapedString(from: dml.table)
         var statement: [String] = []
         statement.append(dml.statement.verb)

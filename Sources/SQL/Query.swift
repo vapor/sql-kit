@@ -1,7 +1,3 @@
-public protocol SQLSupporting {
-    associatedtype ColumnType
-}
-
 public struct Query<Database> where Database: SQLSupporting {
     /// MARK: DML
     

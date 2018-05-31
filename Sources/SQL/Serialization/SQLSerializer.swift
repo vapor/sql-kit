@@ -5,10 +5,12 @@
 /// You are expected to implement only the methods that require
 /// different serialization logic for your given SQL flavor.
 public protocol SQLSerializer {
+    associatedtype Database: SQLSupporting
+    
     // MARK: All
     
     /// Serializes both `DataManipulationQuery` and `DataDefinitionQuery`.
-    func serialize(query: Query, binds: inout Binds) -> String
+    func serialize(query: Query<Database>, binds: inout Binds) -> String
     
     // MARK: DML
 
@@ -23,91 +25,91 @@ public protocol SQLSerializer {
     /// - note: Avoid overriding this method if possible
     ///         as it is complex. Much of what this method
     ///         serializes can be modified by overriding other methods.
-    func serialize(dml: DML, binds: inout Binds) -> String
+    func serialize(dml: Query<Database>.DML, binds: inout Binds) -> String
 
     /// Serializes a SQL `DataManipulationKey` to a string.
     ///
     ///     `foo`.`id` as `fooid`
     ///
-    func serialize(key: DML.Key) -> String
+    func serialize(key: Query<Database>.DML.Key) -> String
 
     /// Serializes a SQL `DataManipulationColumn` to a string.
     ///
     ///     `foo`.`id` = ?
     ///
-    func serialize(column: DML.Column, value: DML.Value, binds: inout Binds) -> String
+    func serialize(column: Query<Database>.DML.Column, value: Query<Database>.DML.Value, binds: inout Binds) -> String
 
     /// Serializes a SQL `DataManipulationValue` to a string.
     ///
     ///     ?
     ///
-    func serialize(value: DML.Value, binds: inout Binds) -> String
+    func serialize(value: Query<Database>.DML.Value, binds: inout Binds) -> String
 
     /// Serializes a SQL `DataManipulationColumn` to a string.
     ///
     ///     `foo`.`id`
     ///
-    func serialize(column: DML.Column) -> String
+    func serialize(column: Query<Database>.DML.Column) -> String
 
     /// Serializes a SQL `DataComputedColumn` to a string.
     ///
     ///     average(`users`.`age`) as `averageAge`
     ///
-    func serialize(column: DML.ComputedColumn) -> String
+    func serialize(column: Query<Database>.DML.ComputedColumn) -> String
 
     /// Serializes multiple SQL `DataManipulationJoin`s to a string.
     ///
     ///     JOIN `bar` ON `foo`.`bar_id` = `bar`.`id`
     ///
-    func serialize(joins: [DML.Join]) -> String
+    func serialize(joins: [Query<Database>.DML.Join]) -> String
 
     /// Serializes a single SQL `DataManipulationJoin` to a string.
     ///
     ///     JOIN `bar` ON `foo`.`bar_id` = `bar`.`id`
     ///
-    func serialize(join: DML.Join) -> String
+    func serialize(join: Query<Database>.DML.Join) -> String
 
     /// Serializes multiple SQL `DataManipulationOrderBy`s to a string.
     ///
     ///     ORDER BY `users`.`age` DESC, `foo`.`bar` ASC
     ///
-    func serialize(orderBys: [DML.OrderBy]) -> String
+    func serialize(orderBys: [Query<Database>.DML.OrderBy]) -> String
 
     /// Serializes a single SQL `DataManipulationOrderBy` to a string.
     ///
     ///     `users`.`age` DESC
     ///
-    func serialize(orderBy: DML.OrderBy) -> String
+    func serialize(orderBy: Query<Database>.DML.OrderBy) -> String
     
     /// Serializes multiple SQL `DataManipulationGroupBy`s to a string.
     ///
     ///     GROUP BY YEAR(`users`.`born`), `users`.`sex`
     ///
-    func serialize(groupBys: [DML.GroupBy]) -> String
+    func serialize(groupBys: [Query<Database>.DML.GroupBy]) -> String
 
     /// Serializes a SQL `OrderByDirection` to a string.
     ///
     ///     DESC
     ///
-    func serialize(orderByDirection: DML.OrderBy.Direction) -> String
+    func serialize(orderByDirection: Query<Database>.DML.OrderBy.Direction) -> String
 
     /// Serializes a SQL `DataPredicate` to a string.
     ///
     ///     `user`.`id` = ?
     ///
-    func serialize(predicate: DML.Predicate, binds: inout Binds) -> String
+    func serialize(predicate: Query<Database>.DML.Predicate, binds: inout Binds) -> String
 
     /// Serializes a SQL `DataPredicateGroupRelation` to a string.
     ///
     ///     AND
     ///
-    func serialize(predicate: DML.Predicate.Relation) -> String
+    func serialize(predicate: Query<Database>.DML.Predicate.Relation) -> String
 
     /// Serializes a SQL `DataPredicateComparison` to a string.
     ///
     ///     =
     ///
-    func serialize(comparison: DML.Predicate.Comparison) -> String
+    func serialize(comparison: Query<Database>.DML.Predicate.Comparison) -> String
 
 
     // MARK: DDL
@@ -116,37 +118,43 @@ public protocol SQLSerializer {
     ///
     ///     CREATE TABLE `foo` (`id` INT PRIMARY KEY)
     ///
-    func serialize(ddl: DDL) -> String
+    func serialize(ddl: Query<Database>.DDL) -> String
 
     /// Serializes a SQL `DataDefinitionColumn` to a string.
     ///
     ///     `id` INT PRIMARY KEY
     ///
-    func serialize(column: DDL.ColumnDefinition) -> String
+    func serialize(column: Query<Database>.DDL.ColumnDefinition) -> String
+    
+    /// Serializes a SQL `Database.ColumnType` to a string.
+    ///
+    ///     INT PRIMARY KEY
+    ///
+    func serialize(columnType: Database.ColumnType) -> String
 
     /// Serializes a SQL `DataDefinitionConstraint` to a string.
     ///
     ///     CONSTRAINT UC_Person UNIQUE (ID,LastName)
     ///
-    func serialize(constraint: DDL.Constraint) -> String
+    func serialize(constraint: Query<Database>.DDL.Constraint) -> String
 
     /// Serializes a SQL `DataDefinitionUnique` to a string.
     ///
     ///     CONSTRAINT UC_Person UNIQUE (ID,LastName)
     ///
-    func serialize(unique: DDL.Constraint.Unique) -> String
+    func serialize(unique: Query<Database>.DDL.Constraint.Unique) -> String
 
     /// Serializes a SQL `DataDefinitionColumn` to a string.
     ///
     ///     FOREIGN KEY (`trackartist`) REFERENCES `artist`(`artistid`) ON UPDATE RESTRICT ON DELETE RESTRICT
     ///
-    func serialize(foreignKey: DDL.Constraint.ForeignKey) -> String
+    func serialize(foreignKey: Query<Database>.DDL.Constraint.ForeignKey) -> String
 
     /// Serializes a SQL `DataDefinitionForeignKeyAction` to a string.
     ///
     ///     ON UPDATE RESTRICT ON DELETE RESTRICT
     ///
-    func serialize(foreignKeyAction: DDL.Constraint.ForeignKey.Action) -> String
+    func serialize(foreignKeyAction: Query<Database>.DDL.Constraint.ForeignKey.Action) -> String
 
 
     // MARK: Utility
@@ -173,5 +181,5 @@ public protocol SQLSerializer {
     ///
     ///     persons_fk
     ///
-    func makeName(for constraint: DDL.Constraint) -> String
+    func makeName(for constraint: Query<Database>.DDL.Constraint) -> String
 }

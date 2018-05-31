@@ -19,17 +19,17 @@ final class SerializationTests: XCTestCase {
     func testDDLCreate() {
         assert(
             query: .create("users", columns: [
-                .column("ID", .dataType("INTEGER", attributes: ["PRIMARY KEY"])),
-                .column("name", .dataType("TEXT")),
+                .column("id", "INTEGER PRIMARY KEY"),
+                .column("name", "TEXT"),
             ]),
-            equal: "CREATE TABLE `users` (`ID` INTEGER PRIMARY KEY, `name` TEXT)"
+            equal: "CREATE TABLE `users` (`id` INTEGER PRIMARY KEY, `name` TEXT)"
         )
     }
     func testDDLCreateConstraints() {
         assert(
             query: .create("users", columns: [
-                .column("id", .dataType("INTEGER", attributes: ["PRIMARY KEY"])),
-                .column("name", .dataType("TEXT")),
+                .column("id", "INTEGER PRIMARY KEY"),
+                .column("name", "TEXT"),
             ], constraints: [
                 .foreignKey(from: "id", to: .init(table: "orgs", name: "userID"))
             ]),
