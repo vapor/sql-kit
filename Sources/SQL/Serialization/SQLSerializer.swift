@@ -10,9 +10,9 @@ public protocol SQLSerializer {
     /// Serializes both `DataManipulationQuery` and `DataDefinitionQuery`.
     func serialize(query: Query, binds: inout Binds) -> String
     
-    // MARK: Data Manipulation
+    // MARK: DML
 
-    /// Serializes a SQL `DataManipulationQuery` to a string.
+    /// Serializes a SQL `DML` to a string.
     ///
     ///     INSERT INTO `users` (`name`) VALUES (?)
     ///
@@ -23,7 +23,7 @@ public protocol SQLSerializer {
     /// - note: Avoid overriding this method if possible
     ///         as it is complex. Much of what this method
     ///         serializes can be modified by overriding other methods.
-    func serialize(query: DML, binds: inout Binds) -> String
+    func serialize(dml: DML, binds: inout Binds) -> String
 
     /// Serializes a SQL `DataManipulationKey` to a string.
     ///
@@ -110,43 +110,43 @@ public protocol SQLSerializer {
     func serialize(comparison: DML.Predicate.Comparison) -> String
 
 
-    // MARK: Data Definition
+    // MARK: DDL
 
     /// Serializes a SQL `DataDefinitionQuery` to a string.
     ///
     ///     CREATE TABLE `foo` (`id` INT PRIMARY KEY)
     ///
-    func serialize(query: DataDefinitionQuery) -> String
+    func serialize(ddl: DDL) -> String
 
     /// Serializes a SQL `DataDefinitionColumn` to a string.
     ///
     ///     `id` INT PRIMARY KEY
     ///
-    func serialize(column: DataDefinitionColumn) -> String
+    func serialize(column: DDL.ColumnDefinition) -> String
 
     /// Serializes a SQL `DataDefinitionConstraint` to a string.
     ///
     ///     CONSTRAINT UC_Person UNIQUE (ID,LastName)
     ///
-    func serialize(constraint: DataDefinitionConstraint) -> String
+    func serialize(constraint: DDL.Constraint) -> String
 
     /// Serializes a SQL `DataDefinitionUnique` to a string.
     ///
     ///     CONSTRAINT UC_Person UNIQUE (ID,LastName)
     ///
-    func serialize(unique: DataDefinitionUnique) -> String
+    func serialize(unique: DDL.Constraint.Unique) -> String
 
     /// Serializes a SQL `DataDefinitionColumn` to a string.
     ///
     ///     FOREIGN KEY (`trackartist`) REFERENCES `artist`(`artistid`) ON UPDATE RESTRICT ON DELETE RESTRICT
     ///
-    func serialize(foreignKey: DataDefinitionForeignKey) -> String
+    func serialize(foreignKey: DDL.Constraint.ForeignKey) -> String
 
     /// Serializes a SQL `DataDefinitionForeignKeyAction` to a string.
     ///
     ///     ON UPDATE RESTRICT ON DELETE RESTRICT
     ///
-    func serialize(foreignKeyAction: DataDefinitionForeignKeyAction) -> String
+    func serialize(foreignKeyAction: DDL.Constraint.ForeignKey.Action) -> String
 
 
     // MARK: Utility
@@ -173,5 +173,5 @@ public protocol SQLSerializer {
     ///
     ///     persons_fk
     ///
-    func makeName(for constraint: DataDefinitionConstraint) -> String
+    func makeName(for constraint: DDL.Constraint) -> String
 }

@@ -1,27 +1,8 @@
 import SQL
 import XCTest
 
-@discardableResult
-func assert(query: Query, equal sql: String, file: StaticString = #file, line: UInt = #line) -> Binds {
-    var binds: Binds = .init()
-    XCTAssertEqual(GeneralSQLSerializer.shared.serialize(query: query, binds: &binds), sql, file: file, line: line)
-    return binds
-}
-
 final class DataQueryTests: XCTestCase {
-    func testPredicateNull() {
-        assert(
-            query: .select(.all, from: "users", where: "name" == .null),
-            equal: "SELECT * FROM `users` WHERE `name` IS NULL"
-        )
-    }
-    
-    func testPredicateAnd() {
-        assert(
-            query: .select(.all, from: "users", where: "name" == .null && "id" == .null),
-            equal: "SELECT * FROM `users` WHERE (`name` IS NULL AND `id` IS NULL)"
-        )
-    }
+
 //    func testBasicSelectStar() {
 //        let select = DataManipulationQuery(table: "foo")
 //        var binds = Binds()

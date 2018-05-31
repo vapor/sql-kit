@@ -58,7 +58,7 @@ extension SQLSerializer {
                 let placeholders: [String] = (0..<values.count).map { _ in makePlaceholder() }
                 return "(" + placeholders.joined(separator: ", ") + ")"
             }
-        case .subquery(let subquery): return "(" + serialize(query: subquery, binds: &binds) + ")"
+        case .subquery(let dml): return "(" + serialize(dml: dml, binds: &binds) + ")"
         case .null: return "NULL"
         case .unescaped(let sql): return sql
         }

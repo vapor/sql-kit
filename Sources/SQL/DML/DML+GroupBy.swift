@@ -23,8 +23,9 @@ extension DML {
             return .init(storage: .computed(computed))
         }
         
-        /// Internal storage enum.
-        enum Storage {
+        /// Internal storage type.
+        /// - warning: Enum cases are subject to change.
+        public enum Storage {
             /// Group by a particular column.
             case column(Column)
             /// Group by a computed column.
@@ -32,6 +33,7 @@ extension DML {
         }
         
         /// Internal storage.
-        let storage: Storage
+        /// - warning: Enum cases are subject to change.
+        public let storage: Storage
     }
 }

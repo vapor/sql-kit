@@ -1,47 +1,48 @@
 extension SQLSerializer {
     /// See `SQLSerializer`.
-    public func serialize(query: DataDefinitionQuery) -> String {
+    public func serialize(ddl: DDL) -> String {
         var statement: [String] = []
-        let table = makeEscapedString(from: query.table)
+        let table = makeEscapedString(from: ddl.table)
 
-        switch query.statement {
-        case .create:
+        switch ddl.statement.verb {
+        case "CREATE":
             statement.append("CREATE TABLE")
             statement.append(table)
 
-            let columns = query.createColumns.map { serialize(column: $0) }
-                + query.createConstraints.map { serialize(constraint: $0) }
+            let columns = ddl.createColumns.map { serialize(column: $0) }
+                + ddl.createConstraints.map { serialize(constraint: $0) }
             statement.append("(" + columns.joined(separator: ", ") + ")")
-        case .alter:
+        case "ALTER":
             statement.append("ALTER TABLE")
             statement.append(table)
 
-            if !query.createColumns.isEmpty {
-                statement.append(query.createColumns.map { "ADD " + serialize(column: $0) }.joined(separator: ", "))
+            if !ddl.createColumns.isEmpty {
+                statement.append(ddl.createColumns.map { "ADD " + serialize(column: $0) }.joined(separator: ", "))
             }
-            if !query.deleteColumns.isEmpty {
-                statement.append(query.deleteColumns.map { "DROP " + serialize(column: $0) }.joined(separator: ", "))
+            if !ddl.deleteColumns.isEmpty {
+                statement.append(ddl.deleteColumns.map { "DROP " + serialize(column: $0) }.joined(separator: ", "))
             }
 
-            if !query.createConstraints.isEmpty {
-                statement.append(query.deleteConstraints.map { "ADD " + serialize(constraint: $0) }.joined(separator: ", "))
+            if !ddl.createConstraints.isEmpty {
+                statement.append(ddl.deleteConstraints.map { "ADD " + serialize(constraint: $0) }.joined(separator: ", "))
             }
-            if !query.deleteConstraints.isEmpty {
-                statement.append(query.deleteConstraints.map { "DROP CONSTRAINT " + makeName(for: $0) }.joined(separator: ", "))
+            if !ddl.deleteConstraints.isEmpty {
+                statement.append(ddl.deleteConstraints.map { "DROP CONSTRAINT " + makeName(for: $0) }.joined(separator: ", "))
             }
-        case .drop:
+        case "DROP":
             statement.append("DROP TABLE")
             statement.append(table)
-        case .truncate:
+        case "TRUNCATE":
             statement.append("TRUNCATE")
             statement.append(table)
+        default: break
         }
 
         return statement.joined(separator: " ")
     }
 
     /// See `SQLSerializer`.
-    public func serialize(column: DataDefinitionColumn) -> String {
+    public func serialize(column: DDL.ColumnDefinition) -> String {
         var sql: [String] = []
 
         let name = makeEscapedString(from: column.name)
@@ -55,14 +56,14 @@ extension SQLSerializer {
     }
 
     /// See `SQLSerializer`.
-    public func serialize(constraint: DataDefinitionConstraint) -> String {
+    public func serialize(constraint: DDL.Constraint) -> String {
         var sql: [String] = []
 
         // CONSTRAINT galleries_gallery_tmpltid_fk
         sql.append("CONSTRAINT")
         sql.append(makeEscapedString(from: makeName(for: constraint)))
 
-        switch constraint {
+        switch constraint.storage {
         case .foreignKey(let foreignKey):
             sql.append(serialize(foreignKey: foreignKey))
         case .unique(let unique):
@@ -73,7 +74,7 @@ extension SQLSerializer {
     }
 
     /// See `SQLSerializer`.
-    public func serialize(unique: DataDefinitionUnique) -> String {
+    public func serialize(unique: DDL.Constraint.Unique) -> String {
         // UNIQUE (ID,LastName);
         var sql: [String] = []
         sql.append("UNIQUE")
@@ -82,7 +83,7 @@ extension SQLSerializer {
     }
 
     /// See `SQLSerializer`.
-    public func serialize(foreignKey: DataDefinitionForeignKey) -> String {
+    public func serialize(foreignKey: DDL.Constraint.ForeignKey) -> String {
         // FOREIGN KEY(trackartist) REFERENCES artist(artistid)
         var sql: [String] = []
         sql.append("FOREIGN KEY")
@@ -107,17 +108,19 @@ extension SQLSerializer {
     }
 
     /// See `SQLSerializer`.
-    public func makeName(for constraint: DataDefinitionConstraint) -> String {
-        switch constraint {
+    public func makeName(for constraint: DDL.Constraint) -> String {
+        switch constraint.storage {
         case .foreignKey(let foreignKey):
-            return "fk:\(foreignKey.local.table ?? "").\(foreignKey.local.name)+\(foreignKey.foreign.table ?? "").\(foreignKey.foreign.name)"
+            let local: String = (foreignKey.local.table.flatMap { $0 + "." } ?? "") + foreignKey.local.name
+            let foreign: String = (foreignKey.foreign.table.flatMap { $0 + "." } ?? "") + foreignKey.foreign.name
+            return "fk:" + local + "+" + foreign
         case .unique(let unique):
-            return "uq:" + unique.columns.map { "\($0.table ?? "").\($0.name)" }.joined(separator: "+")
+            return "uq:" + unique.columns.map { $0.table.flatMap { $0 + "." } ?? "" + $0.name }.joined(separator: "+")
         }
     }
 
     /// See `SQLSerializer`.
-    public func serialize(foreignKeyAction: DataDefinitionForeignKeyAction) -> String {
+    public func serialize(foreignKeyAction: DDL.Constraint.ForeignKey.Action) -> String {
         switch foreignKeyAction {
         case .noAction: return "NO ACTION"
         case .restrict: return "RESTRICT"

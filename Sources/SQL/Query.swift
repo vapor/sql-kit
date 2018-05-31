@@ -3,7 +3,7 @@ public struct Query {
     
     /// Creates a `SELECT` query.
     ///
-    ///     let query: Query = .select(.all, from: "users")
+    ///     let query: Query = .select([.all], from: "users")
     ///
     /// - parameters:
     ///     - keys: One or more keys to select.
@@ -16,7 +16,7 @@ public struct Query {
     ///     - offset: Optional result set offset.
     /// - returns: Newly created `Query`.
     public static func select(
-        _ keys: DML.Key...,
+        _ keys: [DML.Key],
         from table: String,
         joins: [DML.Join] = [],
         where predicate: DML.Predicate = .and(),
@@ -60,14 +60,38 @@ public struct Query {
         return .init(storage: .dml(.init(statement: statement, table: table, keys: keys, columns: columns, joins: joins, predicate: predicate, groupBys: groupBys, orderBys: orderBys, limit: limit, offset: offset)))
     }
     
-    /// Internal storage enum.
-    enum Storage {
+    // MARK: DDL
+    
+    public static func create(
+        ifNotExists: Bool = false,
+        _ table: String,
+        columns: [DDL.ColumnDefinition],
+        constraints: [DDL.Constraint] = []
+    ) -> Query {
+        return ddl(statement: .create(ifNotExists: ifNotExists), table: table, createColumns: columns, createConstraints: constraints)
+    }
+    
+    public static func ddl(
+        statement: DDL.Statement = .create,
+        table: String,
+        createColumns: [DDL.ColumnDefinition] = [],
+        deleteColumns: [DDL.ColumnDefinition] = [],
+        createConstraints: [DDL.Constraint] = [],
+        deleteConstraints: [DDL.Constraint] = []
+    ) -> Query {
+        return self.init(storage: .ddl(.init(statement: statement, table: table, createColumns: createColumns, deleteColumns: deleteColumns, createConstraints: createConstraints, deleteConstraints: deleteConstraints)))
+    }
+    
+    /// Internal storage type.
+    /// - warning: Enum cases are subject to change.
+    public enum Storage {
         /// DML
         case dml(DML)
         /// DDL
-        case ddl(DataDefinitionQuery)
+        case ddl(DDL)
     }
     
     /// Internal storage.
-    let storage: Storage
+    /// - warning: Enum cases are subject to change.
+    public let storage: Storage
 }
