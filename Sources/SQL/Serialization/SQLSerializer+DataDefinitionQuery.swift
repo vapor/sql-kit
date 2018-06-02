@@ -1,6 +1,6 @@
 extension SQLSerializer {
     /// See `SQLSerializer`.
-    public func serialize(ddl: Query<Database>.DDL) -> String {
+    public func serialize(ddl: SQLQuery.DDL) -> String {
         var statement: [String] = []
         let table = makeEscapedString(from: ddl.table)
         statement.append(ddl.statement.verb)
@@ -34,17 +34,27 @@ extension SQLSerializer {
     }
 
     /// See `SQLSerializer`.
-    public func serialize(column: Query<Database>.DDL.ColumnDefinition) -> String {
+    public func serialize(column: SQLQuery.DDL.ColumnDefinition) -> String {
         var sql: [String] = []
-
         let name = makeEscapedString(from: column.name)
         sql.append(name)
         sql.append(serialize(columnType: column.columnType))
         return sql.joined(separator: " ")
     }
+    
+    /// See `SQLSerializer`.
+    public func serialize(columnType: SQLQuery.DDL.ColumnDefinition.ColumnType) -> String {
+        var sql: [String] = []
+        sql.append(columnType.name)
+        if !columnType.parameters.isEmpty {
+            sql.append("(" + columnType.parameters.joined(separator: ", ") + ")")
+        }
+        sql += columnType.attributes
+        return sql.joined(separator: " ")
+    }
 
     /// See `SQLSerializer`.
-    public func serialize(constraint: Query<Database>.DDL.Constraint) -> String {
+    public func serialize(constraint: SQLQuery.DDL.Constraint) -> String {
         var sql: [String] = []
 
         // CONSTRAINT galleries_gallery_tmpltid_fk
@@ -62,7 +72,7 @@ extension SQLSerializer {
     }
 
     /// See `SQLSerializer`.
-    public func serialize(unique: Query<Database>.DDL.Constraint.Unique) -> String {
+    public func serialize(unique: SQLQuery.DDL.Constraint.Unique) -> String {
         // UNIQUE (ID,LastName);
         var sql: [String] = []
         sql.append("UNIQUE")
@@ -71,12 +81,12 @@ extension SQLSerializer {
     }
 
     /// See `SQLSerializer`.
-    public func serialize(foreignKey: Query<Database>.DDL.Constraint.ForeignKey) -> String {
+    public func serialize(foreignKey: SQLQuery.DDL.Constraint.ForeignKey) -> String {
         // FOREIGN KEY(trackartist) REFERENCES artist(artistid)
         var sql: [String] = []
         sql.append("FOREIGN KEY")
         if let table = foreignKey.local.table {
-            sql.append(makeEscapedString(from: table))
+            // sql.append(makeEscapedString(from: table))
         }
         sql.append("(" + makeEscapedString(from: foreignKey.local.name) + ")")
         sql.append("REFERENCES")
@@ -96,7 +106,7 @@ extension SQLSerializer {
     }
 
     /// See `SQLSerializer`.
-    public func makeName(for constraint: Query<Database>.DDL.Constraint) -> String {
+    public func makeName(for constraint: SQLQuery.DDL.Constraint) -> String {
         switch constraint.storage {
         case .foreignKey(let foreignKey):
             let local: String = (foreignKey.local.table.flatMap { $0 + "." } ?? "") + foreignKey.local.name
@@ -108,7 +118,7 @@ extension SQLSerializer {
     }
 
     /// See `SQLSerializer`.
-    public func serialize(foreignKeyAction: Query<Database>.DDL.Constraint.ForeignKey.Action) -> String {
+    public func serialize(foreignKeyAction: SQLQuery.DDL.Constraint.ForeignKey.Action) -> String {
         switch foreignKeyAction {
         case .noAction: return "NO ACTION"
         case .restrict: return "RESTRICT"

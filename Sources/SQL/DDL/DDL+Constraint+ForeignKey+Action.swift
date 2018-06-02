@@ -1,4 +1,4 @@
-extension Query.DDL.Constraint.ForeignKey {
+extension SQLQuery.DDL.Constraint.ForeignKey {
     /// Foreign key actions to apply when data related via a foreign key is updated or deleted.
     public enum Action {
         /// Do nothing.

@@ -1,4 +1,4 @@
-extension Query {
+extension SQLQuery {
     /// SQL data manipulation query (DML)
     public struct DML {
         /// The statement type: `INSERT`, `UPDATE`, `DELETE`.
@@ -17,7 +17,7 @@ extension Query {
         public var joins: [Join]
 
         /// List of predicates to filter by.
-        public var predicate: Predicate
+        public var predicates: [Predicate]
         
         /// `GROUP BY YEAR(date)`.
         public var groupBys: [GroupBy]
@@ -32,13 +32,13 @@ extension Query {
         public var offset: Int?
 
         /// Creates a new `DML`
-        public init(statement: Statement, table: String, keys: [Key], columns: [Column: Value], joins: [Join], predicate: Predicate, groupBys: [GroupBy], orderBys: [OrderBy], limit: Int?, offset: Int?) {
+        public init(statement: Statement, table: String, keys: [Key] = [], columns: [Column: Value] = [:], joins: [Join] = [], predicates: [Predicate] = [], groupBys: [GroupBy] = [], orderBys: [OrderBy] = [], limit: Int? = nil, offset: Int? = nil) {
             self.statement = statement
             self.table = table
             self.keys = keys
             self.columns = columns
             self.joins = joins
-            self.predicate = predicate
+            self.predicates = predicates
             self.orderBys = orderBys
             self.groupBys = groupBys
             self.limit = limit

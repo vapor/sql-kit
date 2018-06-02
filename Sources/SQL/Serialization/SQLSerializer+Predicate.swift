@@ -1,6 +1,6 @@
 extension SQLSerializer {
     /// See `SQLSerializer`.
-    public func serialize(predicate: Query<Database>.DML.Predicate.Relation) -> String {
+    public func serialize(predicate: SQLQuery.DML.Predicate.Relation) -> String {
         switch predicate {
         case .and: return "AND"
         case .or: return "OR"
@@ -8,7 +8,7 @@ extension SQLSerializer {
     }
 
     /// See `SQLSerializer`.
-    public func serialize(predicate: Query<Database>.DML.Predicate, binds: inout Binds) -> String {
+    public func serialize(predicate: SQLQuery.DML.Predicate, binds: inout Binds) -> String {
         // Cleanup the predicate, fixing high-level invalid or un-optimized SQL.
         // For example:
         //     "IN ()" -> "false"
@@ -16,10 +16,14 @@ extension SQLSerializer {
         switch predicate.storage {
         case .group(let relation, let predicates):
             let method = serialize(predicate: relation)
-            let statement = predicates.map { predicate in
-                return serialize(predicate: predicate, binds: &binds)
+            let statement = predicates.map { predicate -> String in
+                let string = serialize(predicate: predicate, binds: &binds)
+                switch predicate.storage {
+                case .group: return "(" + string + ")"
+                default: return string
+                }
             }
-            return "(" + statement.joined(separator: " \(method) ") + ")"
+            return statement.joined(separator: " \(method) ")
         case .unit(let column, let comparison, let value):
             switch comparison {
             case .notIn, .in:
@@ -65,7 +69,7 @@ extension SQLSerializer {
     }
 
     /// See `SQLSerializer`.
-    public func serialize(comparison: Query<Database>.DML.Predicate.Comparison) -> String {
+    public func serialize(comparison: SQLQuery.DML.Predicate.Comparison) -> String {
         switch comparison {
         case .equal: return "="
         case .notEqual: return "!="

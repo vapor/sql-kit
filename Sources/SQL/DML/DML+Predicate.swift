@@ -1,4 +1,4 @@
-extension Query.DML {
+extension SQLQuery.DML {
     /// Represents one or more nestable SQL predicates joined by `AND` or `OR`.
     public struct Predicate {
         public static func or(_ predicates: Predicate...) -> Predicate {
@@ -62,7 +62,7 @@ extension Query.DML {
         }
         
         /// Internal storage enum.
-        indirect enum Storage {
+        public indirect enum Storage {
             /// A collection of `DataPredicate` items joined by AND or OR.
             case group(Relation, [Predicate])
             /// A single `DataPredicate`.
@@ -70,18 +70,41 @@ extension Query.DML {
         }
         
         /// Internal storage.
-        let storage: Storage
+        public let storage: Storage
     }
 }
 
-public func &&<Database>(_ lhs: Query<Database>.DML.Predicate, _ rhs: Query<Database>.DML.Predicate) -> Query<Database>.DML.Predicate {
+public func &&(_ lhs: SQLQuery.DML.Predicate, _ rhs: SQLQuery.DML.Predicate) -> SQLQuery.DML.Predicate {
+    switch (lhs.storage, rhs.storage) {
+    case (.group(let relationL, let predicatesL), .group(let relationR, let predicatesR)):
+        if relationL == relationR {
+            return .and(predicatesL + predicatesR)
+        } else {
+            return .and(lhs, rhs)
+        }
+    case (.group(let relation, let predicates), .unit):
+        switch relation {
+        case .and: return .and(predicates + [rhs])
+        default: break
+        }
+    case (.unit, .group(let relation, let predicates)):
+        switch relation {
+        case .and: return .and([lhs] + predicates)
+        default: break
+        }
+    default: break
+    }
     return .and(lhs, rhs)
 }
 
-public func ||<Database>(_ lhs: Query<Database>.DML.Predicate, _ rhs: Query<Database>.DML.Predicate) -> Query<Database>.DML.Predicate {
-    return .or([lhs, rhs])
+public func ||(_ lhs: SQLQuery.DML.Predicate, _ rhs: SQLQuery.DML.Predicate) -> SQLQuery.DML.Predicate {
+    if case .group(let relation, let existing) = lhs.storage, relation == .or {
+        return .or(existing + [lhs])
+    } else {
+        return .or(lhs, rhs)
+    }
 }
 
-public func ==<Database>(_ column: Query<Database>.DML.Column, _ value: Query<Database>.DML.Value) -> Query<Database>.DML.Predicate {
+public func ==(_ column: SQLQuery.DML.Column, _ value: SQLQuery.DML.Value) -> SQLQuery.DML.Predicate {
     return .predicate(column, .equal, value)
 }

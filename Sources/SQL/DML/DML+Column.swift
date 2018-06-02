@@ -1,4 +1,4 @@
-extension Query.DML {
+extension SQLQuery.DML {
     /// Represents a SQL column with optional table name.
     public struct Column: ExpressibleByStringLiteral, Hashable {
         /// See `Hashable.`

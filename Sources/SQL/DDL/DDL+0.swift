@@ -1,4 +1,4 @@
-extension Query {
+extension SQLQuery {
     /// SQL schema manipulation query (DDL: data-definition language).
     public struct DDL {
         /// Statement type to perform, e.g., create or alter.
@@ -13,7 +13,7 @@ extension Query {
 
         /// A collection of column names to be removed when this query is executed.
         /// - note: This property may be ignored by some `DataDefinitionStatement` types.
-        public var deleteColumns: [ColumnDefinition]
+        public var deleteColumns: [SQLQuery.DML.Column]
 
         /// A collection of foreign keys to be added when this query is executed.
         /// - note: This property may be ignored by some `DataDefinitionStatement` types.
@@ -24,7 +24,7 @@ extension Query {
         public var deleteConstraints: [Constraint]
 
         /// Creates a new `DataDefinitionQuery`.
-        public init(statement: Statement, table: String, createColumns: [ColumnDefinition], deleteColumns: [ColumnDefinition], createConstraints: [Constraint], deleteConstraints: [Constraint]) {
+        public init(statement: Statement, table: String, createColumns: [ColumnDefinition] = [], deleteColumns: [SQLQuery.DML.Column] = [], createConstraints: [Constraint] = [], deleteConstraints: [Constraint] = []) {
             self.statement = statement
             self.table = table
             self.createColumns = createColumns

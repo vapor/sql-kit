@@ -1,4 +1,4 @@
-extension Query.DML {
+extension SQLQuery.DML {
     /// All supported values for a SQL `DataPredicate`.
     public struct Value {
         /// A single placeholder.
@@ -33,7 +33,7 @@ extension Query.DML {
             /// Compare to a computed column.
             case computed(ComputedColumn)
             /// Serializes a complete sub-query as this predicate's value.
-            case subquery(Query.DML)
+            case subquery(SQLQuery.DML)
             /// NULL value.
             case null
             /// Custom string that will be interpolated into the SQL query.

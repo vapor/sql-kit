@@ -1,4 +1,4 @@
-extension Query.DML {
+extension SQLQuery.DML {
     /// Represents a SQL `GROUP BY`. One or more can be added to a `DML` query.
     public struct GroupBy {
         /// Creates a new `Column` based `GroupBy`.

@@ -1,3 +1,3 @@
-public protocol SQLSupporting {
-    associatedtype ColumnType
-}
+//public protocol SQLSupporting {
+//    associatedtype ColumnType
+//}

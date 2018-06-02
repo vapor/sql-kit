@@ -1,4 +1,4 @@
-public struct Query<Database> where Database: SQLSupporting {
+public struct SQLQuery {
     /// MARK: DML
     
     /// Creates a `SELECT` query.
@@ -19,13 +19,13 @@ public struct Query<Database> where Database: SQLSupporting {
         _ keys: [DML.Key],
         from table: String,
         joins: [DML.Join] = [],
-        where predicate: DML.Predicate = .and(),
+        where predicates: [DML.Predicate] = [],
         groupBys: [DML.GroupBy] = [],
         orderBys: [DML.OrderBy] = [],
         limit: Int? = nil,
         offset: Int? = nil
-    ) -> Query {
-        return .dml(statement: .select, table: table, keys: keys, joins: joins, predicate: predicate, groupBys: groupBys, orderBys: orderBys, limit: limit, offset: offset)
+    ) -> SQLQuery {
+        return .dml(statement: .select, table: table, keys: keys, joins: joins, predicates: predicates, groupBys: groupBys, orderBys: orderBys, limit: limit, offset: offset)
     }
     
     
@@ -51,30 +51,30 @@ public struct Query<Database> where Database: SQLSupporting {
         keys: [DML.Key] = [],
         columns: [DML.Column: DML.Value] = [:],
         joins: [DML.Join] = [],
-        predicate: DML.Predicate = .and(),
+        predicates: [DML.Predicate] = [],
         groupBys: [DML.GroupBy] = [],
         orderBys: [DML.OrderBy] = [],
         limit: Int? = nil,
         offset: Int? = nil
-    ) -> Query {
-        return .init(storage: .dml(.init(statement: statement, table: table, keys: keys, columns: columns, joins: joins, predicate: predicate, groupBys: groupBys, orderBys: orderBys, limit: limit, offset: offset)))
+    ) -> SQLQuery {
+        return .init(.dml(.init(statement: statement, table: table, keys: keys, columns: columns, joins: joins, predicates: predicates, groupBys: groupBys, orderBys: orderBys, limit: limit, offset: offset)))
     }
     
     // MARK: DDL
     
     public static func create(
         ifNotExists: Bool = false,
-        _ table: String,
+        table: String,
         columns: [DDL.ColumnDefinition],
         constraints: [DDL.Constraint] = []
-    ) -> Query {
+    ) -> SQLQuery {
         return ddl(statement: .create(ifNotExists: ifNotExists), table: table, createColumns: columns, createConstraints: constraints)
     }
     
     public static func drop(
         ifExists: Bool = false,
-        _ table: String
-    ) -> Query {
+        table: String
+    ) -> SQLQuery {
         return ddl(statement: .drop(ifExists: ifExists), table: table)
     }
     
@@ -82,11 +82,11 @@ public struct Query<Database> where Database: SQLSupporting {
         statement: DDL.Statement = .create,
         table: String,
         createColumns: [DDL.ColumnDefinition] = [],
-        deleteColumns: [DDL.ColumnDefinition] = [],
+        deleteColumns: [DML.Column] = [],
         createConstraints: [DDL.Constraint] = [],
         deleteConstraints: [DDL.Constraint] = []
-    ) -> Query {
-        return self.init(storage: .ddl(.init(statement: statement, table: table, createColumns: createColumns, deleteColumns: deleteColumns, createConstraints: createConstraints, deleteConstraints: deleteConstraints)))
+    ) -> SQLQuery {
+        return self.init(.ddl(.init(statement: statement, table: table, createColumns: createColumns, deleteColumns: deleteColumns, createConstraints: createConstraints, deleteConstraints: deleteConstraints)))
     }
     
     /// Internal storage type.
@@ -101,4 +101,10 @@ public struct Query<Database> where Database: SQLSupporting {
     /// Internal storage.
     /// - warning: Enum cases are subject to change.
     public let storage: Storage
+    
+    /// Creates a new `Query` from internal storage.
+    /// - warning: Enum cases are subject to change.
+    public init(_ storage: Storage) {
+        self.storage = storage
+    }
 }

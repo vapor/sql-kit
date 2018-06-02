@@ -1,4 +1,4 @@
-extension Query.DDL {
+extension SQLQuery.DDL {
     /// Supported `DataDefinitionQuery` action types.
     public struct Statement: ExpressibleByStringLiteral {
         /// `CREATE` a table. Define a table, adding columns.

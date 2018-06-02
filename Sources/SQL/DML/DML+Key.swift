@@ -1,4 +1,4 @@
-extension Query.DML {
+extension SQLQuery.DML {
     /// Supported column types in a `DataQuery`.
     public struct Key: ExpressibleByStringLiteral {
         /// All columns, `*`., or all columns of a table, `foo`.*

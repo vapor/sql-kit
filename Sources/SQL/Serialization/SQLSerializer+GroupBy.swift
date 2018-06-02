@@ -1,6 +1,6 @@
 extension SQLSerializer {
     /// See `SQLSerializer`.
-    public func serialize(groupBys: [Query<Database>.DML.GroupBy]) -> String {
+    public func serialize(groupBys: [SQLQuery.DML.GroupBy]) -> String {
         var statement: [String] = []
         
         statement.append("GROUP BY")

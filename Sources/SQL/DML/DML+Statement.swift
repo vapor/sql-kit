@@ -1,4 +1,4 @@
-extension Query.DML {
+extension SQLQuery.DML {
     /// Supported SQL data statement types.
     public struct Statement: ExpressibleByStringLiteral {
         /// `SELECT`
