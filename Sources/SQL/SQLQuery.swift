@@ -28,6 +28,9 @@ public struct SQLQuery {
         return .dml(statement: .select, table: table, keys: keys, joins: joins, predicates: predicates, groupBys: groupBys, orderBys: orderBys, limit: limit, offset: offset)
     }
     
+    public static func insert(into table: String, values: [DML.Column: DML.Value] = [:]) -> SQLQuery {
+        return .dml(statement: .insert, table: table, columns: values)
+    }
     
     /// Creates a `SELECT` query.
     ///
