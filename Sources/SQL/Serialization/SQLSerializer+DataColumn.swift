@@ -60,7 +60,9 @@ extension SQLSerializer {
             }
         case .subquery(let dml): return "(" + serialize(dml: dml, binds: &binds) + ")"
         case .null: return "NULL"
-        case .unescaped(let sql): return sql
+        case .unescaped(let sql, let values):
+            binds.values += values
+            return sql
         }
     }
 }

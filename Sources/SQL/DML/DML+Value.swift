@@ -19,8 +19,16 @@ extension SQLQuery.DML {
             return self.init(storage: .null)
         }
         
-        public static func unescaped(_ sql: String) -> Value {
-            return self.init(storage: .unescaped(sql))
+        public static func unescaped(_ sql: String, binds: [Encodable] = []) -> Value {
+            return self.init(storage: .unescaped(sql, binds))
+        }
+        
+        public static func computed(_ computed: ComputedColumn) -> Value {
+            return self.init(storage: .computed(computed))
+        }
+        
+        public static func subquery(_ subquery: SQLQuery.DML) -> Value {
+            return self.init(storage: .subquery(subquery))
         }
         
         /// Internal storage type.
@@ -38,7 +46,7 @@ extension SQLQuery.DML {
             case null
             /// Custom string that will be interpolated into the SQL query.
             /// - warning: Be careful about SQL injection when using this.
-            case unescaped(String)
+            case unescaped(String, [Encodable])
         }
         
         /// Internal storage.
