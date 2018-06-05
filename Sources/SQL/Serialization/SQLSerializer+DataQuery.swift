@@ -1,106 +1,81 @@
 extension SQLSerializer {
     /// See `SQLSerializer`.
-    public func serialize(query: DataQuery) -> String {
-        let table = makeEscapedString(from: query.table)
+    public func serialize(query: SQLQuery, binds: inout Binds) -> String {
+        switch query.storage {
+        case .ddl(let ddl): return serialize(ddl: ddl)
+        case .dml(let dml): return serialize(dml: dml, binds: &binds)
+        }
+    }
+    
+    /// See `SQLSerializer`.
+    public func serialize(dml: SQLQuery.DML, binds: inout Binds) -> String {
+        let table = makeEscapedString(from: dml.table)
         var statement: [String] = []
-        statement.append("SELECT")
-        if query.distinct == true {
-            statement.append("DISTINCT")
+        statement.append(dml.statement.verb)
+        statement += dml.statement.modifiers
+        switch dml.statement.verb {
+        case "DELETE":
+            statement.append("FROM")
+            statement.append(table)
+        case "INSERT":
+            statement.append("INTO")
+            statement.append(table)
+
+            var columns: [String] = []
+            var values: [String] = []
+
+            for (column, value) in dml.columns {
+                switch value.storage {
+                case .null:
+                    // no need to pass `NULL` values during INSERT
+                    break
+                default:
+                    columns.append(makeEscapedString(from: column.name))
+                    values.append(serialize(value: value, binds: &binds))
+                }
+            }
+
+            statement.append("(" + columns.joined(separator: ", ") + ")")
+            statement.append("VALUES")
+            statement.append("(" + values.joined(separator: ", ") + ")")
+        case "UPDATE":
+            statement.append(table)
+            statement.append("SET")
+            statement.append(dml.columns.map { data in
+                serialize(column: data.key, value: data.value, binds: &binds)
+            }.joined(separator: ", "))
+        default: // SELECT + others
+            let keys = dml.keys.isEmpty ? [.all(table: nil)] : dml.keys
+            statement.append(keys.map { serialize(key: $0) }.joined(separator: ", "))
+            statement.append("FROM")
+            statement.append(table)
         }
 
-        let columns: [String] = query.columns.map { serialize(column: $0) }
-        statement.append(columns.joined(separator: ", "))
-
-        statement.append("FROM")
-        statement.append(table)
-
-
-        if !query.joins.isEmpty {
-            statement.append(serialize(joins: query.joins))
+        if !dml.joins.isEmpty {
+            statement.append(serialize(joins: dml.joins))
         }
 
-        if !query.predicates.isEmpty {
+        if !dml.predicates.isEmpty, dml.statement.verb != "INSERT" {
             statement.append("WHERE")
-            let group = DataPredicateGroup(relation: .and, predicates: query.predicates)
-            statement.append(serialize(predicateGroup: group))
+            statement.append(serialize(predicate: .and(dml.predicates), binds: &binds))
         }
 
-        if !query.groupBys.isEmpty {
-            statement.append(serialize(groupBys: query.groupBys))
+        if !dml.groupBys.isEmpty {
+            statement.append(serialize(groupBys: dml.groupBys))
         }
 
-        if !query.orderBys.isEmpty {
-            statement.append(serialize(orderBys: query.orderBys))
+        if !dml.orderBys.isEmpty {
+            statement.append(serialize(orderBys: dml.orderBys))
         }
         
-        if let limit = query.limit {
+        if let limit = dml.limit {
             statement.append("LIMIT \(limit)")
-            if let offset = query.offset {
+            if let offset = dml.offset {
                 statement.append("OFFSET \(offset)")
             }
         }
 
         return statement.joined(separator: " ")
-    }
-
-    /// See `SQLSerializer`.
-    public func serialize(query: DataManipulationQuery) -> String {
-        let table = makeEscapedString(from: query.table)
-        var statement: [String] = []
-
-        switch query.statement {
-        case .delete:
-            statement.append("DELETE FROM")
-            statement.append(table)
-        case .insert:
-            statement.append("INSERT INTO")
-            statement.append(table)
-
-            let columns = query.columns.map { makeEscapedString(from: $0.column.name) }
-            statement.append("(" + columns.joined(separator: ", ") + ")")
-            statement.append("VALUES")
-
-            let placeholders = query.columns.map { serialize(value: $0.value) }
-            statement.append("(" + placeholders.joined(separator: ", ") + ")")
-        case .update:
-            statement.append("UPDATE")
-            statement.append(table)
-            statement.append("SET")
-
-            let set = query.columns.map { col -> String in
-                let column = makeEscapedString(from: col.column.name)
-                let value = serialize(value: col.value)
-                return "\(column) = \(value)"
-            }
-            statement.append(set.joined(separator: ", "))
-        }
-
-        if !query.joins.isEmpty {
-            statement.append(serialize(joins: query.joins))
-        }
-
-        if !query.predicates.isEmpty {
-            statement.append("WHERE")
-            let group = DataPredicateGroup(relation: .and, predicates: query.predicates)
-            statement.append(serialize(predicateGroup: group))
-        }
-        
-        if let limit = query.limit {
-            statement.append("LIMIT \(limit)")
-        }
-
-        return statement.joined(separator: " ")
-    }
-
-    /// See `SQLSerializer`.
-    public func serialize(value: DataManipulationValue) -> String {
-        switch value {
-        case .column(let col): return serialize(column: col)
-        case .computed(let col): return serialize(column: col)
-        case .placeholder: return makePlaceholder()
-        case .subquery(let subquery): return "(" + serialize(query: subquery) + ")"
-        case .custom(let sql): return sql
-        }
     }
 
     /// See `SQLSerializer`.
