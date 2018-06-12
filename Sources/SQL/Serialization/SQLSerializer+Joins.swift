@@ -7,7 +7,14 @@ extension SQLSerializer {
     /// See `SQLSerializer`.
     public func serialize(join: DataJoin) -> String {
         var statement: [String] = []
-        statement.append("JOIN")
+        
+        switch join.method {
+        case .inner:
+            statement.append("INNER JOIN")
+        case .outer:
+            statement.append("LEFT OUTER JOIN")
+        }
+        
 
         let foreignTable = makeEscapedString(from: join.foreign.table ?? "") // FIXME: this is an error
         statement.append(foreignTable)

@@ -109,7 +109,23 @@ final class DataQueryTests: XCTestCase {
 
         XCTAssertEqual(
             GeneralSQLSerializer.shared.serialize(query: select),
-            "SELECT * FROM `foo` JOIN `bar` ON `foo`.`id` = `bar`.`foo_id`"
+            "SELECT * FROM `foo` INNER JOIN `bar` ON `foo`.`id` = `bar`.`foo_id`"
+        )
+    }
+    
+    func testSelectWithOuterJoins() {
+        var select = DataQuery(table: "foo")
+        
+        let joinA = DataJoin(
+            method: .outer,
+            local: DataColumn(table: "foo", name: "id"),
+            foreign: DataColumn(table: "bar", name: "foo_id")
+        )
+        select.joins.append(joinA)
+        
+        XCTAssertEqual(
+            GeneralSQLSerializer.shared.serialize(query: select),
+            "SELECT * FROM `foo` LEFT OUTER JOIN `bar` ON `foo`.`id` = `bar`.`foo_id`"
         )
     }
 
@@ -198,6 +214,7 @@ final class DataQueryTests: XCTestCase {
         ("testBasicSelectStar", testBasicSelectStar),
         ("testSelectWithPredicates", testSelectWithPredicates),
         ("testSelectWithJoins", testSelectWithJoins),
+        ("testSelectWithOuterJoins", testSelectWithOuterJoins),
         ("testSubsetEdgecases", testSubsetEdgecases),
     ]
 }
