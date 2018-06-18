@@ -14,8 +14,12 @@ public protocol SQLSelectExpression: SQLSerializable {
 // MARK: Convenience
 
 extension SQLSelectExpression {
-    public static func function(_ function: Expression, as alias: Identifier? = nil) -> Self {
-        return .expression(function, alias: alias)
+    public static func count(_ arg: Expression.Function.Argument = .all, as alias: Identifier? = nil) -> Self {
+        return .function("COUNT", [arg], as: alias)
+    }
+    
+    public static func function(_ name: String, _ args: [Expression.Function.Argument], as alias: Identifier? = nil) -> Self {
+        return .expression(.function(.function(name, args)), alias: alias)
     }
 }
 

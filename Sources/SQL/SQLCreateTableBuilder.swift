@@ -1,6 +1,9 @@
-public final class SQLCreateTableBuilder<Connection>: SQLQueryBuilder
+public final class SQLCreateTableBuilder<Connection>: SQLQueryBuilder, SQLColumnBuilder
     where Connection: DatabaseQueryable, Connection.Query: SQLQuery
 {
+    /// See `SQLColumnBuilder`.
+    public typealias ColumnDefinition = Connection.Query.CreateTable.ColumnDefinition
+    
     /// `CreateTable` query being built.
     public var createTable: Connection.Query.CreateTable
     
@@ -10,6 +13,12 @@ public final class SQLCreateTableBuilder<Connection>: SQLQueryBuilder
     /// See `SQLQueryBuilder`.
     public var query: Connection.Query {
         return .createTable(createTable)
+    }
+    
+    /// See `SQLColumnBuilder`.
+    public var columns: [Connection.Query.CreateTable.ColumnDefinition] {
+        get { return createTable.columns }
+        set { createTable.columns = newValue }
     }
     
     /// Creates a new `SQLCreateTableBuilder`.
@@ -32,35 +41,6 @@ public final class SQLCreateTableBuilder<Connection>: SQLQueryBuilder
     /// specified.
     public func ifNotExists() -> Self {
         createTable.ifNotExists = true
-        return self
-    }
-    
-    /// Adds a column to the table.
-    ///
-    ///     conn.create(table: Planet.self).column(for: \.name, type: .text, .notNull).run()
-    ///
-    /// - parameters:
-    ///     - keyPath: Swift `KeyPath` to property that should be added.
-    ///     - type: Name of type to use for this column.
-    ///     - constraints: Zero or more column constraints to add.
-    /// - returns: Self for chaining.
-    public func column<T, V>(
-        for keyPath: KeyPath<T, V>,
-        type typeName: Connection.Query.CreateTable.ColumnDefinition.DataType,
-        _ constraints: Connection.Query.CreateTable.ColumnDefinition.ColumnConstraint...
-        ) -> Self where T: SQLTable {
-        return column(.columnDefinition(.keyPath(keyPath), typeName, constraints))
-    }
-    
-    /// Adds a column to the table.
-    ///
-    ///     conn.create(table: Planet.self).column(...).run()
-    ///
-    /// - parameters:
-    ///     - columnDefinition: Column definition to add.
-    /// - returns: Self for chaining.
-    public func column(_ columnDefinition: Connection.Query.CreateTable.ColumnDefinition) -> Self {
-        createTable.columns.append(columnDefinition)
         return self
     }
 }

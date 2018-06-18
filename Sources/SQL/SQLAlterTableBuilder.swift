@@ -1,6 +1,9 @@
-public final class SQLAlterTableBuilder<Connection>: SQLQueryBuilder
+public final class SQLAlterTableBuilder<Connection>: SQLQueryBuilder, SQLColumnBuilder
     where Connection: DatabaseQueryable, Connection.Query: SQLQuery
 {
+    /// See `SQLColumnBuilder`.
+    public typealias ColumnDefinition = Connection.Query.AlterTable.ColumnDefinition
+    
     /// `AlterTable` query being built.
     public var alterTable: Connection.Query.AlterTable
 
@@ -10,6 +13,12 @@ public final class SQLAlterTableBuilder<Connection>: SQLQueryBuilder
     /// See `SQLQueryBuilder`.
     public var query: Connection.Query {
         return .alterTable(alterTable)
+    }
+    
+    /// See `SQLColumnBuilder`.
+    public var columns: [Connection.Query.AlterTable.ColumnDefinition] {
+        get { return alterTable.columns }
+        set { alterTable.columns = newValue }
     }
 
     /// Creates a new `SQLAlterTableBuilder`.

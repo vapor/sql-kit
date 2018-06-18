@@ -5,6 +5,7 @@ let package = Package(
     name: "SQL",
     products: [
         .library(name: "SQL", targets: ["SQL"]),
+        .library(name: "SQLBenchmark", targets: ["SQLBenchmark"]),
     ],
     dependencies: [
         // 🗄 Core services for creating database integrations.
@@ -12,6 +13,7 @@ let package = Package(
     ],
     targets: [
         .target(name: "SQL", dependencies: ["DatabaseKit"]),
+        .target(name: "SQLBenchmark", dependencies: ["SQL"]),
         .testTarget(name: "SQLTests", dependencies: ["SQL"]),
     ]
 )
