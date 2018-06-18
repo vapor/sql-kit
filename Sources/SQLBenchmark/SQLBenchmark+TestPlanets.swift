@@ -15,11 +15,11 @@ extension SQLBenchmark {
             .temporary()
             .ifNotExists()
             .column(for: \Planet.id, .primaryKey)
-            .column(for: \Planet.galaxyID, .notNull, .references(\Galaxy.id))
+            .column(for: \Planet.galaxyID, .references(\Galaxy.id))
             .run().wait()
         
         try conn.alter(table: Planet.self)
-            .column(for: \Planet.name, .notNull, .default(.literal(.string("Unamed Planet"))))
+            .column(for: \Planet.name, .default(.literal(.string("Unamed Planet"))))
             .run().wait()
         
         try conn.insert(into: Galaxy.self)

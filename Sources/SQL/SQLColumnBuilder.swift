@@ -14,7 +14,7 @@ extension SQLColumnBuilder {
     ///     - constraints: Zero or more column constraints to add.
     /// - returns: Self for chaining.
     public func column<T, V>(
-        for keyPath: KeyPath<T, V>,
+        for keyPath: KeyPath<T, V?>,
         _ constraints: ColumnDefinition.ColumnConstraint...
     ) -> Self where T: SQLTable {
         guard let dataType = ColumnDefinition.DataType.dataType(appropriateFor: V.self) else {
@@ -22,6 +22,26 @@ extension SQLColumnBuilder {
             return self
         }
         return column(.columnDefinition(.keyPath(keyPath), dataType, constraints))
+    }
+    
+    /// Adds a column to the table.
+    ///
+    ///     conn.create(table: Planet.self).column(for: \.name, type: .text, .notNull).run()
+    ///
+    /// - parameters:
+    ///     - keyPath: Swift `KeyPath` to property that should be added.
+    ///     - type: Name of type to use for this column.
+    ///     - constraints: Zero or more column constraints to add.
+    /// - returns: Self for chaining.
+    public func column<T, V>(
+        for keyPath: KeyPath<T, V>,
+        _ constraints: ColumnDefinition.ColumnConstraint...
+    ) -> Self where T: SQLTable {
+        guard let dataType = ColumnDefinition.DataType.dataType(appropriateFor: V.self) else {
+            assertionFailure("No known \(Connection.Query.CreateTable.ColumnDefinition.DataType.self) for \(V.self).")
+            return self
+        }
+        return column(.columnDefinition(.keyPath(keyPath), dataType, constraints + [.notNull]))
     }
     
     /// Adds a column to the table.
