@@ -8,7 +8,7 @@ let package = Package(
     ],
     dependencies: [
         // 🗄 Core services for creating database integrations.
-        .package(url: "https://github.com/vapor/database-kit.git", from: "1.0.0"),
+        .package(url: "https://github.com/vapor/database-kit.git", .branch("sql")),
     ],
     targets: [
         .target(name: "SQL", dependencies: ["DatabaseKit"]),
