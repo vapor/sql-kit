@@ -6,9 +6,12 @@ let package = Package(
     products: [
         .library(name: "SQL", targets: ["SQL"]),
     ],
-    dependencies: [],
+    dependencies: [
+        // 🗄 Core services for creating database integrations.
+        .package(url: "https://github.com/vapor/database-kit.git", from: "1.0.0"),
+    ],
     targets: [
-        .target(name: "SQL", dependencies: []),
+        .target(name: "SQL", dependencies: ["DatabaseKit"]),
         .testTarget(name: "SQLTests", dependencies: ["SQL"]),
     ]
 )
