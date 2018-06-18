@@ -1,4 +1,4 @@
-extension SQLBenchmark {
+extension SQLBenchmarker {
     internal func testPlanets() throws {
         try conn.drop(table: Planet.self)
             .ifExists()

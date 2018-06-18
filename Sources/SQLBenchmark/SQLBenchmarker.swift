@@ -1,5 +1,5 @@
 /// Benchmarks SQL conformance.
-public final class SQLBenchmark<Connection> where
+public final class SQLBenchmarker<Connection> where
     Connection: DatabaseQueryable, Connection.Query: SQLQuery, Connection.Output == Connection.Query.RowDecoder.Row
 {
     internal let conn: Connection
