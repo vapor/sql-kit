@@ -78,7 +78,7 @@ public enum GenericSQLColumnConstraintAlgorithm<Expression, Collation, PrimaryKe
         case ._collate(let collation):
             return "COLLATE " + collation.serialize(&binds)
         case ._default(let expression):
-            return "DEFAULT (" + expression.serialize(&binds) + ")"
+            return "DEFAULT " + expression.serialize(&binds)
         case ._foreignKey(let foreignKey): return "REFERENCES " + foreignKey.serialize(&binds)
         }
     }
