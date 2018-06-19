@@ -25,9 +25,10 @@ extension SQLSelectExpression {
 
 // MARK: Generic
 
-public enum GenericSQLSelectExpression<Expression, Identifier>: SQLSelectExpression where
+public enum GenericSQLSelectExpression<Expression, Identifier>: SQLSelectExpression, ExpressibleByStringLiteral where
     Expression: SQLExpression, Identifier: SQLIdentifier
 {
+    /// See `SQLSelectExpression`.
     public typealias `Self` = GenericSQLSelectExpression<Expression, Identifier>
     
     /// See `SQLSelectExpression`.
@@ -67,6 +68,11 @@ public enum GenericSQLSelectExpression<Expression, Identifier>: SQLSelectExpress
         case ._expression(let expr, let alias): return (expr, alias)
         default: return nil
         }
+    }
+    
+    /// See `ExpressibleByStringLiteral`.
+    public init(stringLiteral value: String) {
+        self = ._expression(.column(.column(nil, .identifier(value))), alias: nil)
     }
     
     /// `*`
