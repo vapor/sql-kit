@@ -1,4 +1,4 @@
-public final class SQLRawBuilder<Connection>: SQLQueryBuilder
+public final class SQLRawBuilder<Connection>: SQLQueryBuilder, SQLQueryFetcher
     where Connection: DatabaseQueryable, Connection.Query: SQLQuery
 {
     /// Raw query being built.
