@@ -11,7 +11,7 @@ extension SQLBenchmarker {
         
         try conn.create(table: Galaxy.self)
             .column(for: \Galaxy.id, .primaryKey)
-            .column(for: \Galaxy.name, .notNull)
+            .column(for: \Galaxy.name)
             .run().wait()
         try conn.create(table: Planet.self)
             .ifNotExists()
