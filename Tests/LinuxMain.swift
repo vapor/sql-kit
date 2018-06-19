@@ -5,9 +5,7 @@ import XCTest
 
 XCTMain([
     // SQL
-    testCase(DataQueryTests.allTests),
-    testCase(DataManipulationTests.allTests),
-    testCase(DataDefinitionTests.allTests),
+    testCase(SQLTests.allTests),
 ])
 
 #endif
