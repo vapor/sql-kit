@@ -62,7 +62,7 @@ public func |= <E>(_ lhs: inout E?, _ rhs: E) where E: SQLExpression {
 
 // MARK: Generic
 
-public indirect enum GenericSQLExpression<Literal, Bind, ColumnIdentifier, BinaryOperator, Function, Subquery>: SQLExpression
+public indirect enum GenericSQLExpression<Literal, Bind, ColumnIdentifier, BinaryOperator, Function, Subquery>: SQLExpression, ExpressibleByStringLiteral, ExpressibleByFloatLiteral, ExpressibleByIntegerLiteral
     where Literal: SQLLiteral, Bind: SQLBind, ColumnIdentifier: SQLColumnIdentifier, BinaryOperator: SQLBinaryOperator & Equatable, Function: SQLFunction, Subquery: SQLSerializable
 {
     public typealias `Self` = GenericSQLExpression<Literal, Bind, ColumnIdentifier, BinaryOperator, Function, Subquery>
@@ -102,6 +102,21 @@ public indirect enum GenericSQLExpression<Literal, Bind, ColumnIdentifier, Binar
     case _function(Function)
     case _group([`Self`])
     case _subquery(Subquery)
+    
+    /// See `ExpressibleByFloatLiteral`.
+    public init(floatLiteral value: Double) {
+        self = ._literal(.numeric(value.description))
+    }
+    
+    /// See `ExpressibleByStringLiteral`.
+    public init(stringLiteral value: String) {
+        self = ._literal(.string(value.description))
+    }
+    
+    /// See `ExpressibleByIntegerLiteral`.
+    public init(integerLiteral value: Int) {
+        self = ._literal(.numeric(value.description))
+    }
 
     public var isNull: Bool {
         switch self {
