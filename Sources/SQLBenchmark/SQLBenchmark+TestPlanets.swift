@@ -1,18 +1,19 @@
 extension SQLBenchmarker {
     internal func testPlanets() throws {
-        try conn.drop(table: Planet.self)
-            .ifExists()
-            .run().wait()
-        try conn.drop(table: Galaxy.self)
-            .ifExists()
-            .run().wait()
+        defer {
+            _ = try? conn.drop(table: Planet.self)
+                .ifExists()
+                .run().wait()
+            _ = try? conn.drop(table: Galaxy.self)
+                .ifExists()
+                .run().wait()
+        }
         
         try conn.create(table: Galaxy.self)
             .column(for: \Galaxy.id, .primaryKey)
             .column(for: \Galaxy.name, .notNull)
             .run().wait()
         try conn.create(table: Planet.self)
-            .temporary()
             .ifNotExists()
             .column(for: \Planet.id, .primaryKey)
             .column(for: \Planet.galaxyID, .references(\Galaxy.id))
