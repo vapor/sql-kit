@@ -41,7 +41,7 @@ extension SQLColumnBuilder {
             assertionFailure("No known \(Connection.Query.CreateTable.ColumnDefinition.DataType.self) for \(V.self).")
             return self
         }
-        return column(.columnDefinition(.keyPath(keyPath), dataType, constraints + [.notNull]))
+        return column(.columnDefinition(.keyPath(keyPath), dataType, [.notNull] + constraints))
     }
     
     /// Adds a column to the table.
