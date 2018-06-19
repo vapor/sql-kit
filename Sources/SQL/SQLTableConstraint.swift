@@ -11,7 +11,7 @@ extension SQLTableConstraint {
         _ columns: Algorithm.Identifier...,
         identifier: Identifier? = nil
     ) -> Self {
-        return .constraint(.primaryKey(columns, .primaryKey()), identifier)
+        return .constraint(.primaryKey(columns), identifier)
     }
     public static func unique(
         _ columns: Algorithm.Identifier...,

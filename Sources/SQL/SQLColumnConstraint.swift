@@ -1,14 +1,14 @@
 public protocol SQLColumnConstraint: SQLSerializable {
     associatedtype Identifier: SQLIdentifier
-    associatedtype ColumnConstraintAlgorithm: SQLColumnConstraintAlgorithm
-    static func constraint(_ algorithm: ColumnConstraintAlgorithm, _ identifier: Identifier?) -> Self
+    associatedtype Algorithm: SQLColumnConstraintAlgorithm
+    static func constraint(_ algorithm: Algorithm, _ identifier: Identifier?) -> Self
 }
 
 // MARK: Convenience
 
 extension SQLColumnConstraint {
     public static var primaryKey: Self {
-        return .primaryKey(identifier: nil)
+        return .primaryKey(default: .default, identifier: nil)
     }
     
     /// Creates a new `PRIMARY KEY` column constraint.
@@ -16,8 +16,8 @@ extension SQLColumnConstraint {
     /// - parameters:
     ///     - identifier: Optional constraint name.
     /// - returns: New column constraint.
-    public static func primaryKey(identifier: Identifier?) -> Self {
-        return .constraint(.primaryKey(.primaryKey()), identifier)
+    public static func primaryKey(default: Algorithm.PrimaryKeyDefault? = nil, identifier: Identifier? = nil) -> Self {
+        return .constraint(.primaryKey(`default`), identifier)
     }
     
     public static var notNull: Self {
@@ -29,7 +29,7 @@ extension SQLColumnConstraint {
     /// - parameters:
     ///     - identifier: Optional constraint name.
     /// - returns: New column constraint.
-    public static func notNull(identifier: Identifier?) -> Self {
+    public static func notNull(identifier: Identifier? = nil) -> Self {
         return .constraint(.notNull, identifier)
     }
     
@@ -49,7 +49,7 @@ extension SQLColumnConstraint {
     ///     - identifier: Optional constraint name.
     /// - returns: New column constraint.
     public static func `default`(
-        _ expression: ColumnConstraintAlgorithm.Expression,
+        _ expression: Algorithm.Expression,
         identifier: Identifier? = nil
     ) -> Self {
         return .constraint(.default(expression), identifier)
@@ -57,8 +57,8 @@ extension SQLColumnConstraint {
     
     public static func references<T, V>(
         _ keyPath: KeyPath<T, V>,
-        onDelete: ColumnConstraintAlgorithm.ForeignKey.ConflictResolution? = nil,
-        onUpdate: ColumnConstraintAlgorithm.ForeignKey.ConflictResolution? = nil,
+        onDelete: Algorithm.ForeignKey.ConflictResolution? = nil,
+        onUpdate: Algorithm.ForeignKey.ConflictResolution? = nil,
         identifier: Identifier? = nil
         ) -> Self
         where T: SQLTable
@@ -67,10 +67,10 @@ extension SQLColumnConstraint {
     }
     
     public static func references(
-        _ foreignTable: ColumnConstraintAlgorithm.ForeignKey.TableIdentifier,
-        _ foreignColumns: [ColumnConstraintAlgorithm.ForeignKey.Identifier],
-        onDelete: ColumnConstraintAlgorithm.ForeignKey.ConflictResolution? = nil,
-        onUpdate: ColumnConstraintAlgorithm.ForeignKey.ConflictResolution? = nil,
+        _ foreignTable: Algorithm.ForeignKey.TableIdentifier,
+        _ foreignColumns: [Algorithm.ForeignKey.Identifier],
+        onDelete: Algorithm.ForeignKey.ConflictResolution? = nil,
+        onUpdate: Algorithm.ForeignKey.ConflictResolution? = nil,
         identifier: Identifier? = nil
         ) -> Self {
         return .constraint(.foreignKey(.foreignKey(foreignTable, foreignColumns, onDelete: onDelete, onUpdate: onUpdate)), identifier)
@@ -80,19 +80,19 @@ extension SQLColumnConstraint {
 
 // MARK: Generic
 
-public struct GenericSQLColumnConstraint<Identifier, ColumnConstraintAlgorithm>: SQLColumnConstraint
-    where Identifier: SQLIdentifier, ColumnConstraintAlgorithm: SQLColumnConstraintAlgorithm
+public struct GenericSQLColumnConstraint<Identifier, Algorithm>: SQLColumnConstraint
+    where Identifier: SQLIdentifier, Algorithm: SQLColumnConstraintAlgorithm
 {
-    public typealias `Self` = GenericSQLColumnConstraint<Identifier, ColumnConstraintAlgorithm>
+    public typealias `Self` = GenericSQLColumnConstraint<Identifier, Algorithm>
     
     /// See `SQLColumnConstraint`.
-    public static func constraint(_ algorithm: ColumnConstraintAlgorithm, _ identifier: Identifier?) -> Self {
+    public static func constraint(_ algorithm: Algorithm, _ identifier: Identifier?) -> Self {
         return .init(identifier: identifier, algorithm: algorithm)
     }
     
     public var identifier: Identifier?
     
-    public var algorithm: ColumnConstraintAlgorithm
+    public var algorithm: Algorithm
     
     /// See `SQLSerializable`.
     public func serialize(_ binds: inout [Encodable]) -> String {

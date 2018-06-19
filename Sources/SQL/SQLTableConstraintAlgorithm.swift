@@ -2,9 +2,8 @@ public protocol SQLTableConstraintAlgorithm: SQLSerializable {
     associatedtype Identifier: SQLIdentifier
     associatedtype Expression: SQLExpression
     associatedtype Collation: SQLCollation
-    associatedtype PrimaryKey: SQLPrimaryKey
     associatedtype ForeignKey: SQLForeignKey
-    static func primaryKey(_ columns: [Identifier],_ primaryKey: PrimaryKey) -> Self
+    static func primaryKey(_ columns: [Identifier]) -> Self
     static var notNull: Self { get }
     static func unique(_ columns: [Identifier]) -> Self
     static func check(_ expression: Expression) -> Self
@@ -13,14 +12,14 @@ public protocol SQLTableConstraintAlgorithm: SQLSerializable {
 
 // MARK: Generic
 
-public enum GenericSQLTableConstraintAlgorithm<Identifier, Expression, Collation, PrimaryKey, ForeignKey>: SQLTableConstraintAlgorithm
-    where Identifier: SQLIdentifier, Expression: SQLExpression, Collation: SQLCollation, PrimaryKey: SQLPrimaryKey, ForeignKey: SQLForeignKey
+public enum GenericSQLTableConstraintAlgorithm<Identifier, Expression, Collation, ForeignKey>: SQLTableConstraintAlgorithm
+    where Identifier: SQLIdentifier, Expression: SQLExpression, Collation: SQLCollation, ForeignKey: SQLForeignKey
 {
-    public typealias `Self` = GenericSQLTableConstraintAlgorithm<Identifier, Expression, Collation, PrimaryKey, ForeignKey>
+    public typealias `Self` = GenericSQLTableConstraintAlgorithm<Identifier, Expression, Collation, ForeignKey>
     
     /// See `SQLColumnConstraintAlgorithm`.
-    public static func primaryKey(_ columns: [Identifier], _ primaryKey: PrimaryKey) -> Self {
-        return ._primaryKey(columns, primaryKey)
+    public static func primaryKey(_ columns: [Identifier]) -> Self {
+        return ._primaryKey(columns)
     }
     
     /// See `SQLColumnConstraintAlgorithm`.
@@ -43,7 +42,7 @@ public enum GenericSQLTableConstraintAlgorithm<Identifier, Expression, Collation
         return ._foreignKey(columns, foreignKey)
     }
     
-    case _primaryKey([Identifier], PrimaryKey)
+    case _primaryKey([Identifier])
     case _notNull
     case _unique([Identifier])
     case _check(Expression)
@@ -52,11 +51,10 @@ public enum GenericSQLTableConstraintAlgorithm<Identifier, Expression, Collation
     /// See `SQLSerializable`.
     public func serialize(_ binds: inout [Encodable]) -> String {
         switch self {
-        case ._primaryKey(let columns, let primaryKey):
+        case ._primaryKey(let columns):
             var sql: [String] = []
             sql.append("PRIMARY KEY")
             sql.append("(" + columns.serialize(&binds) + ")")
-            sql.append(primaryKey.serialize(&binds))
             return sql.joined(separator: " ")
         case ._notNull: return "NOT NULL"
         case ._unique(let columns):

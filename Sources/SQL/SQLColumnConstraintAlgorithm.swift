@@ -1,9 +1,9 @@
 public protocol SQLColumnConstraintAlgorithm: SQLSerializable {
     associatedtype Expression: SQLExpression
     associatedtype Collation: SQLCollation
-    associatedtype PrimaryKey: SQLPrimaryKey
+    associatedtype PrimaryKeyDefault: SQLPrimaryKeyDefault
     associatedtype ForeignKey: SQLForeignKey
-    static func primaryKey(_ primaryKey: PrimaryKey) -> Self
+    static func primaryKey(_ `default`: PrimaryKeyDefault?) -> Self
     static var notNull: Self { get }
     static var unique: Self { get }
     static func check(_ expression: Expression) -> Self
@@ -14,14 +14,14 @@ public protocol SQLColumnConstraintAlgorithm: SQLSerializable {
 
 // MARK: Generic
 
-public enum GenericSQLColumnConstraintAlgorithm<Expression, Collation, PrimaryKey, ForeignKey>: SQLColumnConstraintAlgorithm
-    where Expression: SQLExpression, Collation: SQLCollation, PrimaryKey: SQLPrimaryKey, ForeignKey: SQLForeignKey
+public enum GenericSQLColumnConstraintAlgorithm<Expression, Collation, PrimaryKeyDefault, ForeignKey>: SQLColumnConstraintAlgorithm
+    where Expression: SQLExpression, Collation: SQLCollation, PrimaryKeyDefault: SQLPrimaryKeyDefault, ForeignKey: SQLForeignKey
 {
-    public typealias `Self` = GenericSQLColumnConstraintAlgorithm<Expression, Collation, PrimaryKey, ForeignKey>
+    public typealias `Self` = GenericSQLColumnConstraintAlgorithm<Expression, Collation, PrimaryKeyDefault, ForeignKey>
     
     /// See `SQLColumnConstraintAlgorithm`.
-    public static func primaryKey(_ primaryKey: PrimaryKey) -> Self {
-        return ._primaryKey(primaryKey)
+    public static func primaryKey(_ `default`: PrimaryKeyDefault?) -> Self {
+        return ._primaryKey(`default`)
     }
     
     /// See `SQLColumnConstraintAlgorithm`.
@@ -54,7 +54,7 @@ public enum GenericSQLColumnConstraintAlgorithm<Expression, Collation, PrimaryKe
         return ._foreignKey(foreignKey)
     }
     
-    case _primaryKey(PrimaryKey)
+    case _primaryKey(PrimaryKeyDefault?)
     case _notNull
     case _unique
     case _check(Expression)
@@ -65,12 +65,11 @@ public enum GenericSQLColumnConstraintAlgorithm<Expression, Collation, PrimaryKe
     /// See `SQLSerializable`.
     public func serialize(_ binds: inout [Encodable]) -> String {
         switch self {
-        case ._primaryKey(let primaryKey):
-            let pk = primaryKey.serialize(&binds)
-            if pk.isEmpty {
-                return "PRIMARY KEY"
+        case ._primaryKey(let `default`):
+            if let d = `default` {
+                return "PRIMARY KEY " + d.serialize(&binds)
             } else {
-                return "PRIMARY KEY " + pk
+                return "PRIMARY KEY"
             }
         case ._notNull: return "NOT NULL"
         case ._unique: return "UNIQUE"
