@@ -1,10 +1,11 @@
 public protocol SQLLiteral: SQLSerializable {
-    associatedtype Default: SQLDefaultLiteral
+    associatedtype DefaultLiteral: SQLDefaultLiteral
+    associatedtype BoolLiteral: SQLBoolLiteral
     static func string(_ string: String) -> Self
     static func numeric(_ string: String) -> Self
     static var null: Self { get }
-    static func `default`(_ default: Default) -> Self
-    static func boolean(_ bool: Bool) -> Self
+    static func `default`(_ default: DefaultLiteral) -> Self
+    static func boolean(_ bool: BoolLiteral) -> Self
     
     var isNull: Bool { get }
 }
@@ -19,10 +20,15 @@ public protocol SQLDefaultLiteral: SQLSerializable {
     static func `default`() -> Self
 }
 
+public protocol SQLBoolLiteral: SQLSerializable {
+    static var `true`: Self { get }
+    static var `false`: Self { get }
+}
+
 // MARK: Generic
 
-public enum GenericSQLLiteral<Default>: SQLLiteral, ExpressibleByStringLiteral, ExpressibleByFloatLiteral, ExpressibleByIntegerLiteral where
-    Default: SQLDefaultLiteral
+public enum GenericSQLLiteral<DefaultLiteral, BoolLiteral>: SQLLiteral, ExpressibleByStringLiteral, ExpressibleByFloatLiteral, ExpressibleByIntegerLiteral where
+    DefaultLiteral: SQLDefaultLiteral, BoolLiteral: SQLBoolLiteral
 {
     /// See `SQLLiteral`.
     public static func string(_ string: String) -> GenericSQLLiteral {
@@ -40,12 +46,12 @@ public enum GenericSQLLiteral<Default>: SQLLiteral, ExpressibleByStringLiteral, 
     }
     
     /// See `SQLLiteral`.
-    public static func `default`(_ default: Default) -> GenericSQLLiteral<Default> {
+    public static func `default`(_ default: DefaultLiteral) -> GenericSQLLiteral {
         return ._default(`default`)
     }
     
     /// See `SQLLiteral`.
-    public static func boolean(_ bool: Bool) -> GenericSQLLiteral {
+    public static func boolean(_ bool: BoolLiteral) -> GenericSQLLiteral {
         return ._boolean(bool)
     }
 
@@ -67,8 +73,8 @@ public enum GenericSQLLiteral<Default>: SQLLiteral, ExpressibleByStringLiteral, 
     case _string(String)
     case _numeric(String)
     case _null
-    case _default(Default)
-    case _boolean(Bool)
+    case _default(DefaultLiteral)
+    case _boolean(BoolLiteral)
     
     /// See `SQLLiteral`.
     public var isNull: Bool {
@@ -81,7 +87,7 @@ public enum GenericSQLLiteral<Default>: SQLLiteral, ExpressibleByStringLiteral, 
     /// See `SQLSerializable`.
     public func serialize(_ binds: inout [Encodable]) -> String {
         switch self {
-        case ._boolean(let bool): return bool.description.uppercased()
+        case ._boolean(let bool): return bool.serialize(&binds)
         case ._null: return "NULL"
         case ._default(let d): return d.serialize(&binds)
         case ._numeric(let string): return string

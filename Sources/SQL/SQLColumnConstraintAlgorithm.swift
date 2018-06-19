@@ -41,7 +41,7 @@ public enum GenericSQLColumnConstraintAlgorithm<Expression, Collation, PrimaryKe
     
     /// See `SQLColumnConstraintAlgorithm`.
     public static func collate(_ collation: Collation) -> Self {
-        return .collate(collation)
+        return ._collate(collation)
     }
     
     /// See `SQLColumnConstraintAlgorithm`.

@@ -132,6 +132,22 @@ public indirect enum GenericSQLExpression<Literal, Bind, ColumnIdentifier, Binar
         case ._column(let column): return column.serialize(&binds)
         case ._binary(let lhs, let op, let rhs):
             switch rhs {
+            case ._group(let group):
+                switch group.count {
+                case 0:
+                    switch op {
+                    case .in: return Self.literal(.boolean(.false)).serialize(&binds)
+                    case .notIn: return Self.literal(.boolean(.true)).serialize(&binds)
+                    default: break
+                    }
+                case 1:
+                    switch op {
+                    case .in: return Self._binary(lhs, .equal, group[0]).serialize(&binds)
+                    case .notIn: return Self._binary(lhs, .notEqual, group[0]).serialize(&binds)
+                    default: break
+                    }
+                default: break
+                }
             case ._literal(let literal):
                 if literal.isNull {
                     switch op {

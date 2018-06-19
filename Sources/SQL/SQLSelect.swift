@@ -51,7 +51,7 @@ where Distinct: SQLDistinct, SelectExpression: SQLSelectExpression, TableIdentif
             sql.append(tables.serialize(&binds))
         }
         if !joins.isEmpty {
-            sql.append(joins.serialize(&binds))
+            sql.append(joins.serialize(&binds, joinedBy: " "))
         }
         if let predicate = self.predicate {
             sql.append("WHERE")
@@ -66,6 +66,5 @@ where Distinct: SQLDistinct, SelectExpression: SQLSelectExpression, TableIdentif
             sql.append(orderBy.serialize(&binds))
         }
         return sql.joined(separator: " ")
-        
     }
 }
