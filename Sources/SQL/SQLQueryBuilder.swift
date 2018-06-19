@@ -27,7 +27,12 @@ extension SQLQueryFetcher {
     }
 }
 
-extension SQLQueryFetcher where Connection.Output == Connection.Query.RowDecoder.Row {
+public protocol SQLConnection: DatabaseQueryable where Query: SQLQuery {
+    func decode<D>(_ type: D.Type, from row: Output, table: Query.Select.TableIdentifier?) throws -> D
+        where D: Decodable
+}
+
+extension SQLQueryFetcher where Connection: SQLConnection {
     // MARK: Decode
     
     public func all<D>(decoding type: D.Type) -> Future<[D]>
@@ -58,9 +63,9 @@ extension SQLQueryFetcher where Connection.Output == Connection.Query.RowDecoder
         where A: SQLTable, B: SQLTable, C: SQLTable
     {
         return run { row in
-            let a = try Connection.Query.RowDecoder.init().decode(A.self, from: row, table: .table(A.self))
-            let b = try Connection.Query.RowDecoder.init().decode(B.self, from: row, table: .table(B.self))
-            let c = try Connection.Query.RowDecoder.init().decode(C.self, from: row, table: .table(C.self))
+            let a = try self.connection.decode(A.self, from: row, table: .table(A.self))
+            let b = try self.connection.decode(B.self, from: row, table: .table(B.self))
+            let c = try self.connection.decode(C.self, from: row, table: .table(C.self))
             try handler(a, b, c)
         }
     }
@@ -72,8 +77,8 @@ extension SQLQueryFetcher where Connection.Output == Connection.Query.RowDecoder
         where A: SQLTable, B: SQLTable
     {
         return run { row in
-            let a = try Connection.Query.RowDecoder.init().decode(A.self, from: row, table: .table(A.self))
-            let b = try Connection.Query.RowDecoder.init().decode(B.self, from: row, table: .table(B.self))
+            let a = try self.connection.decode(A.self, from: row, table: .table(A.self))
+            let b = try self.connection.decode(B.self, from: row, table: .table(B.self))
             try handler(a, b)
         }
     }
@@ -85,7 +90,7 @@ extension SQLQueryFetcher where Connection.Output == Connection.Query.RowDecoder
         where D: Decodable
     {
         return run { row in
-            let d = try Connection.Query.RowDecoder.init().decode(D.self, from: row, table: nil)
+            let d = try self.connection.decode(D.self, from: row, table: nil)
             try handler(d)
         }
     }
