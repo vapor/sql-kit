@@ -6,8 +6,6 @@ public protocol SQLQuery: SQLSerializable {
     associatedtype Insert: SQLInsert
     associatedtype Select: SQLSelect
     associatedtype Update: SQLUpdate
-    
-//    associatedtype RowDecoder: SQLRowDecoder
 
     static func alterTable(_ alterTable: AlterTable) -> Self
     static func createTable(_ createTable: CreateTable) -> Self

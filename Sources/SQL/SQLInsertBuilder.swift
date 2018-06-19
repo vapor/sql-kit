@@ -39,7 +39,7 @@ public final class SQLInsertBuilder<Connection>: SQLQueryBuilder
             }
             insert.values.append(row.map { row in
                 if row.value.isNull {
-                    return .literal(.null) // FIXME: use `DEFAULT` value
+                    return .literal(.default)
                 } else {
                     return row.value
                 }

@@ -29,7 +29,7 @@ extension SQLBenchmarker {
         
         let a = try conn.select().all().from(Galaxy.self)
             .where(\Galaxy.name == "Milky Way")
-            .groupBy(\Galaxy.name)
+            .groupBy(\Galaxy.id)
             .orderBy(\Galaxy.name, .descending)
             .all(decoding: Galaxy.self).wait()
         print(a)
