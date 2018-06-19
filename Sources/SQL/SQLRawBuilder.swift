@@ -25,6 +25,11 @@ public final class SQLRawBuilder<Connection>: SQLQueryBuilder, SQLQueryFetcher
         self.binds.append(encodable)
         return self
     }
+    
+    public func binds(_ encodables: [Encodable]) -> Self {
+        self.binds += encodables
+        return self
+    }
 }
 
 // MARK: Connection
