@@ -16,6 +16,8 @@ public protocol SQLSelect: SQLSerializable {
     var predicate: Expression? { get set }
     var groupBy: [GroupBy] { get set }
     var orderBy: [OrderBy] { get set }
+    var limit: Int? { get set }
+    var offset: Int? { get set }
 }
 
 // MARK: Generic
@@ -32,10 +34,12 @@ where Distinct: SQLDistinct, SelectExpression: SQLSelectExpression, TableIdentif
     public var predicate: Expression?
     public var groupBy: [GroupBy]
     public var orderBy: [OrderBy]
+    public var limit: Int?
+    public var offset: Int?
     
     /// See `SQLSelect`.
     public static func select() -> Self {
-        return .init(distinct: nil, columns: [], tables: [], joins: [], predicate: nil, groupBy: [], orderBy: [])
+        return .init(distinct: nil, columns: [], tables: [], joins: [], predicate: nil, groupBy: [], orderBy: [], limit: nil, offset: nil)
     }
     
     /// See `SQLSerializable`.
@@ -64,6 +68,14 @@ where Distinct: SQLDistinct, SelectExpression: SQLSelectExpression, TableIdentif
         if !orderBy.isEmpty {
             sql.append("ORDER BY")
             sql.append(orderBy.serialize(&binds))
+        }
+        if let limit = self.limit {
+            sql.append("LIMIT")
+            sql.append(limit.description)
+        }
+        if let offset = self.offset {
+            sql.append("OFFSET")
+            sql.append(offset.description)
         }
         return sql.joined(separator: " ")
     }
