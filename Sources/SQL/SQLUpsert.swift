@@ -1,3 +1,5 @@
+// upsert is non-standard SQL and not included on any of the SQL query types.
+
 public protocol SQLUpsert: SQLSerializable {
     associatedtype Identifier: SQLIdentifier
     associatedtype Expression: SQLExpression
@@ -27,5 +29,22 @@ public struct GenericSQLUpsert<Identifier, Expression>: SQLUpsert
         sql.append("ON CONFLICT DO UPDATE SET")
         sql.append(values.map { $0.0.serialize(&binds) + " = " + $0.1.serialize(&binds) }.joined(separator: ", "))
         return sql.joined(separator: " ")
+    }
+}
+
+
+public protocol SQLUpsertBuilder: SQLQueryBuilder {
+    associatedtype Upsert: SQLUpsert
+    var upsert: Upsert { get set }
+}
+
+extension SQLUpsertBuilder {
+    public func onConflict<E>(set value: E) -> Self where E: Encodable {
+        let row = SQLQueryEncoder(Upsert.Expression.self).encode(value)
+        let values = row.map { row -> (Upsert.Identifier, Upsert.Expression) in
+            return (.identifier(row.key), row.value)
+        }
+        upsert = .upsert(values)
+        return self
     }
 }

@@ -12,6 +12,5 @@ public final class SQLBenchmarker<Connection> where
     /// Runs the SQL benchmark.
     public func run() throws {
         try testPlanets()
-        try testUpsert()
     }
 }
