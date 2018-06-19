@@ -47,6 +47,15 @@ public final class SQLInsertBuilder<Connection>: SQLQueryBuilder
         }
         return self
     }
+    
+    public func onConflict<E>(set value: E) -> Self where E: Encodable {
+        let row = SQLQueryEncoder(Connection.Query.Insert.Upsert.Expression.self).encode(value)
+        let values = row.map { row -> (Connection.Query.Insert.Upsert.Identifier, Connection.Query.Insert.Upsert.Expression) in
+            return (.identifier(row.key), row.value)
+        }
+        insert.upsert = .upsert(values)
+        return self
+    }
 }
 
 // MARK: Connection
