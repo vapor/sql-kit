@@ -36,12 +36,26 @@ extension SQLIdentifier {
 
 // MARK: Generic
 
-public struct GenericSQLColumnIdentifier<TableIdentifier, Identifier>: SQLColumnIdentifier
+public struct GenericSQLColumnIdentifier<TableIdentifier, Identifier>: SQLColumnIdentifier, Hashable
     where TableIdentifier: SQLTableIdentifier, Identifier: SQLIdentifier
 {
     /// See `SQLColumnIdentifier`.
     public static func column(_ table: TableIdentifier?, _ identifier: Identifier) -> GenericSQLColumnIdentifier<TableIdentifier, Identifier> {
         return self.init(table: table, identifier: identifier)
+    }
+    
+    /// See `Equatable`.
+    public static func == (lhs: GenericSQLColumnIdentifier<TableIdentifier, Identifier>, rhs: GenericSQLColumnIdentifier<TableIdentifier, Identifier>) -> Bool {
+        return lhs.table?.identifier.string == rhs.table?.identifier.string && lhs.identifier.string == rhs.identifier.string
+    }
+    
+    /// See `Hashable`.
+    public var hashValue: Int {
+        if let table = table {
+            return table.identifier.string.hashValue &+ identifier.string.hashValue
+        } else {
+            return identifier.string.hashValue
+        }
     }
     
     /// See `SQLColumnIdentifier`.
