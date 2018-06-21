@@ -24,8 +24,8 @@ extension SQLTableConstraint {
         _ columns: [Algorithm.Identifier],
         references foreignTable: Algorithm.ForeignKey.TableIdentifier,
         _ foreignColumns: [Algorithm.ForeignKey.Identifier],
-        onDelete: Algorithm.ForeignKey.ConflictResolution? = nil,
-        onUpdate: Algorithm.ForeignKey.ConflictResolution? = nil,
+        onDelete: Algorithm.ForeignKey.Action? = nil,
+        onUpdate: Algorithm.ForeignKey.Action? = nil,
         identifier: Identifier? = nil
     ) -> Self {
         return .constraint(.foreignKey(columns, .foreignKey(foreignTable, foreignColumns, onDelete: onDelete, onUpdate: onUpdate)), identifier)

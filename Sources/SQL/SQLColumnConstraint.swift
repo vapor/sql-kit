@@ -57,10 +57,10 @@ extension SQLColumnConstraint {
     
     public static func references<T, V>(
         _ keyPath: KeyPath<T, V>,
-        onDelete: Algorithm.ForeignKey.ConflictResolution? = nil,
-        onUpdate: Algorithm.ForeignKey.ConflictResolution? = nil,
+        onDelete: Algorithm.ForeignKey.Action? = nil,
+        onUpdate: Algorithm.ForeignKey.Action? = nil,
         identifier: Identifier? = nil
-        ) -> Self
+    ) -> Self
         where T: SQLTable
     {
         return references(.keyPath(keyPath), [.keyPath(keyPath)], onDelete: onDelete, onUpdate: onUpdate, identifier: identifier)
@@ -69,10 +69,10 @@ extension SQLColumnConstraint {
     public static func references(
         _ foreignTable: Algorithm.ForeignKey.TableIdentifier,
         _ foreignColumns: [Algorithm.ForeignKey.Identifier],
-        onDelete: Algorithm.ForeignKey.ConflictResolution? = nil,
-        onUpdate: Algorithm.ForeignKey.ConflictResolution? = nil,
+        onDelete: Algorithm.ForeignKey.Action? = nil,
+        onUpdate: Algorithm.ForeignKey.Action? = nil,
         identifier: Identifier? = nil
-        ) -> Self {
+    ) -> Self {
         return .constraint(.foreignKey(.foreignKey(foreignTable, foreignColumns, onDelete: onDelete, onUpdate: onUpdate)), identifier)
     }
 }

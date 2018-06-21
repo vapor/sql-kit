@@ -1,29 +1,29 @@
 public protocol SQLForeignKey: SQLSerializable {
     associatedtype TableIdentifier: SQLTableIdentifier
     associatedtype Identifier: SQLIdentifier
-    associatedtype ConflictResolution: SQLConflictResolution
+    associatedtype Action: SQLForeignKeyAction
     
     static func foreignKey(
         _ foreignTable: TableIdentifier,
         _ foreignColumns: [Identifier],
-        onDelete: ConflictResolution?,
-        onUpdate: ConflictResolution?
+        onDelete: Action?,
+        onUpdate: Action?
     ) -> Self
 }
 
 // MARK: Generic
 
-public struct GenericSQLForeignKey<TableIdentifier, Identifier, ConflictResolution>: SQLForeignKey
-    where TableIdentifier: SQLTableIdentifier, Identifier: SQLIdentifier, ConflictResolution: SQLConflictResolution
+public struct GenericSQLForeignKey<TableIdentifier, Identifier, Action>: SQLForeignKey
+    where TableIdentifier: SQLTableIdentifier, Identifier: SQLIdentifier, Action: SQLForeignKeyAction
 {
-    public typealias `Self` = GenericSQLForeignKey<TableIdentifier, Identifier, ConflictResolution>
+    public typealias `Self` = GenericSQLForeignKey<TableIdentifier, Identifier, Action>
     
     /// See `SQLForeignKey`.
     public static func foreignKey(
         _ foreignTable: TableIdentifier,
         _ foreignColumns: [Identifier],
-        onDelete: ConflictResolution?,
-        onUpdate: ConflictResolution?
+        onDelete: Action?,
+        onUpdate: Action?
     ) -> Self {
         return .init(foreignTable: foreignTable, foreignColumns: foreignColumns, onDelete: onDelete, onUpdate: onUpdate)
     }
@@ -32,9 +32,9 @@ public struct GenericSQLForeignKey<TableIdentifier, Identifier, ConflictResoluti
     
     public var foreignColumns: [Identifier]
     
-    public var onDelete: ConflictResolution?
+    public var onDelete: Action?
     
-    public var onUpdate: ConflictResolution?
+    public var onUpdate: Action?
     
     /// See `SQLSerializable`.
     public func serialize(_ binds: inout [Encodable]) -> String {
