@@ -2,20 +2,19 @@ public protocol SQLCreateIndex: SQLSerializable {
     associatedtype Modifier: SQLIndexModifier
     associatedtype Identifier: SQLIdentifier
     associatedtype TableIdentifier: SQLTableIdentifier
-    associatedtype ColumnIdentifier: SQLColumnIdentifier
     
-    static func createIndex(_ identifier: Identifier, _ table: TableIdentifier, _ columns: [ColumnIdentifier]) -> Self
+    static func createIndex(_ identifier: Identifier, _ table: TableIdentifier, _ columns: [Identifier]) -> Self
     
     var modifier: Modifier? { get set }
 }
 
-public struct GenericSQLCreateIndex<Modifier, Identifier, TableIdentifier, ColumnIdentifier>: SQLCreateIndex where
-    Modifier: SQLIndexModifier, Identifier: SQLIdentifier, TableIdentifier: SQLTableIdentifier, ColumnIdentifier: SQLColumnIdentifier
+public struct GenericSQLCreateIndex<Modifier, Identifier, TableIdentifier>: SQLCreateIndex where
+    Modifier: SQLIndexModifier, Identifier: SQLIdentifier, TableIdentifier: SQLTableIdentifier
 {
-    public typealias `Self` = GenericSQLCreateIndex<Modifier, Identifier, TableIdentifier, ColumnIdentifier>
+    public typealias `Self` = GenericSQLCreateIndex<Modifier, Identifier, TableIdentifier>
     
     /// See `SQLCreateIndex`.
-    public static func createIndex(_ identifier: Identifier, _ table: TableIdentifier, _ columns: [ColumnIdentifier]) -> Self {
+    public static func createIndex(_ identifier: Identifier, _ table: TableIdentifier, _ columns: [Identifier]) -> Self {
         return .init(modifier: nil, identifier: identifier, table: table, columns: columns)
     }
     
@@ -26,7 +25,7 @@ public struct GenericSQLCreateIndex<Modifier, Identifier, TableIdentifier, Colum
     
     public var table: TableIdentifier
     
-    public var columns: [ColumnIdentifier]
+    public var columns: [Identifier]
     
     /// See `SQLSerializable`.
     public func serialize(_ binds: inout [Encodable]) -> String {
