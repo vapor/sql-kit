@@ -8,7 +8,7 @@ public protocol SQLTableIdentifier: SQLSerializable {
 // MARK: Convenience
 
 extension SQLTableIdentifier {
-    static func table<Table>(_ table: Table.Type) -> Self
+    public static func table<Table>(_ table: Table.Type) -> Self
         where Table: SQLTable
     {
         return .table(.identifier(Table.sqlTableIdentifierString))

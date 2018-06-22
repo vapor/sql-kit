@@ -13,6 +13,7 @@ extension SQLBenchmarker {
             .column(for: \Galaxy.id, .primaryKey)
             .column(for: \Galaxy.name)
             .run().wait()
+        
         try conn.create(table: Planet.self)
             .ifNotExists()
             .column(for: \Planet.id, .primaryKey)
@@ -21,6 +22,10 @@ extension SQLBenchmarker {
         
         try conn.alter(table: Planet.self)
             .column(for: \Planet.name, .default(.literal(.string("Unamed Planet"))))
+            .run().wait()
+        
+        try conn.create(index: .identifier("test_index"), on: \Planet.name)
+            .unique()
             .run().wait()
         
         try conn.insert(into: Galaxy.self)
