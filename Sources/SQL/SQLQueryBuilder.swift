@@ -25,6 +25,8 @@ extension SQLQueryFetcher {
     public func run(_ handler: @escaping (Connection.Output) throws -> ()) -> Future<Void> {
         return connection.query(query, handler)
     }
+    
+    
 }
 
 public protocol SQLConnection: DatabaseQueryable where Query: SQLQuery {
@@ -34,6 +36,24 @@ public protocol SQLConnection: DatabaseQueryable where Query: SQLQuery {
 
 extension SQLQueryFetcher where Connection: SQLConnection {
     // MARK: Decode
+    
+    public func first<D>(decoding type: D.Type) -> Future<D?>
+        where D: Decodable
+    {
+        return self.all(decoding: type).map { $0.first }
+    }
+    
+    public func first<A, B>(decoding a: A.Type, _ b: B.Type) -> Future<(A, B)?>
+        where A: SQLTable, B: SQLTable
+    {
+        return self.all(decoding: a, b).map { $0.first }
+    }
+    
+    public func first<A, B, C>(decoding a: A.Type, _ b: B.Type, _ c: C.Type) -> Future<(A, B, C)?>
+        where A: SQLTable, B: SQLTable, C: SQLTable
+    {
+        return self.all(decoding: a, b, c).map { $0.first }
+    }
     
     public func all<D>(decoding type: D.Type) -> Future<[D]>
         where D: Decodable

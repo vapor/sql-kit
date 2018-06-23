@@ -1,6 +1,8 @@
 public protocol SQLBind: SQLSerializable {
     static func encodable<E>(_ value: E) -> Self
         where E: Encodable
+    
+    var value: Encodable { get }
 }
 
 // MARK: Generic
