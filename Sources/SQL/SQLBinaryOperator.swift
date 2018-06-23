@@ -10,6 +10,8 @@ public protocol SQLBinaryOperator: SQLSerializable {
     static var `notIn`: Self { get }
     static var and: Self { get }
     static var or: Self { get }
+    static var regexp: Self { get }
+    static var notRegexp: Self { get }
 }
 
 // MARK: Generic
@@ -47,6 +49,12 @@ public enum GenericSQLBinaryOperator: SQLBinaryOperator, Equatable {
     
     /// See `SQLBinaryOperator`.
     public static var or: GenericSQLBinaryOperator { return ._or }
+    
+    /// See `SQLBinaryOperator`.
+    public static var regexp: GenericSQLBinaryOperator { return ._regexp }
+    
+    /// See `SQLBinaryOperator`.
+    public static var notRegexp: GenericSQLBinaryOperator { return ._notRegexp }
     
     /// `||`
     case _concatenate
@@ -172,42 +180,5 @@ public enum GenericSQLBinaryOperator: SQLBinaryOperator, Equatable {
         case ._notMatch: return "NOT MATCH"
         case ._notRegexp: return "NOT REGEXP"
         }
-    }
-}
-
-// MARK: Operator
-
-public func == <T,V,E>(_ lhs: KeyPath<T, V>, _ rhs: V) -> E
-    where T: SQLTable, V: Encodable, E: SQLExpression
-{
-    if rhs.isNil {
-        return E.binary(.column(.keyPath(lhs)), .equal, .literal(.null))
-    }
-    return E.binary(.column(.keyPath(lhs)), .equal, .bind(.encodable(rhs)))
-}
-
-public func != <T,V,E>(_ lhs: KeyPath<T, V>, _ rhs: V) -> E
-    where T: SQLTable, V: Encodable, E: SQLExpression
-{
-    if rhs.isNil {
-        return E.binary(.column(.keyPath(lhs)), .notEqual, .literal(.null))
-    }
-    return E.binary(.column(.keyPath(lhs)), .notEqual, .bind(.encodable(rhs)))
-}
-
-
-public func == <A, B, C, D, E>(_ lhs: KeyPath<A, B>, _ rhs: KeyPath<C, D>) -> E
-    where A: SQLTable, B: Encodable, C: SQLTable, D: Encodable, E: SQLExpression
-{
-    return E.binary(.column(.keyPath(lhs)), .equal, .column(.keyPath(rhs)))
-}
-
-internal extension Encodable {
-    /// Returns `true` if this `Encodable` is `nil`.
-    var isNil: Bool {
-        guard let optional = self as? AnyOptionalType, optional.anyWrapped == nil else {
-            return false
-        }
-        return true
     }
 }

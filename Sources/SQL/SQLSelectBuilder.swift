@@ -25,15 +25,7 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
     }
     
     public func column(
-        function: String,
-        _ arguments: Connection.Query.Select.SelectExpression.Expression.Function.Argument...,
-        as alias: Connection.Query.Select.SelectExpression.Identifier? = nil
-    ) -> Self {
-        return column(expression: .function(.function(function, arguments)), as: alias)
-    }
-    
-    public func column(
-        expression: Connection.Query.Select.SelectExpression.Expression,
+        _ expression: Connection.Query.Select.SelectExpression.Expression,
         as alias: Connection.Query.Select.SelectExpression.Identifier? = nil
     ) -> Self {
         return column(.expression(expression, alias: alias))
@@ -112,6 +104,82 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
     public func orderBy(_ expression: Connection.Query.Select.OrderBy.Expression, _ direction: Connection.Query.Select.OrderBy.Direction = .ascending) -> Self {
         select.orderBy.append(.orderBy(expression, direction))
         return self
+    }
+}
+
+// MARK: Columns
+
+extension SQLSelectBuilder {
+    public func column<T, V>(
+        _ keyPath: KeyPath<T, V>,
+        as alias: Connection.Query.Select.SelectExpression.Identifier? = nil
+    ) -> Self where T: SQLTable {
+        return self.column(.expression(.column(.keyPath(keyPath)), alias: alias))
+    }
+    
+    public func columns<T1, V1, T2, V2>(
+        _ keyPath1: KeyPath<T1, V1>, as alias1: Connection.Query.Select.SelectExpression.Identifier? = nil,
+        _ keyPath2: KeyPath<T2, V2>, as alias2: Connection.Query.Select.SelectExpression.Identifier? = nil
+    ) -> Self where T1: SQLTable, T2: SQLTable {
+        return self
+            .column(.expression(.column(.keyPath(keyPath1)), alias: alias1))
+            .column(.expression(.column(.keyPath(keyPath2)), alias: alias2))
+    }
+    
+    public func columns<T1, V1, T2, V2, T3, V3>(
+        _ keyPath1: KeyPath<T1, V1>, as alias1: Connection.Query.Select.SelectExpression.Identifier? = nil,
+        _ keyPath2: KeyPath<T2, V2>, as alias2: Connection.Query.Select.SelectExpression.Identifier? = nil,
+        _ keyPath3: KeyPath<T3, V3>, as alias3: Connection.Query.Select.SelectExpression.Identifier? = nil
+    ) -> Self where T1: SQLTable, T2: SQLTable, T3: SQLTable {
+        return self
+            .column(.expression(.column(.keyPath(keyPath1)), alias: alias1))
+            .column(.expression(.column(.keyPath(keyPath2)), alias: alias2))
+            .column(.expression(.column(.keyPath(keyPath3)), alias: alias3))
+    }
+    
+    public func columns<T1, V1, T2, V2, T3, V3, T4, V4>(
+        _ keyPath1: KeyPath<T1, V1>, as alias1: Connection.Query.Select.SelectExpression.Identifier? = nil,
+        _ keyPath2: KeyPath<T2, V2>, as alias2: Connection.Query.Select.SelectExpression.Identifier? = nil,
+        _ keyPath3: KeyPath<T3, V3>, as alias3: Connection.Query.Select.SelectExpression.Identifier? = nil,
+        _ keyPath4: KeyPath<T4, V4>, as alias4: Connection.Query.Select.SelectExpression.Identifier? = nil
+    ) -> Self where T1: SQLTable, T2: SQLTable, T3: SQLTable, T4: SQLTable {
+        return self
+            .column(.expression(.column(.keyPath(keyPath1)), alias: alias1))
+            .column(.expression(.column(.keyPath(keyPath2)), alias: alias2))
+            .column(.expression(.column(.keyPath(keyPath3)), alias: alias3))
+            .column(.expression(.column(.keyPath(keyPath4)), alias: alias4))
+    }
+    
+    public func columns<T1, V1, T2, V2, T3, V3, T4, V4, T5, V5>(
+        _ keyPath1: KeyPath<T1, V1>, as alias1: Connection.Query.Select.SelectExpression.Identifier? = nil,
+        _ keyPath2: KeyPath<T2, V2>, as alias2: Connection.Query.Select.SelectExpression.Identifier? = nil,
+        _ keyPath3: KeyPath<T3, V3>, as alias3: Connection.Query.Select.SelectExpression.Identifier? = nil,
+        _ keyPath4: KeyPath<T4, V4>, as alias4: Connection.Query.Select.SelectExpression.Identifier? = nil,
+        _ keyPath5: KeyPath<T5, V5>, as alias5: Connection.Query.Select.SelectExpression.Identifier? = nil
+    ) -> Self where T1: SQLTable, T2: SQLTable, T3: SQLTable, T4: SQLTable, T5: SQLTable {
+        return self
+            .column(.expression(.column(.keyPath(keyPath1)), alias: alias1))
+            .column(.expression(.column(.keyPath(keyPath2)), alias: alias2))
+            .column(.expression(.column(.keyPath(keyPath3)), alias: alias3))
+            .column(.expression(.column(.keyPath(keyPath4)), alias: alias4))
+            .column(.expression(.column(.keyPath(keyPath5)), alias: alias5))
+    }
+    
+    public func columns<T1, V1, T2, V2, T3, V3, T4, V4, T5, V5, T6, V6>(
+        _ keyPath1: KeyPath<T1, V1>, as alias1: Connection.Query.Select.SelectExpression.Identifier? = nil,
+        _ keyPath2: KeyPath<T2, V2>, as alias2: Connection.Query.Select.SelectExpression.Identifier? = nil,
+        _ keyPath3: KeyPath<T3, V3>, as alias3: Connection.Query.Select.SelectExpression.Identifier? = nil,
+        _ keyPath4: KeyPath<T4, V4>, as alias4: Connection.Query.Select.SelectExpression.Identifier? = nil,
+        _ keyPath5: KeyPath<T5, V5>, as alias5: Connection.Query.Select.SelectExpression.Identifier? = nil,
+        _ keyPath6: KeyPath<T6, V6>, as alias6: Connection.Query.Select.SelectExpression.Identifier? = nil
+    ) -> Self where T1: SQLTable, T2: SQLTable, T3: SQLTable, T4: SQLTable, T5: SQLTable, T6: SQLTable {
+        return self
+            .column(.expression(.column(.keyPath(keyPath1)), alias: alias1))
+            .column(.expression(.column(.keyPath(keyPath2)), alias: alias2))
+            .column(.expression(.column(.keyPath(keyPath3)), alias: alias3))
+            .column(.expression(.column(.keyPath(keyPath4)), alias: alias4))
+            .column(.expression(.column(.keyPath(keyPath5)), alias: alias5))
+            .column(.expression(.column(.keyPath(keyPath6)), alias: alias6))
     }
 }
 

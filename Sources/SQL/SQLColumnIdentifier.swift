@@ -10,7 +10,6 @@ public protocol SQLColumnIdentifier: SQLSerializable {
 
 // MARK: Convenience
 
-
 extension SQLColumnIdentifier {
     public static func keyPath<T,V>(_ keyPath: KeyPath<T, V>) -> Self where T: SQLTable {
         guard let property = try! T.reflectProperty(forKey: keyPath) else {

@@ -35,6 +35,25 @@ public protocol SQLExpression: SQLSerializable {
 
 // MARK: Convenience
 
+extension SQLExpression {
+    public static func function(_ name: String, _ arg: Function.Argument) -> Self {
+        return .function(.function(name, [arg]))
+    }
+    public static func function(_ name: String, _ args: [Function.Argument]) -> Self {
+        return .function(.function(name, args))
+    }
+    
+    public static func keyPath<T,V>(_ keyPath: KeyPath<T, V>) -> Self where T: SQLTable {
+        return .column(.keyPath(keyPath))
+    }
+    
+    public static func bind<E>(_ value: E) -> Self
+        where E: Encodable
+    {
+        return .bind(.encodable(value))
+    }
+}
+
 public func && <E>(_ lhs: E, _ rhs: E) -> E where E: SQLExpression {
     return E.binary(lhs, .and, rhs)
 }
@@ -121,6 +140,7 @@ public indirect enum GenericSQLExpression<Literal, Bind, ColumnIdentifier, Binar
     public var isNull: Bool {
         switch self {
         case ._literal(let literal): return literal.isNull
+        case ._bind(let bind): return bind.value.isNil
         default: return false
         }
     }
@@ -148,8 +168,8 @@ public indirect enum GenericSQLExpression<Literal, Bind, ColumnIdentifier, Binar
                     }
                 default: break
                 }
-            case ._literal(let literal):
-                if literal.isNull {
+            default:
+                if rhs.isNull {
                     switch op {
                     case .equal:
                         return lhs.serialize(&binds) + " IS NULL"
@@ -158,7 +178,6 @@ public indirect enum GenericSQLExpression<Literal, Bind, ColumnIdentifier, Binar
                     default: break
                     }
                 }
-            default: break
             }
             return lhs.serialize(&binds) + " " + op.serialize(&binds) + " " + rhs.serialize(&binds)
         case ._function(let function): return function.serialize(&binds)
@@ -167,5 +186,15 @@ public indirect enum GenericSQLExpression<Literal, Bind, ColumnIdentifier, Binar
         case ._subquery(let subquery):
             return "(" + subquery.serialize(&binds) + ")"
         }
+    }
+}
+
+private extension Encodable {
+    /// Returns `true` if this `Encodable` is `nil`.
+    var isNil: Bool {
+        guard let optional = self as? AnyOptionalType, optional.anyWrapped == nil else {
+            return false
+        }
+        return true
     }
 }
