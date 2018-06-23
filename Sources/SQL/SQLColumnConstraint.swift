@@ -55,6 +55,15 @@ extension SQLColumnConstraint {
         return .constraint(.default(expression), identifier)
     }
     
+    /// Creates a new `CHECK` column constraint.
+    ///
+    /// - Parameters:
+    ///   - expression: Expression to evaluate when setting the constraint.
+    /// - Returns: New column constraint.
+    public static func check(_ expression: Algorithm.Expression) -> Self {
+        return .constraint(.check(expression), nil)
+    }
+
     public static func references<T, V>(
         _ keyPath: KeyPath<T, V>,
         onDelete: Algorithm.ForeignKey.Action? = nil,
