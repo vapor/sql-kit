@@ -1,18 +1,14 @@
-public struct SQLError: Debuggable {
-  public let type: SQLErrorType
-  public var reason: String
-  public var location: SourceLocation?
-  public var stackTrace: [String]
+public protocol SQLError: Debuggable {
+  var type: SQLErrorType {get}
+  var reason: String {get}
+  var sourceLocation: SourceLocation? {get}
+  var stackTrace: [String] {get}
+  var identifier: String {get}
+}
 
+extension SQLError {
   public var identifier: String {
     return "SQLError(\(self.type.description))"
-  }
-
-  init(type: SQLErrorType, reason: String, location: SourceLocation) {
-    self.type = type
-    self.reason = reason
-    self.location = location
-    self.stackTrace = SQLError.makeStackTrace()
   }
 }
 
@@ -22,6 +18,9 @@ public enum SQLErrorType: CustomStringConvertible {
   case unknown
   /// Internal error of the DB server
   case intern
+  /// The database cannot be read (the file is not a database,
+  /// or the database is corrupted
+  case invalidDatabase
   /// Permission to perform the operation was denied
   /// by the server
   case permission
@@ -41,11 +40,14 @@ public enum SQLErrorType: CustomStringConvertible {
   /// or to open a file
   case ioError
   /// A constraint failed to be applied
-  case constraint(name: String)
-  /// A data type does not match with the expected one
-  case typeMismatch
+  case constraint
+  /// A data type does not match with the expected one, or is too
+  /// large for its container
+  case invalidData
   /// A table of column name was not recognized
-  case unknownEntity(name: String)
+  case unknownEntity
+  /// The SQL request is invalid
+  case invalidRequest
   
   public var description: String {
     switch self {
@@ -66,13 +68,17 @@ public enum SQLErrorType: CustomStringConvertible {
     case .readOnly:
       return "Database is read only"
     case .ioError:
-      return "Database failed to read or write data to disk"
-    case .constraint(let name):
-      return "Constraint \(name) failed"
-    case .typeMismatch:
+      return "Storage error (database failed to read or write data to disk)"
+    case .constraint:
+      return "Constraint failed"
+    case .invalidData:
       return "Type of data does not match expectation"
-    case .unknownEntity(let name):
-      return "Entity \(name) is not known"
+    case .unknownEntity:
+      return "Unknwown entity"
+    case .invalidDatabase:
+      return "Cannot open database"
+    case .invalidRequest:
+      return "The SQL request is not valid"
     }
   }
 }
