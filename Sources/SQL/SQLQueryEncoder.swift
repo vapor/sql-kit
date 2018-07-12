@@ -1,15 +1,12 @@
-/// Encodes keyed `Encodable` values to a `SQLiteQuery` expression dictionary.
+/// Encodes keyed `Encodable` values to a `[String: SQLExpression]` dictionary.
 ///
 ///     struct User: Codable {
 ///         var name: String
 ///     }
 ///
 ///     let user = User(name: "Vapor")
-///     let data = try SQLiteQueryEncoder().encode(user)
-///     print(data) // ["name": .data(.text("Vapor"))]
-///
-/// This encoder uses `SQLiteQueryExpressionEncoder` internally. Any types conforming to `SQLiteQueryExpressionRepresentable`
-/// or `SQLiteDataConvertible` will be specially encoded.
+///     let data = try SQLQueryEncoder().encode(user)
+///     print(data) // ["name": .bind(.encodable("Vapor"))]
 ///
 /// This encoder does _not_ support unkeyed or single value codable objects.
 public struct SQLQueryEncoder<Expression> where Expression: SQLExpression {
@@ -23,12 +20,12 @@ public struct SQLQueryEncoder<Expression> where Expression: SQLExpression {
     ///     }
     ///
     ///     let user = User(name: "Vapor")
-    ///     let data = try SQLiteQueryEncoder().encode(user)
-    ///     print(data) // ["name": .data(.text("Vapor"))]
+    ///     let data = try SQLQueryEncoder().encode(user)
+    ///     print(data) // ["name": .bind(.encodable("Vapor"))]
     ///
     /// - parameters:
     ///     - value: `Encodable` value to encode.
-    /// - returns: `SQLiteQuery` compatible data.
+    /// - returns: `SQLQuery` compatible data.
     public func encode<E>(_ value: E) -> [String: Expression]
         where E: Encodable
     {
