@@ -39,12 +39,28 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
         return column(.expression(expression, alias: alias))
     }
     
+    public func column<B>(
+        subquery closure: (Connection) -> (B),
+        as alias: Connection.Query.Select.SelectExpression.Identifier? = nil
+    ) -> Self
+        where B: SQLQueryBuilder, B.Connection.Query == Connection.Query.Select.SelectExpression.Expression.Subquery
+    {
+        let builder = closure(connection)
+        return column(expression: .subquery(builder.query), as: alias)
+    }
+    
     public func all() -> Self {
         return column(.all)
     }
     
     public func all(table: String) -> Self {
         return column(.allTable(table))
+    }
+    
+    public func column<T, V>(_ keyPath: KeyPath<T, V>) -> Self
+        where T: SQLTable
+    {
+        return column(.keyPath(keyPath))
     }
     
     public func column(_ column: Connection.Query.Select.SelectExpression) -> Self {
@@ -113,8 +129,12 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
         select.orderBy.append(.orderBy(expression, direction))
         return self
     }
+    
+    public func limit(_ max: Int) -> Self {
+        select.limit = max
+        return self
+    }
 }
-
 // MARK: Connection
 
 extension DatabaseQueryable where Query: SQLQuery {
