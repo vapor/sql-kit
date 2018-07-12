@@ -27,17 +27,26 @@ public final class SQLUpdateBuilder<Connection>: SQLQueryBuilder, SQLPredicateBu
     public func set<E>(_ model: E)-> Self
         where E: Encodable
     {
-        let row = SQLQueryEncoder(Connection.Query.Update.Expression.self).encode(model)
-        update.values += row.map { row -> (Connection.Query.Update.Identifier, Connection.Query.Update.Expression) in
-            return (.identifier(row.key), row.value)
+        for row in SQLQueryEncoder(Connection.Query.Update.Expression.self).encode(model) {
+            _ = set(.identifier(row.key), to: row.value)
         }
         return self
     }
     
     public func set<T, V>(_ keyPath: KeyPath<T, V>, to value: V)  -> Self
-        where V: Encodable, T: SQLTable
+        where T: SQLTable, V: Encodable
     {
-        update.values.append((.keyPath(keyPath), .bind(.encodable(value))))
+        return set(.keyPath(keyPath), to: .bind(.encodable(value)))
+    }
+    
+    public func set<T, V>(_ keyPath: KeyPath<T, V>, to expression: Connection.Query.Update.Expression) -> Self
+        where T: SQLTable
+    {
+        return set(.keyPath(keyPath), to: expression)
+    }
+    
+    public func set(_ identifier: Connection.Query.Update.Identifier, to expression: Connection.Query.Update.Expression) -> Self {
+        update.values.append((identifier, expression))
         return self
     }
 }

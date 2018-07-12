@@ -14,7 +14,7 @@ public final class SQLRawBuilder<Connection>: SQLQueryBuilder, SQLQueryFetcher
         return .raw(sql, binds: binds)
     }
     
-    /// Creates a new `SQLAlterTableBuilder`.
+    /// Creates a new `SQLRawBuilder`.
     public init(_ sql: String, on connection: Connection) {
         self.sql = sql
         self.connection = connection
