@@ -1,9 +1,21 @@
 public protocol SQLExpression: SQLSerializable {
+    /// See `SQLLiteral`.
     associatedtype Literal: SQLLiteral
+    
+    /// See `SQLBind`.
     associatedtype Bind: SQLBind
+    
+    /// See `SQLColumnIdentifier`.
     associatedtype ColumnIdentifier: SQLColumnIdentifier
+    
+    /// See `SQLBinaryOperator`.
     associatedtype BinaryOperator: SQLBinaryOperator
+    
+    /// See `SQLFunction`.
     associatedtype Function: SQLFunction
+    
+    /// See `SQLSerializable`.
+    /// Ideally this would be constraint to `SQLQuery`, but that creates a cyclic reference.
     associatedtype Subquery: SQLSerializable
     
     /// Literal strings, integers, and constants.
@@ -30,19 +42,23 @@ public protocol SQLExpression: SQLSerializable {
     // FIXME: collate
     // FIXME: cast
     
+    /// If `true`, this expression equals `NULL`.
     var isNull: Bool { get }
 }
 
 // MARK: Convenience
 
+/// See `SQLExpression`.
 public func && <E>(_ lhs: E, _ rhs: E) -> E where E: SQLExpression {
     return E.binary(lhs, .and, rhs)
 }
 
+/// See `SQLExpression`.
 public func || <E>(_ lhs: E, _ rhs: E) -> E where E: SQLExpression {
     return E.binary(lhs, .or, rhs)
 }
 
+/// See `SQLExpression`.
 public func &= <E>(_ lhs: inout E?, _ rhs: E) where E: SQLExpression {
     if let l = lhs {
         lhs = l && rhs
@@ -51,6 +67,7 @@ public func &= <E>(_ lhs: inout E?, _ rhs: E) where E: SQLExpression {
     }
 }
 
+/// See `SQLExpression`.
 public func |= <E>(_ lhs: inout E?, _ rhs: E) where E: SQLExpression {
     if let l = lhs {
         lhs = l || rhs
@@ -60,6 +77,7 @@ public func |= <E>(_ lhs: inout E?, _ rhs: E) where E: SQLExpression {
 }
 
 extension SQLSelectExpression {
+    /// Creates a column identifier `SQLSelectExpression` from a key path and optional alias.
     public static func keyPath<T,V>(_ keyPath: KeyPath<T, V>, as alias: Identifier? = nil) -> Self where T: SQLTable {
         return self.expression(.column(.keyPath(keyPath)), alias: alias)
     }
@@ -67,45 +85,67 @@ extension SQLSelectExpression {
 
 // MARK: Generic
 
+/// Generic implementation of `SQLExpression`.
 public indirect enum GenericSQLExpression<Literal, Bind, ColumnIdentifier, BinaryOperator, Function, Subquery>: SQLExpression, ExpressibleByStringLiteral, ExpressibleByFloatLiteral, ExpressibleByIntegerLiteral
     where Literal: SQLLiteral, Bind: SQLBind, ColumnIdentifier: SQLColumnIdentifier, BinaryOperator: SQLBinaryOperator & Equatable, Function: SQLFunction, Subquery: SQLSerializable
 {
+    /// Convenience alias for self.
     public typealias `Self` = GenericSQLExpression<Literal, Bind, ColumnIdentifier, BinaryOperator, Function, Subquery>
 
+    /// See `SQLExpression`.
     public static func literal(_ literal: Literal) -> Self {
         return ._literal(literal)
     }
     
+    /// See `SQLExpression`.
     public static func bind(_ bind: Bind) -> Self {
         return ._bind(bind)
     }
 
+    /// See `SQLExpression`.
     public static func column(_ column: ColumnIdentifier) -> Self {
         return ._column(column)
     }
 
+    /// See `SQLExpression`.
     public static func binary(_ lhs: Self, _ op: BinaryOperator, _ rhs: Self) -> Self {
         return ._binary(lhs, op, rhs)
     }
 
+    /// See `SQLExpression`.
     public static func function(_ function: Function) -> Self {
         return ._function(function)
     }
 
+    /// See `SQLExpression`.
     public static func group(_ expressions: [Self]) -> Self {
         return ._group(expressions)
     }
 
+    /// See `SQLExpression`.
     public static func subquery(_ subquery: Subquery) -> Self {
         return ._subquery(subquery)
     }
 
+    /// See `SQLExpression`.
     case _literal(Literal)
+    
+    /// See `SQLExpression`.
     case _bind(Bind)
+    
+    /// See `SQLExpression`.
     case _column(ColumnIdentifier)
+    
+    /// See `SQLExpression`.
     case _binary(`Self`, BinaryOperator, `Self`)
+    
+    /// See `SQLExpression`.
     case _function(Function)
+    
+    /// See `SQLExpression`.
     case _group([`Self`])
+    
+    /// See `SQLExpression`.
     case _subquery(Subquery)
     
     /// See `ExpressibleByFloatLiteral`.
@@ -123,6 +163,7 @@ public indirect enum GenericSQLExpression<Literal, Bind, ColumnIdentifier, Binar
         self = ._literal(.numeric(value.description))
     }
 
+    /// See `SQLExpression`.
     public var isNull: Bool {
         switch self {
         case ._literal(let literal): return literal.isNull
@@ -130,6 +171,7 @@ public indirect enum GenericSQLExpression<Literal, Bind, ColumnIdentifier, Binar
         }
     }
     
+    /// See `SQLSerializable`.
     public func serialize(_ binds: inout [Encodable]) -> String {
         switch self {
         case ._literal(let literal): return literal.serialize(&binds)
