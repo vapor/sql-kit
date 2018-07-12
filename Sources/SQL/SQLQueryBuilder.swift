@@ -1,11 +1,6 @@
 import Async
 
 
-public protocol SQLConnection: DatabaseQueryable where Query: SQLQuery {
-    func decode<D>(_ type: D.Type, from row: Output, table: Query.Select.TableIdentifier?) throws -> D
-    where D: Decodable
-}
-
 public protocol SQLQueryBuilder: class {
     associatedtype Connection: SQLConnection
     var query: Connection.Query { get }

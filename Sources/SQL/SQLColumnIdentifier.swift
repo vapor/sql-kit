@@ -1,41 +1,44 @@
+/// Identifies a column in a particular table.
 public protocol SQLColumnIdentifier: SQLSerializable {
+    /// See `SQLTableIdentifier`.
     associatedtype TableIdentifier: SQLTableIdentifier
+    
+    /// See `SQLIdentifier`.
     associatedtype Identifier: SQLIdentifier
     
+    /// Creates a new `SQLColumnIdentifier`.
     static func column(_ table: TableIdentifier?, _ identifier: Identifier) -> Self
     
+    /// Optional identifier for the table this column belongs to.
     var table: TableIdentifier? { get set }
+    
+    /// Column identifier.
     var identifier: Identifier { get set }
 }
 
 // MARK: Convenience
 
-
 extension SQLColumnIdentifier {
+    /// Creates a `SQLColumnIdentifier` from a key path into a `SQLTable` type.
+    ///
+    ///     .keyPath(\Planet.name)
+    ///
+    /// This method will result in a `fatalError` if the property cannot be reflected.
     public static func keyPath<T,V>(_ keyPath: KeyPath<T, V>) -> Self where T: SQLTable {
-        guard let property = try! T.reflectProperty(forKey: keyPath) else {
-            fatalError("Could not reflect property of type \(V.self) on \(T.self): \(keyPath)")
+        do {
+            guard let property = try T.reflectProperty(forKey: keyPath) else {
+                fatalError("Could not reflect property of type '\(V.self)' on '\(T.self)': \(keyPath)")
+            }
+            return .column(.table(.identifier(T.sqlTableIdentifierString)), .identifier(property.path[0]))
+        } catch {
+            fatalError("Could not reflect property of type '\(V.self)' on '\(T.self)': \(error)")
         }
-        return .column(.table(.identifier(T.sqlTableIdentifierString)), .identifier(property.path[0]))
-    }
-}
-extension SQLTableIdentifier {
-    public static func keyPath<T,V>(_ keyPath: KeyPath<T, V>) -> Self where T: SQLTable {
-        return .table(.identifier(T.sqlTableIdentifierString))
-    }
-}
-
-extension SQLIdentifier {
-    public static func keyPath<T,V>(_ keyPath: KeyPath<T, V>) -> Self where T: SQLTable {
-        guard let property = try! T.reflectProperty(forKey: keyPath) else {
-            fatalError("Could not reflect property of type \(V.self) on \(T.self): \(keyPath)")
-        }
-        return .identifier(property.path[0])
     }
 }
 
 // MARK: Generic
 
+/// Generic implementation of `SQLColumnIdentifier`.
 public struct GenericSQLColumnIdentifier<TableIdentifier, Identifier>: SQLColumnIdentifier, Hashable
     where TableIdentifier: SQLTableIdentifier, Identifier: SQLIdentifier
 {

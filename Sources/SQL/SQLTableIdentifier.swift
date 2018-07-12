@@ -15,6 +15,12 @@ extension SQLTableIdentifier {
     }
 }
 
+extension SQLTableIdentifier {
+    public static func keyPath<T,V>(_ keyPath: KeyPath<T, V>) -> Self where T: SQLTable {
+        return .table(.identifier(T.sqlTableIdentifierString))
+    }
+}
+
 // MARK: Generic
 
 public struct GenericSQLTableIdentifier<Identifier>: SQLTableIdentifier, ExpressibleByStringLiteral

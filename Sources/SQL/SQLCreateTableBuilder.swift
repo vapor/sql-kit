@@ -1,3 +1,11 @@
+/// Builds `SQLCreateTable` queries.
+///
+///    conn.create(table: Planet.self).ifNotExists()
+///        .column(for: \Planet.id, .primaryKey)
+///        .column(for: \Planet.galaxyID, .references(\Galaxy.id))
+///        .run()
+///
+/// See `SQLColumnBuilder` and `SQLQueryBuilder` for more information.
 public final class SQLCreateTableBuilder<Connection>: SQLQueryBuilder, SQLColumnBuilder
     where Connection: SQLConnection
 {

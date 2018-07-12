@@ -1,8 +1,17 @@
+/// The `CREATE TABLE` command is used to create a new table in a database.
+///
+/// See `SQLCreateTableBuilder`.
 public protocol SQLCreateTable: SQLSerializable {
+    /// See `SQLTableIdentifier`.
     associatedtype TableIdentifier: SQLTableIdentifier
+    
+    /// See `SQLColumnDefinition`.
     associatedtype ColumnDefinition: SQLColumnDefinition
+    
+    /// See `SQLTableConstraint`.
     associatedtype TableConstraint: SQLTableConstraint
     
+    /// Creates a new `SQLCreateTable` query.
     static func createTable(_ table: TableIdentifier) -> Self
     
     /// If the "TEMP" or "TEMPORARY" keyword occurs between the "CREATE" and "TABLE" then the new table is created in the temp database.
@@ -15,15 +24,21 @@ public protocol SQLCreateTable: SQLSerializable {
     /// specified.
     var ifNotExists: Bool { get set }
     
+    /// Name of table to create.
     var table: TableIdentifier { get set }
+    
+    /// Columns to create.
     var columns: [ColumnDefinition] { get set }
+    
+    /// Table constraints, such as `FOREIGN KEY`, to add.
     var tableConstraints: [TableConstraint] { get set }
 }
 
-/// The `CREATE TABLE` command is used to create a new table in a database.
+/// Generic implementation of `SQLCreateTable`.
 public struct GenericSQLCreateTable<TableIdentifier, ColumnDefinition, TableConstraint>: SQLCreateTable
     where TableIdentifier: SQLTableIdentifier, ColumnDefinition: SQLColumnDefinition, TableConstraint: SQLTableConstraint
 {
+    /// Convenience alias for self.
     public typealias `Self` = GenericSQLCreateTable<TableIdentifier, ColumnDefinition, TableConstraint>
     
     /// See `SQLCreateTable`.

@@ -1,31 +1,46 @@
+/// `CREATE INDEX` query.
+///
+/// See `SQLCreateIndexBuilder`.
 public protocol SQLCreateIndex: SQLSerializable {
+    /// See `SQLIndexModifier`.
     associatedtype Modifier: SQLIndexModifier
+    
+    /// See `SQLIdentifier`.
     associatedtype Identifier: SQLIdentifier
-    associatedtype TableIdentifier: SQLTableIdentifier
     
-    static func createIndex(_ identifier: Identifier, _ table: TableIdentifier, _ columns: [Identifier]) -> Self
+    /// See `SQLColumnIdentifier`.
+    associatedtype ColumnIdentifier: SQLColumnIdentifier
     
+    /// Creates a new `SQLCreateIndex.
+    static func createIndex(_ identifier: Identifier) -> Self
+    
+    /// Type of index to create, see `SQLIndexModifier`.
     var modifier: Modifier? { get set }
+    
+    /// Columns to index.
+    var columns: [ColumnIdentifier] { get set }
 }
 
-public struct GenericSQLCreateIndex<Modifier, Identifier, TableIdentifier>: SQLCreateIndex where
-    Modifier: SQLIndexModifier, Identifier: SQLIdentifier, TableIdentifier: SQLTableIdentifier
+/// See `SQLCreateIndex`.
+public struct GenericSQLCreateIndex<Modifier, Identifier, ColumnIdentifier>: SQLCreateIndex where
+    Modifier: SQLIndexModifier, Identifier: SQLIdentifier, ColumnIdentifier: SQLColumnIdentifier
 {
-    public typealias `Self` = GenericSQLCreateIndex<Modifier, Identifier, TableIdentifier>
+    /// Convenience alias for self.
+    public typealias `Self` = GenericSQLCreateIndex<Modifier, Identifier, ColumnIdentifier>
     
     /// See `SQLCreateIndex`.
-    public static func createIndex(_ identifier: Identifier, _ table: TableIdentifier, _ columns: [Identifier]) -> Self {
-        return .init(modifier: nil, identifier: identifier, table: table, columns: columns)
+    public static func createIndex(_ identifier: Identifier) -> Self {
+        return .init(modifier: nil, identifier: identifier, columns: [])
     }
     
     /// See `SQLCreateIndex`.
     public var modifier: Modifier?
     
+    /// See `SQLCreateIndex`.
     public var identifier: Identifier
     
-    public var table: TableIdentifier
-    
-    public var columns: [Identifier]
+    /// See `SQLCreateIndex`.
+    public var columns: [ColumnIdentifier]
     
     /// See `SQLSerializable`.
     public func serialize(_ binds: inout [Encodable]) -> String {
@@ -36,8 +51,10 @@ public struct GenericSQLCreateIndex<Modifier, Identifier, TableIdentifier>: SQLC
         }
         sql.append("INDEX")
         sql.append(identifier.serialize(&binds))
-        sql.append("ON")
-        sql.append(table.serialize(&binds))
+        if let table = columns.first?.table {
+            sql.append("ON")
+            sql.append(table.serialize(&binds))
+        }
         sql.append("(" + columns.serialize(&binds) + ")")
         return sql.joined(separator: " ")
     }

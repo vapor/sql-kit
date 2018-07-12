@@ -24,7 +24,7 @@ extension SQLBenchmarker {
             .column(for: \Planet.name, .default(.literal(.string("Unamed Planet"))))
             .run().wait()
         
-        try conn.create(index: .identifier("test_index"), on: \Planet.name)
+        try conn.create(index: "test_index").on(\Planet.name)
             .unique()
             .run().wait()
         

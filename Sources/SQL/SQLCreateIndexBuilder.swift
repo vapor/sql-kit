@@ -1,3 +1,8 @@
+/// Builds `SQLCreateIndex` queries.
+///
+///     conn.create(index: "planet_name_unique").on(\Planet.name).unique().run()
+///
+/// See `SQLCreateIndex`.
 public final class SQLCreateIndexBuilder<Connection>: SQLQueryBuilder
     where Connection: SQLConnection
 {
@@ -15,8 +20,23 @@ public final class SQLCreateIndexBuilder<Connection>: SQLQueryBuilder
         return .createIndex(createIndex)
     }
     
+    /// Adds `UNIQUE` modifier to the index being created.
     public func unique() -> Self {
         createIndex.modifier = .unique
+        return self
+    }
+    
+    /// Creates a new `SQLCreateIndexBuilder`.
+    ///
+    ///     conn.create(index: "foo").on(\Planet.name)...
+    ///
+    /// - parameters:
+    ///     - column: Key path to column to add index to.
+    /// - returns: `SQLCreateIndexBuilder`.
+    public func on<T, A>(_ column: KeyPath<T, A>) -> Self
+        where T: SQLTable
+    {
+        createIndex.columns.append(.keyPath(column))
         return self
     }
     
@@ -29,52 +49,17 @@ public final class SQLCreateIndexBuilder<Connection>: SQLQueryBuilder
 
 // MARK: Connection
 
-extension DatabaseQueryable where Query: SQLQuery {
+extension SQLConnection {
     /// Creates a new `SQLCreateIndexBuilder`.
     ///
-    ///     conn.create(index: "foo", on: \Planet.name)...
+    ///     conn.create(index: "foo")...
     ///
     /// - parameters:
-    ///     - table: Table to create index on.
+    ///     - identifier: Name for this index.
     /// - returns: `SQLCreateIndexBuilder`.
-    public func create<T, A>(
-        index identifier: Query.CreateIndex.Identifier,
-        on column: KeyPath<T, A>
-    ) -> SQLCreateIndexBuilder<Self>
-        where T: SQLTable
-    {
-        return .init(.createIndex(identifier, .table(T.self), [.keyPath(column)]), on: self)
-    }
-    
-    /// Creates a new `SQLCreateIndexBuilder`.
-    ///
-    ///     conn.create(index: "foo", on: \Planet.name, \Planet.id)...
-    ///
-    /// - parameters:
-    ///     - table: Table to create index on.
-    /// - returns: `SQLCreateIndexBuilder`.
-    public func create<T, A, B>(
-        index identifier: Query.CreateIndex.Identifier,
-        on a: KeyPath<T, A>, _ b: KeyPath<T, B>
-    ) -> SQLCreateIndexBuilder<Self>
-        where T: SQLTable
-    {
-        return .init(.createIndex(identifier, .table(T.self), [.keyPath(a), .keyPath(b)]), on: self)
-    }
-    
-    /// Creates a new `SQLCreateIndexBuilder`.
-    ///
-    ///     conn.create(index: "foo", on: \Planet.name, \Planet.id, \Planet.galaxyID)...
-    ///
-    /// - parameters:
-    ///     - table: Table to create index on.
-    /// - returns: `SQLCreateIndexBuilder`.
-    public func create<T, A, B, C>(
-        index identifier: Query.CreateIndex.Identifier,
-        on a: KeyPath<T, A>, _ b: KeyPath<T, B>, _ c: KeyPath<T, C>
-    ) -> SQLCreateIndexBuilder<Self>
-        where T: SQLTable
-    {
-        return .init(.createIndex(identifier, .table(T.self), [.keyPath(a), .keyPath(b), .keyPath(c)]), on: self)
+    public func create(
+        index identifier: Query.CreateIndex.Identifier
+    ) -> SQLCreateIndexBuilder<Self> {
+        return .init(.createIndex(identifier), on: self)
     }
 }
