@@ -1,4 +1,8 @@
+/// `DROP TABLE` query.
+///
+/// See `SQLDropTableBuilder`.
 public protocol SQLDropTable: SQLSerializable {
+    /// See `SQLTableIdentifier`.
     associatedtype TableIdentifier: SQLTableIdentifier
     
     /// Creates a new `SQLDropTable`.
@@ -7,10 +11,12 @@ public protocol SQLDropTable: SQLSerializable {
     /// Table to drop.
     var table: TableIdentifier { get set }
     
-    /// The optional IF EXISTS clause suppresses the error that would normally result if the table does not exist.
+    /// The optional `IF EXISTS` clause suppresses the error that would normally
+    /// result if the table does not exist.
     var ifExists: Bool { get set }
 }
 
+/// Generic implementation of `SQLDropTable`.
 public struct GenericSQLDropTable<TableIdentifier>: SQLDropTable
     where TableIdentifier: SQLTableIdentifier
 {

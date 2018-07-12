@@ -1,3 +1,9 @@
+/// Builds `SQLDelete` queries.
+///
+///     conn.delete(from: Planet.self)
+///         .where(\.name != "Earth").run()
+///
+/// See `SQLQueryBuilder` and `SQLPredicateBuilder` for more information.
 public final class SQLDeleteBuilder<Connection>: SQLQueryBuilder, SQLPredicateBuilder
     where Connection: SQLConnection
 {
@@ -27,7 +33,7 @@ public final class SQLDeleteBuilder<Connection>: SQLQueryBuilder, SQLPredicateBu
 
 // MARK: Connection
 
-extension DatabaseQueryable where Query: SQLQuery {
+extension SQLConnection {
     /// Creates a new `SQLDeleteBuilder`.
     ///
     ///     conn.delete(from: Planet.self)...

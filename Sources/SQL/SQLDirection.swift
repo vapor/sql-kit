@@ -1,10 +1,15 @@
+/// `ORDER BY` and constraint directions, i.e., `ASC`, `DESC`.
 public protocol SQLDirection: SQLSerializable {
+    /// Ascending order.
     static var ascending: Self { get }
+    
+    /// Descending order.
     static var descending: Self { get }
 }
 
 // MARK: Generic
 
+/// Generic implementation of `SQLDirection`.
 public enum GenericSQLDirection: SQLDirection {
     /// See `SQLDirection`.
     public static var ascending: GenericSQLDirection {
@@ -16,7 +21,10 @@ public enum GenericSQLDirection: SQLDirection {
         return ._descending
     }
     
+    /// See `SQLDirection`.
     case _ascending
+    
+    /// See `SQLDirection`.
     case _descending
     
     /// See `SQLSerializable`.

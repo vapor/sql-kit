@@ -1,3 +1,4 @@
+/// `DROP INDEX` query.
 public protocol SQLDropIndex: SQLSerializable { }
 
 // No generic drop index since there is not a standard subset of this query type

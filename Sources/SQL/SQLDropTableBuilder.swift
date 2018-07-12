@@ -1,3 +1,8 @@
+/// Builds `SQLDropTable` queries.
+///
+///     conn.drop(table: Planet.self).run()
+///
+/// See `SQLQueryBuilder` for more information.
 public final class SQLDropTableBuilder<Connection>: SQLQueryBuilder
     where Connection: SQLConnection
 {
@@ -18,6 +23,8 @@ public final class SQLDropTableBuilder<Connection>: SQLQueryBuilder
         self.connection = connection
     }
     
+    /// The optional `IF EXISTS` clause suppresses the error that would normally
+    /// result if the table does not exist.
     public func ifExists() -> Self {
         dropTable.ifExists = true
         return self
@@ -26,7 +33,7 @@ public final class SQLDropTableBuilder<Connection>: SQLQueryBuilder
 
 // MARK: Connection
 
-extension DatabaseQueryable where Query: SQLQuery {
+extension SQLConnection {
     public func drop<Table>(table: Table.Type) -> SQLDropTableBuilder<Self>
         where Table: SQLTable
     {

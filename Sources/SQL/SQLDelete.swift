@@ -1,12 +1,20 @@
+/// `DELETE ... FROM` query.
+///
+/// See `SQLDeleteBuilder`.
 public protocol SQLDelete: SQLSerializable {
+    /// See `SQLTableIdentifier`.
     associatedtype TableIdentifier: SQLTableIdentifier
+    
+    /// See `SQLExpression`.
     associatedtype Expression: SQLExpression
     
+    /// Creates a new `SQLDelete`.
     static func delete(_ table: TableIdentifier) -> Self
     
+    /// Identifier of table to delete from.
     var table: TableIdentifier { get set }
     
-    /// If the WHERE clause is not present, all records in the table are deleted. If a WHERE clause is supplied,
+    /// If the `WHERE` clause is not present, all records in the table are deleted. If a WHERE clause is supplied,
     /// then only those rows for which the WHERE clause boolean expression is true are deleted. Rows for which
     /// the expression is false or NULL are retained.
     var predicate: Expression? { get set }
@@ -14,6 +22,7 @@ public protocol SQLDelete: SQLSerializable {
 
 // MARK: Generic
 
+/// Generic implementation of `SQLDelete`.
 public struct GenericSQLDelete<TableIdentifier, Expression>: SQLDelete
     where TableIdentifier: SQLTableIdentifier, Expression: SQLExpression
 {
