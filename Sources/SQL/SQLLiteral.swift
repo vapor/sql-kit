@@ -1,32 +1,42 @@
+/// Literal expression value, i.e., `DEFAULT`, `FALSE`, `42`, etc.
 public protocol SQLLiteral: SQLSerializable {
+    /// See `SQLDefaultLiteral`.
     associatedtype DefaultLiteral: SQLDefaultLiteral
+    
+    /// See `SQLBoolLiteral`.
     associatedtype BoolLiteral: SQLBoolLiteral
+    
+    /// Creates a new `SQLLiteral` from a string.
     static func string(_ string: String) -> Self
+    
+    /// Creates a new `SQLLiteral` from a numeric string (no quotes).
     static func numeric(_ string: String) -> Self
+    
+    /// Creates a new null `SQLLiteral`, i.e., `NULL`.
     static var null: Self { get }
+    
+    /// Creates a new default `SQLLiteral` literal, i.e., `DEFAULT` or sometimes `NULL`.
     static func `default`(_ default: DefaultLiteral) -> Self
+    
+    /// Creates a new boolean `SQLLiteral`, i.e., `FALSE` or sometimes `0`.
     static func boolean(_ bool: BoolLiteral) -> Self
     
+    /// If `true`, this `SQLLiteral` represents `NULL`.
     var isNull: Bool { get }
 }
 
+// MARK: Convenience
+
 extension SQLLiteral {
+    /// `DEFAULT`.
     public static var `default`: Self {
-        return .default(.default())
+        return .default(.default)
     }
-}
-
-public protocol SQLDefaultLiteral: SQLSerializable {
-    static func `default`() -> Self
-}
-
-public protocol SQLBoolLiteral: SQLSerializable {
-    static var `true`: Self { get }
-    static var `false`: Self { get }
 }
 
 // MARK: Generic
 
+/// Generic implementation of `SQLLiteral`.
 public enum GenericSQLLiteral<DefaultLiteral, BoolLiteral>: SQLLiteral, ExpressibleByStringLiteral, ExpressibleByFloatLiteral, ExpressibleByIntegerLiteral where
     DefaultLiteral: SQLDefaultLiteral, BoolLiteral: SQLBoolLiteral
 {
@@ -70,11 +80,22 @@ public enum GenericSQLLiteral<DefaultLiteral, BoolLiteral>: SQLLiteral, Expressi
         self = .numeric(value.description)
     }
 
+    
+    /// See `SQLLiteral`.
     case _string(String)
+    
+    /// See `SQLLiteral`.
     case _numeric(String)
+    
+    /// See `SQLLiteral`.
     case _null
+    
+    /// See `SQLLiteral`.
     case _default(DefaultLiteral)
+    
+    /// See `SQLLiteral`.
     case _boolean(BoolLiteral)
+    
     
     /// See `SQLLiteral`.
     public var isNull: Bool {

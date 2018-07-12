@@ -1,4 +1,4 @@
-public protocol SQLExpression: SQLSerializable {
+public protocol SQLExpression: SQLSerializable, ExpressibleByFloatLiteral, ExpressibleByIntegerLiteral {
     /// See `SQLLiteral`.
     associatedtype Literal: SQLLiteral
     
@@ -48,6 +48,15 @@ public protocol SQLExpression: SQLSerializable {
 
 // MARK: Convenience
 
+extension SQLExpression {
+    /// Bound value. Shorthand for `.bind(.encodable(...))`.
+    public static func value<E>(_ value: E) -> Self
+        where E: Encodable
+    {
+        return bind(.encodable(value))
+    }
+}
+
 /// See `SQLExpression`.
 public func && <E>(_ lhs: E, _ rhs: E) -> E where E: SQLExpression {
     return E.binary(lhs, .and, rhs)
@@ -86,8 +95,13 @@ extension SQLSelectExpression {
 // MARK: Generic
 
 /// Generic implementation of `SQLExpression`.
-public indirect enum GenericSQLExpression<Literal, Bind, ColumnIdentifier, BinaryOperator, Function, Subquery>: SQLExpression, ExpressibleByStringLiteral, ExpressibleByFloatLiteral, ExpressibleByIntegerLiteral
-    where Literal: SQLLiteral, Bind: SQLBind, ColumnIdentifier: SQLColumnIdentifier, BinaryOperator: SQLBinaryOperator & Equatable, Function: SQLFunction, Subquery: SQLSerializable
+public indirect enum GenericSQLExpression<Literal, Bind, ColumnIdentifier, BinaryOperator, Function, Subquery>: SQLExpression
+    where Literal: SQLLiteral,
+    Bind: SQLBind,
+    ColumnIdentifier: SQLColumnIdentifier,
+    BinaryOperator: SQLBinaryOperator & Equatable,
+    Function: SQLFunction,
+    Subquery: SQLSerializable
 {
     /// Convenience alias for self.
     public typealias `Self` = GenericSQLExpression<Literal, Bind, ColumnIdentifier, BinaryOperator, Function, Subquery>
@@ -151,11 +165,6 @@ public indirect enum GenericSQLExpression<Literal, Bind, ColumnIdentifier, Binar
     /// See `ExpressibleByFloatLiteral`.
     public init(floatLiteral value: Double) {
         self = ._literal(.numeric(value.description))
-    }
-    
-    /// See `ExpressibleByStringLiteral`.
-    public init(stringLiteral value: String) {
-        self = ._literal(.string(value.description))
     }
     
     /// See `ExpressibleByIntegerLiteral`.
