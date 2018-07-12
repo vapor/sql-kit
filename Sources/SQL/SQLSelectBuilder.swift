@@ -1,5 +1,5 @@
 public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBuilder
-    where Connection: DatabaseQueryable, Connection.Query: SQLQuery
+    where Connection: SQLConnection
 {
     /// `Select` query being built.
     public var select: Connection.Query.Select
@@ -117,7 +117,7 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
 
 // MARK: Connection
 
-extension DatabaseQueryable where Query: SQLQuery {
+extension SQLConnection {
     public func select() -> SQLSelectBuilder<Self> {
         return .init(.select(), on: self)
     }

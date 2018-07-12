@@ -1,5 +1,5 @@
 public final class SQLDeleteBuilder<Connection>: SQLQueryBuilder, SQLPredicateBuilder
-    where Connection: DatabaseQueryable, Connection.Query: SQLQuery
+    where Connection: SQLConnection
 {
     /// `Delete` query being built.
     public var delete: Connection.Query.Delete

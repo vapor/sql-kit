@@ -1,5 +1,5 @@
 public final class SQLRawBuilder<Connection>: SQLQueryBuilder, SQLQueryFetcher
-    where Connection: DatabaseQueryable, Connection.Query: SQLQuery
+    where Connection: SQLConnection
 {
     /// Raw query being built.
     public var sql: String
@@ -34,7 +34,7 @@ public final class SQLRawBuilder<Connection>: SQLQueryBuilder, SQLQueryFetcher
 
 // MARK: Connection
 
-extension DatabaseQueryable where Query: SQLQuery {
+extension SQLConnection {
     /// Creates a new `SQLRawBuilder`.
     ///
     ///     conn.raw("SELECT * FROM ...")...

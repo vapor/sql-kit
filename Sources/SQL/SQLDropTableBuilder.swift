@@ -1,5 +1,5 @@
 public final class SQLDropTableBuilder<Connection>: SQLQueryBuilder
-    where Connection: DatabaseQueryable, Connection.Query: SQLQuery
+    where Connection: SQLConnection
 {
     /// `DropTable` query being built.
     public var dropTable: Connection.Query.DropTable

@@ -1,7 +1,13 @@
 import Async
 
+
+public protocol SQLConnection: DatabaseQueryable where Query: SQLQuery {
+    func decode<D>(_ type: D.Type, from row: Output, table: Query.Select.TableIdentifier?) throws -> D
+    where D: Decodable
+}
+
 public protocol SQLQueryBuilder: class {
-    associatedtype Connection: DatabaseQueryable where Connection.Query: SQLQuery
+    associatedtype Connection: SQLConnection
     var query: Connection.Query { get }
     var connection: Connection { get }
 }
@@ -27,12 +33,7 @@ extension SQLQueryFetcher {
     }
 }
 
-public protocol SQLConnection: DatabaseQueryable where Query: SQLQuery {
-    func decode<D>(_ type: D.Type, from row: Output, table: Query.Select.TableIdentifier?) throws -> D
-        where D: Decodable
-}
-
-extension SQLQueryFetcher where Connection: SQLConnection {
+extension SQLQueryFetcher {
     // MARK: Decode
     
     public func all<D>(decoding type: D.Type) -> Future<[D]>

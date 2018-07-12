@@ -1,5 +1,15 @@
+/// Builds data-definition queries that support creating columns, i.e., `CREATE TABLE` and `ALTER TABLE`.
+///
+///     conn.create(table: Planet.self)
+///         .column(for: \.name, type: .text, .notNull)
+///         .run()
+///
+/// See `SQLCreateTableBuilder` and `SQLAlterTableBuilder` for more information.
 public protocol SQLColumnBuilder: SQLQueryBuilder {
+    /// See `SQLColumnDefinition`.
     associatedtype ColumnDefinition: SQLColumnDefinition
+    
+    /// Columns to create.
     var columns: [ColumnDefinition] { get set }
 }
 

@@ -1,5 +1,5 @@
 public final class SQLCreateIndexBuilder<Connection>: SQLQueryBuilder
-    where Connection: DatabaseQueryable, Connection.Query: SQLQuery
+    where Connection: SQLConnection
 {
     /// See `SQLColumnBuilder`.
     public typealias ColumnDefinition = Connection.Query.AlterTable.ColumnDefinition

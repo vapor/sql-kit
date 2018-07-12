@@ -1,5 +1,5 @@
 public final class SQLInsertBuilder<Connection>: SQLQueryBuilder
-    where Connection: DatabaseQueryable, Connection.Query: SQLQuery
+    where Connection: SQLConnection
 {
     /// `Insert` query being built.
     public var insert: Connection.Query.Insert

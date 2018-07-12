@@ -1,5 +1,5 @@
 public final class SQLCreateTableBuilder<Connection>: SQLQueryBuilder, SQLColumnBuilder
-    where Connection: DatabaseQueryable, Connection.Query: SQLQuery
+    where Connection: SQLConnection
 {
     /// See `SQLColumnBuilder`.
     public typealias ColumnDefinition = Connection.Query.CreateTable.ColumnDefinition

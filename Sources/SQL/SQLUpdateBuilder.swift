@@ -1,5 +1,5 @@
 public final class SQLUpdateBuilder<Connection>: SQLQueryBuilder, SQLPredicateBuilder
-    where Connection: DatabaseQueryable, Connection.Query: SQLQuery
+    where Connection: SQLConnection
 {
     /// `Update` query being built.
     public var update: Connection.Query.Update
