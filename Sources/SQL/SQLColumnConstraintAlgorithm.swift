@@ -1,19 +1,42 @@
+/// Constraint algorithms used by `SQLColumnConstraint`.
 public protocol SQLColumnConstraintAlgorithm: SQLSerializable {
+    /// See `SQLExpression.
     associatedtype Expression: SQLExpression
+    
+    /// See `SQLCollation.
     associatedtype Collation: SQLCollation
+    
+    /// See `SQLPrimaryKeyDefault.
     associatedtype PrimaryKeyDefault: SQLPrimaryKeyDefault
+    
+    /// See `SQLForeignKey.
     associatedtype ForeignKey: SQLForeignKey
+    
+    /// `PRIMARY KEY` constraint.
     static func primaryKey(_ `default`: PrimaryKeyDefault?) -> Self
+    
+    /// `NOT NULL` constraint.
     static var notNull: Self { get }
+    
+    /// `UNIQUE` constraint.
     static var unique: Self { get }
+    
+    /// `CHECK` constraint.
     static func check(_ expression: Expression) -> Self
+    
+    /// `COLLATE` constraint.
     static func collate(_ collation: Collation) -> Self
+    
+    /// `DEFAULT` constraint.
     static func `default`(_ expression: Expression) -> Self
+    
+    /// `FOREIGN KEY` constraint.
     static func foreignKey(_ foreignKey: ForeignKey) -> Self
 }
 
 // MARK: Generic
 
+/// Generic implementation of `SQLColumnConstraintAlgorithm`.
 public enum GenericSQLColumnConstraintAlgorithm<Expression, Collation, PrimaryKeyDefault, ForeignKey>: SQLColumnConstraintAlgorithm
     where Expression: SQLExpression, Collation: SQLCollation, PrimaryKeyDefault: SQLPrimaryKeyDefault, ForeignKey: SQLForeignKey
 {
