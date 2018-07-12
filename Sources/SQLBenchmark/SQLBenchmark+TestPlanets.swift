@@ -80,5 +80,21 @@ extension SQLBenchmarker {
             .from(Galaxy.self)
             .all().wait()
         print(b)
+        
+        _ = try conn.select()
+            .all()
+            .column(subquery: { conn in
+                return conn.select()
+                    .column(\Planet.id).from(Planet.self)
+                    .limit(1)
+            }, as: .identifier("firstPlanetID"))
+            .from(Galaxy.self)
+            .all().wait()
+
+        _ = try conn.select()
+            .all()
+            .column(subquery: { $0.raw("SELECT 1 + 1")}, as: .identifier("two"))
+            .from(Galaxy.self)
+            .all().wait()
     }
 }
