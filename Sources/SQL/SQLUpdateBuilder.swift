@@ -39,13 +39,13 @@ public final class SQLUpdateBuilder<Connection>: SQLQueryBuilder, SQLPredicateBu
         return set(.keyPath(keyPath), to: .bind(.encodable(value)))
     }
     
-    public func set<T, V>(_ keyPath: KeyPath<T, V>, to expression: Connection.Query.Update.Expression)  -> Self
+    public func set<T, V>(_ keyPath: KeyPath<T, V>, to expression: Connection.Query.Update.Expression) -> Self
         where T: SQLTable
     {
         return set(.keyPath(keyPath), to: expression)
     }
     
-    public func set(_ identifier: Connection.Query.Update.Identifier, to expression: Connection.Query.Update.Expression)  -> Self {
+    public func set(_ identifier: Connection.Query.Update.Identifier, to expression: Connection.Query.Update.Expression) -> Self {
         update.values.append((identifier, expression))
         return self
     }
