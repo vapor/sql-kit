@@ -1,4 +1,9 @@
 /// Nested `SQLPredicateBuilder` for building expression groups.
+///
+///     builder.where(\Planet.type == .smallRocky).where {
+///         $0.where(\Planet.name == "Earth").orWhere(\Planet.name == "Mars")
+///     }
+///
 public final class SQLPredicateGroupBuilder<PredicateBuilder>: SQLPredicateBuilder where PredicateBuilder: SQLPredicateBuilder {
     /// See `SQLPredicateBuilder`.
     public typealias Expression = PredicateBuilder.Expression
