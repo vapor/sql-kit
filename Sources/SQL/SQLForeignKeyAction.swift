@@ -39,10 +39,19 @@ public enum GenericSQLForeignKeyAction: SQLForeignKeyAction {
     /// See `SQLForeignKeyAction`.
     public static var setDefault: Self { return ._setDefault }
     
+    /// See `SQLForeignKeyAction`.
     case _noAction
+    
+    /// See `SQLForeignKeyAction`.
     case _restrict
+    
+    /// See `SQLForeignKeyAction`.
     case _cascade
+    
+    /// See `SQLForeignKeyAction`.
     case _setNull
+    
+    /// See `SQLForeignKeyAction`.
     case _setDefault
     
     /// See `SQLSerializable`.

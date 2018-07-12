@@ -1,11 +1,18 @@
+/// Argument to a `SQLFunction`.
 public protocol SQLFunctionArgument: SQLSerializable {
+    /// See `SQLExpression`.
     associatedtype Expression: SQLExpression
+    
+    /// Special function argument, `*`.
     static var all: Self { get }
+    
+    /// Creates a new `SQLFunctionArgument` with the supplied expression.
     static func expression(_ expression: Expression) -> Self
 }
 
 // MARK: Generic
 
+/// Generic implementation of `SQLFunctionArgument`.
 public enum GenericSQLFunctionArgument<Expression>: SQLFunctionArgument where Expression: SQLExpression {
     /// See `SQLFunctionArgument`.
     public static var all: GenericSQLFunctionArgument<Expression> {
@@ -17,7 +24,10 @@ public enum GenericSQLFunctionArgument<Expression>: SQLFunctionArgument where Ex
         return ._expression(expression)
     }
     
+    /// See `SQLFunctionArgument`.
     case _all
+    
+    /// See `SQLFunctionArgument`.
     case _expression(Expression)
     
     /// See `SQLSerializable`.

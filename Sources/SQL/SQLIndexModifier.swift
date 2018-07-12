@@ -1,4 +1,6 @@
+/// SQL index modifier, i.e., `UNIQUE`.
 public protocol SQLIndexModifier: SQLSerializable {
+    /// `UNIQUE`.
     static var unique: Self { get }
 }
 
@@ -8,6 +10,7 @@ public enum GenericSQLIndexModifier: SQLIndexModifier {
         return ._unique
     }
     
+    /// See `SQLIndexModifier`.
     case _unique
     
     /// See `SQLSerializable`.
