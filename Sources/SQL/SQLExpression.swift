@@ -59,6 +59,11 @@ public func |= <E>(_ lhs: inout E?, _ rhs: E) where E: SQLExpression {
     }
 }
 
+extension SQLSelectExpression {
+    public static func keyPath<T,V>(_ keyPath: KeyPath<T, V>, as alias: Identifier? = nil) -> Self where T: SQLTable {
+        return self.expression(.column(.keyPath(keyPath)), alias: alias)
+    }
+}
 
 // MARK: Generic
 
