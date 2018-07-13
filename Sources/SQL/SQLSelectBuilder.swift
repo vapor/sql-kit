@@ -1,3 +1,11 @@
+/// Builds `SQLSelect` queries.
+///
+///     conn.select()
+///         .all().from(Planet.self)
+///         .where(\Planet.name == "Earth")
+///         .all(decoding: Planet.self)
+///
+/// See `SQLQueryFetcher` and `SQLPredicateBuilder` for more information.
 public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBuilder
     where Connection: SQLConnection
 {
@@ -24,6 +32,18 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
         self.connection = connection
     }
     
+    /// Adds a function expression column to the result set.
+    ///
+    ///     conn.select()
+    ///         .column(function: "count", .all, as: "count")
+    ///
+    /// - parameters:
+    ///     - function: Name of the function to execute.
+    ///     - arguments: Zero or more arguments to pass to the function.
+    ///                  See `SQLArgument`.
+    ///     - alias: Optional alias for the result. This will be the value's
+    ///              key in the result set.
+    /// - returns: Self for chaining.
     public func column(
         function: String,
         _ arguments: Connection.Query.Select.SelectExpression.Expression.Function.Argument...,
@@ -32,6 +52,16 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
         return column(expression: .function(.function(function, arguments)), as: alias)
     }
     
+    /// Adds an expression column to the result set.
+    ///
+    ///     conn.select()
+    ///         .column(expression: .binary(1, .plus, 1), as: "two")
+    ///
+    /// - parameters:
+    ///     - expression: Expression to resolve.
+    ///     - alias: Optional alias for the result. This will be the value's
+    ///              key in the result set.
+    /// - returns: Self for chaining.
     public func column(
         expression: Connection.Query.Select.SelectExpression.Expression,
         as alias: Connection.Query.Select.SelectExpression.Identifier? = nil
@@ -39,24 +69,50 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
         return column(.expression(expression, alias: alias))
     }
     
+    /// All columns, i.e., `*`.
+    ///
+    ///     conn.select()
+    ///         .all().from(Planet.self)
+    ///         .where(\Planet.name == "Earth")
+    ///         .all(decoding: Planet.self)
+    ///
+    /// - returns: Self for chaining.
     public func all() -> Self {
         return column(.all)
     }
     
-    public func all(table: String) -> Self {
-        return column(.allTable(table))
+    /// All columns from a specified table, i.e., `table.*`.
+    ///
+    ///     conn.select()
+    ///         .all(table: Planet.self).from(Planet.self)
+    ///         .where(\Planet.name == "Earth")
+    ///         .all(decoding: Planet.self)
+    ///
+    /// - parameters:
+    ///     - table: SQLTable to select all columns from.
+    /// - returns: Self for chaining.
+    public func all<T>(table: T.Type) -> Self
+        where T: SQLTable
+    {
+        return column(.allTable(.table(T.self)))
     }
     
+    /// Adds a `SQLSelectExpression` to the result set.
     public func column(_ column: Connection.Query.Select.SelectExpression) -> Self {
         select.columns.append(column)
         return self
     }
     
-    public func from(_ tables: Connection.Query.Select.TableIdentifier...) -> Self {
-        select.tables += tables
-        return self
-    }
-    
+    /// Adds a table to the `FROM` clause.
+    ///
+    ///     conn.select()
+    ///         .all().from(Planet.self)
+    ///         .where(\Planet.name == "Earth")
+    ///         .all(decoding: Planet.self)
+    ///
+    /// - parameters:
+    ///     - table: `SQLTable` type to select from.
+    /// - returns: Self for chaining.
     public func from<Table>(_ table: Table.Type) -> Self
         where Table: SQLTable
     {
@@ -64,15 +120,37 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
         return self
     }
     
-    public func join<A, B, C, D>(
-        _ local: KeyPath<A, B>,
-        to foreign: KeyPath<C, D>
-    ) -> Self where A: SQLTable, B: Encodable, C: SQLTable, D: Encodable {
-        return join(.default, local, to: foreign)
+    /// Adds one or more tables to the `FROM` clause.
+    ///
+    ///     conn.select()
+    ///         .all().from("planets")
+    ///         .where(\Planet.name == "Earth")
+    ///         .all(decoding: Planet.self)
+    ///
+    /// - parameters:
+    ///     - tables: One or more table identifiers
+    /// - returns: Self for chaining.
+    public func from(_ tables: Connection.Query.Select.TableIdentifier...) -> Self {
+        select.tables += tables
+        return self
     }
     
+    /// Adds a `JOIN` clause to this select statement.
+    ///
+    ///     conn.select()
+    ///         .all().from(Planet.self)
+    ///         .join(\Planet.galaxyID, to: \Galaxy.id)
+    ///
+    /// Use in conjunction with multiple decode methods from `SQLQueryFetcher` to
+    /// fetch joined data.
+    ///
+    /// - parameters:
+    ///     - method: `SQLJoinMethod` to use.
+    ///     - local: Local column to join.
+    ///     - foreign: Foreign column to join.
+    /// - returns: Self for chaining.
     public func join<A, B, C, D>(
-        _ method: Connection.Query.Select.Join.Method,
+        _ method: Connection.Query.Select.Join.Method = .default,
         _ local: KeyPath<A, B>,
         to foreign: KeyPath<C, D>
     ) -> Self where A: SQLTable, B: Encodable, C: SQLTable, D: Encodable {
