@@ -135,7 +135,7 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
         return self
     }
     
-    /// Adds a `JOIN` clause to this select statement.
+    /// Adds a `JOIN` clause to the select statement.
     ///
     ///     conn.select()
     ///         .all().from(Planet.self)
@@ -145,48 +145,95 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
     /// fetch joined data.
     ///
     /// - parameters:
-    ///     - method: `SQLJoinMethod` to use.
     ///     - local: Local column to join.
     ///     - foreign: Foreign column to join.
+    ///     - method: `SQLJoinMethod` to use.
     /// - returns: Self for chaining.
     public func join<A, B, C, D>(
-        _ method: Connection.Query.Select.Join.Method = .default,
         _ local: KeyPath<A, B>,
-        to foreign: KeyPath<C, D>
+        to foreign: KeyPath<C, D>,
+        method: Connection.Query.Select.Join.Method = .default
     ) -> Self where A: SQLTable, B: Encodable, C: SQLTable, D: Encodable {
-        return join(method, C.self, on: local == foreign)
+        return join(C.self, on: local == foreign, method: method)
     }
     
-    public func join<Table>(_ table: Table.Type, on expression: Connection.Query.Select.Join.Expression) -> Self
-        where Table: SQLTable
-    {
-        return join(.default, table, on: expression)
-    }
-    
-    public func join<Table>(_ method: Connection.Query.Select.Join.Method, _ table: Table.Type, on expression: Connection.Query.Select.Join.Expression) -> Self
+    /// Adds a `JOIN` clause to the select statement.
+    ///
+    ///     conn.select()
+    ///         .all().from(Planet.self)
+    ///         .join(Galaxy.self, on: \Planet.galaxyID == \Galaxy.id)
+    ///
+    /// Use in conjunction with multiple decode methods from `SQLQueryFetcher` to
+    /// fetch joined data.
+    ///
+    /// - parameters:
+    ///     - table: Foreign `SQLTable` to join.
+    ///     - expression: `SQLExpression` to use for joining the tables.
+    ///     - method: `SQLJoinMethod` to use.
+    /// - returns: Self for chaining.
+    public func join<Table>(
+        _ table: Table.Type,
+        on expression: Connection.Query.Select.Join.Expression,
+        method: Connection.Query.Select.Join.Method = .default
+    ) -> Self
         where Table: SQLTable
     {
         select.joins.append(.join(method, .table(Table.self), expression))
         return self
     }
     
+    /// Adds a `GROUP BY` clause to the select statement.
+    ///
+    ///     conn.select()
+    ///         .all().from(Planet.self)
+    ///         .groupBy(\Planet.name)
+    ///
+    /// - parameters:
+    ///     - keyPath: Key path to group by.
+    /// - returns: Self for chaining.
     public func groupBy<T,V>(_ keyPath: KeyPath<T, V>) -> Self
         where T: SQLTable
     {
         return groupBy(.column(.keyPath(keyPath)))
     }
     
+    /// Adds a `GROUP BY` clause to the select statement.
+    ///
+    /// - parameters:
+    ///     - expression: `SQLExpression` to group by.
+    /// - returns: Self for chaining.
     public func groupBy(_ expression: Connection.Query.Select.GroupBy.Expression) -> Self {
         select.groupBy.append(.groupBy(expression))
         return self
     }
     
-    public func orderBy<T,V>(_ keyPath: KeyPath<T, V>, _ direction: Connection.Query.Select.OrderBy.Direction = .ascending) -> Self
+    /// Adds an `ORDER BY` clause to the select statement.
+    ///
+    ///     conn.select()
+    ///         .all().from(Planet.self)
+    ///         .orderBy(\Planet.name, .ascending)
+    ///
+    /// - parameters:
+    ///     - keyPath: Key path to order by.
+    ///     - direction: `SQLDirection` to sort the results.
+    ///                  Defaults to ascending.
+    /// - returns: Self for chaining.
+    public func orderBy<T,V>(
+        _ keyPath: KeyPath<T, V>,
+        _ direction: Connection.Query.Select.OrderBy.Direction = .ascending
+    ) -> Self
         where T: SQLTable
     {
         return orderBy(.column(.keyPath(keyPath)), direction)
     }
     
+    /// Adds an `ORDER BY` clause to the select statement.
+    ///
+    /// - parameters:
+    ///     - expression: `SQLExpression` to order by.
+    ///     - direction: `SQLDirection` to sort the results.
+    ///                  Defaults to ascending.
+    /// - returns: Self for chaining.
     public func orderBy(_ expression: Connection.Query.Select.OrderBy.Expression, _ direction: Connection.Query.Select.OrderBy.Direction = .ascending) -> Self {
         select.orderBy.append(.orderBy(expression, direction))
         return self
@@ -196,6 +243,13 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
 // MARK: Connection
 
 extension SQLConnection {
+    /// Creates a new `SQLSelectBuilder`.
+    ///
+    ///     conn.select()
+    ///         .all().from(Planet.self)
+    ///         .where(\Planet.name == "Earth")
+    ///         .all(decoding: Planet.self)
+    ///
     public func select() -> SQLSelectBuilder<Self> {
         return .init(.select(), on: self)
     }
