@@ -1,40 +1,100 @@
+/// `SELECT` statement.
+///
+/// See `SQLSelectBuilder` for building this query.
 public protocol SQLSelect: SQLSerializable {
+    /// See `SQLDistinct`.
     associatedtype Distinct: SQLDistinct
+    
+    /// See `SQLSelectExpression`.
     associatedtype SelectExpression: SQLSelectExpression
+    
+    /// See `SQLTableIdentifier`.
     associatedtype TableIdentifier: SQLTableIdentifier
+    
+    /// See `SQLJoin`.
     associatedtype Join: SQLJoin
+    
+    /// See `SQLExpression`.
     associatedtype Expression: SQLExpression
+    
+    /// See `SQLGroupBy`.
     associatedtype GroupBy: SQLGroupBy
+    
+    /// See `SQLOrderBy`.
     associatedtype OrderBy: SQLOrderBy
     
+    /// Creates a new `SQLSelect`.
     static func select() -> Self
     
+    /// Distinct modifier.
     var distinct: Distinct? { get set }
+    
+    /// Select expressions.
+    /// These define the columns in the result set.
     var columns: [SelectExpression] { get set }
+    
+    /// Zero or more tables to select from.
     var tables: [TableIdentifier] { get set }
+    
+    /// Zero or more tables to join.
     var joins: [Join] { get set }
+    
+    /// `WHERE` clause.
     var predicate: Expression? { get set }
+    
+    /// Zero or more `GROUP BY` clauses.
     var groupBy: [GroupBy] { get set }
+    
+    /// Zero or more `ORDER BY` clauses.
     var orderBy: [OrderBy] { get set }
+    
+    /// If set, limits the maximum number of results.
     var limit: Int? { get set }
+    
+    /// If set, offsets the results.
     var offset: Int? { get set }
 }
 
 // MARK: Generic
 
+/// Generic implementation of `SQLSelect`.
 public struct GenericSQLSelect<Distinct, SelectExpression, TableIdentifier, Join, Expression, GroupBy, OrderBy>: SQLSelect
-where Distinct: SQLDistinct, SelectExpression: SQLSelectExpression, TableIdentifier: SQLTableIdentifier, Join: SQLJoin, Expression: SQLExpression, GroupBy: SQLGroupBy, OrderBy: SQLOrderBy
+where Distinct: SQLDistinct,
+    SelectExpression: SQLSelectExpression,
+    TableIdentifier: SQLTableIdentifier,
+    Join: SQLJoin,
+    Expression: SQLExpression,
+    GroupBy: SQLGroupBy,
+    OrderBy: SQLOrderBy
 {
+    /// Convenience typealias for self.
     public typealias `Self` = GenericSQLSelect<Distinct, SelectExpression, TableIdentifier, Join, Expression, GroupBy, OrderBy>
     
+    /// See `SQLSelect`.
     public var distinct: Distinct?
+    
+    /// See `SQLSelect`.
     public var columns: [SelectExpression]
+    
+    /// See `SQLSelect`.
     public var tables: [TableIdentifier]
+    
+    /// See `SQLSelect`.
     public var joins: [Join]
+    
+    /// See `SQLSelect`.
     public var predicate: Expression?
+    
+    /// See `SQLSelect`.
     public var groupBy: [GroupBy]
+    
+    /// See `SQLSelect`.
     public var orderBy: [OrderBy]
+    
+    /// See `SQLSelect`.
     public var limit: Int?
+    
+    /// See `SQLSelect`.
     public var offset: Int?
     
     /// See `SQLSelect`.
