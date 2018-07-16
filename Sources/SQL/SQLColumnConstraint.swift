@@ -121,7 +121,6 @@ extension SQLColumnConstraint {
     }
 }
 
-
 // MARK: Generic
 
 /// Generic implementation of `SQLColumnConstraint`.
