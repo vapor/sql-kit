@@ -55,7 +55,7 @@ public struct GenericSQLCreateIndex<Modifier, Identifier, ColumnIdentifier>: SQL
             sql.append("ON")
             sql.append(table.serialize(&binds))
         }
-        sql.append("(" + columns.serialize(&binds) + ")")
+        sql.append("(" + columns.map { $0.identifier }.serialize(&binds) + ")")
         return sql.joined(separator: " ")
     }
 }
