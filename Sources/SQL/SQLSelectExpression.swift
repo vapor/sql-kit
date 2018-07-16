@@ -19,6 +19,15 @@ public protocol SQLSelectExpression: SQLSerializable, ExpressibleByStringLiteral
     
     /// Creates a new `SQLSelectExpression` using a `SQLExpression` with optional alias.
     static func expression(_ expression: Expression, alias: Identifier?) -> Self
+    
+    /// Returns true if this `SQLSelectExpression` is `*`.
+    var isAll: Bool { get }
+    
+    /// Returns the table identifier if this `SQLSelectExpression` is `table.*`.
+    var allTable: TableIdentifier? { get }
+    
+    /// Returns the expression and optional alias if this `SQLSelectExpression` is an expression.
+    var expression: (expression: Expression, alias: Identifier?)? { get }
 }
 
 // MARK: Convenience
@@ -77,6 +86,30 @@ public enum GenericSQLSelectExpression<Expression, Identifier, TableIdentifier>:
     /// See `ExpressibleByStringLiteral`.
     public init(stringLiteral value: String) {
         self = ._expression(.column(.column(nil, .identifier(value))), alias: nil)
+    }
+    
+    /// See `SQLSelectExpression`.
+    public var isAll: Bool {
+        switch self {
+        case ._all: return true
+        default: return false
+        }
+    }
+    
+    /// See `SQLSelectExpression`.
+    public var allTable: TableIdentifier? {
+        switch self {
+        case ._allTable(let table): return table
+        default: return nil
+        }
+    }
+    
+    /// See `SQLSelectExpression`.
+    public var expression: (expression: Expression, alias: Identifier?)? {
+        switch self {
+        case ._expression(let expr, let alias): return (expr, alias)
+        default: return nil
+        }
     }
     
     /// `*`
