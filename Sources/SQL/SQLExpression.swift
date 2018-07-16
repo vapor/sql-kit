@@ -1,3 +1,12 @@
+/// A SQL expression, i.e., a column name, value placeholder, function,
+/// subquery, or binary expression.
+///
+/// These expression are evaluated by the SQL engine and are used throughout many
+/// types in this package.
+///
+/// This type is also highly recursive. Binary expressions, for example, have a left
+/// and right sub expression and so on. Function expressions have zero or more arguments
+/// that are also expressions.
 public protocol SQLExpression: SQLSerializable, ExpressibleByFloatLiteral, ExpressibleByIntegerLiteral {
     /// See `SQLLiteral`.
     associatedtype Literal: SQLLiteral

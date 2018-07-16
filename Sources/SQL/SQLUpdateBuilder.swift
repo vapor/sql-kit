@@ -1,3 +1,11 @@
+/// Builds `SQLUpdate` queries.
+///
+///     conn.update(Planet.self)
+///         .set(\Planet.name == "Earth")
+///         .where(\Planet.name == "Eatrh")
+///         .run()
+///
+/// See `SQLQueryBuilder` and `SQLPredicateBuilder` for more information.
 public final class SQLUpdateBuilder<Connection>: SQLQueryBuilder, SQLPredicateBuilder
     where Connection: SQLConnection
 {
@@ -24,6 +32,13 @@ public final class SQLUpdateBuilder<Connection>: SQLQueryBuilder, SQLPredicateBu
         self.connection = connection
     }
     
+    /// Adds an encodable model's properties to the `UPDATE` statement.
+    ///
+    ///     conn.update(Planet.self)
+    ///         .set(earth)
+    ///         .where(\Planet.id == earth.id)
+    ///         .run()
+    ///
     public func set<E>(_ model: E)-> Self
         where E: Encodable
     {
@@ -33,18 +48,27 @@ public final class SQLUpdateBuilder<Connection>: SQLQueryBuilder, SQLPredicateBu
         return self
     }
     
+    /// Sets a column (specified by key path) to an encodable value.
+    ///
+    ///     conn.update(Planet.self)
+    ///         .set(\Planet.name == "Earth")
+    ///         .where(\Planet.name == "Eatrh")
+    ///         .run()
+    ///
     public func set<T, V>(_ keyPath: KeyPath<T, V>, to value: V)  -> Self
         where T: SQLTable, V: Encodable
     {
         return set(.keyPath(keyPath), to: .bind(.encodable(value)))
     }
     
+    /// Sets a column (specified by key path) to an expression.
     public func set<T, V>(_ keyPath: KeyPath<T, V>, to expression: Connection.Query.Update.Expression) -> Self
         where T: SQLTable
     {
         return set(.keyPath(keyPath), to: expression)
     }
     
+    /// Sets a column (specified by an identifier) to an expression.
     public func set(_ identifier: Connection.Query.Update.Identifier, to expression: Connection.Query.Update.Expression) -> Self {
         update.values.append((identifier, expression))
         return self

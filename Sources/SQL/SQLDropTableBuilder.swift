@@ -34,6 +34,10 @@ public final class SQLDropTableBuilder<Connection>: SQLQueryBuilder
 // MARK: Connection
 
 extension SQLConnection {
+    /// Creates a new `SQLDropTable` builder.
+    ///
+    ///     conn.drop(table: Planet.self).run()
+    ///
     public func drop<Table>(table: Table.Type) -> SQLDropTableBuilder<Self>
         where Table: SQLTable
     {

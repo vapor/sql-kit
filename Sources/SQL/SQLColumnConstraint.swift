@@ -1,5 +1,7 @@
 /// SQL column data integrity constraint, i.e., `NOT NULL`, `PRIMARY KEY`, etc.
 ///
+/// See `SQLTableConstraint` for table contraints.
+///
 /// Used by `SQLColumnBuilder`.
 public protocol SQLColumnConstraint: SQLSerializable {
     /// See `SQLIdentifier`.

@@ -20,11 +20,11 @@ extension SQLQueryFetcher {
     ///
     ///     builder.all(decoding: Planet.self)
     ///
-    public func all<D>(decoding type: D.Type) -> Future<[D]>
-        where D: Decodable
+    public func all<A>(decoding type: A.Type) -> Future<[A]>
+        where A: Decodable
     {
-        var all: [D] = []
-        return run(decoding: D.self) { all.append($0) }.map { all }
+        var all: [A] = []
+        return run(decoding: A.self) { all.append($0) }.map { all }
     }
     
     /// Decodes two types from the result set. Collects all decoded output into an array and returns it.
@@ -32,7 +32,7 @@ extension SQLQueryFetcher {
     ///     builder.all(decoding: Planet.self, Galaxy.self)
     ///
     public func all<A, B>(decoding a: A.Type, _ b: B.Type) -> Future<[(A, B)]>
-        where A: SQLTable, B: SQLTable
+        where A: Decodable, B: Decodable
     {
         var all: [(A, B)] = []
         return run(decoding: A.self, B.self) { all.append(($0, $1)) }.map { all }
@@ -43,7 +43,7 @@ extension SQLQueryFetcher {
     ///     builder.all(decoding: Planet.self, Galaxy.self, SolarSystem.self)
     ///
     public func all<A, B, C>(decoding a: A.Type, _ b: B.Type, _ c: C.Type) -> Future<[(A, B, C)]>
-        where A: SQLTable, B: SQLTable, C: SQLTable
+        where A: Decodable, B: Decodable, C: Decodable
     {
         var all: [(A, B, C)] = []
         return run(decoding: A.self, B.self, C.self) { all.append(($0, $1, $2)) }.map { all }
@@ -68,14 +68,14 @@ extension SQLQueryFetcher {
     ///     }
     ///
     /// The returned future will signal completion of the query.
-    public func run<D>(
-        decoding type: D.Type,
-        into handler: @escaping (D) throws -> ()
+    public func run<A>(
+        decoding type: A.Type,
+        into handler: @escaping (A) throws -> ()
     ) -> Future<Void>
-        where D: Decodable
+        where A: Decodable
     {
         return run { row in
-            let d = try self.connection.decode(D.self, from: row, table: nil)
+            let d = try self.connection.decode(A.self, from: row, table: .table(any: A.self))
             try handler(d)
         }
     }
@@ -92,11 +92,11 @@ extension SQLQueryFetcher {
         decoding a: A.Type, _ b: B.Type,
         into handler: @escaping (A, B) throws -> ()
     ) -> Future<Void>
-        where A: SQLTable, B: SQLTable
+        where A: Decodable, B: Decodable
     {
         return run { row in
-            let a = try self.connection.decode(A.self, from: row, table: .table(A.self))
-            let b = try self.connection.decode(B.self, from: row, table: .table(B.self))
+            let a = try self.connection.decode(A.self, from: row, table: .table(any: A.self))
+            let b = try self.connection.decode(B.self, from: row, table: .table(any: B.self))
             try handler(a, b)
         }
     }
@@ -112,12 +112,12 @@ extension SQLQueryFetcher {
         decoding a: A.Type, _ b: B.Type, _ c: C.Type,
         into handler: @escaping (A, B, C) throws -> ()
     ) -> Future<Void>
-        where A: SQLTable, B: SQLTable, C: SQLTable
+        where A: Decodable, B: Decodable, C: Decodable
     {
         return run { row in
-            let a = try self.connection.decode(A.self, from: row, table: .table(A.self))
-            let b = try self.connection.decode(B.self, from: row, table: .table(B.self))
-            let c = try self.connection.decode(C.self, from: row, table: .table(C.self))
+            let a = try self.connection.decode(A.self, from: row, table: .table(any: A.self))
+            let b = try self.connection.decode(B.self, from: row, table: .table(any: B.self))
+            let c = try self.connection.decode(C.self, from: row, table: .table(any: C.self))
             try handler(a, b, c)
         }
     }

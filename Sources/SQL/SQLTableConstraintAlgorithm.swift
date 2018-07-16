@@ -1,20 +1,40 @@
+/// Constraint algorithms used by `SQLTableConstraintAlgorithm`.
 public protocol SQLTableConstraintAlgorithm: SQLSerializable {
+    /// See `SQLIdentifier`.
     associatedtype Identifier: SQLIdentifier
+    
+    /// See `SQLExpression`.
     associatedtype Expression: SQLExpression
+    
+    /// See `SQLCollation`.
     associatedtype Collation: SQLCollation
+    
+    /// See `SQLForeignKey`.
     associatedtype ForeignKey: SQLForeignKey
+    
+    /// `PRIMARY KEY` constriant.
     static func primaryKey(_ columns: [Identifier]) -> Self
+    
+    /// `NOT NULL` constraint.
     static var notNull: Self { get }
+    
+    /// `UNIQUE` constraint.
     static func unique(_ columns: [Identifier]) -> Self
+    
+    /// `CHECK` constraint.
     static func check(_ expression: Expression) -> Self
+    
+    /// `FOREIGN KEY` constraint.
     static func foreignKey(_ columns: [Identifier], _ foreignKey: ForeignKey) -> Self
 }
 
 // MARK: Generic
 
+/// Generic implementation of `SQLTableConstraintAlgorithm`.
 public enum GenericSQLTableConstraintAlgorithm<Identifier, Expression, Collation, ForeignKey>: SQLTableConstraintAlgorithm
     where Identifier: SQLIdentifier, Expression: SQLExpression, Collation: SQLCollation, ForeignKey: SQLForeignKey
 {
+    /// Convenience typealias for self.
     public typealias `Self` = GenericSQLTableConstraintAlgorithm<Identifier, Expression, Collation, ForeignKey>
     
     /// See `SQLColumnConstraintAlgorithm`.
@@ -42,10 +62,19 @@ public enum GenericSQLTableConstraintAlgorithm<Identifier, Expression, Collation
         return ._foreignKey(columns, foreignKey)
     }
     
+    /// See `SQLTableConstraintAlgorithm`.
     case _primaryKey([Identifier])
+    
+    /// See `SQLTableConstraintAlgorithm`.
     case _notNull
+    
+    /// See `SQLTableConstraintAlgorithm`.
     case _unique([Identifier])
+    
+    /// See `SQLTableConstraintAlgorithm`.
     case _check(Expression)
+    
+    /// See `SQLTableConstraintAlgorithm`.
     case _foreignKey([Identifier], ForeignKey)
     
     /// See `SQLSerializable`.

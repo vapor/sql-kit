@@ -40,6 +40,7 @@ public protocol SQLColumnConstraintAlgorithm: SQLSerializable {
 public enum GenericSQLColumnConstraintAlgorithm<Expression, Collation, PrimaryKeyDefault, ForeignKey>: SQLColumnConstraintAlgorithm
     where Expression: SQLExpression, Collation: SQLCollation, PrimaryKeyDefault: SQLPrimaryKeyDefault, ForeignKey: SQLForeignKey
 {
+    /// Convenience typealias for self.
     public typealias `Self` = GenericSQLColumnConstraintAlgorithm<Expression, Collation, PrimaryKeyDefault, ForeignKey>
     
     /// See `SQLColumnConstraintAlgorithm`.
@@ -77,12 +78,25 @@ public enum GenericSQLColumnConstraintAlgorithm<Expression, Collation, PrimaryKe
         return ._foreignKey(foreignKey)
     }
     
+    /// See `SQLColumnConstraintAlgorithm`.
     case _primaryKey(PrimaryKeyDefault?)
+    
+    /// See `SQLColumnConstraintAlgorithm`.
     case _notNull
+    
+    /// See `SQLColumnConstraintAlgorithm`.
     case _unique
+    
+    /// See `SQLColumnConstraintAlgorithm`.
     case _check(Expression)
+    
+    /// See `SQLColumnConstraintAlgorithm`.
     case _collate(Collation)
+    
+    /// See `SQLColumnConstraintAlgorithm`.
     case _default(Expression)
+    
+    /// See `SQLColumnConstraintAlgorithm`.
     case _foreignKey(ForeignKey)
     
     /// See `SQLSerializable`.

@@ -4,6 +4,7 @@ public protocol SQLIndexModifier: SQLSerializable {
     static var unique: Self { get }
 }
 
+/// Generic implementation of `SQLIndexModifier`.
 public enum GenericSQLIndexModifier: SQLIndexModifier {
     /// See `SQLIndexModifier`.
     public static var unique: GenericSQLIndexModifier {
