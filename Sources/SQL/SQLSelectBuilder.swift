@@ -32,6 +32,38 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
         self.connection = connection
     }
     
+    /// Adds a column to be returned in the result set.
+    ///
+    ///     conn.select().column("name")
+    ///
+    /// Table identifiers can also be specified.
+    ///
+    ///     conn.select().column("name", table: "users")
+    ///
+    /// - parameters:
+    ///     - name: Column identifier.
+    ///     - table: Optional table identifier.
+    /// - returns: Self for chaining.
+    public func column(
+        _ name: Connection.Query.Select.SelectExpression.Expression.ColumnIdentifier.Identifier,
+        table: Connection.Query.Select.SelectExpression.Expression.ColumnIdentifier.TableIdentifier? = nil
+    ) -> Self {
+        return column(expression: .column(.column(table, name)))
+    }
+    
+    /// Adds a column to be returned in the result set.
+    ///
+    ///     conn.select().column(\User.name)
+    ///
+    /// - parameters:
+    ///     - keyPath: KeyPath to column.
+    /// - returns: Self for chaining.
+    public func column<T, V>(_ keyPath: KeyPath<T, V>) -> Self
+        where T: SQLTable
+    {
+        return column(expression: .column(.keyPath(keyPath)))
+    }
+    
     /// Adds a function expression column to the result set.
     ///
     ///     conn.select()
@@ -204,6 +236,32 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
     /// - returns: Self for chaining.
     public func groupBy(_ expression: Connection.Query.Select.GroupBy.Expression) -> Self {
         select.groupBy.append(.groupBy(expression))
+        return self
+    }
+    
+    /// Adds a `LIMIT` clause to the select statement.
+    ///
+    ///     builder.limit(5)
+    ///
+    /// - parameters:
+    ///     - max: Optional maximum limit.
+    ///            If `nil`, existing limit will be removed.
+    /// - returns: Self for chaining.
+    public func limit(_ max: Int?) -> Self {
+        self.select.limit = max
+        return self
+    }
+    
+    /// Adds a `OFFSET` clause to the select statement.
+    ///
+    ///     builder.offset(5)
+    ///
+    /// - parameters:
+    ///     - max: Optional offset.
+    ///            If `nil`, existing offset will be removed.
+    /// - returns: Self for chaining.
+    public func offset(_ n: Int?) -> Self {
+        self.select.offset = n
         return self
     }
     
