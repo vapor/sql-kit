@@ -11,6 +11,11 @@ public protocol SQLQuery: SQLSerializable {
     /// See `SQLCreateTable`.
     associatedtype CreateTable: SQLCreateTable
     
+    /// See `SQLColumnIdentifier`.
+    associatedtype ColumnIdentifier where
+        ColumnIdentifier.Identifier == Identifier,
+        ColumnIdentifier.TableIdentifier == TableIdentifier
+    
     /// See `SQLDelete`.
     associatedtype Delete: SQLDelete
     
@@ -20,11 +25,27 @@ public protocol SQLQuery: SQLSerializable {
     /// See `SQLDropTable`.
     associatedtype DropTable: SQLDropTable
     
+    /// See `SQLExpression`.
+    associatedtype Expression where
+        Expression.ColumnIdentifier == ColumnIdentifier
+    
+    /// See `SQLIdentifier`.
+    associatedtype Identifier
+    
     /// See `SQLInsert`.
     associatedtype Insert: SQLInsert
     
     /// See `SQLSelect`.
-    associatedtype Select: SQLSelect
+    associatedtype Select: SQLSelect where
+        Select.Expression == Expression,
+        Select.SelectExpression == SelectExpression
+    
+    /// See `SQLSelectExpression`.
+    associatedtype SelectExpression where
+        SelectExpression.Expression == Expression
+    
+    /// See `SQLTableIdentifier`.
+    associatedtype TableIdentifier
     
     /// See `SQLUpdate`.
     associatedtype Update: SQLUpdate

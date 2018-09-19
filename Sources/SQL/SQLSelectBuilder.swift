@@ -44,10 +44,7 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
     ///     - name: Column identifier.
     ///     - table: Optional table identifier.
     /// - returns: Self for chaining.
-    public func column(
-        _ name: Connection.Query.Select.SelectExpression.Expression.ColumnIdentifier.Identifier,
-        table: Connection.Query.Select.SelectExpression.Expression.ColumnIdentifier.TableIdentifier? = nil
-    ) -> Self {
+    public func column(_ name: Connection.Query.Identifier, table: Connection.Query.TableIdentifier? = nil) -> Self {
         return column(expression: .column(.column(table, name)))
     }
     
