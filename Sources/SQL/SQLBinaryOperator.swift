@@ -279,7 +279,7 @@ public func == <A, B, C, D, E>(_ lhs: KeyPath<A, B>, _ rhs: KeyPath<C, D>) -> E
 public func != <A, B, C, D, E>(_ lhs: KeyPath<A, B>, _ rhs: KeyPath<C, D>) -> E
     where A: SQLTable, B: Encodable, C: SQLTable, D: Encodable, E: SQLExpression
 {
-    return E.binary(.column(.keyPath(lhs)), .equal, .column(.keyPath(rhs)))
+    return E.binary(.column(.keyPath(lhs)), .notEqual, .column(.keyPath(rhs)))
 }
 
 internal extension Encodable {
