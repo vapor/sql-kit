@@ -55,4 +55,3 @@ extension DatabaseQueryable where Query: SQLQuery {
         return .init(.alterTable(.table(Table.self)), on: self)
     }
 }
-
