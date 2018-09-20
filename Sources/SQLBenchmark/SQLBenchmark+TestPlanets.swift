@@ -93,18 +93,6 @@ extension SQLBenchmarker {
             .where(\Galaxy.name == "Milky Way")
             .run().wait()
         
-        // SELECT *, (SELECT planets.id FROM planets LIMIT 1) as test FROM galaxies
-        _ = try conn.select()
-            .all()
-            .column(subquery: { select in
-                return select
-                    .column(\Planet.id)
-                    .from(Planet.self)
-                    .limit(1)
-            }, as: "test")
-            .from(Galaxy.self)
-            .all().wait()
-        
         let b = try conn.select()
             .column(.count(as: .identifier("c")))
             .from(Galaxy.self)

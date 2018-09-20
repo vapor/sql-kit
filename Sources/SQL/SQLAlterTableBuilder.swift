@@ -41,7 +41,7 @@ public final class SQLAlterTableBuilder<Connection>: SQLQueryBuilder, SQLColumnB
 
 // MARK: Connection
 
-extension DatabaseQueryable where Query: SQLQuery {
+extension SQLConnection {
     /// Creates a new `SQLAlterTableBuilder`.
     ///
     ///     conn.alter(table: Planet.self)...
