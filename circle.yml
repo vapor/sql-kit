@@ -92,6 +92,7 @@ jobs:
     docker:
       - image: codevapor/swift:4.1
       - image: circleci/postgres:latest
+        name: psql
         environment:
           POSTGRES_USER: vapor_username
           POSTGRES_DB: vapor_database
