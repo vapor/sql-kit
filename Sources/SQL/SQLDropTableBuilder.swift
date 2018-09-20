@@ -3,24 +3,24 @@
 ///     conn.drop(table: Planet.self).run()
 ///
 /// See `SQLQueryBuilder` for more information.
-public final class SQLDropTableBuilder<Connection>: SQLQueryBuilder
-    where Connection: SQLConnectable
+public final class SQLDropTableBuilder<Connectable>: SQLQueryBuilder
+    where Connectable: SQLConnectable
 {
     /// `DropTable` query being built.
-    public var dropTable: Connection.Connection.Query.DropTable
+    public var dropTable: Connectable.Connection.Query.DropTable
     
     /// See `SQLQueryBuilder`.
-    public var connection: Connection
+    public var connectable: Connectable
     
     /// See `SQLQueryBuilder`.
-    public var query: Connection.Connection.Query {
+    public var query: Connectable.Connection.Query {
         return .dropTable(dropTable)
     }
     
     /// Creates a new `SQLDropTableBuilder`.
-    public init(_ dropTable: Connection.Connection.Query.DropTable, on connection: Connection) {
+    public init(_ dropTable: Connectable.Connection.Query.DropTable, on connectable: Connectable) {
         self.dropTable = dropTable
-        self.connection = connection
+        self.connectable = connectable
     }
     
     /// The optional `IF EXISTS` clause suppresses the error that would normally

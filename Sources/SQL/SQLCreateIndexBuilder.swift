@@ -3,20 +3,20 @@
 ///     conn.create(index: "planet_name_unique").on(\Planet.name).unique().run()
 ///
 /// See `SQLCreateIndex`.
-public final class SQLCreateIndexBuilder<Connection>: SQLQueryBuilder
-    where Connection: SQLConnectable
+public final class SQLCreateIndexBuilder<Connectable>: SQLQueryBuilder
+    where Connectable: SQLConnectable
 {
     /// See `SQLColumnBuilder`.
-    public typealias ColumnDefinition = Connection.Connection.Query.AlterTable.ColumnDefinition
+    public typealias ColumnDefinition = Connectable.Connection.Query.AlterTable.ColumnDefinition
     
     /// `AlterTable` query being built.
-    public var createIndex: Connection.Connection.Query.CreateIndex
+    public var createIndex: Connectable.Connection.Query.CreateIndex
     
     /// See `SQLQueryBuilder`.
-    public var connection: Connection
+    public var connectable: Connectable
     
     /// See `SQLQueryBuilder`.
-    public var query: Connection.Connection.Query {
+    public var query: Connectable.Connection.Query {
         return .createIndex(createIndex)
     }
     
@@ -41,9 +41,9 @@ public final class SQLCreateIndexBuilder<Connection>: SQLQueryBuilder
     }
     
     /// Creates a new `SQLCreateIndexBuilder`.
-    public init(_ createIndex: Connection.Connection.Query.CreateIndex, on connection: Connection) {
+    public init(_ createIndex: Connectable.Connection.Query.CreateIndex, on connectable: Connectable) {
         self.createIndex = createIndex
-        self.connection = connection
+        self.connectable = connectable
     }
 }
 

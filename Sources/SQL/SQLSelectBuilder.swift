@@ -6,30 +6,30 @@
 ///         .all(decoding: Planet.self)
 ///
 /// See `SQLQueryFetcher` and `SQLPredicateBuilder` for more information.
-public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBuilder
-    where Connection: SQLConnectable
+public final class SQLSelectBuilder<Connectable>: SQLQueryFetcher, SQLPredicateBuilder
+    where Connectable: SQLConnectable
 {
     /// `Select` query being built.
-    public var select: Connection.Connection.Query.Select
+    public var select: Connectable.Connection.Query.Select
     
     /// See `SQLQueryBuilder`.
-    public var connection: Connection
+    public var connectable: Connectable
     
     /// See `SQLQueryBuilder`.
-    public var query: Connection.Connection.Query {
+    public var query: Connectable.Connection.Query {
         return .select(select)
     }
     
     /// See `SQLWhereBuilder`.
-    public var predicate: Connection.Connection.Query.Select.Expression? {
+    public var predicate: Connectable.Connection.Query.Select.Expression? {
         get { return select.predicate }
         set { select.predicate = newValue }
     }
     
     /// Creates a new `SQLCreateTableBuilder`.
-    public init(_ select: Connection.Connection.Query.Select, on connection: Connection) {
+    public init(_ select: Connectable.Connection.Query.Select, on connectable: Connectable) {
         self.select = select
-        self.connection = connection
+        self.connectable = connectable
     }
     
     /// Adds a column to be returned in the result set.
@@ -45,8 +45,8 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
     ///     - table: Optional table identifier.
     /// - returns: Self for chaining.
     public func column(
-        _ name: Connection.Connection.Query.Select.SelectExpression.Expression.ColumnIdentifier.Identifier,
-        table: Connection.Connection.Query.Select.SelectExpression.Expression.ColumnIdentifier.TableIdentifier? = nil) -> Self {
+        _ name: Connectable.Connection.Query.Select.SelectExpression.Expression.ColumnIdentifier.Identifier,
+        table: Connectable.Connection.Query.Select.SelectExpression.Expression.ColumnIdentifier.TableIdentifier? = nil) -> Self {
         return column(.column(.column(table, name)))
     }
     
@@ -74,8 +74,8 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
     ///              key in the result set.
     /// - returns: Self for chaining.
     public func column(
-        _ expression: Connection.Connection.Query.Select.SelectExpression.Expression,
-        as alias: Connection.Connection.Query.Select.SelectExpression.Identifier? = nil
+        _ expression: Connectable.Connection.Query.Select.SelectExpression.Expression,
+        as alias: Connectable.Connection.Query.Select.SelectExpression.Identifier? = nil
     ) -> Self {
         return column(.expression(expression, alias: alias))
     }
@@ -109,7 +109,7 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
     }
     
     /// Adds a `SQLSelectExpression` to the result set.
-    public func column(_ column: Connection.Connection.Query.Select.SelectExpression) -> Self {
+    public func column(_ column: Connectable.Connection.Query.Select.SelectExpression) -> Self {
         select.columns.append(column)
         return self
     }
@@ -141,7 +141,7 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
     /// - parameters:
     ///     - tables: One or more table identifiers
     /// - returns: Self for chaining.
-    public func from(_ tables: Connection.Connection.Query.Select.TableIdentifier...) -> Self {
+    public func from(_ tables: Connectable.Connection.Query.Select.TableIdentifier...) -> Self {
         select.tables += tables
         return self
     }
@@ -163,7 +163,7 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
     public func join<A, B, C, D>(
         _ local: KeyPath<A, B>,
         to foreign: KeyPath<C, D>,
-        method: Connection.Connection.Query.Select.Join.Method = .default
+        method: Connectable.Connection.Query.Select.Join.Method = .default
     ) -> Self where A: SQLTable, B: Encodable, C: SQLTable, D: Encodable {
         return join(C.self, on: local == foreign, method: method)
     }
@@ -184,8 +184,8 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
     /// - returns: Self for chaining.
     public func join<Table>(
         _ table: Table.Type,
-        on expression: Connection.Connection.Query.Select.Join.Expression,
-        method: Connection.Connection.Query.Select.Join.Method = .default
+        on expression: Connectable.Connection.Query.Select.Join.Expression,
+        method: Connectable.Connection.Query.Select.Join.Method = .default
     ) -> Self
         where Table: SQLTable
     {
@@ -213,7 +213,7 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
     /// - parameters:
     ///     - expression: `SQLExpression` to group by.
     /// - returns: Self for chaining.
-    public func groupBy(_ expression: Connection.Connection.Query.Select.GroupBy.Expression) -> Self {
+    public func groupBy(_ expression: Connectable.Connection.Query.Select.GroupBy.Expression) -> Self {
         select.groupBy.append(.groupBy(expression))
         return self
     }
@@ -257,7 +257,7 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
     /// - returns: Self for chaining.
     public func orderBy<T,V>(
         _ keyPath: KeyPath<T, V>,
-        _ direction: Connection.Connection.Query.Select.OrderBy.Direction = .ascending
+        _ direction: Connectable.Connection.Query.Select.OrderBy.Direction = .ascending
     ) -> Self
         where T: SQLTable
     {
@@ -271,21 +271,21 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
     ///     - direction: `SQLDirection` to sort the results.
     ///                  Defaults to ascending.
     /// - returns: Self for chaining.
-    public func orderBy(_ expression: Connection.Connection.Query.Select.OrderBy.Expression, _ direction: Connection.Connection.Query.Select.OrderBy.Direction = .ascending) -> Self {
+    public func orderBy(_ expression: Connectable.Connection.Query.Select.OrderBy.Expression, _ direction: Connectable.Connection.Query.Select.OrderBy.Direction = .ascending) -> Self {
         select.orderBy.append(.orderBy(expression, direction))
         return self
     }
 }
 
 extension SQLSelectBuilder where
-    Connection.Connection.Query.Select.SelectExpression.Expression.Subquery == Connection.Connection.Query.Select
+    Connectable.Connection.Query.Select.SelectExpression.Expression.Subquery == Connectable.Connection.Query.Select
 {
     /// Selects a column to the result set from a subquery.
     public func column(
-        subquery closure: (SQLSelectBuilder<Connection>) -> (SQLSelectBuilder<Connection>),
-        as alias: Connection.Connection.Query.Select.SelectExpression.Identifier? = nil
+        subquery closure: (SQLSelectBuilder<Connectable>) -> (SQLSelectBuilder<Connectable>),
+        as alias: Connectable.Connection.Query.Select.SelectExpression.Identifier? = nil
     ) -> Self {
-        let builder = closure(connection.select())
+        let builder = closure(connectable.select())
         return column(.subquery(builder.select), as: alias)
     }
 }

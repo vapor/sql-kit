@@ -11,7 +11,7 @@ extension SQLQueryFetcher {
     ///
     ///     builder.first()
     ///
-    public func first() -> Future<Connection.Connection.Output?> {
+    public func first() -> Future<Connectable.Connection.Output?> {
         return self.all().map { $0.first }
     }
     
@@ -51,9 +51,9 @@ extension SQLQueryFetcher {
     ///
     ///     builder.all()
     ///
-    public func all() -> Future<[Connection.Connection.Output]> {
-        return connection.withSQLConnection { conn in
-            var all: [Connection.Connection.Output] = []
+    public func all() -> Future<[Connectable.Connection.Output]> {
+        return connectable.withSQLConnection { conn in
+            var all: [Connectable.Connection.Output] = []
             return conn.query(self.query) { all.append($0) }
                 .map { all }
         }
@@ -100,8 +100,8 @@ extension SQLQueryFetcher {
     ///     builder.run { print($0) }
     ///
     /// The returned future will signal completion of the query.
-    public func run(_ handler: @escaping (Connection.Connection.Output) throws -> ()) -> Future<Void> {
-        return connection.withSQLConnection { conn in
+    public func run(_ handler: @escaping (Connectable.Connection.Output) throws -> ()) -> Future<Void> {
+        return connectable.withSQLConnection { conn in
             return conn.query(self.query, handler)
         }
     }
@@ -119,7 +119,7 @@ extension SQLQueryFetcher {
     ) -> Future<Void>
         where A: Decodable
     {
-        return connection.withSQLConnection { conn in
+        return connectable.withSQLConnection { conn in
             return conn.query(self.query) { row in
                 let d = try conn.decode(A.self, from: row, table: .table(any: A.self))
                 try handler(d)
@@ -141,7 +141,7 @@ extension SQLQueryFetcher {
     ) -> Future<Void>
         where A: Decodable, B: Decodable
     {
-        return connection.withSQLConnection { conn in
+        return connectable.withSQLConnection { conn in
             return conn.query(self.query) { row in
                 let a = try conn.decode(A.self, from: row, table: .table(any: A.self))
                 let b = try conn.decode(B.self, from: row, table: .table(any: B.self))
@@ -163,7 +163,7 @@ extension SQLQueryFetcher {
     ) -> Future<Void>
         where A: Decodable, B: Decodable, C: Decodable
     {
-        return connection.withSQLConnection { conn in
+        return connectable.withSQLConnection { conn in
             return conn.query(self.query) { row in
                 let a = try conn.decode(A.self, from: row, table: .table(any: A.self))
                 let b = try conn.decode(B.self, from: row, table: .table(any: B.self))

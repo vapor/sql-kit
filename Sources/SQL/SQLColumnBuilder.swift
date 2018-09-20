@@ -28,7 +28,7 @@ extension SQLColumnBuilder {
         _ constraints: ColumnDefinition.ColumnConstraint...
     ) -> Self where T: SQLTable {
         guard let dataType = ColumnDefinition.DataType.dataType(appropriateFor: V.self) else {
-            assertionFailure("No known \(Connection.Connection.Query.CreateTable.ColumnDefinition.DataType.self) for \(V.self).")
+            assertionFailure("No known \(Connectable.Connection.Query.CreateTable.ColumnDefinition.DataType.self) for \(V.self).")
             return self
         }
         return column(.columnDefinition(.keyPath(keyPath), dataType, constraints))
@@ -48,7 +48,7 @@ extension SQLColumnBuilder {
         _ constraints: ColumnDefinition.ColumnConstraint...
     ) -> Self where T: SQLTable {
         guard let dataType = ColumnDefinition.DataType.dataType(appropriateFor: V.self) else {
-            assertionFailure("No known \(Connection.Connection.Query.CreateTable.ColumnDefinition.DataType.self) for \(V.self).")
+            assertionFailure("No known \(Connectable.Connection.Query.CreateTable.ColumnDefinition.DataType.self) for \(V.self).")
             return self
         }
         return column(.columnDefinition(.keyPath(keyPath), dataType, [.notNull] + constraints))

@@ -5,25 +5,25 @@
 ///         .run()
 ///
 /// See `SQLColumnBuilder` for more information.
-public final class SQLAlterTableBuilder<Connection>: SQLQueryBuilder, SQLColumnBuilder
-    where Connection: SQLConnectable
+public final class SQLAlterTableBuilder<Connectable>: SQLQueryBuilder, SQLColumnBuilder
+    where Connectable: SQLConnectable
 {
     /// See `SQLColumnBuilder`.
-    public typealias ColumnDefinition = Connection.Connection.Query.AlterTable.ColumnDefinition
+    public typealias ColumnDefinition = Connectable.Connection.Query.AlterTable.ColumnDefinition
     
     /// `SQLAlterTable` query being built.
-    public var alterTable: Connection.Connection.Query.AlterTable
+    public var alterTable: Connectable.Connection.Query.AlterTable
 
     /// See `SQLQueryBuilder`.
-    public var connection: Connection
+    public var connectable: Connectable
 
     /// See `SQLQueryBuilder`.
-    public var query: Connection.Connection.Query {
+    public var query: Connectable.Connection.Query {
         return .alterTable(alterTable)
     }
     
     /// See `SQLColumnBuilder`.
-    public var columns: [Connection.Connection.Query.AlterTable.ColumnDefinition] {
+    public var columns: [Connectable.Connection.Query.AlterTable.ColumnDefinition] {
         get { return alterTable.columns }
         set { alterTable.columns = newValue }
     }
@@ -33,9 +33,9 @@ public final class SQLAlterTableBuilder<Connection>: SQLQueryBuilder, SQLColumnB
     /// - parameters:
     ///     - alterTable: Alter table query.
     ///     - connection: Connection to perform query on.
-    public init(_ alterTable: Connection.Connection.Query.AlterTable, on connection: Connection) {
+    public init(_ alterTable: Connectable.Connection.Query.AlterTable, on connectable: Connectable) {
         self.alterTable = alterTable
-        self.connection = connection
+        self.connectable = connectable
     }
 }
 
