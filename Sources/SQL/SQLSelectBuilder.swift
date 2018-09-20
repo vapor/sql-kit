@@ -45,7 +45,7 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
     ///     - table: Optional table identifier.
     /// - returns: Self for chaining.
     public func column(_ name: Connection.Query.Identifier, table: Connection.Query.TableIdentifier? = nil) -> Self {
-        return column(expression: .column(.column(table, name)))
+        return column(.column(.column(table, name)))
     }
     
     /// Adds a column to be returned in the result set.
@@ -58,27 +58,7 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
     public func column<T, V>(_ keyPath: KeyPath<T, V>) -> Self
         where T: SQLTable
     {
-        return column(expression: .column(.keyPath(keyPath)))
-    }
-    
-    /// Adds a function expression column to the result set.
-    ///
-    ///     conn.select()
-    ///         .column(function: "count", .all, as: "count")
-    ///
-    /// - parameters:
-    ///     - function: Name of the function to execute.
-    ///     - arguments: Zero or more arguments to pass to the function.
-    ///                  See `SQLArgument`.
-    ///     - alias: Optional alias for the result. This will be the value's
-    ///              key in the result set.
-    /// - returns: Self for chaining.
-    public func column(
-        function: String,
-        _ arguments: Connection.Query.Select.SelectExpression.Expression.Function.Argument...,
-        as alias: Connection.Query.Select.SelectExpression.Identifier? = nil
-    ) -> Self {
-        return column(expression: .function(.function(function, arguments)), as: alias)
+        return column(.column(.keyPath(keyPath)))
     }
     
     /// Adds an expression column to the result set.
@@ -92,7 +72,7 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
     ///              key in the result set.
     /// - returns: Self for chaining.
     public func column(
-        expression: Connection.Query.Select.SelectExpression.Expression,
+        _ expression: Connection.Query.Select.SelectExpression.Expression,
         as alias: Connection.Query.Select.SelectExpression.Identifier? = nil
     ) -> Self {
         return column(.expression(expression, alias: alias))
@@ -127,7 +107,7 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
     }
     
     /// Adds a `SQLSelectExpression` to the result set.
-    public func column(_ column: Connection.Query.Select.SelectExpression) -> Self {
+    public func column(_ column: Connection.Query.SelectExpression) -> Self {
         select.columns.append(column)
         return self
     }

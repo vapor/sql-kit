@@ -58,11 +58,44 @@ public protocol SQLExpression: SQLSerializable, ExpressibleByFloatLiteral, Expre
 // MARK: Convenience
 
 extension SQLExpression {
+    public static func function(_ name: String, _ args: [Function.Argument] = []) -> Self {
+        return .function(.function(name, args))
+    }
+    
+    public static func sum<T,V>(_ keyPath: KeyPath<T, V>) -> Self
+        where T: SQLTable
+    {
+        return .function("SUM", [.expression(.column(keyPath))])
+    }
+    
+    public static func count<T,V>(_ keyPath: KeyPath<T, V>) -> Self
+        where T: SQLTable
+    {
+        return .function("COUNT", [.expression(.column(keyPath))])
+    }
+    
+    public static func column<T, V>(_ keyPath: KeyPath<T, V>) -> Self
+        where T: SQLTable
+    {
+        return column(.keyPath(keyPath))
+    }
+
+    public static func group(_ exprs: Self...) -> Self {
+        return group(exprs)
+    }
+    
     /// Bound value. Shorthand for `.bind(.encodable(...))`.
     public static func value<E>(_ value: E) -> Self
         where E: Encodable
     {
         return bind(.encodable(value))
+    }
+    
+    /// Bound value. Shorthand for `.bind(.encodable(...))`.
+    public static func values<E>(_ values: [E]) -> Self
+        where E: Encodable
+    {
+        return group(values.map { .value($0) })
     }
 }
 

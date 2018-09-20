@@ -27,6 +27,26 @@ extension SQLPredicateBuilder {
         return self
     }
     
+    public func `where`<T, V>(
+        _ lhs: KeyPath<T, V>,
+        _ op: Expression.BinaryOperator,
+        _ rhs: V
+    ) -> Self
+        where T: SQLTable, V: Encodable
+    {
+        return self.where(.column(lhs), op, .value(rhs))
+    }
+    
+    public func `where`<T, V>(
+        _ lhs: KeyPath<T, V>,
+        _ op: Expression.BinaryOperator,
+        _ rhs: [V]
+    ) -> Self
+        where T: SQLTable, V: Encodable
+    {
+        return self.where(.column(lhs), op, .values(rhs))
+    }
+    
     /// Adds an expression to the `WHERE` clause.
     ///
     ///     builder.orWhere(\Planet.name == "Earth")

@@ -54,6 +54,24 @@ extension SQLBenchmarker {
                 ])
             .run().wait()
         
+        try conn.select()
+            .column(.count(\Planet.name))
+            .from(Planet.self)
+            .where(\Planet.galaxyID, .equal, 5)
+            .run().wait()
+
+        try conn.select()
+            .column(.count(.all))
+            .from(Planet.self)
+            .where(\Planet.galaxyID, .equal, 5)
+            .run().wait()
+
+        try conn.select()
+            .column(.sum(\Planet.id), as: "id_sum")
+            .from(Planet.self)
+            .where(\Planet.galaxyID, .equal, 5)
+            .run().wait()
+        
         try conn.update(Planet.self)
             .where(\Planet.name == "Jpuiter")
             .set(["name": "Jupiter"])
