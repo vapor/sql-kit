@@ -58,28 +58,48 @@ public protocol SQLExpression: SQLSerializable, ExpressibleByFloatLiteral, Expre
 // MARK: Convenience
 
 extension SQLExpression {
+    /// Convenience for creating a function call.
+    ///
+    ///     .function("COUNT", [.all])
+    ///
     public static func function(_ name: String, _ args: [Function.Argument] = []) -> Self {
         return .function(.function(name, args))
     }
     
+    /// Convenience for creating a `SUM(foo)` function call on a given KeyPath.
+    ///
+    ///     .sum(\Planet.mass)
+    ///
     public static func sum<T,V>(_ keyPath: KeyPath<T, V>) -> Self
         where T: SQLTable
     {
         return .function("SUM", [.expression(.column(keyPath))])
     }
     
+    /// Convenience for creating a `COUNT(foo)` function call on a given KeyPath.
+    ///
+    ///     .count(\Planet.id)
+    ///
     public static func count<T,V>(_ keyPath: KeyPath<T, V>) -> Self
         where T: SQLTable
     {
         return .function("COUNT", [.expression(.column(keyPath))])
     }
     
+    /// Convenience for creating a Column expression from a KeyPath.
+    ///
+    ///     .column(\Planet.name)
+    ///
     public static func column<T, V>(_ keyPath: KeyPath<T, V>) -> Self
         where T: SQLTable
     {
         return column(.keyPath(keyPath))
     }
 
+    /// Variadic convenience method for creating a group of expressions.
+    ///
+    ///     .group(a, b, c)
+    ///
     public static func group(_ exprs: Self...) -> Self {
         return group(exprs)
     }
