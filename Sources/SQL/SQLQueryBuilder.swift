@@ -4,13 +4,13 @@
 ///
 public protocol SQLQueryBuilder: class {
     /// See `SQLConnection`.
-    associatedtype Connection: SQLConnection
+    associatedtype Connectable: SQLConnectable
     
     /// Query being built.
-    var query: Connection.Query { get }
+    var query: Connectable.Connection.Query { get }
     
     /// Connection to execute query on.
-    var connection: Connection { get }
+    var connectable: Connectable { get }
 }
 
 extension SQLQueryBuilder {
@@ -20,6 +20,8 @@ extension SQLQueryBuilder {
     ///
     /// - returns: A future signaling completion.
     public func run() -> Future<Void> {
-        return connection.query(query) { _ in }
+        return connectable.withSQLConnection { conn in
+            return conn.query(self.query) { _ in }
+        }
     }
 }

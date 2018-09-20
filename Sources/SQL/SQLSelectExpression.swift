@@ -44,7 +44,7 @@ extension SQLSelectExpression {
     public static func count(_ arg: Expression.Function.Argument = .all, as alias: Identifier? = nil) -> Self {
         return .function("COUNT", [arg], as: alias)
     }
-    
+
     /// Creates a new `SQLSelectExpression` using a SQL function.
     ///
     ///     conn.select()

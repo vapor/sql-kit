@@ -4,36 +4,36 @@
 ///         .where(\.name != "Earth").run()
 ///
 /// See `SQLQueryBuilder` and `SQLPredicateBuilder` for more information.
-public final class SQLDeleteBuilder<Connection>: SQLQueryBuilder, SQLPredicateBuilder
-    where Connection: SQLConnection
+public final class SQLDeleteBuilder<Connectable>: SQLQueryBuilder, SQLPredicateBuilder
+    where Connectable: SQLConnectable
 {
     /// `Delete` query being built.
-    public var delete: Connection.Query.Delete
+    public var delete: Connectable.Connection.Query.Delete
     
     /// See `SQLQueryBuilder`.
-    public var connection: Connection
+    public var connectable: Connectable
     
     /// See `SQLQueryBuilder`.
-    public var query: Connection.Query {
+    public var query: Connectable.Connection.Query {
         return .delete(delete)
     }
     
     /// See `SQLWhereBuilder`.
-    public var predicate: Connection.Query.Delete.Expression? {
+    public var predicate: Connectable.Connection.Query.Delete.Expression? {
         get { return delete.predicate }
         set { delete.predicate = newValue }
     }
     
     /// Creates a new `SQLDeleteBuilder`.
-    public init(_ delete: Connection.Query.Delete, on connection: Connection) {
+    public init(_ delete: Connectable.Connection.Query.Delete, on connectable: Connectable) {
         self.delete = delete
-        self.connection = connection
+        self.connectable = connectable
     }
 }
 
 // MARK: Connection
 
-extension SQLConnection {
+extension SQLConnectable {
     /// Creates a new `SQLDeleteBuilder`.
     ///
     ///     conn.delete(from: Planet.self)...

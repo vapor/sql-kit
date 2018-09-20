@@ -4,24 +4,24 @@
 ///         .value(earth).run()
 ///
 /// See `SQLQueryBuilder` for more information.
-public final class SQLInsertBuilder<Connection>: SQLQueryBuilder
-    where Connection: SQLConnection
+public final class SQLInsertBuilder<Connectable>: SQLQueryBuilder
+    where Connectable: SQLConnectable
 {
     /// `Insert` query being built.
-    public var insert: Connection.Query.Insert
+    public var insert: Connectable.Connection.Query.Insert
     
     /// See `SQLQueryBuilder`.
-    public var connection: Connection
+    public var connectable: Connectable
     
     /// See `SQLQueryBuilder`.
-    public var query: Connection.Query {
+    public var query: Connectable.Connection.Query {
         return .insert(insert)
     }
     
     /// Creates a new `SQLInsertBuilder`.
-    public init(_ insert: Connection.Query.Insert, on connection: Connection) {
+    public init(_ insert: Connectable.Connection.Query.Insert, on connectable: Connectable) {
         self.insert = insert
-        self.connection = connection
+        self.connectable = connectable
     }
     
     /// Adds a single encodable value to be inserted. Equivalent to calling `values(_:)`
@@ -52,7 +52,7 @@ public final class SQLInsertBuilder<Connection>: SQLQueryBuilder
         where E: Encodable
     {
         values.forEach { model in
-            let row = SQLQueryEncoder(Connection.Query.Insert.Expression.self).encode(model)
+            let row = SQLQueryEncoder(Connectable.Connection.Query.Insert.Expression.self).encode(model)
             if insert.columns.isEmpty {
                 insert.columns += row.map { .column(nil, .identifier($0.key)) }
             } else {
@@ -75,7 +75,7 @@ public final class SQLInsertBuilder<Connection>: SQLQueryBuilder
 
 // MARK: Connection
 
-extension SQLConnection {
+extension SQLConnectable {
     /// Creates a new `SQLInsertBuilder`.
     ///
     ///     conn.insert(into: Planet.self)...

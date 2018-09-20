@@ -6,33 +6,33 @@
 ///        .run()
 ///
 /// See `SQLColumnBuilder` and `SQLQueryBuilder` for more information.
-public final class SQLCreateTableBuilder<Connection>: SQLQueryBuilder, SQLColumnBuilder
-    where Connection: SQLConnection
+public final class SQLCreateTableBuilder<Connectable>: SQLQueryBuilder, SQLColumnBuilder
+    where Connectable: SQLConnectable
 {
     /// See `SQLColumnBuilder`.
-    public typealias ColumnDefinition = Connection.Query.CreateTable.ColumnDefinition
+    public typealias ColumnDefinition = Connectable.Connection.Query.CreateTable.ColumnDefinition
     
     /// `CreateTable` query being built.
-    public var createTable: Connection.Query.CreateTable
+    public var createTable: Connectable.Connection.Query.CreateTable
     
     /// See `SQLQueryBuilder`.
-    public var connection: Connection
+    public var connectable: Connectable
     
     /// See `SQLQueryBuilder`.
-    public var query: Connection.Query {
+    public var query: Connectable.Connection.Query {
         return .createTable(createTable)
     }
     
     /// See `SQLColumnBuilder`.
-    public var columns: [Connection.Query.CreateTable.ColumnDefinition] {
+    public var columns: [Connectable.Connection.Query.CreateTable.ColumnDefinition] {
         get { return createTable.columns }
         set { createTable.columns = newValue }
     }
     
     /// Creates a new `SQLCreateTableBuilder`.
-    public init(_ createTable: Connection.Query.CreateTable, on connection: Connection) {
+    public init(_ createTable: Connectable.Connection.Query.CreateTable, on connectable: Connectable) {
         self.createTable = createTable
-        self.connection = connection
+        self.connectable = connectable
     }
     
     
@@ -55,7 +55,7 @@ public final class SQLCreateTableBuilder<Connection>: SQLQueryBuilder, SQLColumn
 
 // MARK: Connection
 
-extension DatabaseQueryable where Query: SQLQuery {
+extension SQLConnectable {
     /// Creates a new `SQLCreateTableBuilder`.
     ///
     ///     conn.create(table: Planet.self)...

@@ -27,6 +27,43 @@ extension SQLPredicateBuilder {
         return self
     }
     
+    /// Adds a binary expression to the `WHERE` clause.
+    ///
+    ///     builder.where(\Planet.name, .equal, "Earth")
+    ///
+    /// - parameters:
+    ///     - lhs: Keypath referencing column.
+    ///     - op: Binary operator to relate keypath and value.
+    ///     - rhs: Instance of value type specified by keypath.
+    public func `where`<T, V>(
+        _ lhs: KeyPath<T, V>,
+        _ op: Expression.BinaryOperator,
+        _ rhs: V
+    ) -> Self
+        where T: SQLTable, V: Encodable
+    {
+        return self.where(.column(lhs), op, .value(rhs))
+    }
+    
+    /// Adds a binary expression to the `WHERE` clause accepting on array of values.
+    /// This is useful for operators like `IN` and `NOT IN`.
+    ///
+    ///     builder.where(\Planet.name, .in, ["Earth", "Venus"])
+    ///
+    /// - parameters:
+    ///     - lhs: Keypath referencing column.
+    ///     - op: Binary operator to relate keypath and value.
+    ///     - rhs: Array of value type specified by keypath.
+    public func `where`<T, V>(
+        _ lhs: KeyPath<T, V>,
+        _ op: Expression.BinaryOperator,
+        _ rhs: [V]
+    ) -> Self
+        where T: SQLTable, V: Encodable
+    {
+        return self.where(.column(lhs), op, .values(rhs))
+    }
+    
     /// Adds an expression to the `WHERE` clause.
     ///
     ///     builder.orWhere(\Planet.name == "Earth")

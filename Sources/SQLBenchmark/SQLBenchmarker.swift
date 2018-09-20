@@ -1,11 +1,11 @@
 /// Benchmarks SQL conformance.
-public final class SQLBenchmarker<Connection> where
-    Connection: SQLConnection
+public final class SQLBenchmarker<Connectable> where
+    Connectable: SQLConnectable
 {
-    internal let conn: Connection
+    internal let conn: Connectable
     
     /// Creates a new `SQLBenchmark`.
-    public init(on conn: Connection) {
+    public init(on conn: Connectable) {
         self.conn = conn
     }
     
