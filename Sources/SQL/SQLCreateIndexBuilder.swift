@@ -4,7 +4,7 @@
 ///
 /// See `SQLCreateIndex`.
 public final class SQLCreateIndexBuilder<Connection>: SQLQueryBuilder
-    where Connection: SQLConnection
+    where Connection: SQLConnectable
 {
     /// See `SQLColumnBuilder`.
     public typealias ColumnDefinition = Connection.Query.AlterTable.ColumnDefinition
@@ -49,7 +49,7 @@ public final class SQLCreateIndexBuilder<Connection>: SQLQueryBuilder
 
 // MARK: Connection
 
-extension SQLConnection {
+extension SQLConnectable {
     /// Creates a new `SQLCreateIndexBuilder`.
     ///
     ///     conn.create(index: "foo")...

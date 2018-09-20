@@ -7,7 +7,7 @@
 ///
 /// See `SQLQueryFetcher` and `SQLPredicateBuilder` for more information.
 public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBuilder
-    where Connection: SQLConnection
+    where Connection: SQLConnectable
 {
     /// `Select` query being built.
     public var select: Connection.Query.Select
@@ -292,7 +292,7 @@ extension SQLSelectBuilder where
 
 // MARK: Connection
 
-extension SQLConnection {
+extension SQLConnectable {
     /// Creates a new `SQLSelectBuilder`.
     ///
     ///     conn.select()

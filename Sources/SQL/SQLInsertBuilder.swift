@@ -5,7 +5,7 @@
 ///
 /// See `SQLQueryBuilder` for more information.
 public final class SQLInsertBuilder<Connection>: SQLQueryBuilder
-    where Connection: SQLConnection
+    where Connection: SQLConnectable
 {
     /// `Insert` query being built.
     public var insert: Connection.Query.Insert
@@ -75,7 +75,7 @@ public final class SQLInsertBuilder<Connection>: SQLQueryBuilder
 
 // MARK: Connection
 
-extension SQLConnection {
+extension SQLConnectable {
     /// Creates a new `SQLInsertBuilder`.
     ///
     ///     conn.insert(into: Planet.self)...

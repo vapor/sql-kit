@@ -5,7 +5,7 @@
 ///         .all(decoding: Planet.self)
 ///
 public final class SQLRawBuilder<Connection>: SQLQueryBuilder, SQLQueryFetcher
-    where Connection: SQLConnection
+    where Connection: SQLConnectable
 {
     /// Raw query being built.
     public var sql: String
@@ -57,7 +57,7 @@ public final class SQLRawBuilder<Connection>: SQLQueryBuilder, SQLQueryFetcher
 
 // MARK: Connection
 
-extension SQLConnection {
+extension SQLConnectable {
     /// Creates a new `SQLRawBuilder`.
     ///
     ///     conn.raw("SELECT * FROM ...")...

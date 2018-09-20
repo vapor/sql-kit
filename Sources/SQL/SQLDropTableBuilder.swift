@@ -4,7 +4,7 @@
 ///
 /// See `SQLQueryBuilder` for more information.
 public final class SQLDropTableBuilder<Connection>: SQLQueryBuilder
-    where Connection: SQLConnection
+    where Connection: SQLConnectable
 {
     /// `DropTable` query being built.
     public var dropTable: Connection.Query.DropTable
@@ -33,7 +33,7 @@ public final class SQLDropTableBuilder<Connection>: SQLQueryBuilder
 
 // MARK: Connection
 
-extension SQLConnection {
+extension SQLConnectable {
     /// Creates a new `SQLDropTable` builder.
     ///
     ///     conn.drop(table: Planet.self).run()

@@ -1,6 +1,6 @@
 /// Benchmarks SQL conformance.
 public final class SQLBenchmarker<Connection> where
-    Connection: SQLConnection
+    Connection: SQLConnectable
 {
     internal let conn: Connection
     

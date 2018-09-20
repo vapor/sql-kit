@@ -5,3 +5,40 @@ public protocol SQLConnection: DatabaseQueryable where Query: SQLQuery {
     func decode<D>(_ type: D.Type, from row: Output, table: Query.Select.TableIdentifier?) throws -> D
         where D: Decodable
 }
+
+/// Capable of creating connections to a SQL database.
+public protocol SQLConnectable {
+    /// Associated database connection type.
+    associatedtype Connection: SQLConnection
+    
+    /// Calls the supplied closure asynchronously with a database connection.
+    func withSQLConnection<T>(_ closure: @escaping (Connection) -> (Future<T>)) -> Future<T>
+}
+
+extension SQLConnectable {
+    /// See `SQLConnectable`.
+    public typealias Output = Connection.Output
+    
+    /// See `SQLConnectable`.
+    public typealias Query = Connection.Query
+}
+
+
+extension DatabaseConnectionPool: SQLConnectable where
+    Database.Connection: SQLConnection
+{
+    /// See `SQLConnectable`.
+    public typealias Connection = Database.Connection
+    
+    /// See `SQLConnectable`.
+    public func withSQLConnection<T>(_ closure: @escaping (Database.Connection) -> (Future<T>)) -> Future<T> {
+        return withConnection { closure($0) }
+    }
+}
+
+extension SQLConnectable where Self: DatabaseConnection {
+    /// See `SQLConnectable`.
+    public func withSQLConnection<T>(_ closure: @escaping (Database.Connection) -> (Future<T>)) -> Future<T> {
+        return closure(self)
+    }
+}

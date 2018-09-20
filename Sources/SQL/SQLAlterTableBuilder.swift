@@ -6,7 +6,7 @@
 ///
 /// See `SQLColumnBuilder` for more information.
 public final class SQLAlterTableBuilder<Connection>: SQLQueryBuilder, SQLColumnBuilder
-    where Connection: SQLConnection
+    where Connection: SQLConnectable
 {
     /// See `SQLColumnBuilder`.
     public typealias ColumnDefinition = Connection.Query.AlterTable.ColumnDefinition
@@ -41,7 +41,7 @@ public final class SQLAlterTableBuilder<Connection>: SQLQueryBuilder, SQLColumnB
 
 // MARK: Connection
 
-extension SQLConnection {
+extension SQLConnectable {
     /// Creates a new `SQLAlterTableBuilder`.
     ///
     ///     conn.alter(table: Planet.self)...

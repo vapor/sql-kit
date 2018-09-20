@@ -7,7 +7,7 @@
 ///
 /// See `SQLColumnBuilder` and `SQLQueryBuilder` for more information.
 public final class SQLCreateTableBuilder<Connection>: SQLQueryBuilder, SQLColumnBuilder
-    where Connection: SQLConnection
+    where Connection: SQLConnectable
 {
     /// See `SQLColumnBuilder`.
     public typealias ColumnDefinition = Connection.Query.CreateTable.ColumnDefinition
@@ -55,7 +55,7 @@ public final class SQLCreateTableBuilder<Connection>: SQLQueryBuilder, SQLColumn
 
 // MARK: Connection
 
-extension DatabaseQueryable where Query: SQLQuery {
+extension SQLConnectable {
     /// Creates a new `SQLCreateTableBuilder`.
     ///
     ///     conn.create(table: Planet.self)...

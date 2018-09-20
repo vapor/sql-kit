@@ -5,7 +5,7 @@
 ///
 /// See `SQLQueryBuilder` and `SQLPredicateBuilder` for more information.
 public final class SQLDeleteBuilder<Connection>: SQLQueryBuilder, SQLPredicateBuilder
-    where Connection: SQLConnection
+    where Connection: SQLConnectable
 {
     /// `Delete` query being built.
     public var delete: Connection.Query.Delete
@@ -33,7 +33,7 @@ public final class SQLDeleteBuilder<Connection>: SQLQueryBuilder, SQLPredicateBu
 
 // MARK: Connection
 
-extension SQLConnection {
+extension SQLConnectable {
     /// Creates a new `SQLDeleteBuilder`.
     ///
     ///     conn.delete(from: Planet.self)...

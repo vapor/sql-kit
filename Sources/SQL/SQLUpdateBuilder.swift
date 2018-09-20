@@ -7,7 +7,7 @@
 ///
 /// See `SQLQueryBuilder` and `SQLPredicateBuilder` for more information.
 public final class SQLUpdateBuilder<Connection>: SQLQueryBuilder, SQLPredicateBuilder
-    where Connection: SQLConnection
+    where Connection: SQLConnectable
 {
     /// `Update` query being built.
     public var update: Connection.Query.Update
@@ -77,7 +77,7 @@ public final class SQLUpdateBuilder<Connection>: SQLQueryBuilder, SQLPredicateBu
 
 // MARK: Connection
 
-extension DatabaseQueryable where Query: SQLQuery {
+extension SQLConnectable {
     /// Creates a new `SQLUpdateBuilder`.
     ///
     ///     conn.update(Planet.self)...
