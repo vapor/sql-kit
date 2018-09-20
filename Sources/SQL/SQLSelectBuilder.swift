@@ -72,8 +72,8 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
     ///              key in the result set.
     /// - returns: Self for chaining.
     public func column(
-        _ expression: Connection.Query.Select.SelectExpression.Expression,
-        as alias: Connection.Query.Select.SelectExpression.Identifier? = nil
+        _ expression: Connection.Query.Expression,
+        as alias: Connection.Query.Identifier? = nil
     ) -> Self {
         return column(.expression(expression, alias: alias))
     }
@@ -110,6 +110,14 @@ public final class SQLSelectBuilder<Connection>: SQLQueryFetcher, SQLPredicateBu
     public func column(_ column: Connection.Query.SelectExpression) -> Self {
         select.columns.append(column)
         return self
+    }
+    
+    public func column(
+        subquery closure: (SQLSelectBuilder<Connection>) -> (SQLSelectBuilder<Connection>),
+        as alias: Connection.Query.Identifier? = nil
+    ) -> Self {
+        let builder = closure(connection.select())
+        return column(.subquery(builder.select), as: alias)
     }
     
     /// Adds a table to the `FROM` clause.

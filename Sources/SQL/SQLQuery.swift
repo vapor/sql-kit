@@ -27,7 +27,8 @@ public protocol SQLQuery: SQLSerializable {
     
     /// See `SQLExpression`.
     associatedtype Expression where
-        Expression.ColumnIdentifier == ColumnIdentifier
+        Expression.ColumnIdentifier == ColumnIdentifier,
+        Expression.Subquery == Select
     
     /// See `SQLIdentifier`.
     associatedtype Identifier
@@ -42,7 +43,8 @@ public protocol SQLQuery: SQLSerializable {
     
     /// See `SQLSelectExpression`.
     associatedtype SelectExpression where
-        SelectExpression.Expression == Expression
+        SelectExpression.Expression == Expression,
+        SelectExpression.Identifier == Identifier
     
     /// See `SQLTableIdentifier`.
     associatedtype TableIdentifier
