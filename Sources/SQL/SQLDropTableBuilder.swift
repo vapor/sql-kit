@@ -7,18 +7,18 @@ public final class SQLDropTableBuilder<Connection>: SQLQueryBuilder
     where Connection: SQLConnectable
 {
     /// `DropTable` query being built.
-    public var dropTable: Connection.Query.DropTable
+    public var dropTable: Connection.Connection.Query.DropTable
     
     /// See `SQLQueryBuilder`.
     public var connection: Connection
     
     /// See `SQLQueryBuilder`.
-    public var query: Connection.Query {
+    public var query: Connection.Connection.Query {
         return .dropTable(dropTable)
     }
     
     /// Creates a new `SQLDropTableBuilder`.
-    public init(_ dropTable: Connection.Query.DropTable, on connection: Connection) {
+    public init(_ dropTable: Connection.Connection.Query.DropTable, on connection: Connection) {
         self.dropTable = dropTable
         self.connection = connection
     }

@@ -4,8 +4,8 @@
 ///         .bind("Earth")
 ///         .all(decoding: Planet.self)
 ///
-public final class SQLRawBuilder<Connection>: SQLQueryBuilder, SQLQueryFetcher
-    where Connection: SQLConnectable
+public final class SQLRawBuilder<S>: SQLQueryBuilder, SQLQueryFetcher
+    where S: SQLConnectable
 {
     /// Raw query being built.
     public var sql: String
@@ -14,15 +14,15 @@ public final class SQLRawBuilder<Connection>: SQLQueryBuilder, SQLQueryFetcher
     public var binds: [Encodable]
     
     /// See `SQLQueryBuilder`.
-    public var connection: Connection
+    public var connection: S
     
     /// See `SQLQueryBuilder`.
-    public var query: Connection.Query {
+    public var query: S.Connection.Query {
         return .raw(sql, binds: binds)
     }
     
     /// Creates a new `SQLRawBuilder`.
-    public init(_ sql: String, on connection: Connection) {
+    public init(_ sql: String, on connection: S) {
         self.sql = sql
         self.connection = connection
         self.binds = []

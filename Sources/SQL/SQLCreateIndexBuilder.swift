@@ -7,16 +7,16 @@ public final class SQLCreateIndexBuilder<Connection>: SQLQueryBuilder
     where Connection: SQLConnectable
 {
     /// See `SQLColumnBuilder`.
-    public typealias ColumnDefinition = Connection.Query.AlterTable.ColumnDefinition
+    public typealias ColumnDefinition = Connection.Connection.Query.AlterTable.ColumnDefinition
     
     /// `AlterTable` query being built.
-    public var createIndex: Connection.Query.CreateIndex
+    public var createIndex: Connection.Connection.Query.CreateIndex
     
     /// See `SQLQueryBuilder`.
     public var connection: Connection
     
     /// See `SQLQueryBuilder`.
-    public var query: Connection.Query {
+    public var query: Connection.Connection.Query {
         return .createIndex(createIndex)
     }
     
@@ -41,7 +41,7 @@ public final class SQLCreateIndexBuilder<Connection>: SQLQueryBuilder
     }
     
     /// Creates a new `SQLCreateIndexBuilder`.
-    public init(_ createIndex: Connection.Query.CreateIndex, on connection: Connection) {
+    public init(_ createIndex: Connection.Connection.Query.CreateIndex, on connection: Connection) {
         self.createIndex = createIndex
         self.connection = connection
     }
@@ -58,7 +58,7 @@ extension SQLConnectable {
     ///     - identifier: Name for this index.
     /// - returns: `SQLCreateIndexBuilder`.
     public func create(
-        index identifier: Query.CreateIndex.Identifier
+        index identifier: Connection.Query.CreateIndex.Identifier
     ) -> SQLCreateIndexBuilder<Self> {
         return .init(.createIndex(identifier), on: self)
     }

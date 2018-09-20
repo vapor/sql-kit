@@ -1,5 +1,5 @@
 /// Types conforming to this protocol can be used to build SQL queries. 
-public protocol SQLConnection: DatabaseQueryable where Query: SQLQuery {
+public protocol SQLConnection: DatabaseQueryable, SQLConnectable where Self.Query: SQLQuery {
     /// Decodes a `Decodable` type from this connection's output.
     /// If a table is specified, values should come only from columns in that table.
     func decode<D>(_ type: D.Type, from row: Output, table: Query.Select.TableIdentifier?) throws -> D
@@ -15,14 +15,12 @@ public protocol SQLConnectable {
     func withSQLConnection<T>(_ closure: @escaping (Connection) -> (Future<T>)) -> Future<T>
 }
 
-extension SQLConnectable {
+extension SQLConnection where Self: DatabaseConnection {
     /// See `SQLConnectable`.
-    public typealias Output = Connection.Output
-    
-    /// See `SQLConnectable`.
-    public typealias Query = Connection.Query
+    public func withSQLConnection<T>(_ closure: @escaping (Database.Connection) -> (Future<T>)) -> Future<T> {
+        return closure(self)
+    }
 }
-
 
 extension DatabaseConnectionPool: SQLConnectable where
     Database.Connection: SQLConnection
@@ -33,12 +31,5 @@ extension DatabaseConnectionPool: SQLConnectable where
     /// See `SQLConnectable`.
     public func withSQLConnection<T>(_ closure: @escaping (Database.Connection) -> (Future<T>)) -> Future<T> {
         return withConnection { closure($0) }
-    }
-}
-
-extension SQLConnectable where Self: DatabaseConnection {
-    /// See `SQLConnectable`.
-    public func withSQLConnection<T>(_ closure: @escaping (Database.Connection) -> (Future<T>)) -> Future<T> {
-        return closure(self)
     }
 }

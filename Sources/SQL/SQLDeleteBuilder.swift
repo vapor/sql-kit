@@ -8,24 +8,24 @@ public final class SQLDeleteBuilder<Connection>: SQLQueryBuilder, SQLPredicateBu
     where Connection: SQLConnectable
 {
     /// `Delete` query being built.
-    public var delete: Connection.Query.Delete
+    public var delete: Connection.Connection.Query.Delete
     
     /// See `SQLQueryBuilder`.
     public var connection: Connection
     
     /// See `SQLQueryBuilder`.
-    public var query: Connection.Query {
+    public var query: Connection.Connection.Query {
         return .delete(delete)
     }
     
     /// See `SQLWhereBuilder`.
-    public var predicate: Connection.Query.Delete.Expression? {
+    public var predicate: Connection.Connection.Query.Delete.Expression? {
         get { return delete.predicate }
         set { delete.predicate = newValue }
     }
     
     /// Creates a new `SQLDeleteBuilder`.
-    public init(_ delete: Connection.Query.Delete, on connection: Connection) {
+    public init(_ delete: Connection.Connection.Query.Delete, on connection: Connection) {
         self.delete = delete
         self.connection = connection
     }

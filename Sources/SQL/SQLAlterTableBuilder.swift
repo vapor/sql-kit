@@ -9,21 +9,21 @@ public final class SQLAlterTableBuilder<Connection>: SQLQueryBuilder, SQLColumnB
     where Connection: SQLConnectable
 {
     /// See `SQLColumnBuilder`.
-    public typealias ColumnDefinition = Connection.Query.AlterTable.ColumnDefinition
+    public typealias ColumnDefinition = Connection.Connection.Query.AlterTable.ColumnDefinition
     
     /// `SQLAlterTable` query being built.
-    public var alterTable: Connection.Query.AlterTable
+    public var alterTable: Connection.Connection.Query.AlterTable
 
     /// See `SQLQueryBuilder`.
     public var connection: Connection
 
     /// See `SQLQueryBuilder`.
-    public var query: Connection.Query {
+    public var query: Connection.Connection.Query {
         return .alterTable(alterTable)
     }
     
     /// See `SQLColumnBuilder`.
-    public var columns: [Connection.Query.AlterTable.ColumnDefinition] {
+    public var columns: [Connection.Connection.Query.AlterTable.ColumnDefinition] {
         get { return alterTable.columns }
         set { alterTable.columns = newValue }
     }
@@ -33,7 +33,7 @@ public final class SQLAlterTableBuilder<Connection>: SQLQueryBuilder, SQLColumnB
     /// - parameters:
     ///     - alterTable: Alter table query.
     ///     - connection: Connection to perform query on.
-    public init(_ alterTable: Connection.Query.AlterTable, on connection: Connection) {
+    public init(_ alterTable: Connection.Connection.Query.AlterTable, on connection: Connection) {
         self.alterTable = alterTable
         self.connection = connection
     }

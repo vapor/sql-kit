@@ -7,7 +7,7 @@ public protocol SQLQueryBuilder: class {
     associatedtype Connection: SQLConnectable
     
     /// Query being built.
-    var query: Connection.Query { get }
+    var query: Connection.Connection.Query { get }
     
     /// Connection to execute query on.
     var connection: Connection { get }

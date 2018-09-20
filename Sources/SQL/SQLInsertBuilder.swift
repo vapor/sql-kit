@@ -8,18 +8,18 @@ public final class SQLInsertBuilder<Connection>: SQLQueryBuilder
     where Connection: SQLConnectable
 {
     /// `Insert` query being built.
-    public var insert: Connection.Query.Insert
+    public var insert: Connection.Connection.Query.Insert
     
     /// See `SQLQueryBuilder`.
     public var connection: Connection
     
     /// See `SQLQueryBuilder`.
-    public var query: Connection.Query {
+    public var query: Connection.Connection.Query {
         return .insert(insert)
     }
     
     /// Creates a new `SQLInsertBuilder`.
-    public init(_ insert: Connection.Query.Insert, on connection: Connection) {
+    public init(_ insert: Connection.Connection.Query.Insert, on connection: Connection) {
         self.insert = insert
         self.connection = connection
     }
@@ -52,7 +52,7 @@ public final class SQLInsertBuilder<Connection>: SQLQueryBuilder
         where E: Encodable
     {
         values.forEach { model in
-            let row = SQLQueryEncoder(Connection.Query.Insert.Expression.self).encode(model)
+            let row = SQLQueryEncoder(Connection.Connection.Query.Insert.Expression.self).encode(model)
             if insert.columns.isEmpty {
                 insert.columns += row.map { .column(nil, .identifier($0.key)) }
             } else {

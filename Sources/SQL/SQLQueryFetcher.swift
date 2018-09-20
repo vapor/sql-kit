@@ -11,7 +11,7 @@ extension SQLQueryFetcher {
     ///
     ///     builder.first()
     ///
-    public func first() -> Future<Connection.Output?> {
+    public func first() -> Future<Connection.Connection.Output?> {
         return self.all().map { $0.first }
     }
     
@@ -51,9 +51,9 @@ extension SQLQueryFetcher {
     ///
     ///     builder.all()
     ///
-    public func all() -> Future<[Connection.Output]> {
+    public func all() -> Future<[Connection.Connection.Output]> {
         return connection.withSQLConnection { conn in
-            var all: [Connection.Output] = []
+            var all: [Connection.Connection.Output] = []
             return conn.query(self.query) { all.append($0) }
                 .map { all }
         }
@@ -100,7 +100,7 @@ extension SQLQueryFetcher {
     ///     builder.run { print($0) }
     ///
     /// The returned future will signal completion of the query.
-    public func run(_ handler: @escaping (Connection.Output) throws -> ()) -> Future<Void> {
+    public func run(_ handler: @escaping (Connection.Connection.Output) throws -> ()) -> Future<Void> {
         return connection.withSQLConnection { conn in
             return conn.query(self.query, handler)
         }

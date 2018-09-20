@@ -10,24 +10,24 @@ public final class SQLUpdateBuilder<Connection>: SQLQueryBuilder, SQLPredicateBu
     where Connection: SQLConnectable
 {
     /// `Update` query being built.
-    public var update: Connection.Query.Update
+    public var update: Connection.Connection.Query.Update
     
     /// See `SQLQueryBuilder`.
     public var connection: Connection
     
     /// See `SQLQueryBuilder`.
-    public var query: Connection.Query {
+    public var query: Connection.Connection.Query {
         return .update(update)
     }
     
     /// See `SQLWhereBuilder`.
-    public var predicate: Connection.Query.Update.Expression? {
+    public var predicate: Connection.Connection.Query.Update.Expression? {
         get { return update.predicate }
         set { update.predicate = newValue }
     }
     
     /// Creates a new `SQLDeleteBuilder`.
-    public init(_ update: Connection.Query.Update, on connection: Connection) {
+    public init(_ update: Connection.Connection.Query.Update, on connection: Connection) {
         self.update = update
         self.connection = connection
     }
@@ -42,7 +42,7 @@ public final class SQLUpdateBuilder<Connection>: SQLQueryBuilder, SQLPredicateBu
     public func set<E>(_ model: E)-> Self
         where E: Encodable
     {
-        for row in SQLQueryEncoder(Connection.Query.Update.Expression.self).encode(model) {
+        for row in SQLQueryEncoder(Connection.Connection.Query.Update.Expression.self).encode(model) {
             _ = set(.identifier(row.key), to: row.value)
         }
         return self
@@ -62,14 +62,14 @@ public final class SQLUpdateBuilder<Connection>: SQLQueryBuilder, SQLPredicateBu
     }
     
     /// Sets a column (specified by key path) to an expression.
-    public func set<T, V>(_ keyPath: KeyPath<T, V>, to expression: Connection.Query.Update.Expression) -> Self
+    public func set<T, V>(_ keyPath: KeyPath<T, V>, to expression: Connection.Connection.Query.Update.Expression) -> Self
         where T: SQLTable
     {
         return set(.keyPath(keyPath), to: expression)
     }
     
     /// Sets a column (specified by an identifier) to an expression.
-    public func set(_ identifier: Connection.Query.Update.Identifier, to expression: Connection.Query.Update.Expression) -> Self {
+    public func set(_ identifier: Connection.Connection.Query.Update.Identifier, to expression: Connection.Connection.Query.Update.Expression) -> Self {
         update.values.append((identifier, expression))
         return self
     }

@@ -10,27 +10,27 @@ public final class SQLCreateTableBuilder<Connection>: SQLQueryBuilder, SQLColumn
     where Connection: SQLConnectable
 {
     /// See `SQLColumnBuilder`.
-    public typealias ColumnDefinition = Connection.Query.CreateTable.ColumnDefinition
+    public typealias ColumnDefinition = Connection.Connection.Query.CreateTable.ColumnDefinition
     
     /// `CreateTable` query being built.
-    public var createTable: Connection.Query.CreateTable
+    public var createTable: Connection.Connection.Query.CreateTable
     
     /// See `SQLQueryBuilder`.
     public var connection: Connection
     
     /// See `SQLQueryBuilder`.
-    public var query: Connection.Query {
+    public var query: Connection.Connection.Query {
         return .createTable(createTable)
     }
     
     /// See `SQLColumnBuilder`.
-    public var columns: [Connection.Query.CreateTable.ColumnDefinition] {
+    public var columns: [Connection.Connection.Query.CreateTable.ColumnDefinition] {
         get { return createTable.columns }
         set { createTable.columns = newValue }
     }
     
     /// Creates a new `SQLCreateTableBuilder`.
-    public init(_ createTable: Connection.Query.CreateTable, on connection: Connection) {
+    public init(_ createTable: Connection.Connection.Query.CreateTable, on connection: Connection) {
         self.createTable = createTable
         self.connection = connection
     }
