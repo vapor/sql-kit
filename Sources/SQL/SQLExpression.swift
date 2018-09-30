@@ -278,7 +278,7 @@ public indirect enum GenericSQLExpression<Literal, Bind, ColumnIdentifier, Binar
                 }
             default: break
             }
-            return lhs.serialize(&binds) + " " + op.serialize(&binds) + " " + rhs.serialize(&binds)
+            return "(" + lhs.serialize(&binds) + ") " + op.serialize(&binds) + " (" + rhs.serialize(&binds) + ")"
         case ._function(let function): return function.serialize(&binds)
         case ._group(let group):
             return "(" + group.map { $0.serialize(&binds) }.joined(separator: ", ") + ")"
