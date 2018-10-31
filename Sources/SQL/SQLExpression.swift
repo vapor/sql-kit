@@ -48,6 +48,9 @@ public protocol SQLExpression: SQLSerializable, ExpressibleByFloatLiteral, Expre
     /// `(SELECT ...)`
     static func subquery(_ subquery: Subquery) -> Self
     
+    // Coalesce.
+    static func coalesce(_ expressions: [Self]) -> Self
+    
     // FIXME: collate
     // FIXME: cast
     
@@ -116,6 +119,11 @@ extension SQLExpression {
         where E: Encodable
     {
         return group(values.map { .value($0) })
+    }
+    
+    /// Convenience for creating a `COALESCE(foo)` function call (returns the first non-null expression).
+    public static func coalesce(_ exprs: Self...) -> Self {
+        return coalesce(exprs)
     }
 }
 
@@ -202,6 +210,11 @@ public indirect enum GenericSQLExpression<Literal, Bind, ColumnIdentifier, Binar
     public static func subquery(_ subquery: Subquery) -> Self {
         return ._subquery(subquery)
     }
+    
+    /// See `SQLExpression`.
+    public static func coalesce(_ expressions: [Self]) -> Self {
+        return ._coalesce(expressions)
+    }
 
     /// See `SQLExpression`.
     case _literal(Literal)
@@ -223,6 +236,9 @@ public indirect enum GenericSQLExpression<Literal, Bind, ColumnIdentifier, Binar
     
     /// See `SQLExpression`.
     case _subquery(Subquery)
+    
+    /// See `SQLExpression`.
+    case _coalesce([`Self`])
     
     /// See `ExpressibleByFloatLiteral`.
     public init(floatLiteral value: Double) {
@@ -284,6 +300,8 @@ public indirect enum GenericSQLExpression<Literal, Bind, ColumnIdentifier, Binar
             return "(" + group.map { $0.serialize(&binds) }.joined(separator: ", ") + ")"
         case ._subquery(let subquery):
             return "(" + subquery.serialize(&binds) + ")"
+        case ._coalesce(let expressions):
+            return "COALESCE(" + expressions.map { $0.serialize(&binds) }.joined(separator: ", ") + ")"
         }
     }
 }
