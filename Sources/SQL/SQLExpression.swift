@@ -240,6 +240,11 @@ public indirect enum GenericSQLExpression<Literal, Bind, ColumnIdentifier, Binar
     /// See `SQLExpression`.
     case _coalesce([`Self`])
     
+    /// See `SQLLiteral`.
+    public init(rawSQL value: String) {
+        self = ._literal(.raw(value))
+    }
+    
     /// See `ExpressibleByFloatLiteral`.
     public init(floatLiteral value: Double) {
         self = ._literal(.numeric(value.description))
