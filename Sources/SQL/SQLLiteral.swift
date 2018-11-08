@@ -12,6 +12,12 @@ public protocol SQLLiteral: SQLSerializable {
     /// Creates a new `SQLLiteral` from a numeric string (no quotes).
     static func numeric(_ string: String) -> Self
     
+    /// Creates a new `SQLLiteral` from a raw string (no quotes).
+    /// Semantically different from `.numeric`:
+    /// Can be used to manually provide raw SQL code that would be difficult or
+    /// (currently) impossible to model with this library.
+    static func raw(_ string: String) -> Self
+    
     /// Creates a new null `SQLLiteral`, i.e., `NULL`.
     static var null: Self { get }
     
@@ -48,6 +54,11 @@ public enum GenericSQLLiteral<DefaultLiteral, BoolLiteral>: SQLLiteral, Expressi
     /// See `SQLLiteral`.
     public static func numeric(_ string: String) -> GenericSQLLiteral {
         return ._numeric(string)
+    }
+    
+    /// See `SQLLiteral`.
+    public static func raw(_ string: String) -> GenericSQLLiteral {
+        return ._raw(string)
     }
     
     /// See `SQLLiteral`.
@@ -88,6 +99,9 @@ public enum GenericSQLLiteral<DefaultLiteral, BoolLiteral>: SQLLiteral, Expressi
     case _numeric(String)
     
     /// See `SQLLiteral`.
+    case _raw(String)
+    
+    /// See `SQLLiteral`.
     case _null
     
     /// See `SQLLiteral`.
@@ -112,6 +126,7 @@ public enum GenericSQLLiteral<DefaultLiteral, BoolLiteral>: SQLLiteral, Expressi
         case ._null: return "NULL"
         case ._default(let d): return d.serialize(&binds)
         case ._numeric(let string): return string
+        case ._raw(let string): return string
         case ._string(let string): return "'" + string + "'"
         }
     }
