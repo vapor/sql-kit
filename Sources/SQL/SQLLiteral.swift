@@ -38,6 +38,13 @@ extension SQLLiteral {
     public static var `default`: Self {
         return .default(.default)
     }
+    
+    /// Fallback for backwards compatibility with clients that do not yet implement
+    /// a custom `raw` case.
+    /// FIXME: Remove this in Fluent 4.
+    static func raw(_ string: String) -> Self {
+        return .numeric(string)
+    }
 }
 
 // MARK: Generic
