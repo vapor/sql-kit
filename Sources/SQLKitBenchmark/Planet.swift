@@ -1,6 +1,6 @@
 import SQLKit
 
-struct Planet: SQLTable {
+struct Planet: Codable {
     var id: Int?
     var name: String
     // var type: PlanetType

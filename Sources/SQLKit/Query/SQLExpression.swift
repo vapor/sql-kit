@@ -48,9 +48,6 @@ public protocol SQLExpression: SQLSerializable, ExpressibleByStringLiteral, Expr
     /// `(SELECT ...)`
     static func subquery(_ subquery: Subquery) -> Self
     
-    // Coalesce.
-    static func coalesce(_ expressions: [Self]) -> Self
-    
     /// Special expression type, all, `*`.
     static func all(table: Identifier?) -> Self
     
@@ -118,6 +115,10 @@ extension SQLExpression {
         where E: Encodable
     {
         return group(values.map { .bind($0) })
+    }
+    
+    static func coalesce(_ expressions: [Self]) -> Self {
+        return self.function("COALESCE", expressions)
     }
     
     /// Convenience for creating a `COALESCE(foo)` function call (returns the first non-null expression).

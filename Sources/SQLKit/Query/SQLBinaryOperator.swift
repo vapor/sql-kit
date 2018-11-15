@@ -1,7 +1,9 @@
 /// SQL binary expression operators, i.e., `==`, `!=`, `AND`, `+`, etc.
 ///
 /// See `SQLExpression`.
-public protocol SQLBinaryOperator: SQLSerializable {
+public protocol SQLBinaryOperator: SQLSerializable, Equatable, ExpressibleByStringLiteral where
+    StringLiteralType == String
+{
     /// `=` or `==`
     static var equal: Self { get }
     
