@@ -54,7 +54,7 @@ public final class SQLInsertBuilder<Database>: SQLQueryBuilder
         values.forEach { model in
             let row = SQLQueryEncoder(Database.Query.Insert.Expression.self).encode(model)
             if insert.columns.isEmpty {
-                insert.columns += row.map { .column(nil, .identifier($0.key)) }
+                insert.columns += row.map { .column(name: .identifier($0.key), table: nil) }
             } else {
                 assert(
                     insert.columns.count == row.count,
@@ -83,7 +83,7 @@ extension SQLDatabase {
     /// - parameters:
     ///     - table: Table to insert into.
     /// - returns: Newly created `SQLInsertBuilder`.
-    public func insert(into table: Query.Insert.TableIdentifier) -> SQLInsertBuilder<Self> {
-        return .init(.insert(table), on: self)
+    public func insert(into table: Query.Insert.Identifier) -> SQLInsertBuilder<Self> {
+        return .init(.insert(table: table), on: self)
     }
 }

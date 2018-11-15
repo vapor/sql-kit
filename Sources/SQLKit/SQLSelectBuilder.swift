@@ -34,24 +34,6 @@ public final class SQLSelectBuilder<Database>: SQLQueryFetcher, SQLPredicateBuil
     
     /// Adds a column to be returned in the result set.
     ///
-    ///     conn.select().column("name")
-    ///
-    /// Table identifiers can also be specified.
-    ///
-    ///     conn.select().column("name", table: "users")
-    ///
-    /// - parameters:
-    ///     - name: Column identifier.
-    ///     - table: Optional table identifier.
-    /// - returns: Self for chaining.
-    public func column(
-        _ name: Database.Query.Select.Expression.ColumnIdentifier.Identifier,
-        table: Database.Query.Select.Expression.ColumnIdentifier.TableIdentifier? = nil) -> Self {
-        return column(.column(.column(table, name)))
-    }
-    
-    /// Adds a column to be returned in the result set.
-    ///
     ///     conn.select().column(\User.name)
     ///
     /// - parameters:
@@ -101,7 +83,7 @@ public final class SQLSelectBuilder<Database>: SQLQueryFetcher, SQLPredicateBuil
     /// - parameters:
     ///     - table: `SQLTable` type to select from.
     /// - returns: Self for chaining.
-    public func from(_ table: Database.Query.Select.TableIdentifier) -> Self {
+    public func from(_ table: Database.Query.Select.Identifier) -> Self {
         select.tables.append(table)
         return self
     }
@@ -137,11 +119,15 @@ public final class SQLSelectBuilder<Database>: SQLQueryFetcher, SQLPredicateBuil
     /// - returns: Self for chaining.
     public func join(
         _ local: Database.Query.Select.Join.Expression.ColumnIdentifier,
-        to table: Database.Query.Select.Join.TableIdentifier,
+        to table: Database.Query.Select.Join.Identifier,
         _ foreign: Database.Query.Select.Join.Expression.ColumnIdentifier,
         method: Database.Query.Select.Join.Method = .default
     ) -> Self {
-        return self.join(table, on: .binary(.column(local), .equal, .column(foreign)), method: method)
+        return self.join(
+            table: table,
+            on: .binary(.column(local), .equal, .column(foreign)),
+            method: method
+        )
     }
     
     /// Adds a `JOIN` clause to the select statement.
@@ -159,11 +145,11 @@ public final class SQLSelectBuilder<Database>: SQLQueryFetcher, SQLPredicateBuil
     ///     - method: `SQLJoinMethod` to use.
     /// - returns: Self for chaining.
     public func join(
-        _ table: Database.Query.Select.Join.TableIdentifier,
+        table: Database.Query.Select.Join.Identifier,
         on expression: Database.Query.Select.Join.Expression,
         method: Database.Query.Select.Join.Method = .default
     ) -> Self {
-        select.joins.append(.join(method, table, expression))
+        select.joins.append(.join(method: method, table: table, expression: expression))
         return self
     }
     

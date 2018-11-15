@@ -19,49 +19,49 @@ public protocol SQLForeignKeyAction: SQLSerializable {
     static var setDefault: Self { get }
 }
 
-/// Generic implementation of `SQLForeignKeyAction` suitable as a common-denominator for all SQL flavors.
-public enum GenericSQLForeignKeyAction: SQLForeignKeyAction {
-    /// See `SQLForeignKeyAction`.
-    public typealias `Self` = GenericSQLForeignKeyAction
-    
-    /// See `SQLForeignKeyAction`.
-    public static var noAction: Self { return ._noAction }
-    
-    /// See `SQLForeignKeyAction`.
-    public static var restrict: Self { return ._restrict }
-    
-    /// See `SQLForeignKeyAction`.
-    public static var cascade: Self { return ._cascade }
-    
-    /// See `SQLForeignKeyAction`.
-    public static var setNull: Self { return ._setNull }
-    
-    /// See `SQLForeignKeyAction`.
-    public static var setDefault: Self { return ._setDefault }
-    
-    /// See `SQLForeignKeyAction`.
-    case _noAction
-    
-    /// See `SQLForeignKeyAction`.
-    case _restrict
-    
-    /// See `SQLForeignKeyAction`.
-    case _cascade
-    
-    /// See `SQLForeignKeyAction`.
-    case _setNull
-    
-    /// See `SQLForeignKeyAction`.
-    case _setDefault
-    
-    /// See `SQLSerializable`.
-    public func serialize(_ binds: inout [Encodable]) -> String {
-        switch self {
-        case ._noAction: return "NO ACTION"
-        case ._restrict: return "RESTRICT"
-        case ._cascade: return "CASCADE"
-        case ._setNull: return "SET NULL"
-        case ._setDefault: return "SET DEFAULT"
-        }
-    }
-}
+///// Generic implementation of `SQLForeignKeyAction` suitable as a common-denominator for all SQL flavors.
+//public enum GenericSQLForeignKeyAction: SQLForeignKeyAction {
+//    /// See `SQLForeignKeyAction`.
+//    public typealias `Self` = GenericSQLForeignKeyAction
+//    
+//    /// See `SQLForeignKeyAction`.
+//    public static var noAction: Self { return ._noAction }
+//    
+//    /// See `SQLForeignKeyAction`.
+//    public static var restrict: Self { return ._restrict }
+//    
+//    /// See `SQLForeignKeyAction`.
+//    public static var cascade: Self { return ._cascade }
+//    
+//    /// See `SQLForeignKeyAction`.
+//    public static var setNull: Self { return ._setNull }
+//    
+//    /// See `SQLForeignKeyAction`.
+//    public static var setDefault: Self { return ._setDefault }
+//    
+//    /// See `SQLForeignKeyAction`.
+//    case _noAction
+//    
+//    /// See `SQLForeignKeyAction`.
+//    case _restrict
+//    
+//    /// See `SQLForeignKeyAction`.
+//    case _cascade
+//    
+//    /// See `SQLForeignKeyAction`.
+//    case _setNull
+//    
+//    /// See `SQLForeignKeyAction`.
+//    case _setDefault
+//    
+//    /// See `SQLSerializable`.
+//    public func serialize(_ binds: inout [Encodable]) -> String {
+//        switch self {
+//        case ._noAction: return "NO ACTION"
+//        case ._restrict: return "RESTRICT"
+//        case ._cascade: return "CASCADE"
+//        case ._setNull: return "SET NULL"
+//        case ._setDefault: return "SET DEFAULT"
+//        }
+//    }
+//}

@@ -6,7 +6,7 @@ public protocol SQLSelect: SQLSerializable {
     associatedtype Distinct: SQLDistinct
     
     /// See `SQLTableIdentifier`.
-    associatedtype TableIdentifier: SQLTableIdentifier
+    associatedtype Identifier: SQLIdentifier
     
     /// See `SQLJoin`.
     associatedtype Join: SQLJoin
@@ -31,7 +31,7 @@ public protocol SQLSelect: SQLSerializable {
     var columns: [Expression] { get set }
     
     /// Zero or more tables to select from.
-    var tables: [TableIdentifier] { get set }
+    var tables: [Identifier] { get set }
     
     /// Zero or more tables to join.
     var joins: [Join] { get set }

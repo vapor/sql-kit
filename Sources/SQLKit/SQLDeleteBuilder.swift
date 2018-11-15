@@ -41,7 +41,7 @@ extension SQLDatabase {
     /// - parameters:
     ///     - table: Table to delete from.
     /// - returns: Newly created `SQLDeleteBuilder`.
-    public func delete(from table: Query.Delete.TableIdentifier) -> SQLDeleteBuilder<Self> {
-        return .init(.delete(table), on: self)
+    public func delete(from table: Query.Delete.Identifier) -> SQLDeleteBuilder<Self> {
+        return .init(.delete(table: table), on: self)
     }
 }

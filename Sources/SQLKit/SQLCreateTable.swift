@@ -3,7 +3,7 @@
 /// See `SQLCreateTableBuilder`.
 public protocol SQLCreateTable: SQLSerializable {
     /// See `SQLTableIdentifier`.
-    associatedtype TableIdentifier: SQLTableIdentifier
+    associatedtype Identifier: SQLIdentifier
     
     /// See `SQLColumnDefinition`.
     associatedtype ColumnDefinition: SQLColumnDefinition
@@ -12,7 +12,7 @@ public protocol SQLCreateTable: SQLSerializable {
     associatedtype TableConstraint: SQLTableConstraint
     
     /// Creates a new `SQLCreateTable` query.
-    static func createTable(_ table: TableIdentifier) -> Self
+    static func createTable(name: Identifier) -> Self
     
     /// If the "TEMP" or "TEMPORARY" keyword occurs between the "CREATE" and "TABLE" then the new table is created in the temp database.
     var temporary: Bool { get set }
@@ -25,7 +25,7 @@ public protocol SQLCreateTable: SQLSerializable {
     var ifNotExists: Bool { get set }
     
     /// Name of table to create.
-    var table: TableIdentifier { get set }
+    var table: Identifier { get set }
     
     /// Columns to create.
     var columns: [ColumnDefinition] { get set }
@@ -34,47 +34,47 @@ public protocol SQLCreateTable: SQLSerializable {
     var tableConstraints: [TableConstraint] { get set }
 }
 
-/// Generic implementation of `SQLCreateTable`.
-public struct GenericSQLCreateTable<TableIdentifier, ColumnDefinition, TableConstraint>: SQLCreateTable
-    where TableIdentifier: SQLTableIdentifier, ColumnDefinition: SQLColumnDefinition, TableConstraint: SQLTableConstraint
-{
-    /// Convenience alias for self.
-    public typealias `Self` = GenericSQLCreateTable<TableIdentifier, ColumnDefinition, TableConstraint>
-    
-    /// See `SQLCreateTable`.
-    public static func createTable(_ table: TableIdentifier) -> Self {
-        return .init(temporary: false, ifNotExists: false, table: table, columns: [], tableConstraints: [])
-    }
-    
-    /// See `SQLCreateTable`.
-    public var temporary: Bool
-    
-    /// See `SQLCreateTable`.
-    public var ifNotExists: Bool
-    
-    /// See `SQLCreateTable`.
-    public var table: TableIdentifier
-    
-    /// See `SQLCreateTable`.
-    public var columns: [ColumnDefinition]
-    
-    /// See `SQLCreateTable`.
-    public var tableConstraints: [TableConstraint]
-    
-    /// See `SQLSerializable`.
-    public func serialize(_ binds: inout [Encodable]) -> String {
-        var sql: [String] = []
-        sql.append("CREATE")
-        if temporary {
-            sql.append("TEMPORARY")
-        }
-        sql.append("TABLE")
-        if ifNotExists {
-            sql.append("IF NOT EXISTS")
-        }
-        sql.append(table.serialize(&binds))
-        let actions = columns.map { $0.serialize(&binds) } + tableConstraints.map { $0.serialize(&binds) }
-        sql.append("(" + actions.joined(separator: ", ") + ")")
-        return sql.joined(separator: " ")
-    }
-}
+///// Generic implementation of `SQLCreateTable`.
+//public struct GenericSQLCreateTable<TableIdentifier, ColumnDefinition, TableConstraint>: SQLCreateTable
+//    where TableIdentifier: SQLTableIdentifier, ColumnDefinition: SQLColumnDefinition, TableConstraint: SQLTableConstraint
+//{
+//    /// Convenience alias for self.
+//    public typealias `Self` = GenericSQLCreateTable<TableIdentifier, ColumnDefinition, TableConstraint>
+//    
+//    /// See `SQLCreateTable`.
+//    public static func createTable(_ table: TableIdentifier) -> Self {
+//        return .init(temporary: false, ifNotExists: false, table: table, columns: [], tableConstraints: [])
+//    }
+//    
+//    /// See `SQLCreateTable`.
+//    public var temporary: Bool
+//    
+//    /// See `SQLCreateTable`.
+//    public var ifNotExists: Bool
+//    
+//    /// See `SQLCreateTable`.
+//    public var table: TableIdentifier
+//    
+//    /// See `SQLCreateTable`.
+//    public var columns: [ColumnDefinition]
+//    
+//    /// See `SQLCreateTable`.
+//    public var tableConstraints: [TableConstraint]
+//    
+//    /// See `SQLSerializable`.
+//    public func serialize(_ binds: inout [Encodable]) -> String {
+//        var sql: [String] = []
+//        sql.append("CREATE")
+//        if temporary {
+//            sql.append("TEMPORARY")
+//        }
+//        sql.append("TABLE")
+//        if ifNotExists {
+//            sql.append("IF NOT EXISTS")
+//        }
+//        sql.append(table.serialize(&binds))
+//        let actions = columns.map { $0.serialize(&binds) } + tableConstraints.map { $0.serialize(&binds) }
+//        sql.append("(" + actions.joined(separator: ", ") + ")")
+//        return sql.joined(separator: " ")
+//    }
+//}

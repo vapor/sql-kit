@@ -7,7 +7,7 @@
 /// See `SQLAlterTableBuilder` for more information.
 public protocol SQLAlterTable: SQLSerializable {
     /// See `SQLTableIdentifier`.
-    associatedtype TableIdentifier: SQLTableIdentifier
+    associatedtype Identifier: SQLIdentifier
     
     /// See `SQLColumnDefinition`.
     associatedtype ColumnDefinition: SQLColumnDefinition
@@ -16,7 +16,7 @@ public protocol SQLAlterTable: SQLSerializable {
     ///
     /// - parameters:
     ///     - table: Table to alter.
-    static func alterTable(_ table: TableIdentifier) -> Self
+    static func alterTable(name: Identifier) -> Self
     
     /// Columns to add.
     var columns: [ColumnDefinition] { get set }

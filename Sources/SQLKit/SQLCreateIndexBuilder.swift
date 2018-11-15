@@ -58,6 +58,6 @@ extension SQLDatabase {
     public func create(
         index identifier: Self.Query.CreateIndex.Identifier
     ) -> SQLCreateIndexBuilder<Self> {
-        return .init(.createIndex(identifier), on: self)
+        return .init(.createIndex(name: identifier), on: self)
     }
 }

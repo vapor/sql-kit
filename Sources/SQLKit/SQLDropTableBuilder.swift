@@ -38,7 +38,7 @@ extension SQLDatabase {
     ///
     ///     conn.drop(table: Planet.self).run()
     ///
-    public func drop(table: Query.DropTable.TableIdentifier) -> SQLDropTableBuilder<Self> {
-        return .init(.dropTable(table), on: self)
+    public func drop(table: Query.DropTable.Identifier) -> SQLDropTableBuilder<Self> {
+        return .init(.dropTable(name: table), on: self)
     }
 }

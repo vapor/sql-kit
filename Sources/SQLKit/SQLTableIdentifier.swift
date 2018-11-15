@@ -1,15 +1,15 @@
-/// Identifies a table in a SQL database.
-#warning("consider need for separate protocol")
-public protocol SQLTableIdentifier: SQLSerializable, ExpressibleByStringLiteral {
-    /// See `SQLIdentifier`.
-    associatedtype Identifier: SQLIdentifier
-    
-    /// Creates a new `SQLTableIdentifier`.
-    static func table(_ identifier: Identifier) -> Self
-    
-    /// Table identifier.
-    var identifier: Identifier { get set }
-}
+///// Identifies a table in a SQL database.
+//#warning("consider need for separate protocol")
+//public protocol SQLTableIdentifier: SQLSerializable, ExpressibleByStringLiteral {
+//    /// See `SQLIdentifier`.
+//    associatedtype Identifier: SQLIdentifier
+//    
+//    /// Creates a new `SQLTableIdentifier`.
+//    static func table(_ identifier: Identifier) -> Self
+//    
+//    /// Table identifier.
+//    var identifier: Identifier { get set }
+//}
 
 // MARK: Convenience
 //

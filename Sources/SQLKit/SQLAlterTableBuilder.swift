@@ -23,7 +23,7 @@ public final class SQLAlterTableBuilder<Database>: SQLQueryBuilder, SQLColumnBui
     }
     
     /// See `SQLColumnBuilder`.
-    public var columns: [Database.Query.AlterTable.ColumnDefinition] {
+    public var columns: [Database.Query.ColumnDefinition] {
         get { return alterTable.columns }
         set { alterTable.columns = newValue }
     }
@@ -49,7 +49,7 @@ extension SQLDatabase {
     /// - parameters:
     ///     - table: Table to alter.
     /// - returns: `AlterTableBuilder`.
-    public func alter(table: Query.AlterTable.TableIdentifier) -> SQLAlterTableBuilder<Self> {
-        return .init(.alterTable(table), on: self)
+    public func alter(table: Query.Identifier) -> SQLAlterTableBuilder<Self> {
+        return .init(.alterTable(name: table), on: self)
     }
 }

@@ -21,10 +21,7 @@ public protocol SQLExpression: SQLSerializable, ExpressibleByStringLiteral, Expr
     associatedtype BinaryOperator: SQLBinaryOperator
     
     /// See `SQLTableIdentifier`.
-    associatedtype TableIdentifier: SQLTableIdentifier
-    
-    /// See `SQLTableIdentifier`.
-    associatedtype Identifier: SQLTableIdentifier
+    associatedtype Identifier: SQLIdentifier
     
     /// See `SQLSerializable`.
     /// Ideally this would be constraint to `SQLQuery`, but that creates a cyclic reference.
@@ -55,7 +52,7 @@ public protocol SQLExpression: SQLSerializable, ExpressibleByStringLiteral, Expr
     static func coalesce(_ expressions: [Self]) -> Self
     
     /// Special expression type, all, `*`.
-    static func all(_ table: TableIdentifier?) -> Self
+    static func all(table: Identifier?) -> Self
     
     static func alias(_ expression: Self, as: Identifier) -> Self
     
@@ -70,7 +67,7 @@ public protocol SQLExpression: SQLSerializable, ExpressibleByStringLiteral, Expr
 
 extension SQLExpression {
     public static var all: Self {
-        return .all(nil)
+        return .all(table: nil)
     }
     
     /// Convenience for creating a function call.

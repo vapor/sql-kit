@@ -63,7 +63,7 @@ extension SQLDatabase {
     /// - parameters:
     ///     - table: Table to create.
     /// - returns: `CreateTableBuilder`.
-    public func create(table: Query.CreateTable.TableIdentifier) -> SQLCreateTableBuilder<Self> {
-        return .init(.createTable(table), on: self)
+    public func create(table: Query.CreateTable.Identifier) -> SQLCreateTableBuilder<Self> {
+        return .init(.createTable(name: table), on: self)
     }
 }

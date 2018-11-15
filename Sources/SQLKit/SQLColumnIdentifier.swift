@@ -1,19 +1,16 @@
 /// Identifies a column in a particular table.
 public protocol SQLColumnIdentifier: SQLSerializable, ExpressibleByStringLiteral {
-    /// See `SQLTableIdentifier`.
-    associatedtype TableIdentifier: SQLTableIdentifier
-    
     /// See `SQLIdentifier`.
     associatedtype Identifier: SQLIdentifier
     
     /// Creates a new `SQLColumnIdentifier`.
-    static func column(_ table: TableIdentifier?, _ identifier: Identifier) -> Self
+    static func column(name: Identifier, table: Identifier?) -> Self
     
     /// Optional identifier for the table this column belongs to.
-    var table: TableIdentifier? { get set }
+    var table: Identifier? { get set }
     
     /// Column identifier.
-    var identifier: Identifier { get set }
+    var name: Identifier { get set }
 }
 
 // MARK: Convenience

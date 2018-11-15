@@ -85,7 +85,7 @@ extension SQLDatabase {
     /// - parameters:
     ///     - table: Table to update.
     /// - returns: Newly created `SQLUpdateBuilder`.
-    public func update(_ table: Query.Update.TableIdentifier) -> SQLUpdateBuilder<Self> {
-        return .init(.update(table), on: self)
+    public func update(_ table: Query.Update.Identifier) -> SQLUpdateBuilder<Self> {
+        return .init(.update(table: table), on: self)
     }
 }
