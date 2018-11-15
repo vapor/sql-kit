@@ -119,12 +119,11 @@ public final class SQLSelectBuilder<Database>: SQLQueryFetcher, SQLPredicateBuil
     /// - returns: Self for chaining.
     public func join(
         _ local: Database.Query.Select.Join.Expression.ColumnIdentifier,
-        to table: Database.Query.Select.Join.Identifier,
-        _ foreign: Database.Query.Select.Join.Expression.ColumnIdentifier,
+        to foreign: Database.Query.Select.Join.Expression.ColumnIdentifier,
         method: Database.Query.Select.Join.Method = .default
     ) -> Self {
         return self.join(
-            table: table,
+            table: foreign.table!,
             on: .binary(.column(local), .equal, .column(foreign)),
             method: method
         )

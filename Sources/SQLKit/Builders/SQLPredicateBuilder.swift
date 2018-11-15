@@ -56,7 +56,7 @@ extension SQLPredicateBuilder {
     ///     - expression: Expression to be added via `OR` to the predicate.
     public func orWhere(_ expression: Expression) -> Self {
         if let existing = self.predicate {
-            self.predicate = .binary(existing, .and, expression)
+            self.predicate = .binary(existing, .or, expression)
         } else {
             self.predicate = expression
         }
