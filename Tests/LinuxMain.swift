@@ -1,11 +1,11 @@
 #if os(Linux)
 
 import XCTest
-@testable import SQLTests
+@testable import SQLKitTests
 
 XCTMain([
     // SQL
-    testCase(SQLTests.allTests),
+    testCase(SQLKitTests.allTests),
 ])
 
 #endif
