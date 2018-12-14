@@ -1,3 +1,6 @@
+#warning("add collate")
+#warning("add cast")
+
 /// A SQL expression, i.e., a column name, value placeholder, function,
 /// subquery, or binary expression.
 ///
@@ -56,9 +59,6 @@ public protocol SQLExpression: SQLSerializable, ExpressibleByStringLiteral, Expr
     /// Creates a new `SQLExpression` from a raw SQL string.
     /// This will be included in the query as is, no escaping.
     static func raw(_ string: String) -> Self
-    
-    #warning("add collate")
-    #warning("add cast")
     
     /// If `true`, this expression equals `NULL`.
     var isNull: Bool { get }
