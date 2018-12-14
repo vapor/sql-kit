@@ -1,6 +1,6 @@
 import SQLKit
 
-struct Galaxy: SQLTable {
+struct Galaxy: Codable {
     var id: Int?
     var name: String
     init(id: Int? = nil, name: String) {

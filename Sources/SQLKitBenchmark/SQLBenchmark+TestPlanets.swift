@@ -1,34 +1,35 @@
+import XCTest
+
 extension SQLBenchmarker {
     internal func testPlanets() throws {
-        defer {
-            _ = try? self.db.drop(table: "planets")
-                .ifExists()
-                .run().wait()
-            _ = try? self.db.drop(table: "galaxies")
-                .ifExists()
-                .run().wait()
-        }
+        try self.db.drop(table: "planets")
+            .ifExists()
+            .run().wait()
+        try self.db.drop(table: "galaxies")
+            .ifExists()
+            .run().wait()
         
         try self.db.create(table: "galaxies")
-            .column("id", type: .int, .primaryKey)
-            .column("name", type: .string)
+            .column("id", type: .bigint, .primaryKey)
+            .column("name", type: .text)
             .run().wait()
         
         try self.db.create(table: "planets")
             .ifNotExists()
-            .column("id", type: .int, .primaryKey)
-            .column("galaxyID", type: .int, .references(Galaxy.table(), "id"))
+            .column("id", type: .bigint, .primaryKey)
+            .column("galaxyID", type: .bigint, .references("galaxies", "id"))
             .run().wait()
         
         try self.db.alter(table: "planets")
-            .column("name", type: .string, .default(.literal("Unamed Planet")))
+            .column("name", type: .text, .default(.literal("Unamed Planet")))
             .run().wait()
         
         try self.db.create(index: "test_index")
-            .on(Planet.column("name"))
+            .on(.column(name: "id", table: "planets"))
             .unique()
             .run().wait()
         
+        // INSERT INTO "galaxies" ("id", "name") VALUES (DEFAULT, $1)
         try self.db.insert(into: "galaxies")
             .value(Galaxy(name: "Milky Way"))
             .run().wait()
@@ -43,7 +44,7 @@ extension SQLBenchmarker {
                     .orWhere("name", .equal, .bind("Andromeda"))
             }
             .all().wait()
-        print(c)
+        XCTAssertEqual(c.count, 1)
         
         let a = try self.db.select()
             .column(.all)
@@ -51,8 +52,9 @@ extension SQLBenchmarker {
             .where(.column("name"), .equal, .bind("Milky Way"))
             .groupBy("id")
             .orderBy("name", .descending)
-            .all().wait().map { try $0.decode(Galaxy.self) }
+            .all().wait().map { try $0.decode(Galaxy.self, table: "galaxies") }
         print(a)
+        XCTAssertEqual(a.count, 1)
         
         let galaxyID = 1
         try self.db.insert(into: "planets")
@@ -101,12 +103,17 @@ extension SQLBenchmarker {
         let selectC = try self.db.select()
             .column(.all)
             .from("planets")
-            .join("galaxyID", to: "galaxies", "id")
-            .all().wait().map { try ($0.decode(Galaxy.self), $0.decode(Planet.self)) }
-        print(selectC)
+            .join("galaxyID", to: .column(name: "id", table: "galaxies"))
+            .all().wait().map {
+                try (
+                    $0.decode(Galaxy.self, table: "galaxies"),
+                    $0.decode(Planet.self, table: "planets")
+                )
+            }
+        XCTAssertEqual(selectC.count, 6)
         
         try self.db.update("galaxies")
-            .set("name", to: "Milky Way 2")
+            .set("name", to: .bind("Milky Way 2"))
             .where("name", .equal, .bind("Milky Way"))
             .run().wait()
         
@@ -116,8 +123,8 @@ extension SQLBenchmarker {
         
         let b = try self.db.select()
             .column(.count(.all), as: "c")
-            .from("galxies")
+            .from("galaxies")
             .all().wait()
-        print(b)
+        XCTAssertEqual(b.count, 1)
     }
 }
