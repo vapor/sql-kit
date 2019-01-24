@@ -1,6 +1,13 @@
 /// A parameterizied value bound to the SQL query.
-public protocol SQLBind: SQLSerializable {
-    /// Creates a `SQLBind` from an `Encodable` value.
-    static func encodable<E>(_ value: E) -> Self
-        where E: Encodable
+public struct SQLBind: SQLExpression {
+    public let encodable: Encodable
+    
+    public init(_ encodable: Encodable) {
+        self.encodable = encodable
+    }
+    
+    public func serialize(to serializer: inout SQLSerializer) {
+        serializer.bind(self.encodable)
+        serializer.dialect.bindPlaceholder.serialize(to: &serializer)
+    }
 }

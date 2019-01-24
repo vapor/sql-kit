@@ -1,45 +1,74 @@
 /// Builds `SQLCreateIndex` queries.
 ///
-///     conn.create(index: "planet_name_unique").on(\Planet.name).unique().run()
+///     conn.create(index: "planet_name_unique").on("planet").column("name").unique().run()
 ///
 /// See `SQLCreateIndex`.
-public final class SQLCreateIndexBuilder<Database>: SQLQueryBuilder
-    where Database: SQLDatabase
-{
-    /// See `SQLColumnBuilder`.
-    public typealias ColumnDefinition = Database.Query.AlterTable.ColumnDefinition
-    
+public final class SQLCreateIndexBuilder: SQLQueryBuilder {
     /// `AlterTable` query being built.
-    public var createIndex: Database.Query.CreateIndex
+    public var createIndex: SQLCreateIndex
     
     /// See `SQLQueryBuilder`.
-    public var database: Database
+    public var database: SQLDatabase
     
     /// See `SQLQueryBuilder`.
-    public var query: Database.Query {
-        return .createIndex(createIndex)
+    public var query: SQLExpression {
+        return self.createIndex
     }
     
     /// Adds `UNIQUE` modifier to the index being created.
     public func unique() -> Self {
-        createIndex.modifier = .unique
+        self.createIndex.modifier = SQLConstraintAlgorithm.unique
         return self
     }
     
     /// Creates a new `SQLCreateIndexBuilder`.
     ///
-    ///     conn.create(index: "foo").on(\Planet.name)...
+    ///     conn.create(index: "foo").on("planets")...
     ///
     /// - parameters:
-    ///     - column: Key path to column to add index to.
+    ///     - table: Table to create index on.
     /// - returns: `SQLCreateIndexBuilder`.
-    public func on(_ column: Database.Query.CreateIndex.ColumnIdentifier) -> Self {
+    public func on(_ table: String) -> Self {
+        return self.on(SQLIdentifier(table))
+    }
+    
+    /// Creates a new `SQLCreateIndexBuilder`.
+    ///
+    ///     conn.create(index: "foo").on("planets")...
+    ///
+    /// - parameters:
+    ///     - table: Table to create index on.
+    /// - returns: `SQLCreateIndexBuilder`.
+    public func on(_ column: SQLExpression) -> Self {
+        self.createIndex.table = column
+        return self
+    }
+    
+    /// Creates a new `SQLCreateIndexBuilder`.
+    ///
+    ///     conn.create(index: "foo").column("name")...
+    ///
+    /// - parameters:
+    ///     - column: Column to create index on.
+    /// - returns: `SQLCreateIndexBuilder`.
+    public func column(_ column: String) -> Self {
+        return self.column(SQLIdentifier(column))
+    }
+    
+    /// Creates a new `SQLCreateIndexBuilder`.
+    ///
+    ///     conn.create(index: "foo").column("name")...
+    ///
+    /// - parameters:
+    ///     - column: Column to create index on.
+    /// - returns: `SQLCreateIndexBuilder`.
+    public func column(_ column: SQLExpression) -> Self {
         self.createIndex.columns.append(column)
         return self
     }
     
     /// Creates a new `SQLCreateIndexBuilder`.
-    public init(_ createIndex: Database.Query.CreateIndex, on database: Database) {
+    public init(_ createIndex: SQLCreateIndex, on database: SQLDatabase) {
         self.createIndex = createIndex
         self.database = database
     }
@@ -53,11 +82,24 @@ extension SQLDatabase {
     ///     conn.create(index: "foo")...
     ///
     /// - parameters:
-    ///     - identifier: Name for this index.
+    ///     - name: Name for this index.
     /// - returns: `SQLCreateIndexBuilder`.
     public func create(
-        index identifier: Self.Query.CreateIndex.Identifier
-    ) -> SQLCreateIndexBuilder<Self> {
-        return .init(.createIndex(name: identifier), on: self)
+        index name: String
+    ) -> SQLCreateIndexBuilder {
+        return self.create(index: SQLIdentifier(name))
+    }
+    
+    /// Creates a new `SQLCreateIndexBuilder`.
+    ///
+    ///     conn.create(index: "foo")...
+    ///
+    /// - parameters:
+    ///     - name: Name for this index.
+    /// - returns: `SQLCreateIndexBuilder`.
+    public func create(
+        index name: SQLExpression
+    ) -> SQLCreateIndexBuilder {
+        return .init(.init(name: name), on: self)
     }
 }

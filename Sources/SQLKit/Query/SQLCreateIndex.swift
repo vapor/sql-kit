@@ -1,22 +1,39 @@
 /// `CREATE INDEX` query.
 ///
 /// See `SQLCreateIndexBuilder`.
-public protocol SQLCreateIndex: SQLSerializable {
-    /// See `SQLIndexModifier`.
-    associatedtype Modifier: SQLIndexModifier
+public struct SQLCreateIndex: SQLExpression {
+    public var name: SQLExpression
     
-    /// See `SQLIdentifier`.
-    associatedtype Identifier: SQLIdentifier
-    
-    /// See `SQLColumnIdentifier`.
-    associatedtype ColumnIdentifier: SQLColumnIdentifier
-    
-    /// Creates a new `SQLCreateIndex.
-    static func createIndex(name: Identifier) -> Self
+    public var table: SQLExpression?
     
     /// Type of index to create, see `SQLIndexModifier`.
-    var modifier: Modifier? { get set }
+    public var modifier: SQLExpression?
     
     /// Columns to index.
-    var columns: [ColumnIdentifier] { get set }
+    public var columns: [SQLExpression]
+    
+    /// Creates a new `SQLCreateIndex.
+    public init(name: SQLExpression) {
+        self.name = name
+        self.table = nil
+        self.modifier = nil
+        self.columns = []
+    }
+    
+    public func serialize(to serializer: inout SQLSerializer) {
+        serializer.write("CREATE")
+        if let modifier = self.modifier {
+            serializer.write(" ")
+            modifier.serialize(to: &serializer)
+        }
+        serializer.write(" INDEX ")
+        self.name.serialize(to: &serializer)
+        if let table = self.table {
+            serializer.write(" ON ")
+            table.serialize(to: &serializer)
+        }
+        serializer.write(" (")
+        self.columns.serialize(to: &serializer, joinedBy: ", ")
+        serializer.write(")")
+    }
 }

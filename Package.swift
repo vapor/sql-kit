@@ -13,6 +13,6 @@ let package = Package(
     targets: [
         .target(name: "SQLKit", dependencies: ["NIO"]),
         .target(name: "SQLKitBenchmark", dependencies: ["SQLKit"]),
-        .testTarget(name: "SQLKitTests", dependencies: ["SQLKit"]),
+        .testTarget(name: "SQLKitTests", dependencies: ["SQLKit", "SQLKitBenchmark"]),
     ]
 )

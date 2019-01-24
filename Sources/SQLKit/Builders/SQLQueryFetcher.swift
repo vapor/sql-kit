@@ -13,7 +13,7 @@ extension SQLQueryFetcher {
     ///
     ///     builder.first()
     ///
-    public func first() -> EventLoopFuture<Database.Row?> {
+    public func first() -> EventLoopFuture<SQLRow?> {
         return self.all().map { $0.first }
     }
     
@@ -23,8 +23,8 @@ extension SQLQueryFetcher {
     ///
     ///     builder.all()
     ///
-    public func all() -> EventLoopFuture<[Database.Row]> {
-        var all: [Database.Row] = []
+    public func all() -> EventLoopFuture<[SQLRow]> {
+        var all: [SQLRow] = []
         return self.run { row in
             all.append(row)
         }.map { all }
@@ -38,7 +38,7 @@ extension SQLQueryFetcher {
     ///     builder.run { print($0) }
     ///
     /// The returned future will signal completion of the query.
-    public func run(_ handler: @escaping (Database.Row) throws -> ()) -> EventLoopFuture<Void> {
+    public func run(_ handler: @escaping (SQLRow) throws -> ()) -> EventLoopFuture<Void> {
         return self.database.execute(self.query) { row in
             try handler(row)
         }

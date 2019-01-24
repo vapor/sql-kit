@@ -1,10 +1,22 @@
 /// SQL data type protocol, i.e., `INTEGER`, `TEXT`, etc.
-public protocol SQLDataType: SQLSerializable {
-    static var smallint: Self { get }
-    static var int: Self { get }
-    static var bigint: Self { get }
-    static var text: Self { get }
-    static var real: Self { get }
-    static var blob: Self { get }
-    static func custom(_ name: String) -> Self
+public enum SQLDataType: SQLExpression {
+    case smallint
+    case int
+    case bigint
+    case text
+    case real
+    case blob
+    
+    public func serialize(to serializer: inout SQLSerializer) {
+        let sql: String
+        switch self {
+        case .smallint: sql = "SMALLINT"
+        case .int: sql = "INT"
+        case .bigint: sql = "BIGINT"
+        case .text: sql = "TEXT"
+        case .real: sql = "REAL"
+        case .blob: sql = "BLOB"
+        }
+        serializer.write(sql)
+    }
 }

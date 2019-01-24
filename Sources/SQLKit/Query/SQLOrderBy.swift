@@ -1,11 +1,32 @@
 /// `ORDER BY` clause.
-public protocol SQLOrderBy: SQLSerializable {
-    /// See `SQLExpression`.
-    associatedtype Expression: SQLExpression
+public struct SQLOrderBy: SQLExpression {
+    public var expression: SQLExpression
     
-    /// See `SQLDirection`.
-    associatedtype Direction: SQLDirection
+    public var direction: SQLExpression
     
     /// Creates a new `SQLOrderBy`.
-    static func orderBy(_ expression: Expression, _ direction: Direction) -> Self
+    public init(expression: SQLExpression, direction: SQLExpression) {
+        self.expression = expression
+        self.direction = direction
+    }
+    
+    public func serialize(to serializer: inout SQLSerializer) {
+        self.expression.serialize(to: &serializer)
+        serializer.write(" ")
+        self.direction.serialize(to: &serializer)
+    }
+}
+
+public enum SQLDirection: SQLExpression {
+    case ascending
+    case descending
+    
+    public func serialize(to serializer: inout SQLSerializer) {
+        switch self {
+        case .ascending:
+            serializer.write("ASC")
+        case .descending:
+            serializer.write("DESC")
+        }
+    }
 }

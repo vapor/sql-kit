@@ -1,14 +1,33 @@
-/// Identifies a column in a particular table.
-public protocol SQLColumnIdentifier: SQLSerializable, ExpressibleByStringLiteral {
-    /// See `SQLIdentifier`.
-    associatedtype Identifier: SQLIdentifier
+///// Identifies a column in a particular table.
+//public protocol SQLColumnIdentifier: SQLSerializable {
+//    /// Creates a new `SQLColumnIdentifier`.
+//    init(name: SQLIdentifier, table: SQLIdentifier?)
+//
+//    /// Optional identifier for the table this column belongs to.
+//    var table: SQLIdentifier? { get set }
+//
+//    /// Column identifier.
+//    var name: SQLIdentifier { get set }
+//}
+
+public struct SQLColumn: SQLExpression {
+    public var name: SQLExpression
+    public var table: SQLExpression?
     
-    /// Creates a new `SQLColumnIdentifier`.
-    static func column(name: Identifier, table: Identifier?) -> Self
+    public init(_ name: String, table: String? = nil) {
+        self.init(SQLIdentifier(name), table: table.flatMap(SQLIdentifier.init))
+    }
     
-    /// Optional identifier for the table this column belongs to.
-    var table: Identifier? { get set }
+    public init(_ name: SQLExpression, table: SQLExpression? = nil) {
+        self.name = name
+        self.table = table
+    }
     
-    /// Column identifier.
-    var name: Identifier { get set }
+    public func serialize(to serializer: inout SQLSerializer) {
+        if let table = self.table {
+            table.serialize(to: &serializer)
+            serializer.write(".")
+        }
+        self.name.serialize(to: &serializer)
+    }
 }

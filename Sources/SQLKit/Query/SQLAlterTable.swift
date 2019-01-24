@@ -5,19 +5,21 @@
 ///         .run()
 ///
 /// See `SQLAlterTableBuilder` for more information.
-public protocol SQLAlterTable: SQLSerializable {
-    /// See `SQLTableIdentifier`.
-    associatedtype Identifier: SQLIdentifier
-    
-    /// See `SQLColumnDefinition`.
-    associatedtype ColumnDefinition: SQLColumnDefinition
-
-    /// Creates a new `SQLAlterTable`. See `SQLAlterTableBuilder`.
-    ///
-    /// - parameters:
-    ///     - table: Table to alter.
-    static func alterTable(name: Identifier) -> Self
-    
+public struct SQLAlterTable: SQLExpression {
+    public var name: SQLExpression
     /// Columns to add.
-    var columns: [ColumnDefinition] { get set }
+    public var columns: [SQLExpression]
+    
+    /// Creates a new `SQLAlterTable`. See `SQLAlterTableBuilder`.
+    public init(name: SQLExpression) {
+        self.name = name
+        self.columns = []
+    }
+    
+    public func serialize(to serializer: inout SQLSerializer) {
+        serializer.write("ALTER TABLE ")
+        self.name.serialize(to: &serializer)
+        serializer.write(" ")
+        self.columns.serialize(to: &serializer, joinedBy: ", ")
+    }
 }

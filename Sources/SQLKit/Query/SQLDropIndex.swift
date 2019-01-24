@@ -1,2 +1,2 @@
-/// `DROP INDEX` query.
-public protocol SQLDropIndex: SQLSerializable { }
+///// `DROP INDEX` query.
+//public protocol SQLDropIndex: SQLSerializable { }

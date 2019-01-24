@@ -1,28 +1,41 @@
 /// Builds data-definition queries that support creating columns, i.e., `CREATE TABLE` and `ALTER TABLE`.
 ///
-///     conn.create(table: Planet.self)
-///         .column(for: \.name, type: .text, .notNull)
+///     conn.create(table: "planets")
+///         .column(for: "name", type: .text, .notNull)
 ///         .run()
 ///
 /// See `SQLCreateTableBuilder` and `SQLAlterTableBuilder` for more information.
 public protocol SQLColumnBuilder: SQLQueryBuilder {
-    /// See `SQLColumnDefinition`.
-    associatedtype ColumnDefinition: SQLColumnDefinition
-    
     /// Columns to create.
-    var columns: [ColumnDefinition] { get set }
+    var columns: [SQLExpression] { get set }
 }
 
 extension SQLColumnBuilder {
     public func column(
-        _ column: ColumnDefinition.ColumnIdentifier,
-        type dataType: ColumnDefinition.DataType,
-        _ constraints: ColumnDefinition.ColumnConstraint...
+        _ column: String,
+        type dataType: SQLDataType,
+        _ constraints: SQLColumnConstraint...
     ) -> Self {
-        return self.column(.columnDefinition(column, dataType, constraints))
+        return self.column(SQLColumnDefinition(
+            column: SQLIdentifier(column),
+            dataType: dataType,
+            constraints: constraints
+        ))
     }
     
-    public func column(_ columnDefinition: ColumnDefinition) -> Self {
+    public func column(
+        _ column: SQLExpression,
+        type dataType: SQLExpression,
+        _ constraints: SQLExpression...
+    ) -> Self {
+        return self.column(SQLColumnDefinition(
+            column: column,
+            dataType: dataType,
+            constraints: constraints
+        ))
+    }
+    
+    public func column(_ columnDefinition: SQLExpression) -> Self {
         self.columns.append(columnDefinition)
         return self
     }
