@@ -1,20 +1,39 @@
 /// Literal expression value, i.e., `DEFAULT`, `FALSE`, `42`, etc.
-public protocol SQLLiteral: SQLSerializable, ExpressibleByStringLiteral {
+public enum SQLLiteral: SQLExpression {
+    /// *
+    case all
+    
     /// Creates a new `SQLLiteral` from a string.
-    static func string(_ string: String) -> Self
+    case string(String)
     
     /// Creates a new `SQLLiteral` from a numeric string (no quotes).
-    static func numeric(_ string: String) -> Self
+    case numeric(String)
     
     /// Creates a new null `SQLLiteral`, i.e., `NULL`.
-    static var null: Self { get }
+    case null
     
     /// Creates a new default `SQLLiteral` literal, i.e., `DEFAULT` or sometimes `NULL`.
-    static var `default`: Self { get }
+    case `default`
     
     /// Creates a new boolean `SQLLiteral`, i.e., `FALSE` or sometimes `0`.
-    static func boolean(_ bool: Bool) -> Self
+    case boolean(Bool)
     
-    /// If `true`, this `SQLLiteral` represents `NULL`.
-    var isNull: Bool { get }
+    public func serialize(to serializer: inout SQLSerializer) {
+        switch self {
+        case .all:
+            serializer.write("*")
+        case .string(let string):
+            serializer.dialect.literalStringQuote.serialize(to: &serializer)
+            serializer.write(string)
+            serializer.dialect.literalStringQuote.serialize(to: &serializer)
+        case .numeric(let numeric):
+            serializer.write(numeric)
+        case .null:
+            serializer.write("NULL")
+        case .default:
+            serializer.write("DEFAULT")
+        case .boolean(let bool):
+            serializer.dialect.literalBoolean(bool).serialize(to: &serializer)
+        }
+    }
 }

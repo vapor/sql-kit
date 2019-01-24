@@ -10,119 +10,180 @@
 /// This type is also highly recursive. Binary expressions, for example, have a left
 /// and right sub expression and so on. Function expressions have zero or more arguments
 /// that are also expressions.
-public protocol SQLExpression: SQLSerializable, ExpressibleByStringLiteral, ExpressibleByFloatLiteral, ExpressibleByIntegerLiteral {
-    /// See `SQLLiteral`.
-    associatedtype Literal: SQLLiteral
+//public protocol SQLExpression: SQLSerializable {
+//    var isNull: Bool { get }
+//}
+
+public struct SQLFunction: SQLExpression {
+    public let name: String
+    public let args: [SQLExpression]
     
-    /// See `SQLBind`.
-    associatedtype Bind: SQLBind
     
-    /// See `SQLColumnIdentifier`.
-    associatedtype ColumnIdentifier: SQLColumnIdentifier
+    public init(_ name: String, args: String...) {
+        self.init(name, args: args.map { SQLIdentifier($0) })
+    }
     
-    /// See `SQLBinaryOperator`.
-    associatedtype BinaryOperator: SQLBinaryOperator
+    public init(_ name: String, args: SQLExpression...) {
+        self.init(name, args: args)
+    }
     
-    /// See `SQLTableIdentifier`.
-    associatedtype Identifier: SQLIdentifier
+    public init(_ name: String, args: [SQLExpression] = []) {
+        self.name = name
+        self.args = args
+    }
     
-    /// See `SQLSerializable`.
-    /// Ideally this would be constraint to `SQLQuery`, but that creates a cyclic reference.
-    associatedtype Subquery: SQLSerializable
-    
-    /// Literal strings, integers, and constants.
-    static func literal(_ literal: Literal) -> Self
-    
-    /// Bound value.
-    static func bind(_ bind: Bind) -> Self
-    
-    /// Column name.
-    static func column(_ column: ColumnIdentifier) -> Self
-    
-    /// Binary expression.
-    static func binary(_ lhs: Self, _ op: BinaryOperator, _ rhs: Self) -> Self
-    
-    /// Creates a new `SQLFunction`.
-    static func function(_ name: String, _ args: [Self]) -> Self
-    
-    /// Group of expressions.
-    static func group(_ expressions: [Self]) -> Self
-    
-    /// `(SELECT ...)`
-    static func subquery(_ subquery: Subquery) -> Self
-    
-    /// Special expression type, all, `*`.
-    static func all(table: Identifier?) -> Self
-    
-    static func alias(_ expression: Self, as: Identifier) -> Self
-    
-    /// Creates a new `SQLExpression` from a raw SQL string.
-    /// This will be included in the query as is, no escaping.
-    static func raw(_ string: String) -> Self
-    
-    /// If `true`, this expression equals `NULL`.
-    var isNull: Bool { get }
+    public func serialize(to serializer: inout SQLSerializer) {
+        serializer.write(self.name)
+        serializer.write("(")
+        self.args.serialize(to: &serializer, joinedBy: ", ")
+        serializer.write(")")
+    }
 }
+
+public struct SQLBinaryExpression: SQLExpression {
+    public let left: SQLExpression
+    public let op: SQLExpression
+    public let right: SQLExpression
+    
+    public init(left: SQLExpression, op: SQLExpression, right: SQLExpression) {
+        self.left = left
+        self.op = op
+        self.right = right
+    }
+    
+    public func serialize(to serializer: inout SQLSerializer) {
+        self.left.serialize(to: &serializer)
+        serializer.write(" ")
+        self.op.serialize(to: &serializer)
+        serializer.write(" ")
+        self.right.serialize(to: &serializer)
+    }
+}
+
+public struct SQLGroupExpression: SQLExpression {
+    public let expression: SQLExpression
+    
+    public init(_ expression: SQLExpression) {
+        self.expression = expression
+    }
+    
+    public func serialize(to serializer: inout SQLSerializer) {
+        serializer.write("(")
+        self.expression.serialize(to: &serializer)
+        serializer.write(")")
+    }
+}
+
+//public enum SQLExpression: SQLSerializable {
+//    /// Literal strings, integers, and constants.
+//    case literal(SQLLiteral)
+//
+//    /// Bound value.
+//    case bind(SQLBind)
+//
+//    /// Binary expression.
+//    case binary(SQLSerializable, SQLSerializable, SQLSerializable)
+//
+//    /// Creates a new `SQLFunction`.
+//    case function(String, [SQLExpression])
+//
+//    /// Group of expressions.
+//    case group([SQLSerializable])
+//
+//    /// `(SELECT ...)`
+//    case subquery(SQLSerializable)
+//
+//    /// Special expression type, all, `*`.
+//    case all(table: SQLSerializable?)
+//
+//    case alias(SQLSerializable, as: SQLSerializable)
+//
+//    /// Creates a new `SQLExpression` from a raw SQL string.
+//    /// This will be included in the query as is, no escaping.
+//    case raw(String)
+//
+//    public var isNull: Bool {
+//        switch self {
+//        case .literal(let literal):
+//            return literal.isNull
+//        default: return false
+//        }
+//    }
+//
+//    public func serialize(to serializer: SQLSerializer) {
+//        switch self {
+//        case .literal(let literal):
+//            literal.serialize(to: serializer)
+//        case .column(let column):
+//            column.serialize(to: serializer)
+//        default:
+//            print(self)
+//            fatalError()
+//        }
+//    }
+//}
 
 // MARK: Convenience
+//
+//extension SQLExpression {
+//    public static var all: SQLExpression {
+//        return .all(table: nil)
+//    }
+//
+//    /// Convenience for creating a function call.
+//    ///
+//    ///     .function("UUID")
+//    ///
+//    public static func function(_ name: String) -> SQLExpression {
+//        return .function(name, [])
+//    }
+//
+//    /// Convenience for creating a `SUM(foo)` function call on a given KeyPath.
+//    ///
+//    ///     .sum(\Planet.mass)
+//    ///
+//    public static func sum(_ column: String) -> SQLExpression {
+//        return .function("SUM", [
+//            .column(SQLColumnIdentifier(name: GenericSQLIdentifier(string: column)))
+//        ])
+//    }
 
-extension SQLExpression {
-    public static var all: Self {
-        return .all(table: nil)
-    }
-    
-    /// Convenience for creating a function call.
-    ///
-    ///     .function("UUID")
-    ///
-    public static func function(_ name: String) -> Self {
-        return .function(name, [])
-    }
-    
-    /// Convenience for creating a `SUM(foo)` function call on a given KeyPath.
-    ///
-    ///     .sum(\Planet.mass)
-    ///
-    public static func sum(_ column: Self) -> Self {
-        return .function("SUM", [column])
-    }
-    
-    /// Convenience for creating a `COUNT(foo)` function call on a given KeyPath.
-    ///
-    ///     .count(\Planet.id)
-    ///
-    public static func count(_ column: Self) -> Self {
-        return .function("COUNT", [column])
-    }
-
-    /// Variadic convenience method for creating a group of expressions.
-    ///
-    ///     .group(a, b, c)
-    ///
-    public static func group(_ exprs: Self...) -> Self {
-        return group(exprs)
-    }
-    
-    /// Bound value. Shorthand for `.bind(.encodable(...))`.
-    public static func bind<E>(_ value: E) -> Self
-        where E: Encodable
-    {
-        return bind(.encodable(value))
-    }
-    
-    /// Bound value. Shorthand for `.bind(.encodable(...))`.
-    public static func binds<E>(_ values: [E]) -> Self
-        where E: Encodable
-    {
-        return group(values.map { .bind($0) })
-    }
-    
-    static func coalesce(_ expressions: [Self]) -> Self {
-        return self.function("COALESCE", expressions)
-    }
-    
-    /// Convenience for creating a `COALESCE(foo)` function call (returns the first non-null expression).
-    public static func coalesce(_ exprs: Self...) -> Self {
-        return coalesce(exprs)
-    }
-}
+//    /// Convenience for creating a `COUNT(foo)` function call on a given KeyPath.
+//    ///
+//    ///     .count(\Planet.id)
+//    ///
+//    public static func count(_ column: Self) -> Self {
+//        return .function("COUNT", [column])
+//    }
+//
+//    /// Variadic convenience method for creating a group of expressions.
+//    ///
+//    ///     .group(a, b, c)
+//    ///
+//    public static func group(_ exprs: Self...) -> Self {
+//        return group(exprs)
+//    }
+//
+//    /// Bound value. Shorthand for `.bind(.encodable(...))`.
+//    public static func bind<E>(_ value: E) -> Self
+//        where E: Encodable
+//    {
+//        return bind(.encodable(value))
+//    }
+//
+//    /// Bound value. Shorthand for `.bind(.encodable(...))`.
+//    public static func binds<E>(_ values: [E]) -> Self
+//        where E: Encodable
+//    {
+//        return group(values.map { .bind($0) })
+//    }
+//
+//    static func coalesce(_ expressions: [Self]) -> Self {
+//        return self.function("COALESCE", expressions)
+//    }
+//
+//    /// Convenience for creating a `COALESCE(foo)` function call (returns the first non-null expression).
+//    public static func coalesce(_ exprs: Self...) -> Self {
+//        return coalesce(exprs)
+//    }
+//}

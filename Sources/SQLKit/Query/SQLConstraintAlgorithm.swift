@@ -1,32 +1,49 @@
 /// Constraint algorithms used by `SQLColumnConstraint`.
-public protocol SQLConstraintAlgorithm: SQLSerializable {
-    /// See `SQLExpression.
-    associatedtype Expression: SQLExpression
-    
-    /// See `SQLCollation.
-    associatedtype Collation: SQLCollation
-    
-    /// See `SQLForeignKey.
-    associatedtype ForeignKey: SQLForeignKey
-    
+public enum SQLConstraintAlgorithm: SQLExpression {
     /// `PRIMARY KEY` constraint.
-    static var primaryKey: Self { get }
+    case primaryKey(autoIncrement: Bool)
     
     /// `NOT NULL` constraint.
-    static var notNull: Self { get }
+    case notNull
     
     /// `UNIQUE` constraint.
-    static var unique: Self { get }
-    
-    /// `CHECK` constraint.
-    static func check(_ expression: Expression) -> Self
+    case unique
     
     /// `COLLATE` constraint.
-    static func collate(_ collation: Collation) -> Self
+    case check(SQLExpression)
+    
+    case collate(SQLCollation)
     
     /// `DEFAULT` constraint.
-    static func `default`(_ expression: Expression) -> Self
+    case `default`(SQLExpression)
     
     /// `FOREIGN KEY` constraint.
-    static func foreignKey(_ foreignKey: ForeignKey) -> Self
+    case foreignKey(SQLForeignKey)
+    
+    public func serialize(to serializer: inout SQLSerializer) {
+        switch self {
+        case .primaryKey(let autoIncrement):
+            serializer.write("PRIMARY KEY")
+            if autoIncrement {
+                serializer.write(" ")
+                serializer.dialect.autoIncrementClause.serialize(to: &serializer)
+            }
+        case .notNull:
+            serializer.write("NOT NULL")
+        case .unique:
+            serializer.write("UNIQUE")
+        case .check(let expression):
+            serializer.write("CHECK ")
+            expression.serialize(to: &serializer)
+        case .collate(let collate):
+            serializer.write("COLLATE ")
+            collate.serialize(to: &serializer)
+        case .default(let expression):
+            serializer.write("DEFAULT ")
+            expression.serialize(to: &serializer)
+        case .foreignKey(let foreignKey):
+            serializer.write("FOREIGN KEY")
+            foreignKey.serialize(to: &serializer)
+        }
+    }
 }

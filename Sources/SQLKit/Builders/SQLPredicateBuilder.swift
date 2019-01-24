@@ -8,11 +8,8 @@
 ///
 /// See `SQLPredicateGroupBuilder` for building expression groups.
 public protocol SQLPredicateBuilder: class {
-    /// See `SQLExpression`.
-    associatedtype Expression: SQLExpression
-    
     /// Expression being built.
-    var predicate: Expression? { get set }
+    var predicate: SQLExpression? { get set }
 }
 
 extension SQLPredicateBuilder {
@@ -20,43 +17,82 @@ extension SQLPredicateBuilder {
     ///
     ///     builder.where(.column("name"), .equal, .value("Earth"))
     ///
-    public func `where`(_ lhs: Expression, _ op: Expression.BinaryOperator, _ rhs: Expression) -> Self {
-        return self.where(.binary(lhs, op, rhs))
+    public func `where`(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
+        return self.where(SQLIdentifier(lhs), op, rhs)
     }
     
+    /// Adds an expression to the `WHERE` clause.
+    ///
+    ///     builder.where(.column("name"), .equal, .value("Earth"))
+    ///
+    public func `where`(_ lhs: SQLExpression, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
+        return self.where(SQLBinaryExpression(left: lhs, op: op, right: rhs))
+    }
+    
+    /// Adds an expression to the `WHERE` clause.
+    ///
+    ///     builder.where(.column("name"), .equal, .value("Earth"))
+    ///
+    public func `where`(_ lhs: SQLExpression, _ op: SQLExpression, _ rhs: SQLExpression) -> Self {
+        return self.where(SQLBinaryExpression(left: lhs, op: op, right: rhs))
+    }
+
     /// Adds an expression to the `WHERE` clause.
     ///
     ///     builder.where(.binary("name", .notEqual, .literal(.null)))
     ///
     /// - parameters:
     ///     - expression: Expression to be added via `AND` to the predicate.
-    public func `where`(_ expression: Expression) -> Self {
+    public func `where`(_ expression: SQLExpression) -> Self {
         if let existing = self.predicate {
-            self.predicate = .binary(existing, .and, expression)
+            self.predicate = SQLBinaryExpression(
+                left: existing,
+                op: SQLBinaryOperator.and,
+                right: expression
+            )
         } else {
             self.predicate = expression
         }
         return self
     }
 
+    /// Adds an expression to the `WHERE` clause.
+    ///
+    ///     builder.orWhere(.column("name"), .equal, .value("Earth"))
+    ///
+    public func orWhere(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
+        return self.orWhere(SQLIdentifier(lhs), op, rhs)
+    }
     
     /// Adds an expression to the `WHERE` clause.
     ///
     ///     builder.orWhere(.column("name"), .equal, .value("Earth"))
     ///
-    public func orWhere(_ lhs: Expression, _ op: Expression.BinaryOperator, _ rhs: Expression) -> Self {
-        return self.orWhere(.binary(lhs, op, rhs))
+    public func orWhere(_ lhs: SQLExpression, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
+        return self.orWhere(SQLBinaryExpression(left: lhs, op: op, right: rhs))
     }
     
     /// Adds an expression to the `WHERE` clause.
     ///
-    ///     builder.orWhere(.binary("name", .equal, .literal(.null)))
+    ///     builder.orWhere(.column("name"), .equal, .value("Earth"))
+    ///
+    public func orWhere(_ lhs: SQLExpression, _ op: SQLExpression, _ rhs: SQLExpression) -> Self {
+        return self.orWhere(SQLBinaryExpression(left: lhs, op: op, right: rhs))
+    }
+    
+    /// Adds an expression to the `WHERE` clause.
+    ///
+    ///     builder.orWhere(.binary("name", .notEqual, .literal(.null)))
     ///
     /// - parameters:
-    ///     - expression: Expression to be added via `OR` to the predicate.
-    public func orWhere(_ expression: Expression) -> Self {
+    ///     - expression: Expression to be added via `AND` to the predicate.
+    public func orWhere(_ expression: SQLExpression) -> Self {
         if let existing = self.predicate {
-            self.predicate = .binary(existing, .or, expression)
+            self.predicate = SQLBinaryExpression(
+                left: existing,
+                op: SQLBinaryOperator.or,
+                right: expression
+            )
         } else {
             self.predicate = expression
         }

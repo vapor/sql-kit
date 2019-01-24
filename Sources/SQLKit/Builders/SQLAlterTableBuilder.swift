@@ -5,25 +5,20 @@
 ///         .run()
 ///
 /// See `SQLColumnBuilder` for more information.
-public final class SQLAlterTableBuilder<Database>: SQLQueryBuilder, SQLColumnBuilder
-    where Database: SQLDatabase
-{
-    /// See `SQLColumnBuilder`.
-    public typealias ColumnDefinition = Database.Query.AlterTable.ColumnDefinition
-    
+public final class SQLAlterTableBuilder: SQLQueryBuilder, SQLColumnBuilder {
     /// `SQLAlterTable` query being built.
-    public var alterTable: Database.Query.AlterTable
+    public var alterTable: SQLAlterTable
 
     /// See `SQLQueryBuilder`.
-    public var database: Database
+    public var database: SQLDatabase
 
     /// See `SQLQueryBuilder`.
-    public var query: Database.Query {
-        return .alterTable(alterTable)
+    public var query: SQLExpression {
+        return self.alterTable
     }
     
     /// See `SQLColumnBuilder`.
-    public var columns: [Database.Query.ColumnDefinition] {
+    public var columns: [SQLExpression] {
         get { return alterTable.columns }
         set { alterTable.columns = newValue }
     }
@@ -33,7 +28,7 @@ public final class SQLAlterTableBuilder<Database>: SQLQueryBuilder, SQLColumnBui
     /// - parameters:
     ///     - alterTable: Alter table query.
     ///     - connection: Connection to perform query on.
-    public init(_ alterTable: Database.Query.AlterTable, on database: Database) {
+    public init(_ alterTable: SQLAlterTable, on database: SQLDatabase) {
         self.alterTable = alterTable
         self.database = database
     }
@@ -44,12 +39,21 @@ public final class SQLAlterTableBuilder<Database>: SQLQueryBuilder, SQLColumnBui
 extension SQLDatabase {
     /// Creates a new `SQLAlterTableBuilder`.
     ///
-    ///     conn.alter(table: Planet.self)...
+    ///     conn.alter(table: "planets")...
     ///
     /// - parameters:
     ///     - table: Table to alter.
     /// - returns: `AlterTableBuilder`.
-    public func alter(table: Query.Identifier) -> SQLAlterTableBuilder<Self> {
-        return .init(.alterTable(name: table), on: self)
+    public func alter(table: String) -> SQLAlterTableBuilder {
+        return self.alter(table: SQLIdentifier(table))
+    }
+    
+    /// Creates a new `SQLAlterTableBuilder`.
+    ///
+    /// - parameters:
+    ///     - table: Table to alter.
+    /// - returns: `AlterTableBuilder`.
+    public func alter(table: SQLIdentifier) -> SQLAlterTableBuilder {
+        return .init(.init(name: table), on: self)
     }
 }

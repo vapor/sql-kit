@@ -3,22 +3,20 @@
 ///     conn.drop(table: Planet.self).run()
 ///
 /// See `SQLQueryBuilder` for more information.
-public final class SQLDropTableBuilder<Database>: SQLQueryBuilder
-    where Database: SQLDatabase
-{
+public final class SQLDropTableBuilder: SQLQueryBuilder {
     /// `DropTable` query being built.
-    public var dropTable: Database.Query.DropTable
+    public var dropTable: SQLDropTable
     
     /// See `SQLQueryBuilder`.
-    public var database: Database
+    public var database: SQLDatabase
     
     /// See `SQLQueryBuilder`.
-    public var query: Database.Query {
-        return .dropTable(dropTable)
+    public var query: SQLExpression {
+        return self.dropTable
     }
     
     /// Creates a new `SQLDropTableBuilder`.
-    public init(_ dropTable: Database.Query.DropTable, on database: Database) {
+    public init(_ dropTable: SQLDropTable, on database: SQLDatabase) {
         self.dropTable = dropTable
         self.database = database
     }
@@ -36,9 +34,17 @@ public final class SQLDropTableBuilder<Database>: SQLQueryBuilder
 extension SQLDatabase {
     /// Creates a new `SQLDropTable` builder.
     ///
-    ///     conn.drop(table: Planet.self).run()
+    ///     conn.drop(table: "planets").run()
     ///
-    public func drop(table: Query.DropTable.Identifier) -> SQLDropTableBuilder<Self> {
-        return .init(.dropTable(name: table), on: self)
+    public func drop(table: String) -> SQLDropTableBuilder {
+        return self.drop(table: SQLIdentifier(table))
+    }
+    
+    /// Creates a new `SQLDropTable` builder.
+    ///
+    ///     conn.drop(table: "planets").run()
+    ///
+    public func drop(table: SQLExpression) -> SQLDropTableBuilder {
+        return .init(.init(table: table), on: self)
     }
 }

@@ -5,14 +5,11 @@ import NIO
 ///     builder.run()
 ///
 public protocol SQLQueryBuilder: class {
-    /// See `SQLConnection`.
-    associatedtype Database: SQLDatabase
-    
     /// Query being built.
-    var query: Database.Query { get }
+    var query: SQLExpression { get }
     
     /// Connection to execute query on.
-    var database: Database { get }
+    var database: SQLDatabase { get }
 }
 
 extension SQLQueryBuilder {

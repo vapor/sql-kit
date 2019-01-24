@@ -1,8 +1,16 @@
 /// An escaped identifier, i.e., `"name"`.
-public protocol SQLIdentifier: SQLSerializable, ExpressibleByStringLiteral {
-    /// Creates a new `SQLIdentifier`.
-    static func identifier(_ string: String) -> Self
-    
+public struct SQLIdentifier: SQLExpression {
     /// String value.
-    var string: String { get set }
+    public var string: String
+    
+    /// Creates a new `SQLIdentifier`.
+    public init(_ string: String) {
+        self.string = string
+    }
+    
+    public func serialize(to serializer: inout SQLSerializer) {
+        serializer.dialect.identifierQuote.serialize(to: &serializer)
+        serializer.write(self.string)
+        serializer.dialect.identifierQuote.serialize(to: &serializer)
+    }
 }

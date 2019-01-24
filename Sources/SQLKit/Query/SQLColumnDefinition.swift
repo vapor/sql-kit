@@ -1,16 +1,27 @@
 /// Table column definition. DDL. Used by `SQLCreateTable` and `SQLAlterTable`.
 ///
 /// See `SQLCreateTableBuilder` and `SQLAlterTableBuilder`.
-public protocol SQLColumnDefinition: SQLSerializable {
-    /// See `SQLColumnIdentifier`.
-    associatedtype ColumnIdentifier: SQLColumnIdentifier
+public struct SQLColumnDefinition: SQLExpression {
+    public var column: SQLExpression
     
-    /// See `SQLDataType`.
-    associatedtype DataType: SQLDataType
+    public var dataType: SQLExpression
     
-    /// See `SQLColumnConstraint`.
-    associatedtype ColumnConstraint: SQLColumnConstraint
+    public var constraints: [SQLExpression]
     
     /// Creates a new `SQLColumnDefinition` from column identifier, data type, and zero or more constraints.
-    static func columnDefinition(_ column: ColumnIdentifier, _ dataType: DataType, _ constraints: [ColumnConstraint]) -> Self
+    public init(column: SQLExpression, dataType: SQLExpression, constraints: [SQLExpression] = []) {
+        self.column = column
+        self.dataType = dataType
+        self.constraints = constraints
+    }
+    
+    public func serialize(to serializer: inout SQLSerializer) {
+        self.column.serialize(to: &serializer)
+        serializer.write(" ")
+        self.dataType.serialize(to: &serializer)
+        if !self.constraints.isEmpty {
+            serializer.write(" ")
+            self.constraints.serialize(to: &serializer, joinedBy: ", ")
+        }
+    }
 }

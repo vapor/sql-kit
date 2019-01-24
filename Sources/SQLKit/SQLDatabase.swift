@@ -1,9 +1,10 @@
 import NIO
 
 public protocol SQLDatabase {
-    associatedtype Query: SQLQuery
-    associatedtype Row: SQLRow
-    func execute(_ query: Query, _ onRow: @escaping (Row) throws -> ()) -> EventLoopFuture<Void>
+    func execute(
+        _ query: SQLExpression,
+        _ onRow: @escaping (SQLRow) throws -> ()
+    ) -> EventLoopFuture<Void>
 }
 
 public protocol SQLRow {

@@ -6,31 +6,26 @@
 ///        .run()
 ///
 /// See `SQLColumnBuilder` and `SQLQueryBuilder` for more information.
-public final class SQLCreateTableBuilder<Database>: SQLQueryBuilder, SQLColumnBuilder
-    where Database: SQLDatabase
-{
-    /// See `SQLColumnBuilder`.
-    public typealias ColumnDefinition = Database.Query.CreateTable.ColumnDefinition
-    
+public final class SQLCreateTableBuilder: SQLQueryBuilder, SQLColumnBuilder {
     /// `CreateTable` query being built.
-    public var createTable: Database.Query.CreateTable
+    public var createTable: SQLCreateTable
     
     /// See `SQLQueryBuilder`.
-    public var database: Database
+    public var database: SQLDatabase
     
     /// See `SQLQueryBuilder`.
-    public var query: Database.Query {
-        return .createTable(createTable)
+    public var query: SQLExpression {
+        return self.createTable
     }
     
     /// See `SQLColumnBuilder`.
-    public var columns: [Database.Query.CreateTable.ColumnDefinition] {
+    public var columns: [SQLExpression] {
         get { return createTable.columns }
         set { createTable.columns = newValue }
     }
     
     /// Creates a new `SQLCreateTableBuilder`.
-    public init(_ createTable: Database.Query.CreateTable, on database: Database) {
+    public init(_ createTable: SQLCreateTable, on database: SQLDatabase) {
         self.createTable = createTable
         self.database = database
     }
@@ -58,12 +53,23 @@ public final class SQLCreateTableBuilder<Database>: SQLQueryBuilder, SQLColumnBu
 extension SQLDatabase {
     /// Creates a new `SQLCreateTableBuilder`.
     ///
-    ///     conn.create(table: Planet.self)...
+    ///     conn.create(table: "planets")...
     ///
     /// - parameters:
     ///     - table: Table to create.
     /// - returns: `CreateTableBuilder`.
-    public func create(table: Query.CreateTable.Identifier) -> SQLCreateTableBuilder<Self> {
-        return .init(.createTable(name: table), on: self)
+    public func create(table: String) -> SQLCreateTableBuilder {
+        return self.create(table: SQLIdentifier(table))
+    }
+    
+    /// Creates a new `SQLCreateTableBuilder`.
+    ///
+    ///     conn.create(table: SQLIdentifier("planets"))...
+    ///
+    /// - parameters:
+    ///     - table: Table to create.
+    /// - returns: `CreateTableBuilder`.
+    public func create(table: SQLExpression) -> SQLCreateTableBuilder {
+        return .init(.init(name: table), on: self)
     }
 }

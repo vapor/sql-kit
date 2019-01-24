@@ -4,17 +4,12 @@
 ///         $0.where(\Planet.name == "Earth").orWhere(\Planet.name == "Mars")
 ///     }
 ///
-public final class SQLPredicateGroupBuilder<PredicateBuilder>: SQLPredicateBuilder
-    where PredicateBuilder: SQLPredicateBuilder
-{
+public final class SQLPredicateGroupBuilder: SQLPredicateBuilder {
     /// See `SQLPredicateBuilder`.
-    public typealias Expression = PredicateBuilder.Expression
-    
-    /// See `SQLPredicateBuilder`.
-    public var predicate: PredicateBuilder.Expression?
+    public var predicate: SQLExpression?
     
     /// Creates a new `SQLPredicateGroupBuilder`.
-    internal init(_ type: PredicateBuilder.Type) { }
+    internal init() { }
 }
 
 extension SQLPredicateBuilder {
@@ -28,11 +23,11 @@ extension SQLPredicateBuilder {
     ///
     ///     WHERE "type" = "smallRocky" AND ("name" = "Earth" OR "name" = "Mars")
     ///
-    public func `where`(group: (SQLPredicateGroupBuilder<Self>) -> (SQLPredicateGroupBuilder<Self>)) -> Self {
-        let builder = SQLPredicateGroupBuilder(Self.self)
+    public func `where`(group: (SQLPredicateGroupBuilder) -> (SQLPredicateGroupBuilder)) -> Self {
+        let builder = SQLPredicateGroupBuilder()
         _ = group(builder)
         if let sub = builder.predicate {
-            return self.where(.group(sub))
+            return self.where(SQLGroupExpression(sub))
         } else {
             return self
         }
@@ -48,11 +43,11 @@ extension SQLPredicateBuilder {
     ///
     ///     WHERE "name" = "Jupiter" OR ("name" = "Earth" AND "type" = "smallRocky")
     ///
-    public func orWhere(group: (SQLPredicateGroupBuilder<Self>) -> (SQLPredicateGroupBuilder<Self>)) -> Self {
-        let builder = SQLPredicateGroupBuilder(Self.self)
+    public func orWhere(group: (SQLPredicateGroupBuilder) -> (SQLPredicateGroupBuilder)) -> Self {
+        let builder = SQLPredicateGroupBuilder()
         _ = group(builder)
         if let sub = builder.predicate {
-            return self.orWhere(.group(sub))
+            return self.orWhere(SQLGroupExpression(sub))
         } else {
             return self
         }

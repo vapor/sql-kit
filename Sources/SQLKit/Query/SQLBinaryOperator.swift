@@ -1,60 +1,68 @@
 /// SQL binary expression operators, i.e., `==`, `!=`, `AND`, `+`, etc.
-///
-/// See `SQLExpression`.
-public protocol SQLBinaryOperator: SQLSerializable, Equatable, ExpressibleByStringLiteral where
-    StringLiteralType == String
-{
+public enum SQLBinaryOperator: SQLExpression {
     /// `=` or `==`
-    static var equal: Self { get }
+    case equal
     
     /// `!=` or `<>`
-    static var notEqual: Self { get }
+    case notEqual
     
     /// `>`
-    static var greaterThan: Self { get }
+    case greaterThan
     
     /// `<`
-    static var lessThan: Self { get }
+    case lessThan
     
     /// `>=`
-    static var greaterThanOrEqual: Self { get }
+    case greaterThanOrEqual
     
     /// `<=`
-    static var lessThanOrEqual: Self { get }
+    case lessThanOrEqual
     
     /// `LIKE`
-    static var like: Self { get }
+    case like
     
     /// `NOT LIKE`
-    static var notLike: Self { get }
+    case notLike
     
     /// `IN`
-    static var `in`: Self { get }
+    case `in`
     
     /// `NOT IN`
-    static var `notIn`: Self { get }
+    case `notIn`
     
     /// `AND`
-    static var and: Self { get }
+    case and
     
     /// `OR`
-    static var or: Self { get }
+    case or
     
     /// `||`
-    static var concatenate: Self { get }
+    case concatenate
     
     /// `*`
-    static var multiply: Self { get }
+    case multiply
     
     /// `/`
-    static var divide: Self { get }
+    case divide
     
     /// `%`
-    static var modulo: Self { get }
+    case modulo
     
     /// `+`
-    static var add: Self { get }
+    case add
     
     /// `-`
-    static var subtract: Self { get }
+    case subtract
+    
+    public func serialize(to serializer: inout SQLSerializer) {
+        switch self {
+        case .equal: serializer.write("=")
+        case .notEqual: serializer.write("!=")
+        case .and: serializer.write("AND")
+        case .or: serializer.write("OR")
+        default:
+            print(self)
+            fatalError()
+        }
+    }
 }
