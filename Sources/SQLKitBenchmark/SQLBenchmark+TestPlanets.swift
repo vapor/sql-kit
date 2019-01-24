@@ -54,17 +54,17 @@ extension SQLBenchmarker {
         
         let galaxyID = 1
         try self.db.insert(into: "planets")
-            .value(Planet(name: "Earth", galaxyID: galaxyID))
+            .columns("id", "name")
+            .values(SQLLiteral.default, SQLBind("Earth"))
             .run().wait()
         
         try self.db.insert(into: "planets")
-            .values([
-                Planet(name: "Mercury", galaxyID: galaxyID),
-                Planet(name: "Venus", galaxyID: galaxyID),
-                Planet(name: "Mars", galaxyID: galaxyID),
-                Planet(name: "Jpuiter", galaxyID: galaxyID),
-                Planet(name: "Pluto", galaxyID: galaxyID)
-            ])
+            .columns("id", "name")
+            .values(SQLLiteral.default, SQLBind("Mercury"))
+            .values(SQLLiteral.default, SQLBind("Venus"))
+            .values(SQLLiteral.default, SQLBind("Mars"))
+            .values(SQLLiteral.default, SQLBind("Jpuiter"))
+            .values(SQLLiteral.default, SQLBind("Pluto"))
             .run().wait()
 
         try self.db.select()

@@ -21,6 +21,7 @@ public struct SQLForeignKey: SQLExpression {
     }
     
     public func serialize(to serializer: inout SQLSerializer) {
+        serializer.write("REFERENCES ")
         self.table.serialize(to: &serializer)
         serializer.write(" (")
         self.columns.serialize(to: &serializer, joinedBy: ", ")

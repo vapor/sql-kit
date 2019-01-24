@@ -19,7 +19,7 @@ public struct SQLAlterTable: SQLExpression {
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.write("ALTER TABLE ")
         self.name.serialize(to: &serializer)
-        serializer.write(" ")
+        serializer.write(" ADD ")
         self.columns.serialize(to: &serializer, joinedBy: ", ")
     }
 }

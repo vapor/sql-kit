@@ -8,6 +8,6 @@ public struct SQLBind: SQLExpression {
     
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.bind(self.encodable)
-        serializer.dialect.bindPlaceholder.serialize(to: &serializer)
+        serializer.dialect.nextBindPlaceholder().serialize(to: &serializer)
     }
 }
