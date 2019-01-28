@@ -1,14 +1,14 @@
 import NIO
 
 public protocol SQLDatabase {
-    func execute(
+    func sqlQuery(
         _ query: SQLExpression,
         _ onRow: @escaping (SQLRow) throws -> ()
     ) -> EventLoopFuture<Void>
 }
 
 public protocol SQLRow {
-    func decode<D>(_ type: D.Type, table: String?) throws -> D
+    func decode<D>(column: String, as type: D.Type) throws -> D
         where D: Decodable
 }
 //

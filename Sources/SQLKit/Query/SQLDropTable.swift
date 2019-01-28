@@ -10,7 +10,7 @@ public struct SQLDropTable: SQLExpression {
     public var ifExists: Bool
     
     /// Creates a new `SQLDropTable`.
-    init(table: SQLExpression) {
+    public init(table: SQLExpression) {
         self.table = table
         self.ifExists = false
     }

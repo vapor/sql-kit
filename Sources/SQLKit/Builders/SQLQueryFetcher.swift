@@ -39,7 +39,7 @@ extension SQLQueryFetcher {
     ///
     /// The returned future will signal completion of the query.
     public func run(_ handler: @escaping (SQLRow) throws -> ()) -> EventLoopFuture<Void> {
-        return self.database.execute(self.query) { row in
+        return self.database.sqlQuery(self.query) { row in
             try handler(row)
         }
     }
