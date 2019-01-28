@@ -60,6 +60,8 @@ public enum SQLBinaryOperator: SQLExpression {
         case .notEqual: serializer.write("!=")
         case .and: serializer.write("AND")
         case .or: serializer.write("OR")
+        case .in: serializer.write("IN")
+        case .notIn: serializer.write("NOT IN")
         default:
             print(self)
             fatalError()
