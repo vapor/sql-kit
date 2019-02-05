@@ -45,6 +45,9 @@
 public struct SQLSelect: SQLExpression {
     public var columns: [SQLExpression]
     public var tables: [SQLExpression]
+    
+    public var joins: [SQLExpression]
+    
     public var predicate: SQLExpression?
     
     /// Zero or more `GROUP BY` clauses.
@@ -63,6 +66,7 @@ public struct SQLSelect: SQLExpression {
     public init() {
         self.columns = []
         self.tables = []
+        self.joins = []
         self.predicate = nil
         self.limit = nil
         self.offset = nil
@@ -75,6 +79,10 @@ public struct SQLSelect: SQLExpression {
         self.columns.serialize(to: &serializer, joinedBy: ", ")
         serializer.write(" FROM ")
         self.tables.serialize(to: &serializer, joinedBy: ", ")
+        if !self.joins.isEmpty {
+            serializer.write(" ")
+            self.joins.serialize(to: &serializer, joinedBy: ", ")
+        }
         if let predicate = self.predicate {
             serializer.write(" WHERE ")
             predicate.serialize(to: &serializer)

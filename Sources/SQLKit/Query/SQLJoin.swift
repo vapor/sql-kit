@@ -1,16 +1,39 @@
 ///// `JOIN` clause.
-//public protocol SQLJoin: SQLSerializable {
-//    /// See `SQLJoinMethod`.
-//    associatedtype Method: SQLJoinMethod
-//    
-//    /// See `SQLTableIdentifier`.
-//    associatedtype Identifier
-//    
-//    /// See `SQLExpression`.
-//    associatedtype Expression: SQLExpression where
-//        Expression.Identifier == Identifier,
-//        Expression.ColumnIdentifier.Identifier == Identifier
-//    
-//    /// Creates a new `SQLJoin`.
-//    static func join(method: Method, table: Identifier, expression: Expression) -> Self
-//}
+public struct SQLJoin: SQLExpression {
+    public var method: SQLExpression
+    
+    public var table: SQLExpression
+    
+    public var expression: SQLExpression
+    
+    /// Creates a new `SQLJoin`.
+    public init(method: SQLExpression, table: SQLExpression, expression: SQLExpression) {
+        self.method = method
+        self.table = table
+        self.expression = expression
+    }
+    
+    public func serialize(to serializer: inout SQLSerializer) {
+        self.method.serialize(to: &serializer)
+        serializer.write(" JOIN ")
+        self.table.serialize(to: &serializer)
+        serializer.write(" ON ")
+        self.expression.serialize(to: &serializer)
+    }
+}
+
+public enum SQLJoinMethod: SQLExpression {
+    case inner
+    case outer
+    case left
+    case right
+    
+    public func serialize(to serializer: inout SQLSerializer) {
+        switch self {
+        case .inner: serializer.write("INNER")
+        case .outer: serializer.write("OUTER")
+        case .left: serializer.write("LEFT")
+        case .right: serializer.write("RIGHT")
+        }
+    }
+}
