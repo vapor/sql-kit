@@ -113,13 +113,12 @@ public final class SQLSelectBuilder: SQLQueryFetcher, SQLQueryBuilder, SQLPredic
     ///     - lockingClause: Locking clause type.
     /// - returns: Self for chaining.
     public func `for`(_ lockingClause: SQLLockingClause) -> Self {
-        self.select.lockingClause = lockingClause
-        return self
+        return self.lockingClause(lockingClause)
     }
     
     /// Adds a locking expression to this `SELECT` statement.
     ///
-    ///     db.select()...for(.update)
+    ///     db.select()...lockingClause(...)
     ///
     /// Also called locking reads, the `SELECT ... FOR UPDATE` syntax
     /// will lock all selected rows for the duration of the current transaction.
@@ -131,7 +130,7 @@ public final class SQLSelectBuilder: SQLQueryFetcher, SQLQueryBuilder, SQLPredic
     /// - parameters:
     ///     - lockingClause: Locking clause type.
     /// - returns: Self for chaining.
-    public func `for`(_ lockingClause: SQLExpression) -> Self {
+    public func lockingClause(_ lockingClause: SQLExpression) -> Self {
         self.select.lockingClause = lockingClause
         return self
     }

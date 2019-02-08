@@ -9,7 +9,7 @@ final class SQLKitTests: XCTestCase {
         try benchmarker.run()
     }
     
-    func testLockingClause() throws {
+    func testLockingClause_forUpdate() throws {
         let db = TestDatabase()
         try db.select().column("*")
             .from("planets")
@@ -17,5 +17,15 @@ final class SQLKitTests: XCTestCase {
             .for(.update)
             .run().wait()
         XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE `name` = ? FOR UPDATE")
+    }
+    
+    func testLockingClause_lockInShareMode() throws {
+        let db = TestDatabase()
+        try db.select().column("*")
+            .from("planets")
+            .where("name", .equal, "Earth")
+            .lockingClause(SQLRaw("LOCK IN SHARE MODE"))
+            .run().wait()
+        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE `name` = ? LOCK IN SHARE MODE")
     }
 }

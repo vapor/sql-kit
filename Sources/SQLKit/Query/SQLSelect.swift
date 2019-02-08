@@ -76,7 +76,7 @@ public struct SQLSelect: SQLExpression {
             serializer.write(offset.description)
         }
         if let lockingClause = self.lockingClause {
-            serializer.write(" FOR ")
+            serializer.write(" ")
             lockingClause.serialize(to: &serializer)
         }
     }

@@ -14,9 +14,9 @@ public enum SQLLockingClause: SQLExpression {
     public func serialize(to serializer: inout SQLSerializer) {
         switch self {
         case .share:
-            serializer.write("SHARE")
+            serializer.write("FOR SHARE")
         case .update:
-            serializer.write("UPDATE")
+            serializer.write("FOR UPDATE")
         }
     }
 }
