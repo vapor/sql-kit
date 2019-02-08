@@ -34,7 +34,7 @@ extension SQLBenchmarker {
             // .value(Galaxy(name: "Milky Way"))
             .run().wait()
         // SELECT * FROM galaxies WHERE name != NULL AND (name == ? OR name == ?)
-        let c = try self.db.select()
+        _ = try self.db.select()
             .column("*")
             .from("galaxies")
             .where("name", .notEqual, SQLLiteral.null)
@@ -44,15 +44,14 @@ extension SQLBenchmarker {
             }
             .all().wait()
 
-        let a = try self.db.select()
+        _ = try self.db.select()
             .column("*")
             .from("galaxies")
             .where(SQLColumn("name"), .equal, SQLBind("Milky Way"))
             .groupBy("id")
             .orderBy("name", .descending)
-            .all().wait().map { try $0.decode(Galaxy.self, table: "galaxies") }
+            .all().wait()
         
-        let galaxyID = 1
         try self.db.insert(into: "planets")
             .columns("id", "name")
             .values(SQLLiteral.default, SQLBind("Earth"))

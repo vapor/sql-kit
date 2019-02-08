@@ -23,16 +23,9 @@ public struct SQLInsert: SQLExpression {
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.write("INSERT INTO ")
         self.table.serialize(to: &serializer)
-        serializer.write(" (")
-        self.columns.serialize(to: &serializer, joinedBy: ", ")
-        serializer.write(") VALUES ")
-        for (i, value) in self.values.enumerated() {
-            if i != 0 {
-                serializer.write(", ")
-            }
-            serializer.write("(")
-            value.serialize(to: &serializer, joinedBy: ", ")
-            serializer.write(")")
-        }
+        serializer.write(" ")
+        SQLGroupExpression(self.columns).serialize(to: &serializer)
+        serializer.write(" VALUES ")
+        SQLList(self.values.map(SQLGroupExpression.init)).serialize(to: &serializer)
     }
 }

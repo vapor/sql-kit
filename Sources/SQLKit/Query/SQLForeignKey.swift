@@ -23,9 +23,8 @@ public struct SQLForeignKey: SQLExpression {
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.write("REFERENCES ")
         self.table.serialize(to: &serializer)
-        serializer.write(" (")
-        self.columns.serialize(to: &serializer, joinedBy: ", ")
-        serializer.write(")")
+        serializer.write(" ")
+        SQLGroupExpression(self.columns).serialize(to: &serializer)
 
         if let onDelete = self.onDelete {
             serializer.write(" ON DELETE ")

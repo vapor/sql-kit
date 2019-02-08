@@ -32,8 +32,7 @@ public struct SQLCreateIndex: SQLExpression {
             serializer.write(" ON ")
             table.serialize(to: &serializer)
         }
-        serializer.write(" (")
-        self.columns.serialize(to: &serializer, joinedBy: ", ")
-        serializer.write(")")
+        serializer.write(" ")
+        SQLGroupExpression(self.columns).serialize(to: &serializer)
     }
 }

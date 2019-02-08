@@ -20,6 +20,6 @@ public struct SQLAlterTable: SQLExpression {
         serializer.write("ALTER TABLE ")
         self.name.serialize(to: &serializer)
         serializer.write(" ADD ")
-        self.columns.serialize(to: &serializer, joinedBy: ", ")
+        SQLList(self.columns).serialize(to: &serializer)
     }
 }

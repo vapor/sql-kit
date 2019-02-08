@@ -3,7 +3,7 @@
 /// See `SQLDeleteBuilder`.
 public struct SQLDelete: SQLExpression {
     /// Identifier of table to delete from.
-    public var table: SQLIdentifier
+    public var table: SQLExpression
     
     /// If the `WHERE` clause is not present, all records in the table are deleted. If a WHERE clause is supplied,
     /// then only those rows for which the WHERE clause boolean expression is true are deleted. Rows for which
@@ -11,7 +11,7 @@ public struct SQLDelete: SQLExpression {
     public var predicate: SQLExpression?
     
     /// Creates a new `SQLDelete`.
-    public init(table: SQLIdentifier) {
+    public init(table: SQLExpression) {
         self.table = table
     }
     

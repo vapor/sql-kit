@@ -20,33 +20,11 @@ struct PrintDatabase: SQLDatabase {
     init() {
         self.eventLoop = EmbeddedEventLoop()
     }
-    func execute(_ query: SQLExpression, _ onRow: @escaping (SQLRow) throws -> ()) -> EventLoopFuture<Void> {
-        var serializer: SQLSerializer = BufferSerializer()
+    func sqlQuery(_ query: SQLExpression, _ onRow: @escaping (SQLRow) throws -> ()) -> EventLoopFuture<Void> {
+        var serializer = SQLSerializer(dialect: GenericDialect())
         query.serialize(to: &serializer)
-        let buffer = serializer as! BufferSerializer
-        print("[SQL] \(buffer.sql)")
-        return self.eventLoop.newSucceededFuture(result: ())
-    }
-}
-
-struct BufferSerializer: SQLSerializer {
-    var dialect: SQLDialect
-    
-    var sql: String
-    var binds: [Encodable]
-    
-    init() {
-        self.dialect = GenericDialect()
-        self.sql = ""
-        self.binds = []
-    }
-    
-    mutating func bind(_ encodable: Encodable) {
-        self.binds.append(encodable)
-    }
-    
-    mutating func write(_ sql: String) {
-        self.sql += sql
+        print("[SQL] \(serializer.sql)")
+        return self.eventLoop.makeSucceededFuture(())
     }
 }
 
@@ -68,6 +46,10 @@ struct GenericDialect: SQLDialect {
     
     var bindPlaceholder: SQLExpression {
         return "?"
+    }
+    
+    func nextBindPlaceholder() -> SQLExpression {
+        return "$"
     }
     
     func literalBoolean(_ value: Bool) -> SQLExpression {

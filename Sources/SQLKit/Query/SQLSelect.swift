@@ -1,50 +1,11 @@
 /// `SELECT` statement.
 ///
 /// See `SQLSelectBuilder` for building this query.
-//public protocol SQLSelect: SQLQuery {
-//    /// See `SQLDistinct`.
-//    associatedtype Distinct: SQLDistinct
-//
-//    /// See `SQLTableIdentifier`.
-//    associatedtype Identifier: SQLIdentifier
-//
-//    /// See `SQLJoin`.
-//    associatedtype Join: SQLJoin
-//
-//    /// See `SQLExpression`.
-//    associatedtype Expression: SQLExpression
-//
-//    /// See `SQLGroupBy`.
-//    associatedtype GroupBy: SQLGroupBy
-//
-//    /// See `SQLOrderBy`.
-//    associatedtype OrderBy: SQLOrderBy
-//
-//    /// Creates a new `SQLSelect`.
-//    static func select() -> Self
-//
-//    /// Distinct modifier.
-//    var distinct: Distinct? { get set }
-//
-//    /// Select expressions.
-//    /// These define the columns in the result set.
-//    var columns: [Expression] { get set }
-//
-//    /// Zero or more tables to select from.
-//    var tables: [Identifier] { get set }
-//
-//    /// Zero or more tables to join.
-//    var joins: [Join] { get set }
-//
-//    /// `WHERE` clause.
-//    var predicate: Expression? { get set }
-//
-
-//}
-
 public struct SQLSelect: SQLExpression {
     public var columns: [SQLExpression]
     public var tables: [SQLExpression]
+    
+    public var isDistinct: Bool
     
     public var joins: [SQLExpression]
     
@@ -61,11 +22,11 @@ public struct SQLSelect: SQLExpression {
     
     /// If set, offsets the results.
     public var offset: Int?
-
     
     public init() {
         self.columns = []
         self.tables = []
+        self.isDistinct = false
         self.joins = []
         self.predicate = nil
         self.limit = nil
@@ -76,12 +37,15 @@ public struct SQLSelect: SQLExpression {
     
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.write("SELECT ")
-        self.columns.serialize(to: &serializer, joinedBy: ", ")
+        if self.isDistinct {
+            serializer.write("DISTINCT ")
+        }
+        SQLList(self.columns).serialize(to: &serializer)
         serializer.write(" FROM ")
-        self.tables.serialize(to: &serializer, joinedBy: ", ")
+        SQLList(self.tables).serialize(to: &serializer)
         if !self.joins.isEmpty {
             serializer.write(" ")
-            self.joins.serialize(to: &serializer, joinedBy: ", ")
+            SQLList(self.joins).serialize(to: &serializer)
         }
         if let predicate = self.predicate {
             serializer.write(" WHERE ")
@@ -89,11 +53,11 @@ public struct SQLSelect: SQLExpression {
         }
         if !self.groupBy.isEmpty {
             serializer.write(" GROUP BY ")
-            self.groupBy.serialize(to: &serializer, joinedBy: ", ")
+            SQLList(self.groupBy).serialize(to: &serializer)
         }
         if !self.orderBy.isEmpty {
             serializer.write(" ORDER BY ")
-            self.orderBy.serialize(to: &serializer, joinedBy: ", ")
+            SQLList(self.orderBy).serialize(to: &serializer)
         }
         if let limit = self.limit {
             serializer.write(" LIMIT ")

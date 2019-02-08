@@ -1,8 +1,13 @@
-///// `ORDER BY` and constraint directions, i.e., `ASC`, `DESC`.
-//public protocol SQLDirection: SQLSerializable {
-//    /// Ascending order.
-//    static var ascending: Self { get }
-//    
-//    /// Descending order.
-//    static var descending: Self { get }
-//}
+public enum SQLDirection: SQLExpression {
+    case ascending
+    case descending
+    
+    public func serialize(to serializer: inout SQLSerializer) {
+        switch self {
+        case .ascending:
+            serializer.write("ASC")
+        case .descending:
+            serializer.write("DESC")
+        }
+    }
+}

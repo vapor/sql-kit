@@ -40,8 +40,7 @@ public struct SQLCreateTable: SQLExpression {
             serializer.write("IF NOT EXISTS ")
         }
         self.table.serialize(to: &serializer)
-        serializer.write(" (")
-        (columns + tableConstraints).serialize(to: &serializer, joinedBy: ", ")
-        serializer.write(")")
+        SQLGroupExpression(self.columns + self.tableConstraints)
+            .serialize(to: &serializer)
     }
 }
