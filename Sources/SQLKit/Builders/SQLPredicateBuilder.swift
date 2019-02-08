@@ -13,18 +13,36 @@ public protocol SQLPredicateBuilder: class {
 }
 
 extension SQLPredicateBuilder {
-    /// Adds an expression to the `WHERE` clause.
+    /// Adds a column to column comparison to this builder's `WHERE` clause.
     ///
-    ///     builder.where("name", .equal, "Earth")
+    ///     builder.where("firstName", .equal, column: "lastName")
     ///
+    /// This method compares two _columns_.
+    ///
+    ///     SELECT * FROM users WHERE firstName = lastName
+    ///
+    /// - parameters:
+    ///     - lhs: Left-hand column name.
+    ///     - op: Binary operator to use for comparison.
+    ///     - rhs: Right-hand column name.
+    /// - returns: Self for chaining.
     public func `where`(_ lhs: String, _ op: SQLBinaryOperator, column rhs: String) -> Self {
         return self.where(SQLIdentifier(lhs), op, SQLIdentifier(rhs))
     }
     
-    /// Adds an expression to the `WHERE` clause.
+    /// Adds a column comparison to this builder's `WHERE` clause.
     ///
     ///     builder.where("name", .equal, "Earth")
     ///
+    /// The encodable value supplied will be bound to the query as a parameter.
+    ///
+    ///     SELECT * FROM planets WHERE name = ? // Earth
+    ///
+    /// - parameters:
+    ///     - lhs: Column name.
+    ///     - op: Binary operator to use for comparison.
+    ///     - rhs: Encodable value.
+    /// - returns: Self for chaining.
     public func `where`(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: Encodable) -> Self {
         return self.where(SQLIdentifier(lhs), op, SQLBind(rhs))
     }
