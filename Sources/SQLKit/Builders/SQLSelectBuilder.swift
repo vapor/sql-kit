@@ -101,6 +101,11 @@ public final class SQLSelectBuilder: SQLQueryFetcher, SQLQueryBuilder, SQLPredic
         return self
     }
     
+    public func `for`(_ lockingClause: SQLLockingClause) -> Self {
+        self.select.lockingClause = lockingClause
+        return self
+    }
+    
     /// Adds a `LIMIT` clause to the select statement.
     ///
     ///     builder.limit(5)

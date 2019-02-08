@@ -15,6 +15,22 @@ public protocol SQLPredicateBuilder: class {
 extension SQLPredicateBuilder {
     /// Adds an expression to the `WHERE` clause.
     ///
+    ///     builder.where("name", .equal, "Earth")
+    ///
+    public func `where`(_ lhs: String, _ op: SQLBinaryOperator, column rhs: String) -> Self {
+        return self.where(SQLIdentifier(lhs), op, SQLIdentifier(rhs))
+    }
+    
+    /// Adds an expression to the `WHERE` clause.
+    ///
+    ///     builder.where("name", .equal, "Earth")
+    ///
+    public func `where`(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: Encodable) -> Self {
+        return self.where(SQLIdentifier(lhs), op, SQLBind(rhs))
+    }
+    
+    /// Adds an expression to the `WHERE` clause.
+    ///
     ///     builder.where(.column("name"), .equal, .value("Earth"))
     ///
     public func `where`(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {

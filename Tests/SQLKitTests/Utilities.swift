@@ -1,65 +1,44 @@
 import SQLKit
-import SQLKitBenchmark
-import XCTest
 
-final class SQLKitTests: XCTestCase {
-    func testSelect() throws {
-        let db = PrintDatabase()
-        let benchmarker = SQLBenchmarker(on: db)
-        try benchmarker.run()
-    }
-
-    static let allTests = [
-        ("testSelect", testSelect),
-    ]
-}
-
-
-struct PrintDatabase: SQLDatabase {
+final class TestDatabase: SQLDatabase {
     let eventLoop: EventLoop
+    var results: [String]
+    
     init() {
         self.eventLoop = EmbeddedEventLoop()
+        self.results = []
     }
+    
     func sqlQuery(_ query: SQLExpression, _ onRow: @escaping (SQLRow) throws -> ()) -> EventLoopFuture<Void> {
         var serializer = SQLSerializer(dialect: GenericDialect())
         query.serialize(to: &serializer)
-        print("[SQL] \(serializer.sql)")
+        results.append(serializer.sql)
         return self.eventLoop.makeSucceededFuture(())
-    }
-}
-
-extension String: SQLExpression {
-    public func serialize(to serializer: inout SQLSerializer) {
-        serializer.write(self)
     }
 }
 
 struct GenericDialect: SQLDialect {
     init() { }
     var identifierQuote: SQLExpression {
-        return "\""
+        return SQLRaw("`")
     }
     
     var literalStringQuote: SQLExpression {
-        return "'"
-    }
-    
-    var bindPlaceholder: SQLExpression {
-        return "?"
+        return SQLRaw("'")
     }
     
     func nextBindPlaceholder() -> SQLExpression {
-        return "$"
+        return SQLRaw("?")
     }
     
     func literalBoolean(_ value: Bool) -> SQLExpression {
         switch value {
-        case true: return "true"
-        case false: return "false"
+        case true: return SQLRaw("true")
+        case false: return SQLRaw("false")
         }
     }
     
     var autoIncrementClause: SQLExpression {
-        return "AUTOINCREMENT"
+        return SQLRaw("AUTOINCREMENT")
     }
 }

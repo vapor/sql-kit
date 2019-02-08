@@ -23,6 +23,8 @@ public struct SQLSelect: SQLExpression {
     /// If set, offsets the results.
     public var offset: Int?
     
+    public var lockingClause: SQLExpression?
+    
     public init() {
         self.columns = []
         self.tables = []
@@ -66,6 +68,10 @@ public struct SQLSelect: SQLExpression {
         if let offset = self.offset {
             serializer.write(" OFFSET ")
             serializer.write(offset.description)
+        }
+        if let lockingClause = self.lockingClause {
+            serializer.write(" ")
+            lockingClause.serialize(to: &serializer)
         }
     }
 }

@@ -16,7 +16,7 @@ public final class SQLRawBuilder: SQLQueryBuilder, SQLQueryFetcher {
     
     /// See `SQLQueryBuilder`.
     public var query: SQLExpression {
-        return SQLRaw(sql: self.sql)
+        return SQLRaw(self.sql)
     }
     
     /// Creates a new `SQLRawBuilder`.
