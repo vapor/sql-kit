@@ -1,19 +1,18 @@
-// swift-tools-version:4.0
+// swift-tools-version:5.0
 import PackageDescription
 
 let package = Package(
-    name: "SQL",
+    name: "sql-kit",
     products: [
-        .library(name: "SQL", targets: ["SQL"]),
-        .library(name: "SQLBenchmark", targets: ["SQLBenchmark"]),
+        .library(name: "SQLKit", targets: ["SQLKit"]),
+        .library(name: "SQLKitBenchmark", targets: ["SQLKitBenchmark"]),
     ],
     dependencies: [
-        // 🗄 Core services for creating database integrations.
-        .package(url: "https://github.com/vapor/database-kit.git", from: "1.2.0"),
+        .package(url: "https://github.com/apple/swift-nio.git", .branch("master"))
     ],
     targets: [
-        .target(name: "SQL", dependencies: ["DatabaseKit"]),
-        .target(name: "SQLBenchmark", dependencies: ["SQL"]),
-        .testTarget(name: "SQLTests", dependencies: ["SQL"]),
+        .target(name: "SQLKit", dependencies: ["NIO"]),
+        .target(name: "SQLKitBenchmark", dependencies: ["SQLKit"]),
+        .testTarget(name: "SQLKitTests", dependencies: ["SQLKit", "SQLKitBenchmark"]),
     ]
 )
