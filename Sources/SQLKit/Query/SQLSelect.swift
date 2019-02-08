@@ -23,6 +23,14 @@ public struct SQLSelect: SQLExpression {
     /// If set, offsets the results.
     public var offset: Int?
     
+    /// Adds a locking expression to this `SELECT` statement.
+    ///
+    ///     SELECT ... FOR UPDATE
+    ///
+    /// See `SQLSelectBuilder.for` and `SQLLockingClause`.
+    public var lockingClause: SQLExpression?
+    
+    /// Creates a new `SQLSelect`.
     public init() {
         self.columns = []
         self.tables = []
@@ -66,6 +74,10 @@ public struct SQLSelect: SQLExpression {
         if let offset = self.offset {
             serializer.write(" OFFSET ")
             serializer.write(offset.description)
+        }
+        if let lockingClause = self.lockingClause {
+            serializer.write(" ")
+            lockingClause.serialize(to: &serializer)
         }
     }
 }

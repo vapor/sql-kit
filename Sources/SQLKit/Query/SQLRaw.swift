@@ -3,7 +3,7 @@ public struct SQLRaw: SQLExpression {
     
     public var binds: [Encodable]
     
-    public init(sql: String, binds: [Encodable] = []) {
+    public init(_ sql: String, _ binds: [Encodable] = []) {
         self.sql = sql
         self.binds = []
     }

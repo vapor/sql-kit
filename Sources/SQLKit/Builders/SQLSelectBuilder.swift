@@ -101,6 +101,40 @@ public final class SQLSelectBuilder: SQLQueryFetcher, SQLQueryBuilder, SQLPredic
         return self
     }
     
+    /// Adds a locking expression to this `SELECT` statement.
+    ///
+    ///     db.select()...for(.update)
+    ///
+    /// Also called locking reads, the `SELECT ... FOR UPDATE` syntax
+    /// will lock all selected rows for the duration of the current transaction.
+    /// How the rows are locked depends on the specific expression supplied.
+    ///
+    /// - parameters:
+    ///     - lockingClause: Locking clause type.
+    /// - returns: Self for chaining.
+    public func `for`(_ lockingClause: SQLLockingClause) -> Self {
+        return self.lockingClause(lockingClause)
+    }
+    
+    /// Adds a locking expression to this `SELECT` statement.
+    ///
+    ///     db.select()...lockingClause(...)
+    ///
+    /// Also called locking reads, the `SELECT ... FOR UPDATE` syntax
+    /// will lock all selected rows for the duration of the current transaction.
+    /// How the rows are locked depends on the specific expression supplied.
+    ///
+    /// - note: This method allows for any `SQLExpression` conforming
+    ///         type to be passed as the locking clause.
+    ///
+    /// - parameters:
+    ///     - lockingClause: Locking clause type.
+    /// - returns: Self for chaining.
+    public func lockingClause(_ lockingClause: SQLExpression) -> Self {
+        self.select.lockingClause = lockingClause
+        return self
+    }
+    
     /// Adds a `LIMIT` clause to the select statement.
     ///
     ///     builder.limit(5)
@@ -129,182 +163,6 @@ public final class SQLSelectBuilder: SQLQueryFetcher, SQLQueryBuilder, SQLPredic
     
 }
 
-///// Builds `SQLSelect` queries.
-/////
-/////     conn.select()
-/////         .all().from(Planet.self)
-/////         .where(\Planet.name == "Earth")
-/////         .all(decoding: Planet.self)
-/////
-///// See `SQLQueryFetcher` and `SQLPredicateBuilder` for more information.
-//public final class SQLSelectBuilder<Database>: SQLQueryFetcher, SQLPredicateBuilder
-//    where Database: SQLDatabase
-//{
-//    /// `Select` query being built.
-//    public var select: Database.Query.Select
-//    
-//    /// See `SQLQueryBuilder`.
-//    public var database: Database
-//    
-//    /// See `SQLQueryBuilder`.
-//    public var query: Database.Query {
-//        return .select(select)
-//    }
-//    
-//    /// See `SQLWhereBuilder`.
-//    public var predicate: Database.Query.Select.Expression? {
-//        get { return select.predicate }
-//        set { select.predicate = newValue }
-//    }
-//    
-//    /// Creates a new `SQLCreateTableBuilder`.
-//    public init(_ select: Database.Query.Select, on database: Database) {
-//        self.select = select
-//        self.database = database
-//    }
-//    
-//    /// Adds a column to be returned in the result set.
-//    ///
-//    ///     conn.select().column(\User.name)
-//    ///
-//    /// - parameters:
-//    ///     - keyPath: KeyPath to column.
-//    /// - returns: Self for chaining.
-//    public func column(_ column: Database.Query.Select.Expression.ColumnIdentifier) -> Self {
-//        return self.column(.column(column))
-//    }
-//    
-//    /// Adds an expression column to the result set.
-//    ///
-//    ///     conn.select()
-//    ///         .column(.binary(1, .plus, 1), as: "two")
-//    ///
-//    /// - parameters:
-//    ///     - expression: Expression to resolve.
-//    ///     - alias: Optional alias for the result. This will be the value's
-//    ///              key in the result set.
-//    /// - returns: Self for chaining.
-//    public func column(
-//        _ expression: Database.Query.Select.Expression,
-//        as alias: Database.Query.Select.Expression.Identifier
-//    ) -> Self {
-//        return column(.alias(expression, as: alias))
-//    }
-//    
-//    /// Adds an expression column to the result set.
-//    ///
-//    ///     conn.select()
-//    ///         .column(.binary(1, .plus, 1))
-//    ///
-//    /// - parameters:
-//    ///     - expression: Expression to resolve.
-//    /// - returns: Self for chaining.
-//    public func column(_ expression: Database.Query.Select.Expression) -> Self {
-//        self.select.columns.append(expression)
-//        return self
-//    }
-//    
-//    /// Adds a table to the `FROM` clause.
-//    ///
-//    ///     conn.select()
-//    ///         .all().from(Planet.self)
-//    ///         .where(\Planet.name == "Earth")
-//    ///         .all(decoding: Planet.self)
-//    ///
-//    /// - parameters:
-//    ///     - table: `SQLTable` type to select from.
-//    /// - returns: Self for chaining.
-//    public func from(_ table: Database.Query.Select.Identifier) -> Self {
-//        select.tables.append(table)
-//        return self
-//    }
-//    
-////    /// Adds one or more tables to the `FROM` clause.
-////    ///
-////    ///     conn.select()
-////    ///         .all().from("planets")
-////    ///         .where(\Planet.name == "Earth")
-////    ///         .all(decoding: Planet.self)
-////    ///
-////    /// - parameters:
-////    ///     - tables: One or more table identifiers
-////    /// - returns: Self for chaining.
-////    public func from(_ tables: Database.Query.Select.TableIdentifier...) -> Self {
-////        select.tables += tables
-////        return self
-////    }
-//    
-//    /// Adds a `JOIN` clause to the select statement.
-//    ///
-//    ///     conn.select()
-//    ///         .all().from(Planet.self)
-//    ///         .join(\Planet.galaxyID, to: \Galaxy.id)
-//    ///
-//    /// Use in conjunction with multiple decode methods from `SQLQueryFetcher` to
-//    /// fetch joined data.
-//    ///
-//    /// - parameters:
-//    ///     - local: Local column to join.
-//    ///     - foreign: Foreign column to join.
-//    ///     - method: `SQLJoinMethod` to use.
-//    /// - returns: Self for chaining.
-//    public func join(
-//        _ local: Database.Query.Select.Join.Expression.ColumnIdentifier,
-//        to foreign: Database.Query.Select.Join.Expression.ColumnIdentifier,
-//        method: Database.Query.Select.Join.Method = .default
-//    ) -> Self {
-//        return self.join(
-//            table: foreign.table!,
-//            on: .binary(.column(local), .equal, .column(foreign)),
-//            method: method
-//        )
-//    }
-//    
-//    /// Adds a `JOIN` clause to the select statement.
-//    ///
-//    ///     conn.select()
-//    ///         .all().from(Planet.self)
-//    ///         .join(Galaxy.self, on: \Planet.galaxyID == \Galaxy.id)
-//    ///
-//    /// Use in conjunction with multiple decode methods from `SQLQueryFetcher` to
-//    /// fetch joined data.
-//    ///
-//    /// - parameters:
-//    ///     - table: Foreign `SQLTable` to join.
-//    ///     - expression: `SQLExpression` to use for joining the tables.
-//    ///     - method: `SQLJoinMethod` to use.
-//    /// - returns: Self for chaining.
-//    public func join(
-//        table: Database.Query.Select.Join.Identifier,
-//        on expression: Database.Query.Select.Join.Expression,
-//        method: Database.Query.Select.Join.Method = .default
-//    ) -> Self {
-//        select.joins.append(.join(method: method, table: table, expression: expression))
-//        return self
-//    }
-//}
-//
-//extension SQLSelectBuilder where
-//    Database.Query.Select.Expression.Subquery == Database.Query.Select
-//{
-//    /// Selects a column to the result set from a subquery.
-//    public func column(
-//        subquery closure: (SQLSelectBuilder<Database>) -> (SQLSelectBuilder<Database>),
-//        as alias: Database.Query.Select.Expression.Identifier
-//    ) -> Self {
-//        let builder = closure(self.database.select())
-//        return column(.subquery(builder.select), as: alias)
-//    }
-//    
-//    /// Selects a column to the result set from a subquery.
-//    public func column(
-//        subquery closure: (SQLSelectBuilder<Database>) -> (SQLSelectBuilder<Database>)
-//    ) -> Self {
-//        let builder = closure(self.database.select())
-//        return column(.subquery(builder.select))
-//    }
-//}
-//
 // MARK: Connection
 
 extension SQLDatabase {

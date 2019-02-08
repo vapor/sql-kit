@@ -6,7 +6,9 @@ import XCTest
 
 extension SQLKitTests {
 	static let __allSQLKitTestsTests = [
-		("testSelect", testSelect),
+        ("testBenchmarker", testBenchmarker),
+        ("testLockingClause_forUpdate", testLockingClause_forUpdate),
+        ("testLockingClause_lockInShareMode", testLockingClause_lockInShareMode),
 	]
 }
 
