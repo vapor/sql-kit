@@ -18,9 +18,4 @@ final class SQLKitTests: XCTestCase {
             .run().wait()
         XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE `name` = ? FOR UPDATE")
     }
-
-    static let allTests = [
-        ("testBenchmarker", testBenchmarker),
-        ("testLockingClause", testLockingClause),
-    ]
 }
