@@ -8,7 +8,7 @@ let package = Package(
         .library(name: "SQLKitBenchmark", targets: ["SQLKitBenchmark"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-nio.git", .branch("master"))
+        .package(url: "https://github.com/apple/swift-nio.git", from: "2.0.0-convergence"),
     ],
     targets: [
         .target(name: "SQLKit", dependencies: ["NIO"]),
