@@ -36,7 +36,7 @@ jobs:
     steps:
       - run:
           name: Clone Fluent
-          command: git clone -b master https://github.com/vapor/fluent.git
+          command: git clone -b 3 https://github.com/vapor/fluent.git
           working_directory: ~/
       - run:
           name: Switch Fluent to this SQL revision
@@ -77,7 +77,7 @@ jobs:
     steps:
       - run:
           name: Clone Fluent MySQL
-          command: git clone -b master https://github.com/vapor/fluent-mysql.git
+          command: git clone -b 3 https://github.com/vapor/fluent-mysql.git
           working_directory: ~/
       - run:
           name: Switch Fluent MySQL to this SQL revision
@@ -100,7 +100,7 @@ jobs:
     steps:
       - run:
           name: Clone Fluent PostgreSQL
-          command: git clone -b master https://github.com/vapor/fluent-postgresql.git
+          command: git clone -b 1 https://github.com/vapor/fluent-postgresql.git
           working_directory: ~/
       - run:
           name: Switch Fluent PostgreSQL to this SQL revision
