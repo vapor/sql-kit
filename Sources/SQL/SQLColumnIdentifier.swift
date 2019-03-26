@@ -52,8 +52,20 @@ public struct GenericSQLColumnIdentifier<TableIdentifier, Identifier>: SQLColumn
         return lhs.table?.identifier.string == rhs.table?.identifier.string && lhs.identifier.string == rhs.identifier.string
     }
     
+    // #if compiler(>=4.2)
+    #if swift(>=4.1.50)
+    /// See `Hashable`.
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self._hashValue)
+    }
+    #else
     /// See `Hashable`.
     public var hashValue: Int {
+        return self._hashValue
+    }
+    #endif
+    
+    private var _hashValue: Int {
         if let table = table {
             return table.identifier.string.hashValue &+ identifier.string.hashValue
         } else {
