@@ -53,6 +53,7 @@ public final class SQLInsertBuilder<Connectable>: SQLQueryBuilder
     {
         values.forEach { model in
             let row = SQLQueryEncoder(Connectable.Connection.Query.Insert.Expression.self).encode(model)
+                .map { $0 }.sorted(by: { $0.key < $1.key })
             if insert.columns.isEmpty {
                 insert.columns += row.map { .column(nil, .identifier($0.key)) }
             } else {
