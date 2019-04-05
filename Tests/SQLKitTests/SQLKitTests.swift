@@ -28,4 +28,14 @@ final class SQLKitTests: XCTestCase {
             .run().wait()
         XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE `name` = ? LOCK IN SHARE MODE")
     }
+    
+    func testRawQueryStringInterpolation() throws {
+        let db = TestDatabase()
+        let builder = db.raw2("SELECT * FROM planets WHERE name = \("Earth")")
+        var serializer = SQLSerializer(dialect: GenericDialect())
+        builder.query.serialize(to: &serializer)
+        
+        XCTAssertEqual(serializer.sql, "SELECT * FROM planets WHERE name = ?")
+        XCTAssert(serializer.binds.first! as! String == "Earth")
+    }
 }
