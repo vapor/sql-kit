@@ -61,7 +61,7 @@ extension SQLDatabase {
     ///     conn.raw("SELECT * FROM ...")...
     ///
     /// - parameters:
-    ///     - table: Table to alter.
+    ///     - sql: The SQL query string.
     /// - returns: `SQLRawBuilder`.
     public func raw(_ sql: String) -> SQLRawBuilder {
         return .init(sql, on: self)
