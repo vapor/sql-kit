@@ -31,10 +31,11 @@ final class SQLKitTests: XCTestCase {
     
     func testRawQueryStringInterpolation() throws {
         let db = TestDatabase()
-        let builder = db.raw2("SELECT * FROM planets WHERE name = \("Earth")")
+        let (table, planet) = ("planets", "Earth")
+        let builder = db.raw("SELECT * FROM \(table) WHERE name = \(bind: planet)")
         var serializer = SQLSerializer(dialect: GenericDialect())
         builder.query.serialize(to: &serializer)
-        
+
         XCTAssertEqual(serializer.sql, "SELECT * FROM planets WHERE name = ?")
         XCTAssert(serializer.binds.first! as! String == "Earth")
     }
