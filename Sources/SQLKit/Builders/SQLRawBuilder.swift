@@ -12,7 +12,7 @@ public final class SQLRawBuilder: SQLQueryBuilder, SQLQueryFetcher {
 
     /// See `SQLQueryBuilder`.
     public var query: SQLExpression {
-        return sql
+        return self.sql
     }
 
     /// Creates a new `SQLRawBuilder`.
