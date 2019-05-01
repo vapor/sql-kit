@@ -53,6 +53,12 @@ public enum SQLBinaryOperator: SQLExpression {
     
     /// `-`
     case subtract
+
+    /// `IS`
+    case `is`
+
+    /// `IS NOT`
+    case isNot
     
     public func serialize(to serializer: inout SQLSerializer) {
         switch self {
@@ -62,6 +68,12 @@ public enum SQLBinaryOperator: SQLExpression {
         case .or: serializer.write("OR")
         case .in: serializer.write("IN")
         case .notIn: serializer.write("NOT IN")
+        case .greaterThan: serializer.write(">")
+        case .greaterThanOrEqual: serializer.write(">=")
+        case .lessThan: serializer.write("<")
+        case .lessThanOrEqual: serializer.write("<=")
+        case .is: serializer.write("IS")
+        case .isNot: serializer.write("IS NOT")
         default:
             print(self)
             fatalError()
