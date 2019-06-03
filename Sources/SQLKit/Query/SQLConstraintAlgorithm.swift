@@ -12,13 +12,13 @@ public enum SQLConstraintAlgorithm: SQLExpression {
     /// `COLLATE` constraint.
     case check(SQLExpression)
     
-    case collate(SQLCollation)
+    case collate(SQLExpression)
     
     /// `DEFAULT` constraint.
     case `default`(SQLExpression)
     
     /// `FOREIGN KEY` constraint.
-    case foreignKey(SQLForeignKey)
+    case foreignKey(SQLExpression)
     
     public func serialize(to serializer: inout SQLSerializer) {
         switch self {

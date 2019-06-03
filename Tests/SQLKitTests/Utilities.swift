@@ -9,7 +9,7 @@ final class TestDatabase: SQLDatabase {
         self.results = []
     }
     
-    func sqlQuery(_ query: SQLExpression, _ onRow: @escaping (SQLRow) throws -> ()) -> EventLoopFuture<Void> {
+    func execute(sql query: SQLExpression, _ onRow: @escaping (SQLRow) throws -> ()) -> EventLoopFuture<Void> {
         var serializer = SQLSerializer(dialect: GenericDialect())
         query.serialize(to: &serializer)
         results.append(serializer.sql)

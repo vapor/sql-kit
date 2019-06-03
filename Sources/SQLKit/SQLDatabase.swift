@@ -1,6 +1,6 @@
 public protocol SQLDatabase {
-    func sqlQuery(
-        _ query: SQLExpression,
+    func execute(
+        sql query: SQLExpression,
         _ onRow: @escaping (SQLRow) throws -> ()
     ) -> EventLoopFuture<Void>
 }
