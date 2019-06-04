@@ -19,6 +19,6 @@ extension SQLQueryBuilder {
     ///
     /// - returns: A future signaling completion.
     public func run() -> EventLoopFuture<Void> {
-        return self.database.sqlQuery(self.query) { _ in }
+        return self.database.execute(sql: self.query) { _ in }
     }
 }

@@ -1,10 +1,3 @@
-/// Builds `ALTER TABLE` queries.
-///
-///     conn.alter(table: Planet.self)
-///         .column(for: \.name)
-///         .run()
-///
-/// See `SQLColumnBuilder` for more information.
 public final class SQLAlterTableBuilder: SQLQueryBuilder, SQLColumnBuilder {
     /// `SQLAlterTable` query being built.
     public var alterTable: SQLAlterTable
