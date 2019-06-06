@@ -6,17 +6,26 @@ public enum SQLDataType: SQLExpression {
     case text
     case real
     case blob
+    case custom(SQLExpression)
     
     public func serialize(to serializer: inout SQLSerializer) {
-        let sql: String
+        let sql: SQLExpression
         switch self {
-        case .smallint: sql = "SMALLINT"
-        case .int: sql = "INT"
-        case .bigint: sql = "BIGINT"
-        case .text: sql = "TEXT"
-        case .real: sql = "REAL"
-        case .blob: sql = "BLOB"
+        case .smallint:
+            sql = SQLRaw("SMALLINT")
+        case .int:
+            sql = SQLRaw("INTEGER")
+        case .bigint:
+            sql = SQLRaw("BIGINT")
+        case .text:
+            sql = SQLRaw("TEXT")
+        case .real:
+            sql = SQLRaw("REAL")
+        case .blob:
+            sql = SQLRaw("BLOB")
+        case .custom(let expression):
+            sql = expression
         }
-        serializer.write(sql)
+        sql.serialize(to: &serializer)
     }
 }
