@@ -7,7 +7,6 @@ public struct SQLList: SQLExpression {
     }
     
     public func serialize(to serializer: inout SQLSerializer) {
-        
         var first = true
         for el in self.expressions {
             if !first {

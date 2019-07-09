@@ -31,44 +31,20 @@ public final class SQLInsertBuilder: SQLQueryBuilder {
     /// - parameters:
     ///     - value: `Encodable` value to insert.
     /// - returns: Self for chaining.
-    public func value<E>(_ value: E) throws -> Self
+    public func model<E>(_ model: E) throws -> Self
         where E: Encodable
     {
-        return values([value])
-    }
-    
-    /// Adds zero or more encodable values to be inserted. The columns will be determined by the
-    /// first value inserted. All subsequent values must have equal column count.
-    ///
-    ///     conn.insert(into: Planet.self)
-    ///         .values([earth, mars]).run()
-    ///
-    /// - parameters:
-    ///     - values: Array of `Encodable` values to insert.
-    /// - returns: Self for chaining.
-    public func values<E>(_ values: [E]) -> Self
-        where E: Encodable
-    {
-        fatalError()
-//        values.forEach { model in
-//            let row = SQLQueryEncoder(Database.Query.Insert.Expression.self).encode(model)
-//            if insert.columns.isEmpty {
-//                insert.columns += row.map { .column(name: .identifier($0.key), table: nil) }
-//            } else {
-//                assert(
-//                    insert.columns.count == row.count,
-//                    "Column count (\(insert.columns.count)) did not equal value count (\(row.count)): \(model)."
-//                )
-//            }
-//            insert.values.append(row.map { row in
-//                if row.value.isNull {
-//                    return .literal(.default)
-//                } else {
-//                    return row.value
-//                }
-//            })
-//        }
-//        return self
+        let row = try SQLQueryEncoder().encode(model)
+        if self.insert.columns.isEmpty {
+            self.insert.columns += row.keys.map { SQLColumn($0, table: nil) }
+        } else {
+            assert(
+                self.insert.columns.count == row.count,
+                "Column count (\(self.insert.columns.count)) did not equal value count (\(row.count)): \(model)."
+            )
+        }
+        self.insert.values.append(.init(row.values))
+        return self
     }
     
     public func columns(_ columns: String...) -> Self {
@@ -82,7 +58,8 @@ public final class SQLInsertBuilder: SQLQueryBuilder {
     }
     
     public func values(_ values: Encodable...) -> Self {
-        self.insert.values.append(values.map(SQLBind.init))
+        let row: [SQLExpression] = values.map(SQLBind.init)
+        self.insert.values.append(row)
         return self
     }
     
