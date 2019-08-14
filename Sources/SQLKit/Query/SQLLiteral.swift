@@ -31,7 +31,7 @@ public enum SQLLiteral: SQLExpression {
         case .null:
             serializer.write("NULL")
         case .default:
-            serializer.write("DEFAULT")
+            serializer.dialect.literalDefault.serialize(to: &serializer)
         case .boolean(let bool):
             serializer.dialect.literalBoolean(bool).serialize(to: &serializer)
         }

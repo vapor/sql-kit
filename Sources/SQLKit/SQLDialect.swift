@@ -8,4 +8,12 @@ public protocol SQLDialect {
     mutating func nextBindPlaceholder() -> SQLExpression
     
     func literalBoolean(_ value: Bool) -> SQLExpression
+
+    var literalDefault: SQLExpression { get }
+}
+
+extension SQLDialect {
+    public var literalDefault: SQLExpression {
+        return SQLRaw("DEFAULT")
+    }
 }
