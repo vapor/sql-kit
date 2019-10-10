@@ -53,7 +53,7 @@ public struct SQLSelect: SQLExpression {
         SQLList(self.tables).serialize(to: &serializer)
         if !self.joins.isEmpty {
             serializer.write(" ")
-            SQLList(self.joins).serialize(to: &serializer)
+            SQLList(self.joins, separator: SQLRaw(" ")).serialize(to: &serializer)
         }
         if let predicate = self.predicate {
             serializer.write(" WHERE ")
