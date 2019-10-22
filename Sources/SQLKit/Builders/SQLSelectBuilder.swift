@@ -163,6 +163,66 @@ public final class SQLSelectBuilder: SQLQueryFetcher, SQLQueryBuilder, SQLPredic
     
 }
 
+extension SQLSelectBuilder {
+    public func having(_ lhs: String, _ op: SQLBinaryOperator, column rhs: String) -> Self {
+        return self.having(SQLIdentifier(lhs), op, SQLIdentifier(rhs))
+    }
+
+    public func having(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: Encodable) -> Self {
+        return self.having(SQLIdentifier(lhs), op, SQLBind(rhs))
+    }
+
+    public func having(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
+        return self.having(SQLIdentifier(lhs), op, rhs)
+    }
+
+    public func having(_ lhs: SQLExpression, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
+        return self.having(SQLBinaryExpression(left: lhs, op: op, right: rhs))
+    }
+
+    public func having(_ lhs: SQLExpression, _ op: SQLExpression, _ rhs: SQLExpression) -> Self {
+        return self.having(SQLBinaryExpression(left: lhs, op: op, right: rhs))
+    }
+
+    public func having(_ expression: SQLExpression) -> Self {
+        if let existing = self.select.having {
+            self.select.having = SQLBinaryExpression(
+                left: existing,
+                op: SQLBinaryOperator.and,
+                right: expression
+            )
+        } else {
+            self.select.having = expression
+        }
+        return self
+    }
+
+    public func orHaving(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
+        return self.orHaving(SQLIdentifier(lhs), op, rhs)
+    }
+
+    public func orHaving(_ lhs: SQLExpression, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
+        return self.orHaving(SQLBinaryExpression(left: lhs, op: op, right: rhs))
+    }
+
+    public func orHaving(_ lhs: SQLExpression, _ op: SQLExpression, _ rhs: SQLExpression) -> Self {
+        return self.orHaving(SQLBinaryExpression(left: lhs, op: op, right: rhs))
+    }
+
+    public func orHaving(_ expression: SQLExpression) -> Self {
+        if let existing = self.select.having {
+            self.select.having = SQLBinaryExpression(
+                left: existing,
+                op: SQLBinaryOperator.or,
+                right: expression
+            )
+        } else {
+            self.select.having = expression
+        }
+        return self
+    }
+}
+
 // MARK: Connection
 
 extension SQLDatabase {
