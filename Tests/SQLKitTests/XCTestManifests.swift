@@ -10,6 +10,7 @@ extension SQLKitTests {
         ("testLockingClause_forUpdate", testLockingClause_forUpdate),
         ("testLockingClause_lockInShareMode", testLockingClause_lockInShareMode),
         ("testRawQueryStringInterpolation", testRawQueryStringInterpolation),
+        ("testIfExists", testIfExists),
     ]
 }
 

@@ -39,4 +39,15 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(serializer.sql, "SELECT * FROM planets WHERE name = ?")
         XCTAssert(serializer.binds.first! as! String == "Earth")
     }
+
+    func testIfExists() throws {
+        let db = TestDatabase()
+
+        try db.drop(table: "planets").ifExists().run().wait()
+        XCTAssertEqual(db.results[0], "DROP TABLE IF EXISTS `planets`")
+
+        db.dialect.supportsIfExistsVar = false
+        try db.drop(table: "planets").ifExists().run().wait()
+        XCTAssertEqual(db.results[1], "DROP TABLE `planets`")
+    }
 }
