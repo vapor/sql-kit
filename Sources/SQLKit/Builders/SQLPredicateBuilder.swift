@@ -13,7 +13,7 @@ public protocol SQLPredicateBuilder: class {
 }
 
 extension SQLPredicateBuilder {
-    /// Adds a column to column comparison to this builder's `WHERE` clause.
+    /// Adds a column to column comparison to this builder's `WHERE` clause by `AND`ing.
     ///
     ///     builder.where("firstName", .equal, column: "lastName")
     ///
@@ -22,15 +22,14 @@ extension SQLPredicateBuilder {
     ///     SELECT * FROM users WHERE firstName = lastName
     ///
     /// - parameters:
-    ///     - lhs: Left-hand column name.
+    ///     - lhs: Left-hand side column name.
     ///     - op: Binary operator to use for comparison.
-    ///     - rhs: Right-hand column name.
-    /// - returns: Self for chaining.
+    ///     - rhs: Right-hand side column name.
     public func `where`(_ lhs: String, _ op: SQLBinaryOperator, column rhs: String) -> Self {
         return self.where(SQLIdentifier(lhs), op, SQLIdentifier(rhs))
     }
-    
-    /// Adds a column comparison to this builder's `WHERE` clause.
+
+    /// Adds a column to encodable comparison to this builder's `WHERE` clause by `AND`ing.
     ///
     ///     builder.where("name", .equal, "Earth")
     ///
@@ -39,44 +38,59 @@ extension SQLPredicateBuilder {
     ///     SELECT * FROM planets WHERE name = ? // Earth
     ///
     /// - parameters:
-    ///     - lhs: Column name.
+    ///     - lhs: Left-hand side column name.
     ///     - op: Binary operator to use for comparison.
     ///     - rhs: Encodable value.
     /// - returns: Self for chaining.
     public func `where`(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: Encodable) -> Self {
         return self.where(SQLIdentifier(lhs), op, SQLBind(rhs))
     }
-    
-    /// Adds an expression to the `WHERE` clause.
+
+    /// Adds a column to expression comparison to the `WHERE` clause by `AND`ing.
     ///
-    ///     builder.where(.column("name"), .equal, .value("Earth"))
+    ///     builder.where("name", .equal, .value("Earth"))
     ///
+    /// - parameters:
+    ///     - lhs: Left-hand side column name.
+    ///     - op: Binary operator to use for comparison.
+    ///     - rhs: Right-hand side expression.
     public func `where`(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
         return self.where(SQLIdentifier(lhs), op, rhs)
     }
-    
-    /// Adds an expression to the `WHERE` clause.
+
+    /// Adds an expression to expression comparison to the `WHERE` clause by `AND`ing.
     ///
-    ///     builder.where(.column("name"), .equal, .value("Earth"))
+    ///     builder.where("name", .equal, .value("Earth"))
     ///
+    /// - parameters:
+    ///     - lhs: Left-hand side expression.
+    ///     - op: Binary operator to use for comparison.
+    ///     - rhs: Right-hand side expression.
+    /// - returns: Self for chaining.
     public func `where`(_ lhs: SQLExpression, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
         return self.where(SQLBinaryExpression(left: lhs, op: op, right: rhs))
     }
-    
-    /// Adds an expression to the `WHERE` clause.
+
+    /// Adds an expression to expression comparison, with an arbitrary
+    /// expression as operator, to the `WHERE` clause by `AND`ing.
     ///
-    ///     builder.where(.column("name"), .equal, .value("Earth"))
+    ///     builder.where("name", .equal, .value("Earth"))
     ///
+    /// - parameters:
+    ///     - lhs: Left-hand side expression.
+    ///     - op: Binary operator to use for comparison.
+    ///     - rhs: Right-hand side expression.
+    /// - returns: Self for chaining.
     public func `where`(_ lhs: SQLExpression, _ op: SQLExpression, _ rhs: SQLExpression) -> Self {
         return self.where(SQLBinaryExpression(left: lhs, op: op, right: rhs))
     }
 
-    /// Adds an expression to the `WHERE` clause.
+    /// Adds an expression to the `WHERE` clause by `AND`ing.
     ///
     ///     builder.where(.binary("name", .notEqual, .literal(.null)))
     ///
     /// - parameters:
-    ///     - expression: Expression to be added via `AND` to the predicate.
+    ///     - expression: Expression to be added to the predicate.
     public func `where`(_ expression: SQLExpression) -> Self {
         if let existing = self.predicate {
             self.predicate = SQLBinaryExpression(
@@ -90,36 +104,51 @@ extension SQLPredicateBuilder {
         return self
     }
 
-    /// Adds an expression to the `WHERE` clause.
+    /// Adds a column to expression comparison to the `WHERE` clause by `OR`ing.
     ///
-    ///     builder.orWhere(.column("name"), .equal, .value("Earth"))
+    ///     builder.orWhere("name", .equal, .value("Earth"))
     ///
+    /// - parameters:
+    ///     - lhs: Left-hand side column name.
+    ///     - op: Binary operator to use for comparison.
+    ///     - rhs: Right-hand side expression.
     public func orWhere(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
         return self.orWhere(SQLIdentifier(lhs), op, rhs)
     }
-    
-    /// Adds an expression to the `WHERE` clause.
+
+    /// Adds an expression to expression comparison to the `WHERE` clause by `OR`ing.
     ///
-    ///     builder.orWhere(.column("name"), .equal, .value("Earth"))
+    ///     builder.orWhere("name", .equal, .value("Earth"))
     ///
+    /// - parameters:
+    ///     - lhs: Left-hand side expression.
+    ///     - op: Binary operator to use for comparison.
+    ///     - rhs: Right-hand side expression.
+    /// - returns: Self for chaining.
     public func orWhere(_ lhs: SQLExpression, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
         return self.orWhere(SQLBinaryExpression(left: lhs, op: op, right: rhs))
     }
-    
-    /// Adds an expression to the `WHERE` clause.
+
+    /// Adds an expression to expression comparison, with an arbitrary
+    /// expression as operator, to the `WHERE` clause by `OR`ing.
     ///
-    ///     builder.orWhere(.column("name"), .equal, .value("Earth"))
+    ///     builder.orWhere("name", .equal, .value("Earth"))
     ///
+    /// - parameters:
+    ///     - lhs: Left-hand side expression.
+    ///     - op: Binary operator to use for comparison.
+    ///     - rhs: Right-hand side expression.
+    /// - returns: Self for chaining.
     public func orWhere(_ lhs: SQLExpression, _ op: SQLExpression, _ rhs: SQLExpression) -> Self {
         return self.orWhere(SQLBinaryExpression(left: lhs, op: op, right: rhs))
     }
-    
-    /// Adds an expression to the `WHERE` clause.
+
+    /// Adds an expression to the `WHERE` clause by `OR`ing.
     ///
     ///     builder.orWhere(.binary("name", .notEqual, .literal(.null)))
     ///
     /// - parameters:
-    ///     - expression: Expression to be added via `AND` to the predicate.
+    ///     - expression: Expression to be added to the predicate.
     public func orWhere(_ expression: SQLExpression) -> Self {
         if let existing = self.predicate {
             self.predicate = SQLBinaryExpression(

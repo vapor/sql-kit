@@ -13,7 +13,9 @@ public struct SQLSelect: SQLExpression {
     
     /// Zero or more `GROUP BY` clauses.
     public var groupBy: [SQLExpression]
-    
+
+    public var having: SQLExpression?
+
     /// Zero or more `ORDER BY` clauses.
     public var orderBy: [SQLExpression]
     
@@ -40,6 +42,7 @@ public struct SQLSelect: SQLExpression {
         self.limit = nil
         self.offset = nil
         self.groupBy = []
+        self.having = nil
         self.orderBy = []
     }
     
@@ -62,6 +65,10 @@ public struct SQLSelect: SQLExpression {
         if !self.groupBy.isEmpty {
             serializer.write(" GROUP BY ")
             SQLList(self.groupBy).serialize(to: &serializer)
+        }
+        if let having = self.having {
+            serializer.write(" HAVING ")
+            having.serialize(to: &serializer)
         }
         if !self.orderBy.isEmpty {
             serializer.write(" ORDER BY ")
