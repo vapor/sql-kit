@@ -20,9 +20,7 @@ final class TestDatabase: SQLDatabase {
 }
 
 struct GenericDialect: SQLDialect {
-    init() { }
-
-    var supportsIfExistsVar: Bool = true
+    var supportsIfExists: Bool = true
 
     var identifierQuote: SQLExpression {
         return SQLRaw("`")
@@ -45,9 +43,5 @@ struct GenericDialect: SQLDialect {
     
     var autoIncrementClause: SQLExpression {
         return SQLRaw("AUTOINCREMENT")
-    }
-
-    var supportsIfExists: Bool {
-        return supportsIfExistsVar
     }
 }
