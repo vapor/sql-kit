@@ -58,7 +58,7 @@ extension SQLPredicateBuilder {
         return self.where(SQLIdentifier(lhs), op, rhs)
     }
 
-    /// Adds a expression to expression comparison to the `WHERE` clause by `AND`ing.
+    /// Adds an expression to expression comparison to the `WHERE` clause by `AND`ing.
     ///
     ///     builder.where("name", .equal, .value("Earth"))
     ///
@@ -71,7 +71,7 @@ extension SQLPredicateBuilder {
         return self.where(SQLBinaryExpression(left: lhs, op: op, right: rhs))
     }
 
-    /// Adds a expression to expression comparison, with an arbitrary
+    /// Adds an expression to expression comparison, with an arbitrary
     /// expression as operator, to the `WHERE` clause by `AND`ing.
     ///
     ///     builder.where("name", .equal, .value("Earth"))
@@ -116,7 +116,7 @@ extension SQLPredicateBuilder {
         return self.orWhere(SQLIdentifier(lhs), op, rhs)
     }
 
-    /// Adds a expression to expression comparison to the `WHERE` clause by `OR`ing.
+    /// Adds an expression to expression comparison to the `WHERE` clause by `OR`ing.
     ///
     ///     builder.orWhere("name", .equal, .value("Earth"))
     ///
@@ -129,7 +129,7 @@ extension SQLPredicateBuilder {
         return self.orWhere(SQLBinaryExpression(left: lhs, op: op, right: rhs))
     }
 
-    /// Adds a expression to expression comparison, with an arbitrary
+    /// Adds an expression to expression comparison, with an arbitrary
     /// expression as operator, to the `WHERE` clause by `OR`ing.
     ///
     ///     builder.orWhere("name", .equal, .value("Earth"))

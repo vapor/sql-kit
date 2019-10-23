@@ -210,7 +210,7 @@ extension SQLSelectBuilder {
         return self.having(SQLIdentifier(lhs), op, rhs)
     }
 
-    /// Adds a expression to expression comparison to the `HAVING` clause by `AND`ing.
+    /// Adds an expression to expression comparison to the `HAVING` clause by `AND`ing.
     ///
     ///     builder.having("name", .equal, .value("Earth"))
     ///
@@ -223,7 +223,7 @@ extension SQLSelectBuilder {
         return self.having(SQLBinaryExpression(left: lhs, op: op, right: rhs))
     }
 
-    /// Adds a expression to expression comparison, with an arbitrary
+    /// Adds an expression to expression comparison, with an arbitrary
     /// expression as operator, to the `HAVING` clause by `AND`ing.
     ///
     ///     builder.having("name", .equal, .value("Earth"))
@@ -269,7 +269,7 @@ extension SQLSelectBuilder {
         return self.orHaving(SQLIdentifier(lhs), op, rhs)
     }
 
-    /// Adds a expression to expression comparison to the `HAVING` clause by `OR`ing.
+    /// Adds an expression to expression comparison to the `HAVING` clause by `OR`ing.
     ///
     ///     builder.orHaving("name", .equal, .value("Earth"))
     ///
@@ -282,7 +282,7 @@ extension SQLSelectBuilder {
         return self.orHaving(SQLBinaryExpression(left: lhs, op: op, right: rhs))
     }
 
-    /// Adds a expression to expression comparison, with an arbitrary
+    /// Adds an expression to expression comparison, with an arbitrary
     /// expression as operator, to the `HAVING` clause by `OR`ing.
     ///
     ///     builder.orHaving("name", .equal, .value("Earth"))
