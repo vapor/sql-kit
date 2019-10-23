@@ -160,30 +160,89 @@ public final class SQLSelectBuilder: SQLQueryFetcher, SQLQueryBuilder, SQLPredic
         self.select.offset = n
         return self
     }
-    
 }
 
 extension SQLSelectBuilder {
+    /// Adds a column to column comparison to this builder's `HAVING` clause by `AND`ing.
+    ///
+    ///     builder.having("firstName", .equal, column: "lastName")
+    ///
+    /// This method compares two _columns_.
+    ///
+    ///     SELECT * FROM users HAVING firstName = lastName
+    ///
+    /// - parameters:
+    ///     - lhs: Left-hand side column name.
+    ///     - op: Binary operator to use for comparison.
+    ///     - rhs: Right-hand side column name.
+    /// - returns: Self for chaining.
     public func having(_ lhs: String, _ op: SQLBinaryOperator, column rhs: String) -> Self {
         return self.having(SQLIdentifier(lhs), op, SQLIdentifier(rhs))
     }
 
+    /// Adds a column to encodable comparison to this builder's `HAVING` clause by `AND`ing.
+    ///
+    ///     builder.having("name", .equal, "Earth")
+    ///
+    /// The encodable value supplied will be bound to the query as a parameter.
+    ///
+    ///     SELECT * FROM planets HAVING name = ? // Earth
+    ///
+    /// - parameters:
+    ///     - lhs: Left-hand side column name.
+    ///     - op: Binary operator to use for comparison.
+    ///     - rhs: Encodable value.
+    /// - returns: Self for chaining.
     public func having(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: Encodable) -> Self {
         return self.having(SQLIdentifier(lhs), op, SQLBind(rhs))
     }
 
+    /// Adds a column to expression comparison to the `HAVING` clause by `AND`ing.
+    ///
+    ///     builder.having("name", .equal, .value("Earth"))
+    ///
+    /// - parameters:
+    ///     - lhs: Left-hand side column name.
+    ///     - op: Binary operator to use for comparison.
+    ///     - rhs: Right-hand side expression.
+    /// - returns: Self for chaining.
     public func having(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
         return self.having(SQLIdentifier(lhs), op, rhs)
     }
 
+    /// Adds a expression to expression comparison to the `HAVING` clause by `AND`ing.
+    ///
+    ///     builder.having("name", .equal, .value("Earth"))
+    ///
+    /// - parameters:
+    ///     - lhs: Left-hand side expression.
+    ///     - op: Binary operator to use for comparison.
+    ///     - rhs: Right-hand side expression.
+    /// - returns: Self for chaining.
     public func having(_ lhs: SQLExpression, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
         return self.having(SQLBinaryExpression(left: lhs, op: op, right: rhs))
     }
 
+    /// Adds a expression to expression comparison, with an arbitrary
+    /// expression as operator, to the `HAVING` clause by `AND`ing.
+    ///
+    ///     builder.having("name", .equal, .value("Earth"))
+    ///
+    /// - parameters:
+    ///     - lhs: Left-hand side expression.
+    ///     - op: Binary operator to use for comparison.
+    ///     - rhs: Right-hand side expression.
+    /// - returns: Self for chaining.
     public func having(_ lhs: SQLExpression, _ op: SQLExpression, _ rhs: SQLExpression) -> Self {
         return self.having(SQLBinaryExpression(left: lhs, op: op, right: rhs))
     }
 
+    /// Adds an expression to the `HAVING` clause by `AND`ing.
+    ///
+    ///     builder.having(.binary("name", .notEqual, .literal(.null)))
+    ///
+    /// - parameters:
+    ///     - expression: Expression to be added to the predicate.
     public func having(_ expression: SQLExpression) -> Self {
         if let existing = self.select.having {
             self.select.having = SQLBinaryExpression(
@@ -197,18 +256,52 @@ extension SQLSelectBuilder {
         return self
     }
 
+    /// Adds a column to expression comparison to the `HAVING` clause by `OR`ing.
+    ///
+    ///     builder.orHaving("name", .equal, .value("Earth"))
+    ///
+    /// - parameters:
+    ///     - lhs: Left-hand side column name.
+    ///     - op: Binary operator to use for comparison.
+    ///     - rhs: Right-hand side expression.
+    /// - returns: Self for chaining.
     public func orHaving(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
         return self.orHaving(SQLIdentifier(lhs), op, rhs)
     }
 
+    /// Adds a expression to expression comparison to the `HAVING` clause by `OR`ing.
+    ///
+    ///     builder.orHaving("name", .equal, .value("Earth"))
+    ///
+    /// - parameters:
+    ///     - lhs: Left-hand side expression.
+    ///     - op: Binary operator to use for comparison.
+    ///     - rhs: Right-hand side expression.
+    /// - returns: Self for chaining.
     public func orHaving(_ lhs: SQLExpression, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
         return self.orHaving(SQLBinaryExpression(left: lhs, op: op, right: rhs))
     }
 
+    /// Adds a expression to expression comparison, with an arbitrary
+    /// expression as operator, to the `HAVING` clause by `OR`ing.
+    ///
+    ///     builder.orHaving("name", .equal, .value("Earth"))
+    ///
+    /// - parameters:
+    ///     - lhs: Left-hand side expression.
+    ///     - op: Binary operator to use for comparison.
+    ///     - rhs: Right-hand side expression.
+    /// - returns: Self for chaining.
     public func orHaving(_ lhs: SQLExpression, _ op: SQLExpression, _ rhs: SQLExpression) -> Self {
         return self.orHaving(SQLBinaryExpression(left: lhs, op: op, right: rhs))
     }
 
+    /// Adds an expression to the `HAVING` clause by `OR`ing.
+    ///
+    ///     builder.orHaving(.binary("name", .notEqual, .literal(.null)))
+    ///
+    /// - parameters:
+    ///     - expression: Expression to be added to the predicate.
     public func orHaving(_ expression: SQLExpression) -> Self {
         if let existing = self.select.having {
             self.select.having = SQLBinaryExpression(
