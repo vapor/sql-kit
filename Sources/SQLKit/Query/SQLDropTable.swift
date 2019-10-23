@@ -18,7 +18,7 @@ public struct SQLDropTable: SQLExpression {
     /// See `SQLExpression`.
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.write("DROP TABLE ")
-        if self.ifExists {
+        if serializer.dialect.supportsIfExists && self.ifExists {
             serializer.write("IF EXISTS ")
         }
         self.table.serialize(to: &serializer)
