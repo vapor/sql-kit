@@ -49,4 +49,15 @@ final class SQLKitTests: XCTestCase {
             .run().wait()
         XCTAssertEqual(db.results[0], "SELECT * FROM `planets` GROUP BY `color` HAVING `color` = ?")
     }
+
+    func testIfExists() throws {
+        let db = TestDatabase()
+
+        try db.drop(table: "planets").ifExists().run().wait()
+        XCTAssertEqual(db.results[0], "DROP TABLE IF EXISTS `planets`")
+
+        db.dialect = GenericDialect(supportsIfExists: false)
+        try db.drop(table: "planets").ifExists().run().wait()
+        XCTAssertEqual(db.results[1], "DROP TABLE `planets`")
+    }
 }

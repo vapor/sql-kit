@@ -11,6 +11,7 @@ extension SQLKitTests {
         ("testLockingClause_lockInShareMode", testLockingClause_lockInShareMode),
         ("testRawQueryStringInterpolation", testRawQueryStringInterpolation),
         ("testGroupByHaving", testGroupByHaving),
+        ("testIfExists", testIfExists),
     ]
 }
 
