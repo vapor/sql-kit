@@ -14,7 +14,7 @@ extension SQLColumnBuilder {
     public func column(
         _ column: String,
         type dataType: SQLDataType,
-        _ constraints: SQLColumnConstraint...
+        _ constraints: SQLColumnConstraintAlgorithm...
     ) -> Self {
         return self.column(SQLColumnDefinition(
             column: SQLIdentifier(column),
