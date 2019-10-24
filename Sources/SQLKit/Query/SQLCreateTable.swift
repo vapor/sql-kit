@@ -36,7 +36,7 @@ public struct SQLCreateTable: SQLExpression {
             serializer.write("TEMPORARY ")
         }
         serializer.write("TABLE ")
-        if self.ifNotExists {
+        if serializer.dialect.supportsIfExists && self.ifNotExists {
             serializer.write("IF NOT EXISTS ")
         }
         self.table.serialize(to: &serializer)

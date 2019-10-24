@@ -39,4 +39,25 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(serializer.sql, "SELECT * FROM planets WHERE name = ?")
         XCTAssert(serializer.binds.first! as! String == "Earth")
     }
+
+    func testGroupByHaving() throws {
+        let db = TestDatabase()
+        try db.select().column("*")
+            .from("planets")
+            .groupBy("color")
+            .having("color", .equal, "blue")
+            .run().wait()
+        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` GROUP BY `color` HAVING `color` = ?")
+    }
+
+    func testIfExists() throws {
+        let db = TestDatabase()
+
+        try db.drop(table: "planets").ifExists().run().wait()
+        XCTAssertEqual(db.results[0], "DROP TABLE IF EXISTS `planets`")
+
+        db.dialect = GenericDialect(supportsIfExists: false)
+        try db.drop(table: "planets").ifExists().run().wait()
+        XCTAssertEqual(db.results[1], "DROP TABLE `planets`")
+    }
 }

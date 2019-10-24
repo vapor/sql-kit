@@ -10,10 +10,16 @@ public protocol SQLDialect {
     func literalBoolean(_ value: Bool) -> SQLExpression
 
     var literalDefault: SQLExpression { get }
+
+    var supportsIfExists: Bool { get }
 }
 
 extension SQLDialect {
     public var literalDefault: SQLExpression {
         return SQLRaw("DEFAULT")
+    }
+
+    public var supportsIfExists: Bool {
+        return true
     }
 }
