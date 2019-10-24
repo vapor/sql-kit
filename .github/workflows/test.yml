@@ -1,0 +1,74 @@
+name: test
+on:
+- pull_request
+jobs:
+  xenial:
+    container: 
+      image: vapor/swift:5.1-xenial
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - run: swift test
+  bionic:
+    container: 
+      image: vapor/swift:5.1-bionic
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - run: swift test
+  sqlite:
+    container: 
+      image: vapor/swift:5.1
+    runs-on: ubuntu-latest
+    steps:
+    - run: apt update -y; apt install -y libsqlite3-dev
+    - run: git clone -b master https://github.com/vapor/sqlite-kit.git
+      working-directory: ./
+    - run: swift package edit sql-kit --revision ${{ github.sha }}
+      working-directory: ./sqlite-kit
+    - run: swift test
+      working-directory: ./sqlite-kit
+  postgres:
+    container: 
+      image: vapor/swift:5.1
+    services:
+      psql:
+        image: postgres
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: vapor_username
+          POSTGRES_DB: vapor_database
+          POSTGRES_PASSWORD: vapor_password
+    runs-on: ubuntu-latest
+    steps:
+    - run: git clone -b master https://github.com/vapor/postgres-kit.git
+      working-directory: ./
+    - run: swift package edit ssql-kit --revision ${{ github.sha }}
+      working-directory: ./postgres-kit
+    - run: swift test
+      working-directory: ./postgres-kit
+      env:
+        POSTGRES_HOSTNAME: psql
+  mysql:
+    container: 
+      image: vapor/swift:5.1
+    services:
+      mysql:
+        image: mysql
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: true
+          MYSQL_DATABASE: vapor_database
+          MYSQL_USER: vapor_username
+          MYSQL_PASSWORD: vapor_password
+    runs-on: ubuntu-latest
+    steps:
+    - run: git clone -b master https://github.com/vapor/mysql-kit.git
+      working-directory: ./
+    - run: swift package edit sql-kit --revision ${{ github.sha }}
+      working-directory: ./mysql-kit
+    - run: swift test
+      working-directory: ./mysql-kit
+      env:
+        MYSQL_HOSTNAME: mysql
+        MYSQL_TLS: true
