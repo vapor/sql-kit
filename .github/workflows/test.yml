@@ -44,7 +44,7 @@ jobs:
     steps:
     - run: git clone -b master https://github.com/vapor/postgres-kit.git
       working-directory: ./
-    - run: swift package edit ssql-kit --revision ${{ github.sha }}
+    - run: swift package edit sql-kit --revision ${{ github.sha }}
       working-directory: ./postgres-kit
     - run: swift test
       working-directory: ./postgres-kit
