@@ -13,20 +13,58 @@ public enum SQLColumnConstraintAlgorithm: SQLExpression {
     case check(SQLExpression)
 
     /// `COLLATE` column constraint.
-    case collate(name: SQLExpression)
+    case collateConstraint(name: SQLExpression)
 
     /// `DEFAULT` column constraint.
-    case `default`(SQLExpression)
+    case defaultConstraint(SQLExpression)
 
     /// `FOREIGN KEY` column constraint.
-    case foreignKey(SQLForeignKey)
+    case foreignKey(references: SQLExpression)
 
     /// `GENERATED ALWAYS AS` column constraint.
     case generated(SQLExpression)
 
+    /// Just serializes `SQLExpression`
+    case custom(SQLExpression)
+
     /// `PRIMARY KEY` with auto incrementing turned on.
     public static var primaryKey: SQLColumnConstraintAlgorithm {
         return .primaryKey(autoIncrement: true)
+    }
+
+    /// `COLLATE` column constraint.
+    public static func collate(name: String) -> SQLColumnConstraintAlgorithm {
+        return .collate(name: SQLIdentifier(name))
+    }
+
+    /// `COLLATE` column constraint.
+    public static func collate(name: SQLExpression) -> SQLColumnConstraintAlgorithm {
+        return .collateConstraint(name: name)
+    }
+
+    /// `DEFAULT` column constraint.
+    public static func `default`(_ value: String) -> SQLColumnConstraintAlgorithm {
+        return .defaultConstraint(SQLLiteral.string(value))
+    }
+
+    /// `DEFAULT` column constraint.
+    public static func `default`<T: BinaryInteger>(_ value: T) -> SQLColumnConstraintAlgorithm {
+        return .defaultConstraint(SQLLiteral.numeric("\(value)"))
+    }
+
+    /// `DEFAULT` column constraint.
+    public static func `default`<T: FloatingPoint>(_ value: T) -> SQLColumnConstraintAlgorithm {
+        return .defaultConstraint(SQLLiteral.numeric("\(value)"))
+    }
+
+    /// `DEFAULT` column constraint.
+    public static func `default`(_ value: Bool) -> SQLColumnConstraintAlgorithm {
+        return .defaultConstraint(SQLLiteral.boolean(value))
+    }
+
+    /// `DEFAULT` column constraint.
+    public static func `default`(_ value: SQLExpression) -> SQLColumnConstraintAlgorithm {
+        return .defaultConstraint(value)
     }
 
     /// `FOREIGN KEY` column constraint.
@@ -52,7 +90,7 @@ public enum SQLColumnConstraintAlgorithm: SQLExpression {
         onUpdate: SQLExpression? = nil
     ) -> SQLColumnConstraintAlgorithm {
         return .foreignKey(
-            .init(
+            references: SQLForeignKey(
                 table: table,
                 columns: [column],
                 onDelete: onDelete,
@@ -76,19 +114,20 @@ public enum SQLColumnConstraintAlgorithm: SQLExpression {
         case .check(let expression):
             serializer.write("CHECK ")
             SQLGroupExpression(expression).serialize(to: &serializer)
-        case .collate(name: let collate):
+        case .collateConstraint(name: let collate):
             serializer.write("COLLATE ")
             collate.serialize(to: &serializer)
-        case .default(let expression):
+        case .defaultConstraint(let expression):
             serializer.write("DEFAULT ")
             expression.serialize(to: &serializer)
         case .foreignKey(let foreignKey):
-            serializer.write("FOREIGN KEY ")
             foreignKey.serialize(to: &serializer)
         case .generated(let expression):
             serializer.write("GENERATED ALWAYS AS ")
             SQLGroupExpression(expression).serialize(to: &serializer)
             serializer.write(" STORED")
+        case .custom(let expression):
+            expression.serialize(to: &serializer)
         }
     }
 }

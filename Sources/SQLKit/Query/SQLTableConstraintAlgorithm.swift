@@ -10,7 +10,7 @@ public enum SQLTableConstraintAlgorithm: SQLExpression {
     case check(SQLExpression)
 
     /// `FOREIGN KEY` table constraint.
-    case foreignKey(columns: [SQLExpression], SQLForeignKey)
+    case foreignKey(columns: [SQLExpression], references: SQLExpression)
 
     public func serialize(to serializer: inout SQLSerializer) {
         switch self {

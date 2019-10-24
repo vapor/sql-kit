@@ -48,6 +48,170 @@ public final class SQLCreateTableBuilder: SQLQueryBuilder, SQLColumnBuilder {
     }
 }
 
+// MARK: Constraints
+
+extension SQLCreateTableBuilder {
+    /// Adds a new `PRIMARY KEY` constraint to the table being built
+    ///
+    /// - parameters:
+    ///     - columns: One or more  columns of the table currently being built to make into a Primary Key.
+    ///     - constraintName: An optional name to give the constraint.
+    public func primaryKey(_ columns: String..., named constraintName: String? = nil) -> Self {
+        return primaryKey(columns, named: constraintName)
+    }
+
+    /// Adds a new `PRIMARY KEY` constraint to the table being built
+    ///
+    /// - parameters:
+    ///     - columns: One or more  columns of the table currently being built to make into a Primary Key.
+    ///     - constraintName: An optional name to give the constraint.
+    public func primaryKey(_ columns: [String], named constraintName: String? = nil) -> Self {
+        return primaryKey(
+            columns.map(SQLIdentifier.init),
+            named: constraintName.map(SQLIdentifier.init)
+        )
+    }
+
+    /// Adds a new `PRIMARY KEY` constraint to the table being built
+    ///
+    /// - parameters:
+    ///     - columns: One or more  columns of the table currently being built to make into a Primary Key.
+    ///     - constraintName: An optional name to give the constraint.
+    public func primaryKey(_ columns: [SQLExpression], named constraintName: SQLExpression? = nil) -> Self {
+        createTable.tableConstraints.append(
+            SQLConstraint(
+                name: constraintName,
+                algorithm: SQLTableConstraintAlgorithm.primaryKey(columns: columns)
+            )
+        )
+        return self
+    }
+
+    /// Adds a new `UNIQUE` constraint to the table being built
+    ///
+    /// - parameters:
+    ///     - columns: One or more  columns of the table currently being built to make into a UNIQUE constraint.
+    ///     - constraintName: An optional name to give the constraint.
+    public func unique(_ columns: String..., named constraintName: String? = nil) -> Self {
+        return unique(columns, named: constraintName)
+    }
+
+    /// Adds a new `UNIQUE` constraint to the table being built
+    ///
+    /// - parameters:
+    ///     - columns: One or more  columns of the table currently being built to make into a UNIQUE constraint.
+    ///     - constraintName: An optional name to give the constraint.
+    public func unique(_ columns: [String], named constraintName: String? = nil) -> Self {
+        return unique(
+            columns.map(SQLIdentifier.init),
+            named: constraintName.map(SQLIdentifier.init)
+        )
+    }
+
+    /// Adds a new `UNIQUE` constraint to the table being built
+    ///
+    /// - parameters:
+    ///     - columns: One or more  columns of the table currently being built to make into a UNIQUE constraint.
+    ///     - constraintName: An optional name to give the constraint.
+    public func unique(_ columns: [SQLExpression], named constraintName: SQLExpression? = nil) -> Self {
+        createTable.tableConstraints.append(
+            SQLConstraint(
+                name: constraintName,
+                algorithm: SQLTableConstraintAlgorithm.unique(columns: columns)
+            )
+        )
+        return self
+    }
+
+    /// Adds a new `CHECK` constraint to the table being built
+    ///
+    /// - parameters:
+    ///     - expression: A check constraint expression.
+    ///     - constraintName: An optional name to give the constraint.
+    public func check(_ expression: SQLExpression, named constraintName: String? = nil) -> Self {
+        return self.check(
+            expression,
+            named: constraintName.map(SQLIdentifier.init)
+        )
+    }
+
+    /// Adds a new `CHECK` constraint to the table being built
+    ///
+    /// - parameters:
+    ///     - expression: A check constraint expression.
+    ///     - constraintName: An optional name to give the constraint.
+    public func check(_ expression: SQLExpression, named constraintName: SQLExpression? = nil) -> Self {
+        createTable.tableConstraints.append(
+            SQLConstraint(
+                name: constraintName,
+                algorithm: SQLTableConstraintAlgorithm.check(expression)
+            )
+        )
+        return self
+    }
+
+    /// Adds a new `FOREIGN KEY` constraint to the table being built
+    ///
+    /// - parameters:
+    ///     - columns: One or more columns of the table currently being built to constrain.
+    ///     - foreignTable: A table containing a foreign key to be constrained to.
+    ///     - foreignColumns: One or more columns of the foreign table to be constrained to.
+    ///     - onDelete: Optional foreign key action to perform on delete.
+    ///     - onUpdate: Optional foreign key action to perform on update.
+    ///     - constraintName: An optional name to give the constraint.
+    public func foreignKey(
+        _ columns: [String],
+        references foreignTable: String,
+        _ foreignColumns: [String],
+        onDelete: SQLForeignKeyAction? = nil,
+        onUpdate: SQLForeignKeyAction? = nil,
+        named constraintName: String? = nil
+    ) -> Self {
+        return self.foreignKey(
+            columns.map(SQLIdentifier.init),
+            references: SQLIdentifier(foreignTable),
+            foreignColumns.map(SQLIdentifier.init),
+            onDelete: onDelete,
+            onUpdate: onUpdate,
+            named: constraintName.map(SQLIdentifier.init)
+        )
+    }
+
+    /// Adds a new `FOREIGN KEY` constraint to the table being built
+    ///
+    /// - parameters:
+    ///     - columns: One or more columns of the table currently being built to constrain.
+    ///     - foreignTable: A table containing a foreign key to be constrained to.
+    ///     - foreignColumns: One or more columns of the foreign table to be constrained to.
+    ///     - onDelete: Optional foreign key action to perform on delete.
+    ///     - onUpdate: Optional foreign key action to perform on update.
+    ///     - constraintName: An optional name to give the constraint.
+    public func foreignKey(
+        _ columns: [SQLExpression],
+        references foreignTable: SQLExpression,
+        _ foreignColumns: [SQLExpression],
+        onDelete: SQLExpression? = nil,
+        onUpdate: SQLExpression? = nil,
+        named constraintName: SQLExpression? = nil
+    ) -> Self {
+        createTable.tableConstraints.append(
+            SQLConstraint(
+                name: constraintName,
+                algorithm: SQLTableConstraintAlgorithm.foreignKey(
+                    columns: columns,
+                    references: SQLForeignKey(
+                        table: foreignTable,
+                        columns: foreignColumns,
+                        onDelete: onDelete,
+                        onUpdate: onUpdate
+                    )
+                )
+            )
+        )
+        return self
+    }
+}
+
 // MARK: Connection
 
 extension SQLDatabase {
