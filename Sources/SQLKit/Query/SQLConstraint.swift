@@ -9,6 +9,11 @@ public struct SQLConstraint: SQLExpression {
     /// and `SQLColumnConstraintAlgorithm`
     public var algorithm: SQLExpression
 
+    public init(algorithm: SQLExpression, name: SQLExpression? = nil) {
+        self.name = name
+        self.algorithm = algorithm
+    }
+
     public func serialize(to serializer: inout SQLSerializer) {
         if let name = self.name {
             serializer.write("CONSTRAINT ")

@@ -80,8 +80,8 @@ extension SQLCreateTableBuilder {
     public func primaryKey(_ columns: [SQLExpression], named constraintName: SQLExpression? = nil) -> Self {
         createTable.tableConstraints.append(
             SQLConstraint(
-                name: constraintName,
-                algorithm: SQLTableConstraintAlgorithm.primaryKey(columns: columns)
+                algorithm: SQLTableConstraintAlgorithm.primaryKey(columns: columns),
+                name: constraintName
             )
         )
         return self
@@ -116,8 +116,8 @@ extension SQLCreateTableBuilder {
     public func unique(_ columns: [SQLExpression], named constraintName: SQLExpression? = nil) -> Self {
         createTable.tableConstraints.append(
             SQLConstraint(
-                name: constraintName,
-                algorithm: SQLTableConstraintAlgorithm.unique(columns: columns)
+                algorithm: SQLTableConstraintAlgorithm.unique(columns: columns),
+                name: constraintName
             )
         )
         return self
@@ -143,8 +143,8 @@ extension SQLCreateTableBuilder {
     public func check(_ expression: SQLExpression, named constraintName: SQLExpression? = nil) -> Self {
         createTable.tableConstraints.append(
             SQLConstraint(
-                name: constraintName,
-                algorithm: SQLTableConstraintAlgorithm.check(expression)
+                algorithm: SQLTableConstraintAlgorithm.check(expression),
+                name: constraintName
             )
         )
         return self
@@ -196,7 +196,6 @@ extension SQLCreateTableBuilder {
     ) -> Self {
         createTable.tableConstraints.append(
             SQLConstraint(
-                name: constraintName,
                 algorithm: SQLTableConstraintAlgorithm.foreignKey(
                     columns: columns,
                     references: SQLForeignKey(
@@ -205,7 +204,8 @@ extension SQLCreateTableBuilder {
                         onDelete: onDelete,
                         onUpdate: onUpdate
                     )
-                )
+                ),
+                name: constraintName
             )
         )
         return self
