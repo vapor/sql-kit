@@ -38,9 +38,9 @@ extension SQLQueryFetcher {
     ///     builder.run { print($0) }
     ///
     /// The returned future will signal completion of the query.
-    public func run(_ handler: @escaping (SQLRow) throws -> ()) -> EventLoopFuture<Void> {
+    public func run(_ handler: @escaping (SQLRow) -> ()) -> EventLoopFuture<Void> {
         return self.database.execute(sql: self.query) { row in
-            try handler(row)
+            handler(row)
         }
     }
 }

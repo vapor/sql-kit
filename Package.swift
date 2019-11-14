@@ -9,9 +9,10 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.0.0"),
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
     ],
     targets: [
-        .target(name: "SQLKit", dependencies: ["NIO"]),
+        .target(name: "SQLKit", dependencies: ["Logging", "NIO"]),
         .target(name: "SQLKitBenchmark", dependencies: ["SQLKit"]),
         .testTarget(name: "SQLKitTests", dependencies: ["SQLKit", "SQLKitBenchmark"]),
     ]

@@ -1,17 +1,19 @@
 import SQLKit
 
 final class TestDatabase: SQLDatabase {
+    let logger: Logger
     let eventLoop: EventLoop
     var results: [String]
     var dialect: GenericDialect
     
     init() {
+        self.logger = .init(label: "codes.vapor.sql.test")
         self.eventLoop = EmbeddedEventLoop()
         self.results = []
         self.dialect = GenericDialect()
     }
     
-    func execute(sql query: SQLExpression, _ onRow: @escaping (SQLRow) throws -> ()) -> EventLoopFuture<Void> {
+    func execute(sql query: SQLExpression, _ onRow: @escaping (SQLRow) -> ()) -> EventLoopFuture<Void> {
         var serializer = SQLSerializer(dialect: dialect)
         query.serialize(to: &serializer)
         results.append(serializer.sql)
