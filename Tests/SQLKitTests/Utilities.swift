@@ -1,4 +1,5 @@
 import SQLKit
+import NIO
 
 final class TestDatabase: SQLDatabase {
     let logger: Logger
