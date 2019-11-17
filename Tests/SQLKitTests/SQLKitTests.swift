@@ -33,7 +33,7 @@ final class SQLKitTests: XCTestCase {
         let db = TestDatabase()
         let (table, planet) = ("planets", "Earth")
         let builder = db.raw("SELECT * FROM \(table) WHERE name = \(bind: planet)")
-        var serializer = SQLSerializer(dialect: GenericDialect())
+        var serializer = SQLSerializer(database: db)
         builder.query.serialize(to: &serializer)
 
         XCTAssertEqual(serializer.sql, "SELECT * FROM planets WHERE name = ?")
@@ -56,7 +56,7 @@ final class SQLKitTests: XCTestCase {
         try db.drop(table: "planets").ifExists().run().wait()
         XCTAssertEqual(db.results[0], "DROP TABLE IF EXISTS `planets`")
 
-        db.dialect = GenericDialect(supportsIfExists: false)
+        db._dialect.supportsIfExists = false
         try db.drop(table: "planets").ifExists().run().wait()
         XCTAssertEqual(db.results[1], "DROP TABLE `planets`")
     }

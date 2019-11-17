@@ -45,8 +45,7 @@ extension SQLQueryString: SQLExpression {
             case let .literal(str):
                 serializer.write(str)
             case let .value(v):
-                serializer.dialect.nextBindPlaceholder().serialize(to: &serializer)
-                serializer.binds.append(v)
+                serializer.write(bind: v)
             }
         }
     }

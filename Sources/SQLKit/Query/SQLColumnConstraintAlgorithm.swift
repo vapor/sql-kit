@@ -13,10 +13,10 @@ public enum SQLColumnConstraintAlgorithm: SQLExpression {
     case check(SQLExpression)
 
     /// `COLLATE` column constraint.
-    case collateConstraint(name: SQLExpression)
+    case collate(name: SQLExpression)
 
     /// `DEFAULT` column constraint.
-    case defaultConstraint(SQLExpression)
+    case `default`(SQLExpression)
 
     /// `FOREIGN KEY` column constraint.
     case foreignKey(references: SQLExpression)
@@ -37,34 +37,24 @@ public enum SQLColumnConstraintAlgorithm: SQLExpression {
         return .collate(name: SQLIdentifier(name))
     }
 
-    /// `COLLATE` column constraint.
-    public static func collate(name: SQLExpression) -> SQLColumnConstraintAlgorithm {
-        return .collateConstraint(name: name)
-    }
-
     /// `DEFAULT` column constraint.
     public static func `default`(_ value: String) -> SQLColumnConstraintAlgorithm {
-        return .defaultConstraint(SQLLiteral.string(value))
+        return .default(SQLLiteral.string(value))
     }
 
     /// `DEFAULT` column constraint.
     public static func `default`<T: BinaryInteger>(_ value: T) -> SQLColumnConstraintAlgorithm {
-        return .defaultConstraint(SQLLiteral.numeric("\(value)"))
+        return .default(SQLLiteral.numeric("\(value)"))
     }
 
     /// `DEFAULT` column constraint.
     public static func `default`<T: FloatingPoint>(_ value: T) -> SQLColumnConstraintAlgorithm {
-        return .defaultConstraint(SQLLiteral.numeric("\(value)"))
+        return .default(SQLLiteral.numeric("\(value)"))
     }
 
     /// `DEFAULT` column constraint.
     public static func `default`(_ value: Bool) -> SQLColumnConstraintAlgorithm {
-        return .defaultConstraint(SQLLiteral.boolean(value))
-    }
-
-    /// `DEFAULT` column constraint.
-    public static func `default`(_ value: SQLExpression) -> SQLColumnConstraintAlgorithm {
-        return .defaultConstraint(value)
+        return .default(SQLLiteral.boolean(value))
     }
 
     /// `FOREIGN KEY` column constraint.
@@ -114,10 +104,10 @@ public enum SQLColumnConstraintAlgorithm: SQLExpression {
         case .check(let expression):
             serializer.write("CHECK ")
             SQLGroupExpression(expression).serialize(to: &serializer)
-        case .collateConstraint(name: let collate):
+        case .collate(name: let collate):
             serializer.write("COLLATE ")
             collate.serialize(to: &serializer)
-        case .defaultConstraint(let expression):
+        case .default(let expression):
             serializer.write("DEFAULT ")
             expression.serialize(to: &serializer)
         case .foreignKey(let foreignKey):

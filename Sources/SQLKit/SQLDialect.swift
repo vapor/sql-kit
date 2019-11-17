@@ -1,16 +1,10 @@
 public protocol SQLDialect {
     var identifierQuote: SQLExpression { get }
-    
     var literalStringQuote: SQLExpression { get }
-    
     var autoIncrementClause: SQLExpression { get }
-    
-    mutating func nextBindPlaceholder() -> SQLExpression
-    
+    func bindPlaceholder(at position: Int) -> SQLExpression
     func literalBoolean(_ value: Bool) -> SQLExpression
-
     var literalDefault: SQLExpression { get }
-
     var supportsIfExists: Bool { get }
 }
 
