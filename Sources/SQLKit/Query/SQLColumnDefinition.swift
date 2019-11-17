@@ -21,7 +21,7 @@ public struct SQLColumnDefinition: SQLExpression {
         self.dataType.serialize(to: &serializer)
         if !self.constraints.isEmpty {
             serializer.write(" ")
-            SQLList(self.constraints).serialize(to: &serializer)
+            SQLList(self.constraints, separator: SQLRaw(" ")).serialize(to: &serializer)
         }
     }
 }

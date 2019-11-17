@@ -17,7 +17,7 @@ public final class SQLCreateIndexBuilder: SQLQueryBuilder {
     
     /// Adds `UNIQUE` modifier to the index being created.
     public func unique() -> Self {
-        self.createIndex.modifier = SQLConstraintAlgorithm.unique
+        self.createIndex.modifier = SQLColumnConstraintAlgorithm.unique
         return self
     }
     

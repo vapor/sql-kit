@@ -7,11 +7,20 @@ extension SQLKitTests {
     // to regenerate.
     static let __allTests__SQLKitTests = [
         ("testBenchmarker", testBenchmarker),
-        ("testLockingClause_forUpdate", testLockingClause_forUpdate),
-        ("testLockingClause_lockInShareMode", testLockingClause_lockInShareMode),
-        ("testRawQueryStringInterpolation", testRawQueryStringInterpolation),
+        ("testColumnConstraints", testColumnConstraints),
+        ("testCompositePrimaryKeyTableConstraint", testCompositePrimaryKeyTableConstraint),
+        ("testCompositeUniqueTableConstraint", testCompositeUniqueTableConstraint),
+        ("testDefaultColumnConstraintVariants", testDefaultColumnConstraintVariants),
+        ("testForeignKeyColumnConstraintVariants", testForeignKeyColumnConstraintVariants),
         ("testGroupByHaving", testGroupByHaving),
         ("testIfExists", testIfExists),
+        ("testLockingClause_forUpdate", testLockingClause_forUpdate),
+        ("testLockingClause_lockInShareMode", testLockingClause_lockInShareMode),
+        ("testMultipleColumnConstraintsPerRow", testMultipleColumnConstraintsPerRow),
+        ("testPrimaryKeyColumnConstraintVariants", testPrimaryKeyColumnConstraintVariants),
+        ("testPrimaryKeyTableConstraintVariants", testPrimaryKeyTableConstraintVariants),
+        ("testRawQueryStringInterpolation", testRawQueryStringInterpolation),
+        ("testTableConstraints", testTableConstraints),
     ]
 }
 

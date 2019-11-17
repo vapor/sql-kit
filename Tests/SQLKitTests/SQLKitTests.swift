@@ -61,3 +61,190 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[1], "DROP TABLE `planets`")
     }
 }
+
+// MARK: Table Creation
+
+extension SQLKitTests {
+    func testColumnConstraints() throws {
+        let db = TestDatabase()
+
+        try db.create(table: "planets")
+            .column("id", type: .bigint, .primaryKey)
+            .column("name", type: .text, .default("unnamed"))
+            .column("galaxy_id", type: .bigint, .references("galaxies", "id"))
+            .column("diameter", type: .int, .check(SQLRaw("diameter > 0")))
+            .column("important", type: .text, .notNull)
+            .column("special", type: .text, .unique)
+            .column("automatic", type: .text, .generated(SQLRaw("CONCAT(name, special)")))
+            .column("collated", type: .text, .collate(name: "default"))
+            .run().wait()
+
+        XCTAssertEqual(db.results[0],
+"""
+CREATE TABLE `planets`(`id` BIGINT PRIMARY KEY AUTOINCREMENT, `name` TEXT DEFAULT 'unnamed', `galaxy_id` BIGINT REFERENCES `galaxies` (`id`), `diameter` INTEGER CHECK (diameter > 0), `important` TEXT NOT NULL, `special` TEXT UNIQUE, `automatic` TEXT GENERATED ALWAYS AS (CONCAT(name, special)) STORED, `collated` TEXT COLLATE `default`)
+"""
+                       )
+    }
+
+    func testMultipleColumnConstraintsPerRow() throws {
+        let db = TestDatabase()
+
+        try db.create(table: "planets")
+            .column("id", type: .bigint, .notNull, .primaryKey)
+            .run().wait()
+
+        XCTAssertEqual(db.results[0], "CREATE TABLE `planets`(`id` BIGINT NOT NULL PRIMARY KEY AUTOINCREMENT)")
+    }
+
+    func testPrimaryKeyColumnConstraintVariants() throws {
+        let db = TestDatabase()
+
+        try db.create(table: "planets1")
+            .column("id", type: .bigint, .primaryKey)
+            .run().wait()
+
+        try db.create(table: "planets2")
+            .column("id", type: .bigint, .primaryKey(autoIncrement: false))
+            .run().wait()
+
+        XCTAssertEqual(db.results[0], "CREATE TABLE `planets1`(`id` BIGINT PRIMARY KEY AUTOINCREMENT)")
+
+        XCTAssertEqual(db.results[1], "CREATE TABLE `planets2`(`id` BIGINT PRIMARY KEY)")
+    }
+
+    func testDefaultColumnConstraintVariants() throws {
+        let db = TestDatabase()
+
+        try db.create(table: "planets1")
+            .column("name", type: .text, .default("unnamed"))
+            .run().wait()
+
+        try db.create(table: "planets2")
+            .column("diameter", type: .int, .default(10))
+            .run().wait()
+
+        try db.create(table: "planets3")
+            .column("diameter", type: .real, .default(11.5))
+            .run().wait()
+
+        try db.create(table: "planets4")
+            .column("current", type: .custom(SQLRaw("BOOLEAN")), .default(false))
+            .run().wait()
+
+        try db.create(table: "planets5")
+            .column("current", type: .custom(SQLRaw("BOOLEAN")), .default(SQLLiteral.boolean(true)))
+            .run().wait()
+
+        XCTAssertEqual(db.results[0], "CREATE TABLE `planets1`(`name` TEXT DEFAULT 'unnamed')")
+
+        XCTAssertEqual(db.results[1], "CREATE TABLE `planets2`(`diameter` INTEGER DEFAULT 10)")
+
+        XCTAssertEqual(db.results[2], "CREATE TABLE `planets3`(`diameter` REAL DEFAULT 11.5)")
+
+        XCTAssertEqual(db.results[3], "CREATE TABLE `planets4`(`current` BOOLEAN DEFAULT false)")
+
+        XCTAssertEqual(db.results[4], "CREATE TABLE `planets5`(`current` BOOLEAN DEFAULT true)")
+    }
+
+    func testForeignKeyColumnConstraintVariants() throws {
+        let db = TestDatabase()
+
+        try db.create(table: "planets1")
+            .column("galaxy_id", type: .bigint, .references("galaxies", "id"))
+            .run().wait()
+
+        try db.create(table: "planets2")
+            .column("galaxy_id", type: .bigint, .references("galaxies", "id", onDelete: .cascade, onUpdate: .restrict))
+            .run().wait()
+
+        XCTAssertEqual(db.results[0], "CREATE TABLE `planets1`(`galaxy_id` BIGINT REFERENCES `galaxies` (`id`))")
+
+        XCTAssertEqual(db.results[1], "CREATE TABLE `planets2`(`galaxy_id` BIGINT REFERENCES `galaxies` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT)")
+    }
+
+    func testTableConstraints() throws {
+        let db = TestDatabase()
+
+        try db.create(table: "planets")
+            .column("id", type: .bigint)
+            .column("name", type: .text)
+            .column("diameter", type: .int)
+            .column("galaxy_name", type: .text)
+            .column("galaxy_id", type: .bigint)
+            .primaryKey("id")
+            .unique("name")
+            .check(SQLRaw("diameter > 0"), named: "non-zero-diameter")
+            .foreignKey(
+                ["galaxy_id", "galaxy_name"],
+                references: "galaxies",
+                ["id", "name"]
+            ).run().wait()
+
+        XCTAssertEqual(db.results[0],
+"""
+CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_name` TEXT, `galaxy_id` BIGINT, PRIMARY KEY (`id`), UNIQUE (`name`), CONSTRAINT `non-zero-diameter` CHECK (diameter > 0), FOREIGN KEY (`galaxy_id`, `galaxy_name`) REFERENCES `galaxies` (`id`, `name`))
+"""
+                       )
+    }
+
+    func testCompositePrimaryKeyTableConstraint() throws {
+        let db = TestDatabase()
+
+        try db.create(table: "planets1")
+            .column("id1", type: .bigint)
+            .column("id2", type: .bigint)
+            .primaryKey("id1", "id2")
+            .run().wait()
+
+        XCTAssertEqual(db.results[0], "CREATE TABLE `planets1`(`id1` BIGINT, `id2` BIGINT, PRIMARY KEY (`id1`, `id2`))")
+    }
+
+    func testCompositeUniqueTableConstraint() throws {
+        let db = TestDatabase()
+
+        try db.create(table: "planets1")
+            .column("id1", type: .bigint)
+            .column("id2", type: .bigint)
+            .unique("id1", "id2")
+            .run().wait()
+
+        XCTAssertEqual(db.results[0], "CREATE TABLE `planets1`(`id1` BIGINT, `id2` BIGINT, UNIQUE (`id1`, `id2`))")
+    }
+
+    func testPrimaryKeyTableConstraintVariants() throws {
+        let db = TestDatabase()
+
+        try db.create(table: "planets1")
+            .column("galaxy_name", type: .text)
+            .column("galaxy_id", type: .bigint)
+            .foreignKey(
+                ["galaxy_id", "galaxy_name"],
+                references: "galaxies",
+                ["id", "name"]
+        ).run().wait()
+
+        try db.create(table: "planets2")
+            .column("galaxy_id", type: .bigint)
+            .foreignKey(
+                ["galaxy_id"],
+                references: "galaxies",
+                ["id"]
+        ).run().wait()
+
+        try db.create(table: "planets3")
+            .column("galaxy_id", type: .bigint)
+            .foreignKey(
+                ["galaxy_id"],
+                references: "galaxies",
+                ["id"],
+                onDelete: .restrict,
+                onUpdate: .cascade
+        ).run().wait()
+
+        XCTAssertEqual(db.results[0], "CREATE TABLE `planets1`(`galaxy_name` TEXT, `galaxy_id` BIGINT, FOREIGN KEY (`galaxy_id`, `galaxy_name`) REFERENCES `galaxies` (`id`, `name`))")
+
+        XCTAssertEqual(db.results[1], "CREATE TABLE `planets2`(`galaxy_id` BIGINT, FOREIGN KEY (`galaxy_id`) REFERENCES `galaxies` (`id`))")
+
+        XCTAssertEqual(db.results[2], "CREATE TABLE `planets3`(`galaxy_id` BIGINT, FOREIGN KEY (`galaxy_id`) REFERENCES `galaxies` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE)")
+    }
+}
