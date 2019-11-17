@@ -36,8 +36,12 @@ public struct SQLCreateTable: SQLExpression {
             serializer.write("TEMPORARY ")
         }
         serializer.write("TABLE ")
-        if serializer.dialect.supportsIfExists && self.ifNotExists {
-            serializer.write("IF NOT EXISTS ")
+        if self.ifNotExists {
+            if serializer.dialect.supportsIfExists {
+                serializer.write("IF NOT EXISTS ")
+            } else {
+                serializer.database.logger.warning("\(serializer.dialect.name) does not support IF NOT EXISTS")
+            }
         }
         self.table.serialize(to: &serializer)
         SQLGroupExpression(self.columns + self.tableConstraints)

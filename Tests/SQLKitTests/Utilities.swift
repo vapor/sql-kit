@@ -26,6 +26,10 @@ final class TestDatabase: SQLDatabase {
 }
 
 struct GenericDialect: SQLDialect {
+    var name: String {
+        "generic sql"
+    }
+    
     var supportsIfExists: Bool = true
 
     var identifierQuote: SQLExpression {
