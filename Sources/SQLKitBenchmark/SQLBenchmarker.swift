@@ -1,13 +1,11 @@
 import SQLKit
 
 /// Benchmarks SQL conformance.
-public final class SQLBenchmarker<Database> where
-    Database: SQLDatabase
-{
-    internal let db: Database
+public final class SQLBenchmarker {
+    internal let db: SQLDatabase
     
     /// Creates a new `SQLBenchmark`.
-    public init(on db: Database) {
+    public init(on db: SQLDatabase) {
         self.db = db
     }
     
