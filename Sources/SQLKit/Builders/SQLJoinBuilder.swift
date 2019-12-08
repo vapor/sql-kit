@@ -28,7 +28,7 @@ extension SQLJoinBuilder {
     ///
     ///     builder.join(method: .inner
     ///                  table: SQLTableIdentifier("galaxies"),
-    ///                  expression: SQLJoinBinaryExpression(from: ("galaxyID", table: "planets"),
+    ///                  expression: SQLJoinBinaryExpression(from: SQLColumn("galaxyID", table: "planets"),
     ///                                                      to: SQLColumn("id", table: "galaxys")))
     ///
     public func join(method: SQLJoinMethod, table: SQLTableIdentifier, expression: SQLJoinBinaryExpression) -> Self {
