@@ -77,8 +77,7 @@ extension SQLBenchmarker {
             .from("planets")
             .where("galaxyID", .equal, SQLBind(5))
             .run().wait()
-
-        // test join
+        
         try self.db.select()
             .column("*")
             .from("planets")
