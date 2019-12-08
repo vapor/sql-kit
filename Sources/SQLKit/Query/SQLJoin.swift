@@ -1,9 +1,7 @@
 ///// `JOIN` clause.
 public struct SQLJoin: SQLExpression {
     public var method: SQLExpression
-    
     public var table: SQLExpression
-    
     public var expression: SQLExpression
     
     /// Creates a new `SQLJoin`.
@@ -13,6 +11,7 @@ public struct SQLJoin: SQLExpression {
         self.expression = expression
     }
     
+
     public func serialize(to serializer: inout SQLSerializer) {
         self.method.serialize(to: &serializer)
         serializer.write(" JOIN ")
