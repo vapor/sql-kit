@@ -9,8 +9,8 @@ public struct SQLIdentifier: SQLExpression {
     }
     
     public func serialize(to serializer: inout SQLSerializer) {
-        //serializer.dialect.identifierQuote.serialize(to: &serializer)
+        serializer.dialect.identifierQuote.serialize(to: &serializer)
         serializer.write(self.string)
-        //serializer.dialect.identifierQuote.serialize(to: &serializer)
+        serializer.dialect.identifierQuote.serialize(to: &serializer)
     }
 }
