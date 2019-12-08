@@ -83,8 +83,8 @@ extension SQLBenchmarker {
             .column("*")
             .from("planets")
             .join(method: .inner,
-                  table: "galaxy",
-                  from: SQLColumn("galaxyID", table: "plantes"),
+                  table: "galaxies",
+                  from: SQLColumn("galaxyID", table: "planets"),
                   to: SQLColumn("id", table: "galaxys"))
             .all().wait()
     }

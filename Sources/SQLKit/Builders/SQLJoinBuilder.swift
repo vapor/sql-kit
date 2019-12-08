@@ -9,6 +9,13 @@ public protocol SQLJoinBuilder: class {
 
 extension SQLJoinBuilder {
 
+    /// Joins a table
+    ///
+    ///     builder.join(method: .inner
+    ///                  table: "galaxies",
+    ///                  from: SQLColumn("galaxyID", table: "planets"),
+    ///                  to: SQLColumn("id", table: "galaxys"))
+    ///
     public func join(method: SQLJoinMethod, table: String, from: SQLColumn, to: SQLColumn) -> Self {
         self.joins.append(SQLJoin.init(method: method,
                                        table: SQLTableIdentifier(table),
@@ -17,12 +24,13 @@ extension SQLJoinBuilder {
     }
 
 
-    /// Adds an expression to the `Join`
+    /// Joins a table
     ///
-    ///     builder.join(.binary("name", .notEqual, .literal(.null)))
+    ///     builder.join(method: .inner
+    ///                  table: SQLTableIdentifier("galaxies"),
+    ///                  expression: SQLJoinBinaryExpression(from: ("galaxyID", table: "planets"),
+    ///                                                      to: SQLColumn("id", table: "galaxys")))
     ///
-    /// - parameters:
-    ///     - expression: Expression to be added to the predicate.
     public func join(method: SQLJoinMethod, table: SQLTableIdentifier, expression: SQLJoinBinaryExpression) -> Self {
         self.joins.append(SQLJoin.init(method: method, table: table, expression: expression))
         return self
