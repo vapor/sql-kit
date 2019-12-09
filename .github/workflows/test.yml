@@ -7,15 +7,15 @@ jobs:
       image: vapor/swift:5.1-xenial
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - run: swift test
+    - uses: actions/checkout@v1
+    - run: swift test --enable-test-discovery --sanitize=thread
   bionic:
     container: 
       image: vapor/swift:5.1-bionic
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - run: swift test
+    - uses: actions/checkout@v1
+    - run: swift test --enable-test-discovery --sanitize=thread
   sqlite:
     container: 
       image: vapor/swift:5.1
@@ -26,7 +26,7 @@ jobs:
       working-directory: ./
     - run: swift package edit sql-kit --revision ${{ github.sha }}
       working-directory: ./sqlite-kit
-    - run: swift test
+    - run: swift test --enable-test-discovery --sanitize=thread
       working-directory: ./sqlite-kit
   postgres:
     container: 
@@ -46,7 +46,7 @@ jobs:
       working-directory: ./
     - run: swift package edit sql-kit --revision ${{ github.sha }}
       working-directory: ./postgres-kit
-    - run: swift test
+    - run: swift test --enable-test-discovery --sanitize=thread
       working-directory: ./postgres-kit
       env:
         POSTGRES_HOSTNAME: psql
@@ -67,7 +67,7 @@ jobs:
       working-directory: ./
     - run: swift package edit sql-kit --revision ${{ github.sha }}
       working-directory: ./mysql-kit
-    - run: swift test
+    - run: swift test --enable-test-discovery --sanitize=thread
       working-directory: ./mysql-kit
       env:
         MYSQL_HOSTNAME: mysql
