@@ -1,8 +1,11 @@
-// swift-tools-version:5.0
+// swift-tools-version:5.1
 import PackageDescription
 
 let package = Package(
     name: "sql-kit",
+    platforms: [
+       .macOS(.v10_14)
+    ],
     products: [
         .library(name: "SQLKit", targets: ["SQLKit"]),
         .library(name: "SQLKitBenchmark", targets: ["SQLKitBenchmark"]),
