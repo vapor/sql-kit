@@ -16,7 +16,7 @@ extension SQLJoinBuilder {
     ///                  from: SQLColumn("galaxyID", table: "planets"),
     ///                  to: SQLColumn("id", table: "galaxys"))
     ///
-    public func join(method: SQLJoinMethod, table: String, from: SQLColumn, to: SQLColumn) -> Self {
+    public func join(method: SQLJoinMethod = .inner, table: String, from: SQLColumn, to: SQLColumn) -> Self {
         self.joins.append(SQLJoin.init(method: method,
                          table: SQLIdentifier(table),
                          expression: SQLBinaryExpression(left: from, op: SQLBinaryOperator.equal, right: to)
@@ -32,7 +32,7 @@ extension SQLJoinBuilder {
     ///                  expression: SQLJoinBinaryExpression(from: SQLColumn("galaxyID", table: "planets"),
     ///                                                      to: SQLColumn("id", table: "galaxys")))
     ///
-    public func join(method: SQLJoinMethod, table: SQLIdentifier, expression: SQLBinaryExpression) -> Self {
+    public func join(method: SQLJoinMethod = .inner, table: SQLIdentifier, expression: SQLBinaryExpression) -> Self {
         self.joins.append(SQLJoin.init(method: method, table: table, expression: expression))
         return self
     }
