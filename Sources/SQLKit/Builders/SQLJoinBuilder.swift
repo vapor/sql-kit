@@ -25,7 +25,6 @@ extension SQLJoinBuilder {
         return self
     }
 
-
     /// Joins a table
     ///
     ///     builder.join(method: .inner
