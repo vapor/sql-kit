@@ -293,7 +293,7 @@ struct TestRow: SQLRow {
         case typeMismatch(Any, Any.Type)
     }
 
-    var columns: [String] {
+    var allColumns: [String] {
         .init(self.data.keys)
     }
 
