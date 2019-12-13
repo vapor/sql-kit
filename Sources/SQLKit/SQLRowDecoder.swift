@@ -41,7 +41,7 @@ struct SQLRowDecoder {
         let row: SQLRow
         var codingPath: [CodingKey] = []
         var allKeys: [Key] {
-            self.row.columns.compactMap {
+            self.row.allColumns.compactMap {
                 Key.init(stringValue: $0)
             }
         }

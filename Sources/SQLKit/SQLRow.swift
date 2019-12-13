@@ -1,5 +1,5 @@
 public protocol SQLRow {
-    var columns: [String] { get }
+    var allColumns: [String] { get }
     func contains(column: String) -> Bool
     func decodeNil(column: String) throws -> Bool
     func decode<D>(column: String, as type: D.Type) throws -> D
