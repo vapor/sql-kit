@@ -247,4 +247,87 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
 
         XCTAssertEqual(db.results[2], "CREATE TABLE `planets3`(`galaxy_id` BIGINT, FOREIGN KEY (`galaxy_id`) REFERENCES `galaxies` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE)")
     }
+
+    func testSQLRowDecoder() throws {
+        struct Foo: Codable {
+            let id: UUID
+            let foo: Int
+            let bar: Double?
+            let baz: String
+        }
+
+        do {
+            let row = TestRow(data: [
+                "id": UUID(),
+                "foo": 42,
+                "bar": Double?.none as Any,
+                "baz": "vapor"
+            ])
+
+            let foo = try row.decode(Foo.self)
+            XCTAssertEqual(foo.foo, 42)
+            XCTAssertEqual(foo.bar, nil)
+            XCTAssertEqual(foo.baz, "vapor")
+        }
+        do {
+            let row = TestRow(data: [
+                "foos_id": UUID(),
+                "foos_foo": 42,
+                "foos_bar": Double?.none as Any,
+                "foos_baz": "vapor"
+            ])
+
+            let foo = try row.decode(Foo.self, prefix: "foos_")
+            XCTAssertEqual(foo.foo, 42)
+            XCTAssertEqual(foo.bar, nil)
+            XCTAssertEqual(foo.baz, "vapor")
+        }
+    }
+}
+
+struct TestRow: SQLRow {
+    var data: [String: Any]
+
+    enum _Error: Error {
+        case missingColumn(String)
+        case typeMismatch(Any, Any.Type)
+    }
+
+    var columns: [String] {
+        .init(self.data.keys)
+    }
+
+    func contains(column: String) -> Bool {
+        self.data.keys.contains(column)
+    }
+
+    func decodeNil(column: String) throws -> Bool {
+        if let value = self.data[column], let optional = value as? OptionalType {
+            return optional.isNil
+        } else {
+            return false
+        }
+    }
+
+    func decode<D>(column: String, as type: D.Type) throws -> D
+        where D : Decodable
+    {
+        guard let value = self.data[column] else {
+            throw _Error.missingColumn(column)
+        }
+        guard let cast = value as? D else {
+            throw _Error.typeMismatch(value, D.self)
+        }
+        return cast
+    }
+}
+
+protocol OptionalType {
+    var isNil: Bool { get }
+}
+
+extension Optional: OptionalType {
+    var isNil: Bool {
+        self == nil
+    }
 }
