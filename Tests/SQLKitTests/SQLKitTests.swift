@@ -264,7 +264,7 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
                 "baz": "vapor"
             ])
 
-            let foo = try row.decode(Foo.self)
+            let foo = try row.decode(model: Foo.self)
             XCTAssertEqual(foo.foo, 42)
             XCTAssertEqual(foo.bar, nil)
             XCTAssertEqual(foo.baz, "vapor")
@@ -277,7 +277,7 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
                 "foos_baz": "vapor"
             ])
 
-            let foo = try row.decode(Foo.self, prefix: "foos_")
+            let foo = try row.decode(model: Foo.self, prefix: "foos_")
             XCTAssertEqual(foo.foo, 42)
             XCTAssertEqual(foo.bar, nil)
             XCTAssertEqual(foo.baz, "vapor")

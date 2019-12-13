@@ -29,11 +29,17 @@ public final class SQLUpdateBuilder: SQLQueryBuilder, SQLPredicateBuilder {
         self.update = update
         self.database = database
     }
+
+    public func set<E>(model: E) throws -> Self where E: Encodable {
+        let row = try SQLQueryEncoder().encode(model)
+        row.forEach { column, value in
+            _ = self.set(SQLColumn(column), to: value)
+        }
+        return self
+    }
     
     /// Sets a column (specified by an identifier) to an expression.
-    public func set<T>(_ column: String, to bind: T) -> Self
-        where T: Encodable
-    {
+    public func set(_ column: String, to bind: Encodable) -> Self {
         return self.set(SQLIdentifier(column), to: SQLBind(bind))
     }
     

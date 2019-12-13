@@ -7,7 +7,7 @@ public protocol SQLRow {
 }
 
 extension SQLRow {
-    public func decode<D>(_ type: D.Type, prefix: String? = nil) throws -> D
+    public func decode<D>(model type: D.Type, prefix: String? = nil) throws -> D
         where D: Decodable
     {
         try SQLRowDecoder().decode(D.self, from: self, prefix: prefix)
