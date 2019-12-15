@@ -1,4 +1,4 @@
-public final class SQLSelectBuilder: SQLQueryFetcher, SQLQueryBuilder, SQLPredicateBuilder {
+public final class SQLSelectBuilder: SQLQueryFetcher, SQLQueryBuilder, SQLPredicateBuilder, SQLJoinBuilder {
     public var query: SQLExpression {
         return self.select
     }
@@ -7,7 +7,12 @@ public final class SQLSelectBuilder: SQLQueryFetcher, SQLQueryBuilder, SQLPredic
         get { return self.select.predicate }
         set { self.select.predicate = newValue }
     }
-    
+
+    public var joins: [SQLExpression] {
+        get { return self.select.joins }
+        set { self.select.joins = newValue }
+    }
+
     public var select: SQLSelect
     public var database: SQLDatabase
     
