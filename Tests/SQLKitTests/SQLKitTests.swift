@@ -287,8 +287,6 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
             XCTAssertEqual(foo.baz, "vapor")
             XCTAssertEqual(foo.waldoFred, 2015)
         }
-
-        // test custom key decoding startegy
         do {
             let row = TestRow(data: [
                 "id": UUID(),
@@ -303,9 +301,6 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
             XCTAssertEqual(foo.bar, nil)
             XCTAssertEqual(foo.baz, "vapor")
             XCTAssertEqual(foo.waldoFred, 2015)
-        } catch {
-            print("ERROR: \(error)")
-            XCTFail("Could NOT DECODE")
         }
     }
 }
