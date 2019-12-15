@@ -16,7 +16,7 @@ public struct SQLEnumType: SQLExpression {
 
     /// Creates a new `SQLEnumType`.
     public init(name: String, values: [String]) {
-        self.init(name: SQLRaw(name), values: values.map { SQLRaw($0) })
+        self.init(name: SQLRaw(name), values: values.map { SQLLiteral.string($0) })
     }
 
     public func serialize(to serializer: inout SQLSerializer) {

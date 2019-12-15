@@ -60,6 +60,25 @@ final class SQLKitTests: XCTestCase {
         try db.drop(table: "planets").ifExists().run().wait()
         XCTAssertEqual(db.results[1], "DROP TABLE `planets`")
     }
+
+    func testEnumType() throws {
+        let db = TestDatabase()
+
+        // ensure test is using inline enum syntax
+        db._dialect.enumSyntax = .inline(literal: SQLRaw("ENUM"))
+
+        try db.create(table: "planets")
+            .column("size", type: .enum(name: "size", values: "small", "medium", "large"))
+            .run().wait()
+        XCTAssertEqual(db.results[0], "CREATE TABLE `planets`(`size` ENUM('small', 'medium', 'large'))")
+
+        db._dialect.enumSyntax = .typeName
+
+        try db.create(table: "planets")
+            .column("size", type: .enum(name: "SIZE", values: "small", "medium", "large"))
+            .run().wait()
+        XCTAssertEqual(db.results[1], "CREATE TABLE `planets`(`size` SIZE)")
+    }
 }
 
 // MARK: Table Creation

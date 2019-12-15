@@ -50,6 +50,8 @@ struct GenericDialect: SQLDialect {
         case false: return SQLRaw("false")
         }
     }
+
+    var enumSyntax: SQLEnumSyntax = .inline(literal: SQLRaw("ENUM"))
     
     var autoIncrementClause: SQLExpression {
         return SQLRaw("AUTOINCREMENT")
