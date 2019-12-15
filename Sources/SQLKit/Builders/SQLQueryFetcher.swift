@@ -8,6 +8,18 @@ public protocol SQLQueryFetcher: SQLQueryBuilder { }
 
 extension SQLQueryFetcher {
     // MARK: First
+
+
+    public func first<D>(decoding: D.Type) -> EventLoopFuture<D?>
+        where D: Decodable
+    {
+        self.first().flatMapThrowing {
+            guard let row = $0 else {
+                return nil
+            }
+            return try row.decode(model: D.self)
+        }
+    }
     
     /// Collects the first raw output and returns it.
     ///
@@ -18,6 +30,17 @@ extension SQLQueryFetcher {
     }
     
     // MARK: All
+
+
+    public func all<D>(decoding: D.Type) -> EventLoopFuture<[D]>
+        where D: Decodable
+    {
+        self.all().flatMapThrowing {
+            try $0.map {
+                try $0.decode(model: D.self)
+            }
+        }
+    }
     
     /// Collects all raw output into an array and returns it.
     ///
@@ -31,6 +54,19 @@ extension SQLQueryFetcher {
     }
     
     // MARK: Run
+
+
+    public func run<D>(decoding: D.Type, _ handler: @escaping (Result<D, Error>) -> ()) -> EventLoopFuture<Void>
+        where D: Decodable
+    {
+        self.run {
+            do {
+                try handler(.success($0.decode(model: D.self)))
+            } catch {
+                handler(.failure(error))
+            }
+        }
+    }
     
     
     /// Runs the query, passing output to the supplied closure as it is recieved.
