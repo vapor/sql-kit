@@ -105,6 +105,9 @@ struct SQLRowDecoder {
 
 fileprivate extension String {
     /// Returns a new string in snake cased format
+    ///
+    ///     "ThisIsATest".snakeCased() //returns this_is_a_test
+    ///     "JSON123Test".snakeCased() //returns json_123_test
     func snakeCased() -> String {
         enum Status {
             case uppercase
