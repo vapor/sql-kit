@@ -1,8 +1,8 @@
 struct SQLRowDecoder {
-    func decode<T>(_ type: T.Type, from row: SQLRow, prefix: String? = nil) throws -> T
+    func decode<T>(_ type: T.Type, from row: SQLRow, prefix: String? = nil, keyDecodingStrategy: SQlRowKeyDecodingStrategy = .useDefaultKeys) throws -> T
         where T: Decodable
     {
-        return try T.init(from: _Decoder(prefix: prefix, row: row))
+        return try T.init(from: _Decoder(prefix: prefix, keyDecodingStrategy: keyDecodingStrategy, row: row))
     }
 
     enum _Error: Error {
@@ -13,6 +13,7 @@ struct SQLRowDecoder {
 
     struct _Decoder: Decoder {
         let prefix: String?
+        let keyDecodingStrategy: SQlRowKeyDecodingStrategy
         let row: SQLRow
         var codingPath: [CodingKey] = []
         var userInfo: [CodingUserInfoKey : Any] {
@@ -22,7 +23,7 @@ struct SQLRowDecoder {
         func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key>
             where Key: CodingKey
         {
-            .init(_KeyedDecoder(prefix: self.prefix, row: self.row, codingPath: self.codingPath))
+            .init(_KeyedDecoder(prefix: self.prefix, keyDecodingStrategy: self.keyDecodingStrategy, row: self.row, codingPath: self.codingPath))
         }
 
         func unkeyedContainer() throws -> UnkeyedDecodingContainer {
@@ -38,6 +39,7 @@ struct SQLRowDecoder {
         where Key: CodingKey
     {
         let prefix: String?
+        let keyDecodingStrategy: SQlRowKeyDecodingStrategy
         let row: SQLRow
         var codingPath: [CodingKey] = []
         var allKeys: [Key] {
@@ -47,10 +49,20 @@ struct SQLRowDecoder {
         }
 
         func column(for key: Key) -> String {
+            var decodedKey = key.stringValue
+            switch self.keyDecodingStrategy {
+            case .useDefaultKeys:
+                break
+            case .convertFromSnakeCase:
+                decodedKey = decodedKey.snakeCased()
+            case .custom(let customKeyDecodingFunc):
+                decodedKey = customKeyDecodingFunc([key]).stringValue
+            }
+
             if let prefix = self.prefix {
-                return prefix + key.stringValue
+                return prefix + decodedKey
             } else {
-                return key.stringValue
+                return decodedKey
             }
         }
 
@@ -82,11 +94,72 @@ struct SQLRowDecoder {
         }
 
         func superDecoder() throws -> Decoder {
-            _Decoder(prefix: self.prefix, row: self.row, codingPath: self.codingPath)
+            _Decoder(prefix: self.prefix, keyDecodingStrategy: self.keyDecodingStrategy, row: self.row, codingPath: self.codingPath)
         }
 
         func superDecoder(forKey key: Key) throws -> Decoder {
             throw _Error.nesting
         }
+    }
+}
+
+fileprivate extension String {
+    /// Returns a new string in snake cased format
+    func snakeCased() -> String {
+        enum Status {
+            case uppercase
+            case number
+            case lowercase
+        }
+
+        var status = Status.lowercase
+        var snakeCasedString = ""
+        var i = self.startIndex
+        while i < self.endIndex {
+            let nextIndex = self.index(i, offsetBy: 1)
+
+            if self[i].isUppercase {
+                switch status {
+                case .uppercase:
+                    if nextIndex < self.endIndex {
+                        if self[nextIndex].isLowercase {
+                            snakeCasedString.append("_")
+                        }
+                    }
+                case .number:
+                    if i != self.startIndex {
+                        snakeCasedString.append("_")
+                    }
+                case .lowercase:
+                    if i != self.startIndex {
+                        snakeCasedString.append("_")
+                    }
+                }
+                status = .uppercase
+                snakeCasedString.append(self[i].lowercased())
+            } else if self[i].isNumber {
+                switch status {
+                case .number:
+                    break
+                case .uppercase:
+                    if i != self.startIndex {
+                        snakeCasedString.append("_")
+                    }
+                case .lowercase:
+                    if i != self.startIndex {
+                        snakeCasedString.append("_")
+                    }
+                }
+                status = .number
+                snakeCasedString.append(self[i])
+            } else {
+                status = .lowercase
+                snakeCasedString.append(self[i])
+            }
+
+            i = nextIndex
+        }
+
+        return snakeCasedString
     }
 }
