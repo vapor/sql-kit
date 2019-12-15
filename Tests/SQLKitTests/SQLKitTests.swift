@@ -254,7 +254,7 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
             let foo: Int
             let bar: Double?
             let baz: String
-            let waldoFred: Int
+            let waldoFred: Int?
         }
 
         do {
@@ -291,14 +291,14 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
             let row = TestRow(data: [
                 "id": UUID(),
                 "foo": 42,
-                "bar": Double?.none as Any,
+                "bar": 11.0,
                 "baz": "vapor",
                 "waldo_fred": 2015
             ])
 
             let foo = try row.decode(model: Foo.self, keyDecodingStrategy: .convertFromSnakeCase)
             XCTAssertEqual(foo.foo, 42)
-            XCTAssertEqual(foo.bar, nil)
+            XCTAssertEqual(foo.bar, 11.0)
             XCTAssertEqual(foo.baz, "vapor")
             XCTAssertEqual(foo.waldoFred, 2015)
         }
