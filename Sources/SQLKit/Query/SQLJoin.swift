@@ -7,7 +7,9 @@ public struct SQLJoin: SQLExpression {
     /// Creates a new `SQLJoin`.
     public init(method: SQLExpression, table: SQLExpression, expression: SQLExpression) {
         self.method = method
+
         self.table = table
+        
         self.expression = expression
     }
     
