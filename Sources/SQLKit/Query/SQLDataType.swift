@@ -6,6 +6,7 @@ public enum SQLDataType: SQLExpression {
     case text
     case real
     case blob
+    case `enum`(SQLEnumType)
     case custom(SQLExpression)
     
     public func serialize(to serializer: inout SQLSerializer) {
@@ -23,9 +24,17 @@ public enum SQLDataType: SQLExpression {
             sql = SQLRaw("REAL")
         case .blob:
             sql = SQLRaw("BLOB")
+        case .enum(let sqlEnum):
+            sql = sqlEnum
         case .custom(let expression):
             sql = expression
         }
         sql.serialize(to: &serializer)
+    }
+}
+
+extension SQLDataType {
+    public static func `enum`(name: String, values: String...) -> SQLDataType {
+        return .enum(.init(name: name, values: values))
     }
 }
