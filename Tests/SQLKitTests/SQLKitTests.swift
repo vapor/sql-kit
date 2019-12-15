@@ -72,6 +72,7 @@ final class SQLKitTests: XCTestCase {
             .run().wait()
         XCTAssertEqual(db.results[0], "CREATE TABLE `planets`(`size` ENUM('small', 'medium', 'large'))")
 
+        // switch to type name enum syntax
         db._dialect.enumSyntax = .typeName
 
         try db.create(table: "planets")
