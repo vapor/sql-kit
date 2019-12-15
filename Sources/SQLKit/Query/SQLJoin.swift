@@ -3,7 +3,7 @@ public struct SQLJoin: SQLExpression {
     public var method: SQLExpression
 
     public var table: SQLExpression
-
+    
     public var expression: SQLExpression
 
     /// Creates a new `SQLJoin`.
