@@ -257,36 +257,36 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
             let waldoFred: Int?
         }
 
-        do {
-            let row = TestRow(data: [
-                "id": UUID(),
-                "foo": 42,
-                "bar": Double?.none as Any,
-                "baz": "vapor",
-                "waldoFred": 2015
-            ])
-
-            let foo = try row.decode(model: Foo.self)
-            XCTAssertEqual(foo.foo, 42)
-            XCTAssertEqual(foo.bar, nil)
-            XCTAssertEqual(foo.baz, "vapor")
-            XCTAssertEqual(foo.waldoFred, 2015)
-        }
-        do {
-            let row = TestRow(data: [
-                "foos_id": UUID(),
-                "foos_foo": 42,
-                "foos_bar": Double?.none as Any,
-                "foos_baz": "vapor",
-                "foos_waldoFred": 2015
-            ])
-
-            let foo = try row.decode(model: Foo.self, prefix: "foos_")
-            XCTAssertEqual(foo.foo, 42)
-            XCTAssertEqual(foo.bar, nil)
-            XCTAssertEqual(foo.baz, "vapor")
-            XCTAssertEqual(foo.waldoFred, 2015)
-        }
+//        do {
+//            let row = TestRow(data: [
+//                "id": UUID(),
+//                "foo": 42,
+//                "bar": Double?.none as Any,
+//                "baz": "vapor",
+//                "waldoFred": 2015
+//            ])
+//
+//            let foo = try row.decode(model: Foo.self)
+//            XCTAssertEqual(foo.foo, 42)
+//            XCTAssertEqual(foo.bar, nil)
+//            XCTAssertEqual(foo.baz, "vapor")
+//            XCTAssertEqual(foo.waldoFred, 2015)
+//        }
+//        do {
+//            let row = TestRow(data: [
+//                "foos_id": UUID(),
+//                "foos_foo": 42,
+//                "foos_bar": Double?.none as Any,
+//                "foos_baz": "vapor",
+//                "foos_waldoFred": 2015
+//            ])
+//
+//            let foo = try row.decode(model: Foo.self, prefix: "foos_")
+//            XCTAssertEqual(foo.foo, 42)
+//            XCTAssertEqual(foo.bar, nil)
+//            XCTAssertEqual(foo.baz, "vapor")
+//            XCTAssertEqual(foo.waldoFred, 2015)
+//        }
         do {
             let row = TestRow(data: [
                 "id": UUID(),
@@ -295,6 +295,18 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
                 "baz": "vapor",
                 "waldo_fred": 2015
             ])
+
+            let row2 = TestRow(data: [
+                "id": UUID(),
+                "foo": 45,
+                "bar": 12.0,
+                "baz": "vapor-2",
+                "waldo_fred": 2016
+            ])
+
+            let rows = [row, row2]
+            let foo2 = try rows.decode(model: Foo.self, keyDecodingStrategy: .convertFromSnakeCase)
+            XCTAssertEqual(foo2.count, 2)
 
             let foo = try row.decode(model: Foo.self, keyDecodingStrategy: .convertFromSnakeCase)
             XCTAssertEqual(foo.foo, 42)

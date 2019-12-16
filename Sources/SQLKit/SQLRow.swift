@@ -14,6 +14,14 @@ extension SQLRow {
     }
 }
 
+extension Array where Element: SQLRow {
+    public func decode<D>(model type: D.Type, prefix: String? = nil, keyDecodingStrategy: SQlRowKeyDecodingStrategy = .useDefaultKeys) throws -> [D]
+        where D: Decodable
+    {
+        try SQLRowDecoder().decode(D.self, from: self, prefix: prefix, keyDecodingStrategy: keyDecodingStrategy)
+    }
+}
+
 public enum SQlRowKeyDecodingStrategy {
     case useDefaultKeys
     case convertFromSnakeCase

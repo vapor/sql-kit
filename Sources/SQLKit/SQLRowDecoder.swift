@@ -5,6 +5,42 @@ struct SQLRowDecoder {
         return try T.init(from: _Decoder(prefix: prefix, keyDecodingStrategy: keyDecodingStrategy, row: row))
     }
 
+    func decode<T>(_ type: T.Type, from rows: [SQLRow], prefix: String? = nil, keyDecodingStrategy: SQlRowKeyDecodingStrategy = .useDefaultKeys) throws -> [T]
+        where T: Decodable
+    {
+        guard let firstRow = rows.first else {
+            throw _Error.unkeyedContainer
+        }
+        var decoder = _Decoder(prefix: prefix, keyDecodingStrategy: keyDecodingStrategy, row: firstRow)
+        var result = [T]()
+        for row in rows {
+            decoder.row = row
+            result.append(try T.init(from: decoder))
+        }
+        return result
+    }
+
+    private func cacheDecodingKeys(keys: [CodingKey], prefix: String?, keyDecodingStrategy: SQlRowKeyDecodingStrategy) -> [String: String] {
+        var cachedDecodedKeys = [String: String]()
+        for key in keys {
+            var decodedKey = key.stringValue
+            switch keyDecodingStrategy {
+            case .useDefaultKeys:
+                break
+            case .convertFromSnakeCase:
+                decodedKey = decodedKey.snakeCased()
+            case .custom(let customKeyDecodingFunc):
+                decodedKey = customKeyDecodingFunc([key]).stringValue
+            }
+
+            if let prefix = prefix {
+                decodedKey = prefix + decodedKey
+            }
+            cachedDecodedKeys[key.stringValue] = decodedKey
+        }
+        return cachedDecodedKeys
+    }
+
     enum _Error: Error {
         case nesting
         case unkeyedContainer
@@ -14,7 +50,8 @@ struct SQLRowDecoder {
     struct _Decoder: Decoder {
         let prefix: String?
         let keyDecodingStrategy: SQlRowKeyDecodingStrategy
-        let row: SQLRow
+        let cachedDecodedKeys: [String: String] = [:]
+        var row: SQLRow
         var codingPath: [CodingKey] = []
         var userInfo: [CodingUserInfoKey : Any] {
             [:]
@@ -23,7 +60,7 @@ struct SQLRowDecoder {
         func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key>
             where Key: CodingKey
         {
-            .init(_KeyedDecoder(prefix: self.prefix, keyDecodingStrategy: self.keyDecodingStrategy, row: self.row, codingPath: self.codingPath))
+            return .init(_KeyedDecoder(prefix: self.prefix, keyDecodingStrategy: self.keyDecodingStrategy, row: self.row, codingPath: self.codingPath))
         }
 
         func unkeyedContainer() throws -> UnkeyedDecodingContainer {
@@ -40,7 +77,7 @@ struct SQLRowDecoder {
     {
         let prefix: String?
         let keyDecodingStrategy: SQlRowKeyDecodingStrategy
-        let row: SQLRow
+        var row: SQLRow
         var codingPath: [CodingKey] = []
         var allKeys: [Key] {
             self.row.allColumns.compactMap {
