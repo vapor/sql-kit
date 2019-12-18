@@ -4,7 +4,8 @@ import PackageDescription
 let package = Package(
     name: "sql-kit",
     platforms: [
-       .macOS(.v10_14)
+       .macOS(.v10_14),
+       .iOS(.v11)
     ],
     products: [
         .library(name: "SQLKit", targets: ["SQLKit"]),
