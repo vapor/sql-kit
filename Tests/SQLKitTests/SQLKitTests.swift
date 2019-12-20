@@ -65,18 +65,19 @@ final class SQLKitTests: XCTestCase {
         let db = TestDatabase()
 
         // ensure test is using inline enum syntax
-        db._dialect.enumSyntax = .inline(literal: SQLRaw("ENUM"))
+        db._dialect.enumSyntax = .inline
 
         try db.create(table: "planets")
-            .column("size", type: .enum(name: "size", values: "small", "medium", "large"))
+            .column("size", type: .custom(TestMySQLEnum.sqlExpression))
             .run().wait()
         XCTAssertEqual(db.results[0], "CREATE TABLE `planets`(`size` ENUM('small', 'medium', 'large'))")
 
         // switch to type name enum syntax
         db._dialect.enumSyntax = .typeName
 
+        // following would require type to have been created in a real database
         try db.create(table: "planets")
-            .column("size", type: .enum(name: "SIZE", values: "small", "medium", "large"))
+            .column("size", type: .custom(TestPostgresEnum.sqlExpression))
             .run().wait()
         XCTAssertEqual(db.results[1], "CREATE TABLE `planets`(`size` SIZE)")
     }
@@ -302,52 +303,5 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
             XCTAssertEqual(foo.bar, nil)
             XCTAssertEqual(foo.baz, "vapor")
         }
-    }
-}
-
-struct TestRow: SQLRow {
-    var data: [String: Any]
-
-    enum _Error: Error {
-        case missingColumn(String)
-        case typeMismatch(Any, Any.Type)
-    }
-
-    var allColumns: [String] {
-        .init(self.data.keys)
-    }
-
-    func contains(column: String) -> Bool {
-        self.data.keys.contains(column)
-    }
-
-    func decodeNil(column: String) throws -> Bool {
-        if let value = self.data[column], let optional = value as? OptionalType {
-            return optional.isNil
-        } else {
-            return false
-        }
-    }
-
-    func decode<D>(column: String, as type: D.Type) throws -> D
-        where D : Decodable
-    {
-        guard let value = self.data[column] else {
-            throw _Error.missingColumn(column)
-        }
-        guard let cast = value as? D else {
-            throw _Error.typeMismatch(value, D.self)
-        }
-        return cast
-    }
-}
-
-protocol OptionalType {
-    var isNil: Bool { get }
-}
-
-extension Optional: OptionalType {
-    var isNil: Bool {
-        self == nil
     }
 }

@@ -13,7 +13,7 @@ public protocol SQLDialect {
 
 public enum SQLEnumSyntax {
     /// for ex. MySQL, which uses the ENUM literal followed by the options
-    case inline(literal: SQLExpression)
+    case inline
 
     /// for ex. PostgreSQL, which uses the name of type that must have been
     /// previously created.
