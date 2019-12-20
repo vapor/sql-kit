@@ -271,6 +271,8 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
             XCTAssertEqual(foo.bar, nil)
             XCTAssertEqual(foo.baz, "vapor")
             XCTAssertEqual(foo.waldoFred, 2015)
+        } catch {
+            XCTFail("Could not decode row \(error)")
         }
         do {
             let row = TestRow(data: [
@@ -281,11 +283,13 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
                 "foos_waldoFred": 2015
             ])
 
-            let foo = try row.decode(model: Foo.self, prefix: "foos_")
+            let foo = try row.decode(model: Foo.self, keyPrefix: "foos_")
             XCTAssertEqual(foo.foo, 42)
             XCTAssertEqual(foo.bar, nil)
             XCTAssertEqual(foo.baz, "vapor")
             XCTAssertEqual(foo.waldoFred, 2015)
+        } catch {
+            XCTFail("Could not decode row with prefix \(error)")
         }
         do {
             let row = TestRow(data: [
@@ -301,6 +305,8 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
             XCTAssertEqual(foo.bar, nil)
             XCTAssertEqual(foo.baz, "vapor")
             XCTAssertEqual(foo.waldoFred, 2015)
+        } catch {
+            XCTFail("Could not decode row with keyDecodingStrategy \(error)")
         }
     }
 }

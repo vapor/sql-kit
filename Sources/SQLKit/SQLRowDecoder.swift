@@ -1,8 +1,28 @@
-struct SQLRowDecoder {
-    func decode<T>(_ type: T.Type, from row: SQLRow, prefix: String? = nil, keyDecodingStrategy: SQlRowKeyDecodingStrategy = .useDefaultKeys) throws -> T
+public struct SQLRowDecoder {
+    public var keyPrefix: String? = nil
+    public var keyDecodingStrategy: KeyDecodingStrategy = .useDefaultKeys
+
+    func decode<T>(_ type: T.Type, from row: SQLRow) throws -> T
         where T: Decodable
     {
-        return try T.init(from: _Decoder(prefix: prefix, keyDecodingStrategy: keyDecodingStrategy, row: row))
+        return try T.init(from: _Decoder(row: row, options: options))
+    }
+
+    public enum KeyDecodingStrategy {
+        case useDefaultKeys
+        case convertFromSnakeCase
+        case custom(([CodingKey]) -> CodingKey)
+    }
+
+    fileprivate struct _Options {
+        let keyPrefix: String?
+        let keyDecodingStrategy: KeyDecodingStrategy
+    }
+
+    /// The options set on the top-level decoder.
+    fileprivate var options: _Options {
+        return _Options(keyPrefix: keyPrefix,
+                        keyDecodingStrategy: keyDecodingStrategy)
     }
 
     enum _Error: Error {
@@ -12,18 +32,23 @@ struct SQLRowDecoder {
     }
 
     struct _Decoder: Decoder {
-        let prefix: String?
-        let keyDecodingStrategy: SQlRowKeyDecodingStrategy
+        fileprivate let options: SQLRowDecoder._Options
         let row: SQLRow
         var codingPath: [CodingKey] = []
         var userInfo: [CodingUserInfoKey : Any] {
             [:]
         }
 
+        fileprivate init(row: SQLRow, codingPath: [CodingKey] = [], options: _Options) {
+            self.options = options
+            self.row = row
+            self.codingPath = codingPath
+        }
+
         func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key>
             where Key: CodingKey
         {
-            .init(_KeyedDecoder(prefix: self.prefix, keyDecodingStrategy: self.keyDecodingStrategy, row: self.row, codingPath: self.codingPath))
+            .init(_KeyedDecoder(referencing: self, row: self.row, codingPath: self.codingPath))
         }
 
         func unkeyedContainer() throws -> UnkeyedDecodingContainer {
@@ -38,8 +63,9 @@ struct SQLRowDecoder {
     struct _KeyedDecoder<Key>: KeyedDecodingContainerProtocol
         where Key: CodingKey
     {
-        let prefix: String?
-        let keyDecodingStrategy: SQlRowKeyDecodingStrategy
+        /// A reference to the decoder we're reading from.
+        private let decoder: _Decoder
+
         let row: SQLRow
         var codingPath: [CodingKey] = []
         var allKeys: [Key] {
@@ -48,9 +74,14 @@ struct SQLRowDecoder {
             }
         }
 
+        fileprivate init(referencing decoder: _Decoder, row: SQLRow, codingPath: [CodingKey] = []) {
+            self.decoder = decoder
+            self.row = row
+        }
+
         func column(for key: Key) -> String {
             var decodedKey = key.stringValue
-            switch self.keyDecodingStrategy {
+            switch self.decoder.options.keyDecodingStrategy {
             case .useDefaultKeys:
                 break
             case .convertFromSnakeCase:
@@ -59,7 +90,7 @@ struct SQLRowDecoder {
                 decodedKey = customKeyDecodingFunc([key]).stringValue
             }
 
-            if let prefix = self.prefix {
+            if let prefix = self.decoder.options.keyPrefix {
                 return prefix + decodedKey
             } else {
                 return decodedKey
@@ -94,7 +125,7 @@ struct SQLRowDecoder {
         }
 
         func superDecoder() throws -> Decoder {
-            _Decoder(prefix: self.prefix, keyDecodingStrategy: self.keyDecodingStrategy, row: self.row, codingPath: self.codingPath)
+            _Decoder(row: self.row, codingPath: self.codingPath, options: self.decoder.options)
         }
 
         func superDecoder(forKey key: Key) throws -> Decoder {

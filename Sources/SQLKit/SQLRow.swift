@@ -7,15 +7,18 @@ public protocol SQLRow {
 }
 
 extension SQLRow {
-    public func decode<D>(model type: D.Type, prefix: String? = nil, keyDecodingStrategy: SQlRowKeyDecodingStrategy = .useDefaultKeys) throws -> D
+    public func decode<D>(model type: D.Type, keyPrefix: String? = nil, keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys) throws -> D
         where D: Decodable
     {
-        try SQLRowDecoder().decode(D.self, from: self, prefix: prefix, keyDecodingStrategy: keyDecodingStrategy)
+        var rowDecoder = SQLRowDecoder()
+        rowDecoder.keyPrefix = keyPrefix
+        rowDecoder.keyDecodingStrategy = keyDecodingStrategy
+        return try rowDecoder.decode(D.self, from: self)
     }
-}
 
-public enum SQlRowKeyDecodingStrategy {
-    case useDefaultKeys
-    case convertFromSnakeCase
-    case custom(([CodingKey]) -> CodingKey)
+    public func decode<D>(model type: D.Type, with rowDecoder: SQLRowDecoder) throws -> D
+        where D: Decodable
+    {
+        return try rowDecoder.decode(D.self, from: self)
+    }
 }
