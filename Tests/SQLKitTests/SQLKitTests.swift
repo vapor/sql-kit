@@ -60,6 +60,36 @@ final class SQLKitTests: XCTestCase {
         try db.drop(table: "planets").ifExists().run().wait()
         XCTAssertEqual(db.results[1], "DROP TABLE `planets`")
     }
+    
+    func testSimpleJoin() throws {
+        let db = TestDatabase()
+        
+        try db.select().column("*")
+            .from("planets")
+            .join("moons", on: "moons.planet_id=planets.id")
+            .run().wait()
+        
+        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` INNER JOIN `moons` ON moons.planet_id=planets.id")
+    }
+    
+    func testMessyJoin() throws {
+        let db = TestDatabase()
+        
+        try db.select().column("*")
+            .from("planets")
+            .join(
+                SQLAlias(SQLGroupExpression(
+                    db.select().column("name").from("stars").where(SQLColumn("orion"), .equal, SQLIdentifier("please space")).select
+                ), as: SQLIdentifier("star")),
+                method: SQLJoinMethod.outer,
+                on: SQLColumn(SQLIdentifier("planet_id"), table: SQLIdentifier("moons")), SQLBinaryOperator.isNot, SQLRaw("%%%%%%")
+            )
+            .where(SQLLiteral.null)
+            .run().wait()
+        
+        // Yes, this query is very much pure gibberish.
+        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` OUTER JOIN (SELECT `name` FROM `stars` WHERE `orion` = `please space`) AS `star` ON `moons`.`planet_id` IS NOT %%%%%% WHERE NULL")
+    }
 }
 
 // MARK: Table Creation
