@@ -39,6 +39,23 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(serializer.sql, "SELECT * FROM planets WHERE name = ?")
         XCTAssert(serializer.binds.first! as! String == "Earth")
     }
+    
+    func testRawQueryStringWithNonliteral() throws {
+        let db = TestDatabase()
+        let (table, planet) = ("planets", "Earth")
+
+        var serializer1 = SQLSerializer(database: db)
+        let query1 = "SELECT * FROM \(table) WHERE name = \(planet)"
+        let builder1 = db.raw(.init(query1))
+        builder1.query.serialize(to: &serializer1)
+        XCTAssertEqual(serializer1.sql, "SELECT * FROM planets WHERE name = Earth")
+
+        var serializer2 = SQLSerializer(database: db)
+        let query2: Substring = "|||SELECT * FROM staticTable WHERE name = uselessUnboundValue|||".dropFirst(3).dropLast(3)
+        let builder2 = db.raw(.init(query2))
+        builder2.query.serialize(to: &serializer2)
+        XCTAssertEqual(serializer2.sql, "SELECT * FROM staticTable WHERE name = uselessUnboundValue")
+    }
 
     func testGroupByHaving() throws {
         let db = TestDatabase()
