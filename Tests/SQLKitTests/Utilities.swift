@@ -25,6 +25,53 @@ final class TestDatabase: SQLDatabase {
     }
 }
 
+struct TestRow: SQLRow {
+    var data: [String: Any]
+
+    enum _Error: Error {
+        case missingColumn(String)
+        case typeMismatch(Any, Any.Type)
+    }
+
+    var allColumns: [String] {
+        .init(self.data.keys)
+    }
+
+    func contains(column: String) -> Bool {
+        self.data.keys.contains(column)
+    }
+
+    func decodeNil(column: String) throws -> Bool {
+        if let value = self.data[column], let optional = value as? OptionalType {
+            return optional.isNil
+        } else {
+            return false
+        }
+    }
+
+    func decode<D>(column: String, as type: D.Type) throws -> D
+        where D : Decodable
+    {
+        guard let value = self.data[column] else {
+            throw _Error.missingColumn(column)
+        }
+        guard let cast = value as? D else {
+            throw _Error.typeMismatch(value, D.self)
+        }
+        return cast
+    }
+}
+
+protocol OptionalType {
+    var isNil: Bool { get }
+}
+
+extension Optional: OptionalType {
+    var isNil: Bool {
+        self == nil
+    }
+}
+
 struct GenericDialect: SQLDialect {
     var name: String {
         "generic sql"
@@ -50,8 +97,45 @@ struct GenericDialect: SQLDialect {
         case false: return SQLRaw("false")
         }
     }
+
+    var enumSyntax: SQLEnumSyntax = .inline
     
     var autoIncrementClause: SQLExpression {
         return SQLRaw("AUTOINCREMENT")
     }
+}
+
+protocol MySQLEnum: SQLEnumType {}
+extension MySQLEnum {
+    static var sqlTypeName: SQLExpression { SQLRaw("ENUM") }
+}
+
+enum TestMySQLEnum: String, CaseIterable, MySQLEnum {
+    case small
+    case medium
+    case large
+}
+
+enum TestPostgresEnum: String, CaseIterable, SQLEnumType {
+    static let sqlTypeName: SQLExpression = SQLRaw("SIZE")
+
+    case small
+    case medium
+    case large
+}
+
+protocol FluentEnum: SQLEnumType {
+    static var name: String { get }
+}
+
+extension FluentEnum {
+    static var sqlTypeName: SQLExpression { SQLRaw(name) }
+}
+
+enum TestFluentEnum: String, CaseIterable, FluentEnum {
+    static let name = "SIZE"
+
+    case small
+    case medium
+    case large
 }
