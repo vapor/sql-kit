@@ -73,6 +73,10 @@ extension Optional: OptionalType {
 }
 
 struct GenericDialect: SQLDialect {
+    var supportsAutoIncrement: Bool {
+        true
+    }
+
     var name: String {
         "generic sql"
     }
@@ -103,39 +107,4 @@ struct GenericDialect: SQLDialect {
     var autoIncrementClause: SQLExpression {
         return SQLRaw("AUTOINCREMENT")
     }
-}
-
-protocol MySQLEnum: SQLEnumType {}
-extension MySQLEnum {
-    static var sqlTypeName: SQLExpression { SQLRaw("ENUM") }
-}
-
-enum TestMySQLEnum: String, CaseIterable, MySQLEnum {
-    case small
-    case medium
-    case large
-}
-
-enum TestPostgresEnum: String, CaseIterable, SQLEnumType {
-    static let sqlTypeName: SQLExpression = SQLRaw("SIZE")
-
-    case small
-    case medium
-    case large
-}
-
-protocol FluentEnum: SQLEnumType {
-    static var name: String { get }
-}
-
-extension FluentEnum {
-    static var sqlTypeName: SQLExpression { SQLRaw(name) }
-}
-
-enum TestFluentEnum: String, CaseIterable, FluentEnum {
-    static let name = "SIZE"
-
-    case small
-    case medium
-    case large
 }
