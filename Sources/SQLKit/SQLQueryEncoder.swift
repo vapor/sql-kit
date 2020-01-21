@@ -1,7 +1,7 @@
 public struct SQLQueryEncoder {
     public init() { }
 
-    public func encode<E>(_ encodable: E) throws -> [String: SQLExpression]
+    public func encode<E>(_ encodable: E) throws -> [(String, SQLExpression)]
         where E: Encodable
     {
         let encoder = _Encoder()
@@ -19,10 +19,10 @@ private final class _Encoder: Encoder {
         return [:]
     }
 
-    var row: [String: SQLExpression]
+    var row: [(String, SQLExpression)]
 
     init() {
-        self.row = [:]
+        self.row = []
     }
 
     func container<Key>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> where Key : CodingKey {
@@ -41,11 +41,15 @@ private final class _Encoder: Encoder {
         }
 
         mutating func encodeNil(forKey key: Key) throws {
-            self.encoder.row[key.stringValue] = SQLLiteral.null
+            self.encoder.row.append((key.stringValue, SQLLiteral.null))
         }
 
         mutating func encode<T>(_ value: T, forKey key: Key) throws where T : Encodable {
-            self.encoder.row[key.stringValue] = SQLBind(value)
+            if let value = value as? SQLExpression {
+                self.encoder.row.append((key.stringValue, value))
+            } else {
+                self.encoder.row.append((key.stringValue, SQLBind(value)))
+            }
         }
 
         mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> where NestedKey : CodingKey {

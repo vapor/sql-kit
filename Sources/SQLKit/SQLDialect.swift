@@ -7,7 +7,7 @@ public protocol SQLDialect {
     func literalBoolean(_ value: Bool) -> SQLExpression
     var literalDefault: SQLExpression { get }
     var supportsIfExists: Bool { get }
-
+    var supportsAutoIncrement: Bool { get }
     var enumSyntax: SQLEnumSyntax { get }
 }
 
@@ -31,9 +31,5 @@ extension SQLDialect {
 
     public var supportsIfExists: Bool {
         return true
-    }
-
-    public var enumSyntax: SQLEnumSyntax {
-        .unsupported
     }
 }

@@ -11,24 +11,33 @@ public struct SQLAlterTable: SQLExpression {
     public var addColumns: [SQLExpression]
     /// Columns to add.
     public var modifyColumns: [SQLExpression]
+
+    public var dropColumns: [SQLExpression]
     
     /// Creates a new `SQLAlterTable`. See `SQLAlterTableBuilder`.
     public init(name: SQLExpression) {
         self.name = name
         self.addColumns = []
         self.modifyColumns = []
+        self.dropColumns = []
     }
     
     public func serialize(to serializer: inout SQLSerializer) {
-        serializer.write("ALTER TABLE ")
-        self.name.serialize(to: &serializer)
-        for column in self.addColumns {
-            serializer.write(" ADD ")
-            column.serialize(to: &serializer)
-        }
-        for column in self.modifyColumns {
-            serializer.write(" MODIFY ")
-            column.serialize(to: &serializer)
+        serializer.statement {
+            $0.append("ALTER TABLE")
+            $0.append(self.name)
+            for column in self.addColumns {
+                $0.append("ADD")
+                $0.append(column)
+            }
+            for column in self.modifyColumns{
+                $0.append("MODIFY")
+                $0.append(column)
+            }
+            for column in self.dropColumns {
+                $0.append("DROP")
+                $0.append(column)
+            }
         }
     }
 }
