@@ -12,8 +12,8 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder, SQLColumnBuilder {
     
     /// See `SQLColumnBuilder`.
     public var columns: [SQLExpression] {
-        get { return alterTable.columns }
-        set { alterTable.columns = newValue }
+        get { return alterTable.addColumns }
+        set { alterTable.addColumns = newValue }
     }
 
     /// Creates a new `SQLAlterTableBuilder`.

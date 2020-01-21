@@ -32,4 +32,8 @@ extension SQLDialect {
     public var supportsIfExists: Bool {
         return true
     }
+
+    public var enumSyntax: SQLEnumSyntax {
+        .unsupported
+    }
 }
