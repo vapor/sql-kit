@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - run: apt update -y; apt install -y libsqlite3-dev
-    - run: git clone -b master https://github.com/vapor/sqlite-kit.git
+    - run: git clone -b enum https://github.com/vapor/sqlite-kit.git
       working-directory: ./
     - run: swift package edit sql-kit --revision ${{ github.sha }}
       working-directory: ./sqlite-kit
@@ -42,7 +42,7 @@ jobs:
           POSTGRES_PASSWORD: vapor_password
     runs-on: ubuntu-latest
     steps:
-    - run: git clone -b master https://github.com/vapor/postgres-kit.git
+    - run: git clone -b enum https://github.com/vapor/postgres-kit.git
       working-directory: ./
     - run: swift package edit sql-kit --revision ${{ github.sha }}
       working-directory: ./postgres-kit
@@ -63,7 +63,7 @@ jobs:
           MYSQL_PASSWORD: vapor_password
     runs-on: ubuntu-latest
     steps:
-    - run: git clone -b master https://github.com/vapor/mysql-kit.git
+    - run: git clone -b enum https://github.com/vapor/mysql-kit.git
       working-directory: ./
     - run: swift package edit sql-kit --revision ${{ github.sha }}
       working-directory: ./mysql-kit
