@@ -28,4 +28,12 @@ public final class SQLAlterEnumBuilder: SQLQueryBuilder {
         self.alterEnum.value = value
         return self
     }
+
+    public func run() -> EventLoopFuture<Void> {
+        guard self.database.dialect.enumSyntax == .typeName else {
+            self.database.logger.warning("Database does not support enum types.")
+            return self.database.eventLoop.makeSucceededFuture(())
+        }
+        return self.database.execute(sql: self.query) { _ in }
+    }
 }

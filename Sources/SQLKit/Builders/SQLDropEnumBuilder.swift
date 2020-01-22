@@ -22,7 +22,7 @@ extension SQLDatabase {
     }
 }
 
-/// Builds `PostgresDropType` queries.
+/// Builds `SQLDropEnumBuilder` queries.
 ///
 ///     conn.drop(type: "meal").run()
 ///
@@ -39,7 +39,7 @@ public final class SQLDropEnumBuilder: SQLQueryBuilder {
         return self.dropEnum
     }
 
-    /// Creates a new `PostgresDropTypeBuilder`.
+    /// Creates a new `SQLDropEnumBuilder`.
     init(name: SQLExpression, on database: SQLDatabase) {
         self.dropEnum = .init(name: name)
         self.database = database
@@ -58,5 +58,13 @@ public final class SQLDropEnumBuilder: SQLQueryBuilder {
     public func cascade() -> Self {
         self.dropEnum.cascade = true
         return self
+    }
+    
+    public func run() -> EventLoopFuture<Void> {
+        guard self.database.dialect.enumSyntax == .typeName else {
+            self.database.logger.warning("Database does not support enum types.")
+            return self.database.eventLoop.makeSucceededFuture(())
+        }
+        return self.database.execute(sql: self.query) { _ in }
     }
 }

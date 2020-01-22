@@ -1,6 +1,6 @@
 /// `DROP TYPE` query.
 ///
-/// See `PostgresDropTypeBuilder`.
+/// See `SQLDropEnumBuilder`.
 public struct SQLDropEnum: SQLExpression {
     /// Type to drop.
     public let name: SQLExpression
@@ -14,7 +14,7 @@ public struct SQLDropEnum: SQLExpression {
     /// that depend on those objects.
     public var cascade: Bool
 
-    /// Creates a new `PostgresDropType`.
+    /// Creates a new `SQLDropEnum`.
     public init(name: SQLExpression) {
         self.name = name
         self.ifExists = false

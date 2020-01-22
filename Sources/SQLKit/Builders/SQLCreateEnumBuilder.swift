@@ -1,26 +1,26 @@
 // MARK: Connection
 
 extension SQLDatabase {
-    /// Creates a new `PostgresCreateTypeBuilder`.
+    /// Creates a new `SQLCreateEnumBuilder`.
     ///
     ///     conn.create(enum: "meal", cases: "breakfast", "lunch", "dinner")...
     ///
     /// - parameters:
     ///     - name: Name of ENUM type to create.
     ///     - cases: The cases of the ENUM type.
-    /// - returns: `PostgresCreateTypeBuilder`.
+    /// - returns: `SQLCreateEnumBuilder`.
     public func create(enum name: String) -> SQLCreateEnumBuilder {
         return self.create(enum: SQLIdentifier(name))
     }
 
-    /// Creates a new `PostgresCreateTypeBuilder`.
+    /// Creates a new `SQLCreateEnumBuilder`.
     ///
     ///     conn.create(enum: SQLIdentifier("meal"), cases: "breakfast", "lunch", "dinner")...
     ///
     /// - parameters:
     ///     - name: Name of ENUM type to create.
     ///     - cases: The cases of the ENUM type.
-    /// - returns: `PostgresCreateTypeBuilder`.
+    /// - returns: `SQLCreateEnumBuilder`.
     public func create(enum name: SQLExpression) -> SQLCreateEnumBuilder {
         return .init(name: name, on: self)
     }
@@ -44,7 +44,7 @@ public final class SQLCreateEnumBuilder: SQLQueryBuilder {
         return self.createEnum
     }
 
-    /// Creates a new `PostgresCreateTypeBuilder`.
+    /// Creates a new `SQLCreateEnumBuilder`.
     init(name: SQLExpression, on database: SQLDatabase) {
         self.createEnum = .init(name: name, values: [])
         self.database = database
@@ -57,5 +57,13 @@ public final class SQLCreateEnumBuilder: SQLQueryBuilder {
     public func value(_ value: SQLExpression) -> Self {
         self.createEnum.values.append(value)
         return self
+    }
+
+    public func run() -> EventLoopFuture<Void> {
+        guard self.database.dialect.enumSyntax == .typeName else {
+            self.database.logger.warning("Database does not support enum types.")
+            return self.database.eventLoop.makeSucceededFuture(())
+        }
+        return self.database.execute(sql: self.query) { _ in }
     }
 }

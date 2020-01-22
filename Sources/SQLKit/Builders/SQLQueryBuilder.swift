@@ -10,6 +10,8 @@ public protocol SQLQueryBuilder: class {
     
     /// Connection to execute query on.
     var database: SQLDatabase { get }
+
+    func run() -> EventLoopFuture<Void>
 }
 
 extension SQLQueryBuilder {
