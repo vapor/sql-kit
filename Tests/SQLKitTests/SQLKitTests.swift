@@ -3,14 +3,19 @@ import SQLKitBenchmark
 import XCTest
 
 final class SQLKitTests: XCTestCase {
+    var db: TestDatabase!
+
+    override func setUp() {
+        super.setUp()
+        self.db = TestDatabase()
+    }
+
     func testBenchmarker() throws {
-        let db = TestDatabase()
         let benchmarker = SQLBenchmarker(on: db)
         try benchmarker.run()
     }
     
     func testLockingClause_forUpdate() throws {
-        let db = TestDatabase()
         try db.select().column("*")
             .from("planets")
             .where("name", .equal, "Earth")
@@ -20,7 +25,6 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testLockingClause_lockInShareMode() throws {
-        let db = TestDatabase()
         try db.select().column("*")
             .from("planets")
             .where("name", .equal, "Earth")
@@ -30,7 +34,6 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testRawQueryStringInterpolation() throws {
-        let db = TestDatabase()
         let (table, planet) = ("planets", "Earth")
         let builder = db.raw("SELECT * FROM \(table) WHERE name = \(bind: planet)")
         var serializer = SQLSerializer(database: db)
@@ -41,7 +44,6 @@ final class SQLKitTests: XCTestCase {
     }
 
     func testGroupByHaving() throws {
-        let db = TestDatabase()
         try db.select().column("*")
             .from("planets")
             .groupBy("color")
@@ -51,8 +53,6 @@ final class SQLKitTests: XCTestCase {
     }
 
     func testIfExists() throws {
-        let db = TestDatabase()
-
         try db.drop(table: "planets").ifExists().run().wait()
         XCTAssertEqual(db.results[0], "DROP TABLE IF EXISTS `planets`")
 
@@ -62,12 +62,76 @@ final class SQLKitTests: XCTestCase {
     }
 }
 
+// MARK: Triggers
+
+extension SQLKitTests {
+    func testDropTriggerOptions() throws {
+        var dialect = GenericDialect()
+        dialect.supportsDropTriggerCascade = true
+        dialect.supportsDropTriggerTable = true
+        db._dialect = dialect
+        
+        try db.drop(trigger: "foo", table: "planets").run().wait()
+        XCTAssertEqual(db.results.popLast(), "DROP TRIGGER `foo` ON `planets`")
+
+        try db.drop(trigger: "foo", table: "planets").ifExists().run().wait()
+        XCTAssertEqual(db.results.popLast(), "DROP TRIGGER IF EXISTS `foo` ON `planets`")
+
+        try db.drop(trigger: "foo", table: "planets").ifExists().cascade().run().wait()
+        XCTAssertEqual(db.results.popLast(), "DROP TRIGGER IF EXISTS `foo` ON `planets` CASCADE")
+
+        db._dialect.supportsIfExists = false
+        try db.drop(trigger: "foo", table: "planets").ifExists().run().wait()
+        XCTAssertEqual(db.results.popLast(), "DROP TRIGGER `foo` ON `planets`")
+    }
+
+    func testMySqlTriggerCreates() throws {
+        var dialect = GenericDialect()
+        dialect.name = "mysql"
+        db._dialect = dialect
+
+        try db.create(trigger: "foo", table: "planet", procedure: "qwer", when: .before, event: .insert)
+            .body([
+                SQLRaw("BEGIN"),
+                SQLRaw("IF NEW.amount < 0 THEN"),
+                SQLRaw("SET NEW.amount = 0;"),
+                SQLRaw("END IF;"),
+                SQLRaw("END;")
+            ])
+            .run().wait()
+        XCTAssertEqual(db.results.popLast(), "CREATE TRIGGER `foo` BEFORE INSERT ON `planet` FOR EACH ROW BEGIN IF NEW.amount < 0 THEN SET NEW.amount = 0; END IF; END;")
+    }
+
+    func testPostgreSqlTriggerCreates() throws {
+        var dialect = GenericDialect()
+        dialect.name = "postgresql"
+        db._dialect = dialect
+        
+        try db.create(trigger: "foo", table: "planet", procedure: "qwer", when: .before, event: .insert)
+            .run().wait()
+        XCTAssertEqual(db.results.popLast(), "CREATE TRIGGER `foo` BEFORE INSERT ON `planet` EXECUTE PROCEDURE `qwer`")
+    }
+
+    func testPostgreSqlTriggerComplexCreate() throws {
+        var dialect = GenericDialect()
+        dialect.name = "postgresql"
+        db._dialect = dialect
+
+        try db.create(trigger: "foo", table: "planet", procedure: "qwer", when: .after, event: .insert)
+            .each(.row)
+            .isConstraint()
+            .timing(.initiallyDeferred)
+            .referencedTable(SQLIdentifier("galaxies"))
+            .run().wait()
+        
+        XCTAssertEqual(db.results.popLast(), "CREATE CONSTRAINT TRIGGER `foo` AFTER INSERT ON `planet` FROM `galaxies` INITIALLY DEFERRED FOR EACH ROW EXECUTE PROCEDURE `qwer`")
+    }
+}
+
 // MARK: Table Creation
 
 extension SQLKitTests {
     func testColumnConstraints() throws {
-        let db = TestDatabase()
-
         try db.create(table: "planets")
             .column("id", type: .bigint, .primaryKey)
             .column("name", type: .text, .default("unnamed"))
@@ -87,8 +151,6 @@ CREATE TABLE `planets`(`id` BIGINT PRIMARY KEY AUTOINCREMENT, `name` TEXT DEFAUL
     }
 
     func testMultipleColumnConstraintsPerRow() throws {
-        let db = TestDatabase()
-
         try db.create(table: "planets")
             .column("id", type: .bigint, .notNull, .primaryKey)
             .run().wait()
@@ -97,8 +159,6 @@ CREATE TABLE `planets`(`id` BIGINT PRIMARY KEY AUTOINCREMENT, `name` TEXT DEFAUL
     }
 
     func testPrimaryKeyColumnConstraintVariants() throws {
-        let db = TestDatabase()
-
         try db.create(table: "planets1")
             .column("id", type: .bigint, .primaryKey)
             .run().wait()
@@ -113,8 +173,6 @@ CREATE TABLE `planets`(`id` BIGINT PRIMARY KEY AUTOINCREMENT, `name` TEXT DEFAUL
     }
 
     func testDefaultColumnConstraintVariants() throws {
-        let db = TestDatabase()
-
         try db.create(table: "planets1")
             .column("name", type: .text, .default("unnamed"))
             .run().wait()
@@ -147,8 +205,6 @@ CREATE TABLE `planets`(`id` BIGINT PRIMARY KEY AUTOINCREMENT, `name` TEXT DEFAUL
     }
 
     func testForeignKeyColumnConstraintVariants() throws {
-        let db = TestDatabase()
-
         try db.create(table: "planets1")
             .column("galaxy_id", type: .bigint, .references("galaxies", "id"))
             .run().wait()
@@ -163,8 +219,6 @@ CREATE TABLE `planets`(`id` BIGINT PRIMARY KEY AUTOINCREMENT, `name` TEXT DEFAUL
     }
 
     func testTableConstraints() throws {
-        let db = TestDatabase()
-
         try db.create(table: "planets")
             .column("id", type: .bigint)
             .column("name", type: .text)
@@ -188,8 +242,6 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
     }
 
     func testCompositePrimaryKeyTableConstraint() throws {
-        let db = TestDatabase()
-
         try db.create(table: "planets1")
             .column("id1", type: .bigint)
             .column("id2", type: .bigint)
@@ -200,8 +252,6 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
     }
 
     func testCompositeUniqueTableConstraint() throws {
-        let db = TestDatabase()
-
         try db.create(table: "planets1")
             .column("id1", type: .bigint)
             .column("id2", type: .bigint)
@@ -212,8 +262,6 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
     }
 
     func testPrimaryKeyTableConstraintVariants() throws {
-        let db = TestDatabase()
-
         try db.create(table: "planets1")
             .column("galaxy_name", type: .text)
             .column("galaxy_id", type: .bigint)

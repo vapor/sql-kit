@@ -1,5 +1,5 @@
 public protocol SQLDialect {
-    var name: String { get }
+    var name: String { get set }
     var identifierQuote: SQLExpression { get }
     var literalStringQuote: SQLExpression { get }
     var autoIncrementClause: SQLExpression { get }
@@ -9,6 +9,8 @@ public protocol SQLDialect {
     var supportsIfExists: Bool { get }
     var supportsAutoIncrement: Bool { get }
     var enumSyntax: SQLEnumSyntax { get }
+    var supportsDropTriggerTable: Bool { get }
+    var supportsDropTriggerCascade: Bool { get }
 }
 
 public enum SQLEnumSyntax {

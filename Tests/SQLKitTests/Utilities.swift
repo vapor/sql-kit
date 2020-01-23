@@ -73,13 +73,15 @@ extension Optional: OptionalType {
 }
 
 struct GenericDialect: SQLDialect {
+    var supportsDropTriggerTable = false
+
+    var supportsDropTriggerCascade = false
+
     var supportsAutoIncrement: Bool {
         true
     }
 
-    var name: String {
-        "generic sql"
-    }
+    var name: String = "generic sql"
     
     var supportsIfExists: Bool = true
 
