@@ -73,9 +73,9 @@ extension Optional: OptionalType {
 }
 
 struct GenericDialect: SQLDialect {
-    var supportsDropTriggerTable = false
+    var dropTriggerSupportsTableName = false
 
-    var supportsDropTriggerCascade = false
+    var dropTriggerSupportsCascade = false
 
     var supportsAutoIncrement: Bool {
         true

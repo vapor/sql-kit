@@ -1,10 +1,10 @@
 extension SQLDatabase {
-    public func create(trigger: SQLExpression, table: SQLExpression, procedure: SQLExpression, when: SQLExpression, event: SQLExpression) -> SQLCreateTriggerBuilder {
-        .init(trigger: trigger, table: table, procedure: procedure, when: when, event: event, on: self)
-    }
-
     public func create(trigger: String, table: String, procedure: String, when: SQLTriggerWhen, event: SQLTriggerEvent) -> SQLCreateTriggerBuilder {
         self.create(trigger: SQLIdentifier(trigger), table: SQLIdentifier(table), procedure: SQLIdentifier(procedure), when: when, event: event)
+    }
+
+    public func create(trigger: SQLExpression, table: SQLExpression, procedure: SQLExpression, when: SQLExpression, event: SQLExpression) -> SQLCreateTriggerBuilder {
+        .init(trigger: trigger, table: table, procedure: procedure, when: when, event: event, on: self)
     }
 }
 
@@ -42,6 +42,11 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
         return self
     }
 
+    public func columns(_ columns: [String]) -> SQLCreateTriggerBuilder {
+        createTrigger.columns = columns.map { SQLRaw($0) }
+        return self
+    }
+
     public func timing(_ value: SQLExpression) -> SQLCreateTriggerBuilder {
         createTrigger.timing = value
         return self
@@ -54,6 +59,11 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
 
     public func condition(_ value: SQLExpression) -> SQLCreateTriggerBuilder {
         createTrigger.condition = value
+        return self
+    }
+
+    public func condition(_ value: String) -> SQLCreateTriggerBuilder {
+        createTrigger.condition = SQLRaw(value)
         return self
     }
 

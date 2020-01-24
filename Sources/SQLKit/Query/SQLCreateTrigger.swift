@@ -40,6 +40,7 @@ public struct SQLCreateTrigger: SQLExpression {
     public var definer: SQLExpression?
 
     /// The trigger body to execute for dialects that support it.
+    /// - Note: You should **not** include BEGIN/END statements.  They are added automatically.
     public var body: [SQLExpression]?
 
     public init(trigger: SQLExpression, table: SQLExpression, procedure: SQLExpression, when: SQLExpression, event: SQLExpression) {
@@ -55,11 +56,13 @@ public struct SQLCreateTrigger: SQLExpression {
         self.init(trigger: SQLIdentifier(trigger), table: SQLIdentifier(table), procedure: SQLIdentifier(procedure), when: when, event: event)
     }
 
-    private func serializeMySql(_ serializer: inout SQLSerializer) {
+    private func serializeGeneral(_ serializer: inout SQLSerializer) {
+        let dialect = serializer.dialect
+
         serializer.statement { statement in
             statement.append("CREATE")
 
-            if let definer = definer {
+            if let definer = definer, dialect.createTriggerSupportsDefiner {
                 statement.append("DEFINER = ")
                 statement.append(definer)
             }
@@ -70,13 +73,23 @@ public struct SQLCreateTrigger: SQLExpression {
             statement.append(event)
             statement.append("ON")
             statement.append(table)
-            statement.append("FOR EACH ROW")
+
+            if dialect.createTriggerSupportsForEach {
+                statement.append("FOR EACH ROW")
+            }
+
+            if let condition = condition, dialect.createTriggerSupportsCondition {
+                statement.append("WHEN")
+                statement.append(condition)
+            }
 
             guard let body = body else {
                 fatalError("MySQL must define a trigger body")
             }
 
+            statement.append("BEGIN")
             body.forEach { statement.append($0) }
+            statement.append("END;")
         }
     }
 
@@ -172,9 +185,10 @@ public struct SQLCreateTrigger: SQLExpression {
         case "postgresql":
             serializePostgreSql(&serializer)
         case "mysql":
-            serializeMySql(&serializer)
+        case "sqlite":
+            serializeGeneral(&serializer)
         default:
-            fatalError("TRIGGERS only supported in MySQL and PostgreSQL so far.")
+            fatalError("TRIGGERS only supported in MySQL, SQLite, and PostgreSQL so far.")
         }
     }
 }

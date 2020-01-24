@@ -67,8 +67,8 @@ final class SQLKitTests: XCTestCase {
 extension SQLKitTests {
     func testDropTriggerOptions() throws {
         var dialect = GenericDialect()
-        dialect.supportsDropTriggerCascade = true
-        dialect.supportsDropTriggerTable = true
+        dialect.dropTriggerSupportsCascade = true
+        dialect.dropTriggerSupportsTableName = true
         db._dialect = dialect
         
         try db.drop(trigger: "foo", table: "planets").run().wait()

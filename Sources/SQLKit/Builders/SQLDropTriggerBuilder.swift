@@ -3,6 +3,16 @@
 ///   conn.drop()
 ///
 /// See `SQLQueryBuilder` for more information.
+extension SQLDatabase {
+    public func drop(trigger: String, table: String) -> SQLDropTriggerBuilder {
+        return self.drop(trigger: SQLIdentifier(trigger), table: SQLIdentifier(table))
+    }
+
+    public func drop(trigger: SQLExpression, table: SQLExpression) -> SQLDropTriggerBuilder {
+        return .init(.init(name: trigger, table: table), on: self)
+    }
+}
+
 public final class SQLDropTriggerBuilder: SQLQueryBuilder {
     /// `SQLDropTrigger` query being built.
     public var dropTrigger: SQLDropTrigger
@@ -33,17 +43,5 @@ public final class SQLDropTriggerBuilder: SQLQueryBuilder {
     public func cascade() -> Self {
         dropTrigger.cascade = true
         return self
-    }
-}
-
-// MARK: Connection
-
-extension SQLDatabase {
-    public func drop(trigger: String, table: String) -> SQLDropTriggerBuilder {
-        return self.drop(trigger: SQLIdentifier(trigger), table: SQLIdentifier(table))
-    }
-
-    public func drop(trigger: SQLExpression, table: SQLExpression) -> SQLDropTriggerBuilder {
-        return .init(.init(name: trigger, table: table), on: self)
     }
 }

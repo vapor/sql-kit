@@ -38,12 +38,12 @@ public struct SQLDropTrigger: SQLExpression {
 
             $0.append(self.name)
 
-            if dialect.supportsDropTriggerTable {
+            if dialect.dropTriggerSupportsTableName {
                 $0.append("ON")
                 $0.append(self.table)
             }
 
-            if self.cascade && dialect.supportsDropTriggerCascade {
+            if self.cascade && dialect.dropTriggerSupportsCascade {
                 $0.append("CASCADE")
             }
         }

@@ -1,5 +1,5 @@
 public protocol SQLDialect {
-    var name: String { get set }
+    var name: String { get }
     var identifierQuote: SQLExpression { get }
     var literalStringQuote: SQLExpression { get }
     var autoIncrementClause: SQLExpression { get }
@@ -9,8 +9,12 @@ public protocol SQLDialect {
     var supportsIfExists: Bool { get }
     var supportsAutoIncrement: Bool { get }
     var enumSyntax: SQLEnumSyntax { get }
-    var supportsDropTriggerTable: Bool { get }
-    var supportsDropTriggerCascade: Bool { get }
+    var dropTriggerSupportsTableName: Bool { get }
+    var dropTriggerSupportsCascade: Bool { get }
+    var createTriggerSupportsDefiner: Bool { get }
+    var createTriggerSupportsForEach: Bool { get }
+    var createTriggerSupportsCondition: Bool { get }
+    var createTriggerPostgreSqlChecks: Bool { get }
 }
 
 public enum SQLEnumSyntax {
@@ -33,5 +37,29 @@ extension SQLDialect {
 
     public var supportsIfExists: Bool {
         return true
+    }
+
+    public var dropTriggerSupportsTableName: Bool {
+        return true
+    }
+
+    public var dropTriggerSupportsCascade: Bool {
+        return true
+    }
+
+    public var createTriggerSupportsDefiner: Bool {
+        return false
+    }
+
+    public var createTriggerSupportsForEach: Bool {
+        return true
+    }
+
+    public var createTriggerSupportsCondition: Bool {
+        return true
+    }
+
+    public var createTriggerPostgreSqlChecks: Bool {
+        return false
     }
 }
