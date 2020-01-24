@@ -33,7 +33,7 @@ public struct SQLCreateTrigger: SQLExpression {
     public var condition: SQLExpression?
 
     /// The name of the function which must take no arguments and return a TRIGGER type.
-    public var procedure: SQLExpression
+    public var procedure: SQLExpression?
 
     /// The MySQL account to be used when checking access privileges at trigger activation time.
     /// Use 'user_name'@'host_name', CURRENT_USER, or CURRENT_USER()
@@ -43,59 +43,29 @@ public struct SQLCreateTrigger: SQLExpression {
     /// - Note: You should **not** include BEGIN/END statements.  They are added automatically.
     public var body: [SQLExpression]?
 
-    public init(trigger: SQLExpression, table: SQLExpression, procedure: SQLExpression, when: SQLExpression, event: SQLExpression) {
+    /// A `SQLTriggerOrder` used by MySQL
+    public var order: SQLExpression?
+
+    /// The other trigger name for for the `order`
+    public var orderTriggerName: SQLExpression?
+
+    public init(trigger: SQLExpression, table: SQLExpression, when: SQLExpression, event: SQLExpression) {
         self.name = trigger
         self.table = table
-        self.procedure = procedure
         self.when = when
         self.event = event
         self.isConstraint = false
     }
 
-    public init(trigger: String, table: String, procedure: String, when: SQLTriggerWhen, event: SQLTriggerEvent) {
-        self.init(trigger: SQLIdentifier(trigger), table: SQLIdentifier(table), procedure: SQLIdentifier(procedure), when: when, event: event)
+    public init(trigger: String, table: String, when: SQLTriggerWhen, event: SQLTriggerEvent) {
+        self.init(trigger: SQLIdentifier(trigger), table: SQLIdentifier(table), when: when, event: event)
     }
 
-    private func serializeGeneral(_ serializer: inout SQLSerializer) {
+    public func serialize(to serializer: inout SQLSerializer) {
         let dialect = serializer.dialect
 
         serializer.statement { statement in
-            statement.append("CREATE")
-
-            if let definer = definer, dialect.createTriggerSupportsDefiner {
-                statement.append("DEFINER = ")
-                statement.append(definer)
-            }
-
-            statement.append("TRIGGER")
-            statement.append(self.name)
-            statement.append(when)
-            statement.append(event)
-            statement.append("ON")
-            statement.append(table)
-
-            if dialect.createTriggerSupportsForEach {
-                statement.append("FOR EACH ROW")
-            }
-
-            if let condition = condition, dialect.createTriggerSupportsCondition {
-                statement.append("WHEN")
-                statement.append(condition)
-            }
-
-            guard let body = body else {
-                fatalError("MySQL must define a trigger body")
-            }
-
-            statement.append("BEGIN")
-            body.forEach { statement.append($0) }
-            statement.append("END;")
-        }
-    }
-
-    private func serializePostgreSql(_ serializer: inout SQLSerializer) {
-        serializer.statement { statement in
-            if let when = self.when as? SQLTriggerWhen, when == .instead {
+            if dialect.createTriggerPostgreSqlChecks, let when = self.when as? SQLTriggerWhen, when == .instead {
                 if let event = self.event as? SQLTriggerEvent, event == .update && columns != nil {
                     fatalError("INSTEAD OF UPDATE events do not support lists of columns")
                 }
@@ -107,21 +77,21 @@ public struct SQLCreateTrigger: SQLExpression {
 
             statement.append("CREATE")
 
-            if self.isConstraint {
-                if let when = self.when as? SQLTriggerWhen, when != .after {
-                    fatalError("CONSTRAINT triggers may only be SQLTriggerWhen.after")
-                }
-
-                // This goofy looking double-if is because it could exist but be a SQLExpression
-                if self.each != nil {
-                    if let eachEnum = self.each as? SQLTriggerEach, eachEnum != .row {
-                        fatalError("CONSTRAINT triggers may only be specified FOR EACH ROW")
+            if dialect.createTriggerSupportsConstraint {
+                if self.isConstraint {
+                    if let when = self.when as? SQLTriggerWhen, when != .after {
+                        fatalError("CONSTRAINT triggers may only be SQLTriggerWhen.after")
                     }
-                }
 
-                statement.append("CONSTRAINT")
-            } else if self.referencedTable != nil {
-                fatalError("referencedTable may only be specified on CONSTRAINT triggers.")
+                    // This goofy looking double-if is because it could exist but be a SQLExpression
+                    if self.each != nil {
+                        if let eachEnum = self.each as? SQLTriggerEach, eachEnum != .row {
+                            fatalError("CONSTRAINT triggers may only be specified FOR EACH ROW")
+                        }
+                    }
+
+                    statement.append("CONSTRAINT")
+                }
             }
 
             statement.append("TRIGGER")
@@ -129,14 +99,16 @@ public struct SQLCreateTrigger: SQLExpression {
             statement.append(self.when)
             statement.append(self.event)
 
-            if let columns = self.columns, !columns.isEmpty {
-                if let event = self.event as? SQLTriggerEvent {
-                    guard event == .update else {
-                        fatalError("Only UPDATE triggers may specify a list of columns.")
-                    }
+            if let columns = self.columns, !columns.isEmpty, dialect.createTriggerSupportsUpdateColumns {
+                if dialect.createTriggerPostgreSqlChecks {
+                    if let event = self.event as? SQLTriggerEvent {
+                        guard event == .update else {
+                            fatalError("Only UPDATE triggers may specify a list of columns.")
+                        }
 
-                    if let when = self.when as? SQLTriggerWhen, when == .instead {
-                        fatalError("INSTEAD OF UPDATE triggers do not support lists of columns.")
+                        if let when = self.when as? SQLTriggerWhen, when == .instead {
+                            fatalError("INSTEAD OF UPDATE triggers do not support lists of columns.")
+                        }
                     }
                 }
 
@@ -147,12 +119,12 @@ public struct SQLCreateTrigger: SQLExpression {
             statement.append("ON")
             statement.append(self.table)
 
-            if let referencedTable = self.referencedTable {
+            if let referencedTable = self.referencedTable, dialect.createTriggerSupportsConstraint {
                 statement.append("FROM")
                 statement.append(referencedTable)
             }
 
-            if let timing = self.timing {
+            if let timing = self.timing, dialect.createTriggerSupportsConstraint {
                 guard self.isConstraint else {
                     fatalError("May only specify SQLTriggerTiming on CONSTRAINT triggers.")
                 }
@@ -160,35 +132,48 @@ public struct SQLCreateTrigger: SQLExpression {
                 statement.append(timing)
             }
 
-            if let each = self.each {
-                statement.append(each)
-            } else if isConstraint {
+            if dialect.createTriggerRequiresForEachRow {
                 statement.append(SQLTriggerEach.row)
+            } else if dialect.createTriggerSupportsForEach {
+                if dialect.createTriggerSupportsConstraint, isConstraint {
+                    statement.append(SQLTriggerEach.row)
+                } else if let each = self.each {
+                    statement.append(each)
+                } 
             }
 
-            if let condition = self.condition {
-                if let when = self.when as? SQLTriggerWhen, when == .instead {
-                    fatalError("INSTEAD OF triggers do not support WHEN conditions")
+            if let condition = self.condition, dialect.createTriggerSupportsCondition {
+                if let when = self.when as? SQLTriggerWhen, when == .instead, dialect.createTriggerPostgreSqlChecks {
+                    fatalError("INSTEAD OF triggers do not support WHEN conditions.")
                 }
 
                 statement.append("WHEN")
-                statement.append(SQLGroupExpression(condition))
+
+                let cond = dialect.createTriggerConditionRequiresParens ? SQLGroupExpression(condition) : condition
+                statement.append(cond)
             }
 
-            statement.append("EXECUTE PROCEDURE")
-            statement.append(self.procedure)
-        }
-    }
+            if let order = order, let orderTriggerName = orderTriggerName, dialect.createTriggerSupportsOrder {
+                statement.append(order)
+                statement.append(orderTriggerName)
+            }
 
-    public func serialize(to serializer: inout SQLSerializer) {
-        switch serializer.database.dialect.name {
-        case "postgresql":
-            serializePostgreSql(&serializer)
-        case "mysql":
-        case "sqlite":
-            serializeGeneral(&serializer)
-        default:
-            fatalError("TRIGGERS only supported in MySQL, SQLite, and PostgreSQL so far.")
+            if dialect.createTriggerSupportsBody {
+                guard let body = body else {
+                    fatalError("Must define a trigger body.")
+                }
+
+                statement.append("BEGIN")
+                body.forEach { statement.append($0) }
+                statement.append("END;")
+            } else {
+                guard let procedure = procedure else {
+                    fatalError("Must define a trigger procedure.")
+                }
+
+                statement.append("EXECUTE PROCEDURE")
+                statement.append(procedure)
+            }
         }
     }
 }
@@ -277,5 +262,21 @@ public enum SQLTriggerEach: SQLExpression {
         }
 
         SQLRaw("FOR EACH \(str)").serialize(to: &serializer)
+    }
+}
+
+public enum SQLTriggerOrder: SQLExpression {
+    case follows
+    case precedes
+
+    public func serialize(to serializer: inout SQLSerializer) {
+        let str: String
+
+        switch self {
+        case .follows: str = "FOLLOWS"
+        case .precedes: str = "PRECEDES"
+        }
+
+        SQLRaw(str).serialize(to: &serializer)
     }
 }

@@ -6,23 +6,20 @@ public struct SQLDropTrigger: SQLExpression {
     public let name: SQLExpression
 
     /// The table the trigger is attached to
-    public let table: SQLExpression
+    public var table: SQLExpression?
 
     /// The optional `IF EXISTS` clause suppresses the error that would normally
     /// result if the type does not exist.
-    public var ifExists: Bool
+    public var ifExists = false
 
     /// The optional `CASCADE` clause drops other objects that depend on this type
     /// (such as table columns, functions, and operators), and in turn all objects
     /// that depend on those objects.
-    public var cascade: Bool
+    public var cascade = false
 
     /// Creates a new `SQLDropTrigger`
-    public init(name: SQLExpression, table: SQLExpression, ifExists: Bool = false, cascade: Bool = false) {
+    public init(name: SQLExpression) {
         self.name = name
-        self.table = table
-        self.ifExists = ifExists
-        self.cascade = cascade
     }
 
     /// See `SQLExpression`
@@ -38,9 +35,9 @@ public struct SQLDropTrigger: SQLExpression {
 
             $0.append(self.name)
 
-            if dialect.dropTriggerSupportsTableName {
+            if let table = self.table, dialect.dropTriggerSupportsTableName {
                 $0.append("ON")
-                $0.append(self.table)
+                $0.append(table)
             }
 
             if self.cascade && dialect.dropTriggerSupportsCascade {

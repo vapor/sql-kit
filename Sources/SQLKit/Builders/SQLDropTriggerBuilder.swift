@@ -4,12 +4,12 @@
 ///
 /// See `SQLQueryBuilder` for more information.
 extension SQLDatabase {
-    public func drop(trigger: String, table: String) -> SQLDropTriggerBuilder {
-        return self.drop(trigger: SQLIdentifier(trigger), table: SQLIdentifier(table))
+    public func drop(trigger: String) -> SQLDropTriggerBuilder {
+        return self.drop(trigger: SQLIdentifier(trigger))
     }
 
-    public func drop(trigger: SQLExpression, table: SQLExpression) -> SQLDropTriggerBuilder {
-        return .init(.init(name: trigger, table: table), on: self)
+    public func drop(trigger: SQLExpression) -> SQLDropTriggerBuilder {
+        return .init(.init(name: trigger), on: self)
     }
 }
 
@@ -42,6 +42,16 @@ public final class SQLDropTriggerBuilder: SQLQueryBuilder {
     /// that depend on those objects.
     public func cascade() -> Self {
         dropTrigger.cascade = true
+        return self
+    }
+
+    public func table(_ name: String) -> Self {
+        dropTrigger.table = SQLIdentifier(name)
+        return self
+    }
+
+    public func table(_ name: SQLExpression) -> Self {
+        dropTrigger.table = name
         return self
     }
 }

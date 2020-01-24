@@ -73,10 +73,6 @@ extension Optional: OptionalType {
 }
 
 struct GenericDialect: SQLDialect {
-    var dropTriggerSupportsTableName = false
-
-    var dropTriggerSupportsCascade = false
-
     var supportsAutoIncrement: Bool {
         true
     }
@@ -109,4 +105,18 @@ struct GenericDialect: SQLDialect {
     var autoIncrementClause: SQLExpression {
         return SQLRaw("AUTOINCREMENT")
     }
+
+    var createTriggerRequiresForEachRow = false
+    var createTriggerSupportsBody = false
+    var createTriggerSupportsUpdateColumns = false
+    var createTriggerSupportsConstraint = false
+    var createTriggerPostgreSqlChecks = false
+    var createTriggerSupportsForEach = false
+    var createTriggerSupportsDefiner = false
+    var createTriggerSupportsCondition = false
+    var createTriggerSupportsOrder = false
+    var createTriggerConditionRequiresParens = false
+    
+    var dropTriggerSupportsTableName = false
+    var dropTriggerSupportsCascade = false
 }

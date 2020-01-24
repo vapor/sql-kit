@@ -11,9 +11,15 @@ public protocol SQLDialect {
     var enumSyntax: SQLEnumSyntax { get }
     var dropTriggerSupportsTableName: Bool { get }
     var dropTriggerSupportsCascade: Bool { get }
+    var createTriggerRequiresForEachRow: Bool { get }
+    var createTriggerSupportsBody: Bool { get }
+    var createTriggerSupportsCondition: Bool { get }
+    var createTriggerConditionRequiresParens: Bool { get }
+    var createTriggerSupportsConstraint: Bool { get }
     var createTriggerSupportsDefiner: Bool { get }
     var createTriggerSupportsForEach: Bool { get }
-    var createTriggerSupportsCondition: Bool { get }
+    var createTriggerSupportsOrder: Bool { get }
+    var createTriggerSupportsUpdateColumns: Bool { get }
     var createTriggerPostgreSqlChecks: Bool { get }
 }
 
@@ -39,12 +45,12 @@ extension SQLDialect {
         return true
     }
 
-    public var dropTriggerSupportsTableName: Bool {
-        return true
+    public var createTriggerRequiresForEachRow: Bool {
+        return false
     }
 
-    public var dropTriggerSupportsCascade: Bool {
-        return true
+    public var createTriggerSupportsConstraint: Bool {
+        return false
     }
 
     public var createTriggerSupportsDefiner: Bool {
@@ -52,14 +58,38 @@ extension SQLDialect {
     }
 
     public var createTriggerSupportsForEach: Bool {
-        return true
+        return false
     }
 
     public var createTriggerSupportsCondition: Bool {
-        return true
+        return false
     }
 
     public var createTriggerPostgreSqlChecks: Bool {
+        return false
+    }
+
+    public var createTriggerSupportsOrder: Bool {
+        return false
+    }
+    
+    public var createTriggerSupportsUpdateColumns: Bool {
+        return false
+    }
+
+    public var createTriggerSupportsBody: Bool {
+        return false
+    }
+
+    public var createTriggerConditionRequiresParens: Bool {
+        return false
+    }
+    
+    public var dropTriggerSupportsTableName: Bool {
+        return false
+    }
+
+    public var dropTriggerSupportsCascade: Bool {
         return false
     }
 }
