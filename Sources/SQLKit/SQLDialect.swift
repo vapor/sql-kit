@@ -41,6 +41,10 @@ extension SQLDialect {
         return SQLRaw("DEFAULT")
     }
 
+    public var literalStringQuote: SQLExpression {
+        return SQLRaw("'")
+    }
+
     public var supportsIfExists: Bool {
         return true
     }
