@@ -9,6 +9,7 @@ public protocol SQLDialect {
     var supportsIfExists: Bool { get }
     var supportsAutoIncrement: Bool { get }
     var enumSyntax: SQLEnumSyntax { get }
+    var supportsDropBehaviour: Bool { get }
 }
 
 public enum SQLEnumSyntax {
@@ -31,5 +32,9 @@ extension SQLDialect {
 
     public var supportsIfExists: Bool {
         return true
+    }
+
+    public var supportsDropBehaviour: Bool {
+        return false
     }
 }

@@ -60,6 +60,29 @@ final class SQLKitTests: XCTestCase {
         try db.drop(table: "planets").ifExists().run().wait()
         XCTAssertEqual(db.results[1], "DROP TABLE `planets`")
     }
+
+    func testDropBehaviour() throws {
+        let db = TestDatabase()
+
+        try db.drop(table: "planets").run().wait()
+        XCTAssertEqual(db.results[0], "DROP TABLE `planets`")
+
+        try db.drop(table: "planets").behaviour(.cascade).run().wait()
+        XCTAssertEqual(db.results[1], "DROP TABLE `planets`")
+
+        try db.drop(table: "planets").behaviour(.restrict).run().wait()
+        XCTAssertEqual(db.results[2], "DROP TABLE `planets`")
+
+        db._dialect.supportsDropBehaviour = true
+        try db.drop(table: "planets").run().wait()
+        XCTAssertEqual(db.results[3], "DROP TABLE `planets` CASCADE")
+
+        try db.drop(table: "planets").behaviour(.cascade).run().wait()
+        XCTAssertEqual(db.results[4], "DROP TABLE `planets` CASCADE")
+
+        try db.drop(table: "planets").behaviour(.restrict).run().wait()
+        XCTAssertEqual(db.results[5], "DROP TABLE `planets` RESTRICT")
+    }
 }
 
 // MARK: Table Creation

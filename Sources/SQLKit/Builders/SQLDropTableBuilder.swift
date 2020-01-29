@@ -27,6 +27,13 @@ public final class SQLDropTableBuilder: SQLQueryBuilder {
         dropTable.ifExists = true
         return self
     }
+
+    /// The optional `IF EXISTS` clause suppresses the error that would normally
+    /// result if the table does not exist.
+    public func behaviour(_ behaviour: SQLDropBehaviour) -> Self {
+        dropTable.behaviour = behaviour
+        return self
+    }
 }
 
 // MARK: Connection

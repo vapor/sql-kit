@@ -107,4 +107,6 @@ struct GenericDialect: SQLDialect {
     var autoIncrementClause: SQLExpression {
         return SQLRaw("AUTOINCREMENT")
     }
+
+    var supportsDropBehaviour: Bool = false
 }
