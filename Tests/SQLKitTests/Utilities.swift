@@ -73,9 +73,7 @@ extension Optional: OptionalType {
 }
 
 struct GenericDialect: SQLDialect {
-    var supportsAutoIncrement: Bool {
-        true
-    }
+    var supportsAutoIncrement: Bool = true
 
     var name: String {
         "generic sql"
@@ -106,5 +104,11 @@ struct GenericDialect: SQLDialect {
     
     var autoIncrementClause: SQLExpression {
         return SQLRaw("AUTOINCREMENT")
+    }
+    
+    var supportsAutoIncrementUsingDefaultFunction: Bool = false
+
+    var autoIncrementFunction: SQLExpression {
+        return SQLRaw("NEXTUNIQUE")
     }
 }

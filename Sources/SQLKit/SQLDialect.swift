@@ -8,6 +8,8 @@ public protocol SQLDialect {
     var literalDefault: SQLExpression { get }
     var supportsIfExists: Bool { get }
     var supportsAutoIncrement: Bool { get }
+    var supportsAutoIncrementUsingDefaultFunction: Bool { get }
+    var autoIncrementFunction: SQLExpression { get }
     var enumSyntax: SQLEnumSyntax { get }
 }
 
@@ -31,5 +33,13 @@ extension SQLDialect {
 
     public var supportsIfExists: Bool {
         return true
+    }
+
+    public var supportsAutoIncrementUsingDefaultFunction: Bool {
+        return false
+    }
+
+    public var autoIncrementFunction: SQLExpression {
+        return SQLRaw("")
     }
 }

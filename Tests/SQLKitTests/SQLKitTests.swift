@@ -112,6 +112,37 @@ CREATE TABLE `planets`(`id` BIGINT PRIMARY KEY AUTOINCREMENT, `name` TEXT DEFAUL
         XCTAssertEqual(db.results[1], "CREATE TABLE `planets2`(`id` BIGINT PRIMARY KEY)")
     }
 
+    func testPrimaryKeyAutoIncrementVariants() throws {
+        let db = TestDatabase()
+
+        try db.create(table: "planets1")
+            .column("id", type: .bigint, .primaryKey)
+            .run().wait()
+
+        try db.create(table: "planets2")
+            .column("id", type: .bigint, .primaryKey(autoIncrement: false))
+            .run().wait()
+
+        db._dialect.supportsAutoIncrementUsingDefaultFunction = true
+        db._dialect.supportsAutoIncrement = false
+
+        try db.create(table: "planets3")
+            .column("id", type: .bigint, .primaryKey)
+            .run().wait()
+
+        try db.create(table: "planets4")
+            .column("id", type: .bigint, .primaryKey(autoIncrement: false))
+            .run().wait()
+
+        XCTAssertEqual(db.results[0], "CREATE TABLE `planets1`(`id` BIGINT PRIMARY KEY AUTOINCREMENT)")
+
+        XCTAssertEqual(db.results[1], "CREATE TABLE `planets2`(`id` BIGINT PRIMARY KEY)")
+
+        XCTAssertEqual(db.results[2], "CREATE TABLE `planets3`(`id` BIGINT DEFAULT NEXTUNIQUE PRIMARY KEY)")
+
+        XCTAssertEqual(db.results[3], "CREATE TABLE `planets4`(`id` BIGINT PRIMARY KEY)")
+    }
+
     func testDefaultColumnConstraintVariants() throws {
         let db = TestDatabase()
 
