@@ -43,9 +43,33 @@ public final class SQLCreateTableBuilder: SQLQueryBuilder {
     }
 
     public func column(
+        _ column: String,
+        type dataType: SQLDataType,
+        _ constraints: [SQLColumnConstraintAlgorithm]
+    ) -> Self {
+        return self.column(SQLColumnDefinition(
+            column: SQLIdentifier(column),
+            dataType: dataType,
+            constraints: constraints
+        ))
+    }
+
+    public func column(
         _ column: SQLExpression,
         type dataType: SQLExpression,
         _ constraints: SQLExpression...
+    ) -> Self {
+        return self.column(SQLColumnDefinition(
+            column: column,
+            dataType: dataType,
+            constraints: constraints
+        ))
+    }
+
+    public func column(
+        _ column: SQLExpression,
+        type dataType: SQLExpression,
+        _ constraints: [SQLExpression]
     ) -> Self {
         return self.column(SQLColumnDefinition(
             column: column,

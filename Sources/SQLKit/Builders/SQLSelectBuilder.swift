@@ -184,6 +184,16 @@ extension SQLSelectBuilder {
     }
     
     /// Specify a list of columns to be part of the result set of the query.
+    /// Each provided name is a string assumed to be a valid SQL identifier and
+    /// is not qualified. The string "*" is recognized and replaced by
+    /// `SQLLiteral.all`.
+    ///
+    /// - Parameter columns: The names of the columns to return.
+    public func columns(_ columns: [String]) -> Self {
+        return columns.reduce(self) { $0.column($1) }
+    }
+    
+    /// Specify a list of columns to be part of the result set of the query.
     /// Each input is an arbitrary expression.
     ///
     /// - Parameter columns: A list of expressions identifying the desired data
