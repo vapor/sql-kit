@@ -83,6 +83,12 @@ public final class SQLCreateTableBuilder: SQLQueryBuilder {
         return self
     }
     
+    /// Sugar for `definitions.forEach { builder.column($0) }`
+    public func column(definitions: [SQLColumnDefinition]) -> SQLCreateTableBuilder {
+        self.columns.append(contentsOf: definitions)
+        return self
+    }
+
     /// If the "TEMP" or "TEMPORARY" keyword occurs between the "CREATE" and "TABLE" then the new table is created in the temp database.
     public func temporary() -> Self {
         createTable.temporary = true
