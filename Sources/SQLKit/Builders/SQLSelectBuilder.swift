@@ -22,16 +22,16 @@ public final class SQLSelectBuilder: SQLQueryFetcher, SQLQueryBuilder, SQLPredic
         return self
     }
     
-    public func distinct(on collumns: String...) -> Self {
+    public func distinct(on columns: String...) -> Self {
         self.select.isDistinct = true
         self.select.columns = []
-        collumns.forEach { _ = self.column($0) }
+        columns.forEach { _ = self.column($0) }
         return self
     }
     
-    public func distinct(on collumns: SQLExpression...) -> Self {
+    public func distinct(on columns: SQLExpression...) -> Self {
         self.select.isDistinct = true
-        self.select.columns = collumns
+        self.select.columns = columns
         return self
     }
     
