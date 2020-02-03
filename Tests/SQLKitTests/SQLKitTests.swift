@@ -60,6 +60,35 @@ final class SQLKitTests: XCTestCase {
         try db.drop(table: "planets").ifExists().run().wait()
         XCTAssertEqual(db.results[1], "DROP TABLE `planets`")
     }
+    
+    func testDistinct() throws {
+        let db = TestDatabase()
+        try db.select().column("*")
+            .from("planets")
+            .groupBy("color")
+            .having("color", .equal, "blue")
+            .distinct()
+            .run().wait()
+        XCTAssertEqual(db.results[0], "SELECT DISTINCT * FROM `planets` GROUP BY `color` HAVING `color` = ?")
+    }
+    
+    func testDistinctColumns() throws {
+        let db = TestDatabase()
+        try db.select()
+            .distinct(on: "name", "color")
+            .from("planets")
+            .run().wait()
+        XCTAssertEqual(db.results[0], "SELECT DISTINCT `name`, `color` FROM `planets`")
+    }
+    
+    func testDistinctExpression() throws {
+        let db = TestDatabase()
+        try db.select()
+            .column(SQLFunction("COUNT", args: SQLDistinct("name", "color")))
+            .from("planets")
+            .run().wait()
+        XCTAssertEqual(db.results[0], "SELECT COUNT(DISTINCT(`name`, `color`)) FROM `planets`")
+    }
 }
 
 // MARK: Table Creation

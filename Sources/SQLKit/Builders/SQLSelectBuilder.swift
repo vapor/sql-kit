@@ -17,6 +17,24 @@ public final class SQLSelectBuilder: SQLQueryFetcher, SQLQueryBuilder, SQLPredic
         self.database = database
     }
     
+    public func distinct() -> Self {
+        self.select.isDistinct = true
+        return self
+    }
+    
+    public func distinct(on collumns: String...) -> Self {
+        self.select.isDistinct = true
+        self.select.columns = []
+        collumns.forEach { _ = self.column($0) }
+        return self
+    }
+    
+    public func distinct(on collumns: SQLExpression...) -> Self {
+        self.select.isDistinct = true
+        self.select.columns = collumns
+        return self
+    }
+    
     public func column(_ column: String) -> Self {
         if column == "*" {
             return self.column(SQLLiteral.all)
