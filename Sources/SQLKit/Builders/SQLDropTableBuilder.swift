@@ -30,8 +30,8 @@ public final class SQLDropTableBuilder: SQLQueryBuilder {
 
     /// The optional `IF EXISTS` clause suppresses the error that would normally
     /// result if the table does not exist.
-    public func behaviour(_ behaviour: SQLDropBehaviour) -> Self {
-        dropTable.behaviour = behaviour
+    public func behavior(_ behavior: SQLDropBehavior) -> Self {
+        dropTable.behavior = behavior
         return self
     }
 }

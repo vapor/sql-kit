@@ -1,6 +1,6 @@
 /// RESTRICT | CASCADE
-public enum SQLDropBehaviour: SQLExpression {
-    /// The drop behaviour clause specifies if objects that depend on a table
+public enum SQLDropBehavior: SQLExpression {
+    /// The drop behavior clause specifies if objects that depend on a table
     /// should also be dropped or not when the table is dropped.
     
     /// Refuse to drop the table if any objects depend on it.
