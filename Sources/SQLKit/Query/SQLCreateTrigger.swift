@@ -62,10 +62,10 @@ public struct SQLCreateTrigger: SQLExpression {
     }
 
     public func serialize(to serializer: inout SQLSerializer) {
-        let dialect = serializer.dialect
+        let triggerCreateSyntax = serializer.dialect.triggerSyntax.create
 
         serializer.statement { statement in
-            if dialect.createTriggerPostgreSqlChecks, let when = self.when as? SQLTriggerWhen, when == .instead {
+            if triggerCreateSyntax.contains(.postgreSqlChecks), let when = self.when as? SQLTriggerWhen, when == .instead {
                 if let event = self.event as? SQLTriggerEvent, event == .update && columns != nil {
                     fatalError("INSTEAD OF UPDATE events do not support lists of columns")
                 }
@@ -77,7 +77,7 @@ public struct SQLCreateTrigger: SQLExpression {
 
             statement.append("CREATE")
 
-            if dialect.createTriggerSupportsConstraint {
+            if triggerCreateSyntax.contains(.supportsConstraints) {
                 if self.isConstraint {
                     if let when = self.when as? SQLTriggerWhen, when != .after {
                         fatalError("CONSTRAINT triggers may only be SQLTriggerWhen.after")
@@ -99,8 +99,8 @@ public struct SQLCreateTrigger: SQLExpression {
             statement.append(self.when)
             statement.append(self.event)
 
-            if let columns = self.columns, !columns.isEmpty, dialect.createTriggerSupportsUpdateColumns {
-                if dialect.createTriggerPostgreSqlChecks {
+            if let columns = self.columns, !columns.isEmpty, triggerCreateSyntax.contains(.supportsUpdateColumns) {
+                if triggerCreateSyntax.contains(.postgreSqlChecks) {
                     if let event = self.event as? SQLTriggerEvent {
                         guard event == .update else {
                             fatalError("Only UPDATE triggers may specify a list of columns.")
@@ -119,12 +119,12 @@ public struct SQLCreateTrigger: SQLExpression {
             statement.append("ON")
             statement.append(self.table)
 
-            if let referencedTable = self.referencedTable, dialect.createTriggerSupportsConstraint {
+            if let referencedTable = self.referencedTable, triggerCreateSyntax.contains(.supportsConstraints) {
                 statement.append("FROM")
                 statement.append(referencedTable)
             }
 
-            if let timing = self.timing, dialect.createTriggerSupportsConstraint {
+            if let timing = self.timing, triggerCreateSyntax.contains(.supportsConstraints) {
                 guard self.isConstraint else {
                     fatalError("May only specify SQLTriggerTiming on CONSTRAINT triggers.")
                 }
@@ -132,33 +132,33 @@ public struct SQLCreateTrigger: SQLExpression {
                 statement.append(timing)
             }
 
-            if dialect.createTriggerRequiresForEachRow {
+            if triggerCreateSyntax.contains(.requiresForEachRow) {
                 statement.append(SQLTriggerEach.row)
-            } else if dialect.createTriggerSupportsForEach {
-                if dialect.createTriggerSupportsConstraint, isConstraint {
+            } else if triggerCreateSyntax.contains(.supportsForEach) {
+                if triggerCreateSyntax.contains(.supportsConstraints), isConstraint {
                     statement.append(SQLTriggerEach.row)
                 } else if let each = self.each {
                     statement.append(each)
                 } 
             }
 
-            if let condition = self.condition, dialect.createTriggerSupportsCondition {
-                if let when = self.when as? SQLTriggerWhen, when == .instead, dialect.createTriggerPostgreSqlChecks {
+            if let condition = self.condition, triggerCreateSyntax.contains(.supportsCondition) {
+                if let when = self.when as? SQLTriggerWhen, when == .instead, triggerCreateSyntax.contains(.postgreSqlChecks) {
                     fatalError("INSTEAD OF triggers do not support WHEN conditions.")
                 }
 
                 statement.append("WHEN")
 
-                let cond = dialect.createTriggerConditionRequiresParens ? SQLGroupExpression(condition) : condition
+                let cond = triggerCreateSyntax.contains(.conditionRequiresParentheses) ? SQLGroupExpression(condition) : condition
                 statement.append(cond)
             }
 
-            if let order = order, let orderTriggerName = orderTriggerName, dialect.createTriggerSupportsOrder {
+            if let order = order, let orderTriggerName = orderTriggerName, triggerCreateSyntax.contains(.supportsOrder) {
                 statement.append(order)
                 statement.append(orderTriggerName)
             }
 
-            if dialect.createTriggerSupportsBody {
+            if triggerCreateSyntax.contains(.supportsBody) {
                 guard let body = body else {
                     fatalError("Must define a trigger body.")
                 }

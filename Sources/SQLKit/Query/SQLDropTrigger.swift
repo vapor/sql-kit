@@ -25,6 +25,7 @@ public struct SQLDropTrigger: SQLExpression {
     /// See `SQLExpression`
     public func serialize(to serializer: inout SQLSerializer) {
         let dialect = serializer.dialect
+        let triggerDropSyntax = dialect.triggerSyntax.drop
 
         serializer.statement {
             $0.append("DROP TRIGGER")
@@ -35,12 +36,12 @@ public struct SQLDropTrigger: SQLExpression {
 
             $0.append(self.name)
 
-            if let table = self.table, dialect.dropTriggerSupportsTableName {
+            if let table = self.table, triggerDropSyntax.contains(.supportsTableName) {
                 $0.append("ON")
                 $0.append(table)
             }
 
-            if self.cascade && dialect.dropTriggerSupportsCascade {
+            if self.cascade && triggerDropSyntax.contains(.supportsCascade) {
                 $0.append("CASCADE")
             }
         }

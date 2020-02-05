@@ -22,8 +22,8 @@ final class SQLKitTriggerTests: XCTestCase {
 
     func testDropTriggerOptions() throws {
         var dialect = GenericDialect()
-        dialect.dropTriggerSupportsCascade = true
-        dialect.dropTriggerSupportsTableName = true
+        dialect.setTriggerSyntax(drop: [.supportsCascade, .supportsTableName])
+        debugPrint(dialect.triggerSyntax.drop)
         db._dialect = dialect
 
         try db.drop(trigger: "foo").table("planets").run().wait()
@@ -39,20 +39,18 @@ final class SQLKitTriggerTests: XCTestCase {
         try db.drop(trigger: "foo").table("planets").ifExists().run().wait()
         XCTAssertEqual(db.results.popLast(), "DROP TRIGGER `foo` ON `planets`")
 
-        db._dialect.dropTriggerSupportsTableName = false
+        db._dialect.triggerSyntax.drop = .supportsCascade
         try db.drop(trigger: "foo").table("planets").run().wait()
         XCTAssertEqual(db.results.popLast(), "DROP TRIGGER `foo`")
 
-        db._dialect.dropTriggerSupportsCascade = false
+        db._dialect.triggerSyntax.drop = []
         try db.drop(trigger: "foo").table("planets").ifExists().cascade().run().wait()
         XCTAssertEqual(db.results.popLast(), "DROP TRIGGER `foo`")
     }
 
     func testMySqlTriggerCreates() throws {
         var dialect = GenericDialect()
-        dialect.createTriggerSupportsBody = true
-        dialect.createTriggerRequiresForEachRow = true
-        dialect.createTriggerSupportsOrder = true
+        dialect.setTriggerSyntax(create: [.supportsBody, .requiresForEachRow, .supportsOrder])
 
         db._dialect = dialect
 
@@ -66,9 +64,7 @@ final class SQLKitTriggerTests: XCTestCase {
 
     func testSqliteTriggerCreates() throws {
         var dialect = GenericDialect()
-        dialect.createTriggerSupportsBody = true
-        dialect.createTriggerSupportsCondition = true
-
+        dialect.setTriggerSyntax(create: [.supportsBody, .supportsCondition])
         db._dialect = dialect
 
         try db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
@@ -80,11 +76,7 @@ final class SQLKitTriggerTests: XCTestCase {
 
     func testPostgreSqlTriggerCreates() throws {
         var dialect = GenericDialect()
-        dialect.createTriggerSupportsForEach = true
-        dialect.createTriggerPostgreSqlChecks = true
-        dialect.createTriggerSupportsCondition = true
-        dialect.createTriggerConditionRequiresParens = true
-        dialect.createTriggerSupportsConstraint = true
+        dialect.setTriggerSyntax(create: [.supportsForEach, .postgreSqlChecks, .supportsCondition, .conditionRequiresParentheses, .supportsConstraints])
 
         db._dialect = dialect
 

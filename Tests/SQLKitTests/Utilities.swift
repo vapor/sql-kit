@@ -106,17 +106,10 @@ struct GenericDialect: SQLDialect {
         return SQLRaw("AUTOINCREMENT")
     }
 
-    var createTriggerRequiresForEachRow = false
-    var createTriggerSupportsBody = false
-    var createTriggerSupportsUpdateColumns = false
-    var createTriggerSupportsConstraint = false
-    var createTriggerPostgreSqlChecks = false
-    var createTriggerSupportsForEach = false
-    var createTriggerSupportsDefiner = false
-    var createTriggerSupportsCondition = false
-    var createTriggerSupportsOrder = false
-    var createTriggerConditionRequiresParens = false
-    
-    var dropTriggerSupportsTableName = false
-    var dropTriggerSupportsCascade = false
+    var triggerSyntax = SQLTriggerSyntax()
+
+    mutating func setTriggerSyntax(create: SQLTriggerSyntax.Create = [], drop: SQLTriggerSyntax.Drop = []) {
+        self.triggerSyntax.create = create
+        self.triggerSyntax.drop = drop
+    }
 }
