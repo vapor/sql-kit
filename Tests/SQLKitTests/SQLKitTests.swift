@@ -73,15 +73,27 @@ final class SQLKitTests: XCTestCase {
         try db.drop(table: "planets").behavior(.restrict).run().wait()
         XCTAssertEqual(db.results[2], "DROP TABLE `planets`")
 
+        try db.drop(table: "planets").cascade().run().wait()
+        XCTAssertEqual(db.results[3], "DROP TABLE `planets`")
+
+        try db.drop(table: "planets").restrict().run().wait()
+        XCTAssertEqual(db.results[4], "DROP TABLE `planets`")
+
         db._dialect.supportsDropBehavior = true
         try db.drop(table: "planets").run().wait()
-        XCTAssertEqual(db.results[3], "DROP TABLE `planets` CASCADE")
+        XCTAssertEqual(db.results[5], "DROP TABLE `planets` CASCADE")
 
         try db.drop(table: "planets").behavior(.cascade).run().wait()
-        XCTAssertEqual(db.results[4], "DROP TABLE `planets` CASCADE")
+        XCTAssertEqual(db.results[6], "DROP TABLE `planets` CASCADE")
 
         try db.drop(table: "planets").behavior(.restrict).run().wait()
-        XCTAssertEqual(db.results[5], "DROP TABLE `planets` RESTRICT")
+        XCTAssertEqual(db.results[7], "DROP TABLE `planets` RESTRICT")
+
+        try db.drop(table: "planets").cascade().run().wait()
+        XCTAssertEqual(db.results[8], "DROP TABLE `planets` CASCADE")
+
+        try db.drop(table: "planets").restrict().run().wait()
+        XCTAssertEqual(db.results[9], "DROP TABLE `planets` RESTRICT")
     }
 }
 
