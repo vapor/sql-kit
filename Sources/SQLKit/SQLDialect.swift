@@ -25,7 +25,7 @@ public enum SQLEnumSyntax {
     case unsupported
 }
 
-public class SQLTriggerSyntax {
+public struct SQLTriggerSyntax {
     public struct Create: OptionSet {
         public var rawValue = 0
 
