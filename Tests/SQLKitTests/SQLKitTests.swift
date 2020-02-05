@@ -81,7 +81,7 @@ final class SQLKitTests: XCTestCase {
 
         db._dialect.supportsDropBehavior = true
         try db.drop(table: "planets").run().wait()
-        XCTAssertEqual(db.results[5], "DROP TABLE `planets` CASCADE")
+        XCTAssertEqual(db.results[5], "DROP TABLE `planets` RESTRICT")
 
         try db.drop(table: "planets").behavior(.cascade).run().wait()
         XCTAssertEqual(db.results[6], "DROP TABLE `planets` CASCADE")

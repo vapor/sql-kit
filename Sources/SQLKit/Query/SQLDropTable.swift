@@ -36,7 +36,7 @@ public struct SQLDropTable: SQLExpression {
             if let dropBehavior = behavior {
                 dropBehavior.serialize(to: &serializer)
             } else {
-                SQLDropBehavior.cascade.serialize(to: &serializer)
+                SQLDropBehavior.restrict.serialize(to: &serializer)
             }
         }
     }
