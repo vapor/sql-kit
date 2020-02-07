@@ -74,6 +74,8 @@ public enum SQLBinaryOperator: SQLExpression {
         case .lessThanOrEqual: serializer.write("<=")
         case .is: serializer.write("IS")
         case .isNot: serializer.write("IS NOT")
+        case .like: serializer.write("LIKE")
+        case .notLike: serializer.write("NOT LIKE")
         default:
             print(self)
             fatalError()
