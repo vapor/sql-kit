@@ -39,6 +39,23 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(serializer.sql, "SELECT * FROM planets WHERE name = ?")
         XCTAssert(serializer.binds.first! as! String == "Earth")
     }
+    
+    func testRawQueryStringWithNonliteral() throws {
+        let db = TestDatabase()
+        let (table, planet) = ("planets", "Earth")
+
+        var serializer1 = SQLSerializer(database: db)
+        let query1 = "SELECT * FROM \(table) WHERE name = \(planet)"
+        let builder1 = db.raw(.init(query1))
+        builder1.query.serialize(to: &serializer1)
+        XCTAssertEqual(serializer1.sql, "SELECT * FROM planets WHERE name = Earth")
+
+        var serializer2 = SQLSerializer(database: db)
+        let query2: Substring = "|||SELECT * FROM staticTable WHERE name = uselessUnboundValue|||".dropFirst(3).dropLast(3)
+        let builder2 = db.raw(.init(query2))
+        builder2.query.serialize(to: &serializer2)
+        XCTAssertEqual(serializer2.sql, "SELECT * FROM staticTable WHERE name = uselessUnboundValue")
+    }
 
     func testGroupByHaving() throws {
         let db = TestDatabase()
@@ -59,6 +76,36 @@ final class SQLKitTests: XCTestCase {
         db._dialect.supportsIfExists = false
         try db.drop(table: "planets").ifExists().run().wait()
         XCTAssertEqual(db.results[1], "DROP TABLE `planets`")
+    }
+    
+    func testSimpleJoin() throws {
+        let db = TestDatabase()
+        
+        try db.select().column("*")
+            .from("planets")
+            .join("moons", on: "moons.planet_id=planets.id")
+            .run().wait()
+        
+        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` INNER JOIN `moons` ON moons.planet_id=planets.id")
+    }
+    
+    func testMessyJoin() throws {
+        let db = TestDatabase()
+        
+        try db.select().column("*")
+            .from("planets")
+            .join(
+                SQLAlias(SQLGroupExpression(
+                    db.select().column("name").from("stars").where(SQLColumn("orion"), .equal, SQLIdentifier("please space")).select
+                ), as: SQLIdentifier("star")),
+                method: SQLJoinMethod.outer,
+                on: SQLColumn(SQLIdentifier("planet_id"), table: SQLIdentifier("moons")), SQLBinaryOperator.isNot, SQLRaw("%%%%%%")
+            )
+            .where(SQLLiteral.null)
+            .run().wait()
+        
+        // Yes, this query is very much pure gibberish.
+        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` OUTER JOIN (SELECT `name` FROM `stars` WHERE `orion` = `please space`) AS `star` ON `moons`.`planet_id` IS NOT %%%%%% WHERE NULL")
     }
 }
 
