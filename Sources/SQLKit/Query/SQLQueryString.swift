@@ -5,6 +5,10 @@ public struct SQLQueryString {
     }
     
     var fragments: [Fragment]
+    
+    public init<S: StringProtocol>(_ string: S) {
+        fragments = [.literal(string.description)]
+    }
 }
 
 extension SQLQueryString: ExpressibleByStringLiteral {
