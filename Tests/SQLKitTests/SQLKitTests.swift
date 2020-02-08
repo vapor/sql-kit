@@ -136,6 +136,24 @@ final class SQLKitTests: XCTestCase {
         // Yes, this query is very much pure gibberish.
         XCTAssertEqual(db.results[0], "SELECT * FROM `planets` OUTER JOIN (SELECT `name` FROM `stars` WHERE `orion` = `please space`) AS `star` ON `moons`.`planet_id` IS NOT %%%%%% WHERE NULL")
     }
+    
+    func testBinaryOperators() throws {
+        let db = TestDatabase()
+        
+        try db
+            .update("planets")
+            .set(SQLIdentifier("moons"),
+                 to: SQLBinaryExpression(
+                    left: SQLIdentifier("moons"),
+                    op: SQLBinaryOperator.add,
+                    right: SQLLiteral.numeric("1")
+                )
+            )
+            .where("best_at_space", .greaterThanOrEqual, "yes")
+            .run().wait()
+        
+        XCTAssertEqual(db.results[0], "UPDATE `planets` SET `moons` = `moons` + 1 WHERE `best_at_space` >= ?")
+    }
 }
 
 // MARK: Table Creation
