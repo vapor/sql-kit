@@ -105,6 +105,8 @@ final class SQLKitTests: XCTestCase {
             .from("planets")
             .run().wait()
         XCTAssertEqual(db.results[0], "SELECT COUNT(DISTINCT(`name`, `color`)) FROM `planets`")
+    }
+    
     func testSimpleJoin() throws {
         let db = TestDatabase()
         
