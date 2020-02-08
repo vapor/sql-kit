@@ -136,6 +136,42 @@ public final class SQLSelectBuilder: SQLQueryFetcher, SQLQueryBuilder, SQLPredic
     }
 }
 
+/// DISINCT
+extension SQLSelectBuilder {
+    /// Adds a DISTINCT clause to the select statement.
+    ///
+    ///     builder.distinct()
+    ///
+    /// - returns: Self for chaining
+    public func distinct() -> Self {
+        self.select.isDistinct = true
+        return self
+    }
+    
+    /// Adds a DISTINCT clause to the select statement.
+    ///
+    ///     builder.distinct(on: "my_collumn")
+    ///
+    /// - returns: Self for chaining
+    public func distinct(on columns: String...) -> Self {
+        self.select.isDistinct = true
+        self.select.columns = []
+        columns.forEach { _ = self.column($0) }
+        return self
+    }
+    
+    /// Adds a DISTINCT clause to the select statement.
+    ///
+    ///     builder.distinct(on: SQLRaw("my_collumn"))
+    ///
+    /// - returns: Self for chaining
+    public func distinct(on columns: SQLExpression...) -> Self {
+        self.select.isDistinct = true
+        self.select.columns = columns
+        return self
+    }
+}
+
 /// Column list
 extension SQLSelectBuilder {
     
