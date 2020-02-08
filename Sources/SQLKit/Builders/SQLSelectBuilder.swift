@@ -17,50 +17,6 @@ public final class SQLSelectBuilder: SQLQueryFetcher, SQLQueryBuilder, SQLPredic
         self.database = database
     }
     
-    public func distinct() -> Self {
-        self.select.isDistinct = true
-        return self
-    }
-    
-    public func distinct(on columns: String...) -> Self {
-        self.select.isDistinct = true
-        self.select.columns = []
-        columns.forEach { _ = self.column($0) }
-        return self
-    }
-    
-    public func distinct(on columns: SQLExpression...) -> Self {
-        self.select.isDistinct = true
-        self.select.columns = columns
-        return self
-    }
-    
-    public func column(_ column: String) -> Self {
-        if column == "*" {
-            return self.column(SQLLiteral.all)
-        } else {
-            return self.column(SQLIdentifier(column))
-        }
-    }
-    
-    public func column(table: String, column: String) -> Self {
-        return self.column(SQLColumn(SQLIdentifier(column), table: SQLIdentifier(table)))
-    }
-    
-    public func column(_ expr: SQLExpression) -> Self {
-        self.select.columns.append(expr)
-        return self
-    }
-    
-    public func from(_ table: String) -> Self {
-        return self.from(SQLIdentifier(table))
-    }
-    
-    public func from(_ table: SQLIdentifier) -> Self {
-        self.select.tables.append(table)
-        return self
-    }
-    
     public func limit(_ limit: Int) -> Self {
         self.select.limit = limit
         return self
@@ -176,6 +132,42 @@ public final class SQLSelectBuilder: SQLQueryFetcher, SQLQueryBuilder, SQLPredic
     /// - returns: Self for chaining.
     public func offset(_ n: Int?) -> Self {
         self.select.offset = n
+        return self
+    }
+}
+
+/// DISINCT
+extension SQLSelectBuilder {
+    /// Adds a DISTINCT clause to the select statement.
+    ///
+    ///     builder.distinct()
+    ///
+    /// - returns: Self for chaining
+    public func distinct() -> Self {
+        self.select.isDistinct = true
+        return self
+    }
+    
+    /// Adds a DISTINCT clause to the select statement.
+    ///
+    ///     builder.distinct(on: "my_collumn")
+    ///
+    /// - returns: Self for chaining
+    public func distinct(on columns: String...) -> Self {
+        self.select.isDistinct = true
+        self.select.columns = []
+        columns.forEach { _ = self.column($0) }
+        return self
+    }
+    
+    /// Adds a DISTINCT clause to the select statement.
+    ///
+    ///     builder.distinct(on: SQLRaw("my_collumn"))
+    ///
+    /// - returns: Self for chaining
+    public func distinct(on columns: SQLExpression...) -> Self {
+        self.select.isDistinct = true
+        self.select.columns = columns
         return self
     }
 }
