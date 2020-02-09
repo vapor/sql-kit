@@ -101,8 +101,7 @@ public struct SQLRowDecoder {
         }
 
         func decodeNil(forKey key: Key) throws -> Bool {
-            let res = try self.row.decodeNil(column: self.column(for: key))
-            return res
+            try self.row.decodeNil(column: self.column(for: key))
         }
 
         func decode<T>(_ type: T.Type, forKey key: Key) throws -> T
