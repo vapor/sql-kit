@@ -351,6 +351,14 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
             let waldoFred: Int?
         }
 
+        struct FooWithForeignKey: Codable {
+            let id: UUID
+            let foo: Int
+            let bar: Double?
+            let baz: String
+            let waldoFredID: Int
+        }
+
         do {
             let row = TestRow(data: [
                 "id": UUID(),
@@ -399,6 +407,51 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
             XCTAssertEqual(foo.bar, nil)
             XCTAssertEqual(foo.baz, "vapor")
             XCTAssertEqual(foo.waldoFred, 2015)
+        } catch {
+            XCTFail("Could not decode row with keyDecodingStrategy \(error)")
+        }
+        do {
+            let row = TestRow(data: [
+                "id": UUID(),
+                "foo": 42,
+                "bar": Double?.none as Any,
+                "baz": "vapor",
+                "waldoFredID": 2015
+            ])
+
+            /// An implementation of CodingKey that's useful for combining and transforming keys as strings.
+            struct AnyKey: CodingKey {
+                var stringValue: String
+                var intValue: Int?
+
+                init?(stringValue: String) {
+                    self.stringValue = stringValue
+                    self.intValue = nil
+                }
+
+                init?(intValue: Int) {
+                    self.stringValue = String(intValue)
+                    self.intValue = intValue
+                }
+            }
+
+            func decodeIdToID(_ keys: [CodingKey]) -> CodingKey {
+                let key = keys.last!
+                let keyString = key.stringValue
+                if keyString.hasSuffix("Id") {
+                    var transformedKeyStringValue = keyString
+                    transformedKeyStringValue.removeLast(2)
+                    transformedKeyStringValue.append("ID")
+                    return AnyKey(stringValue: transformedKeyStringValue)!
+                }
+                return key
+            }
+
+            let foo = try row.decode(model: FooWithForeignKey.self, keyDecodingStrategy: .custom(decodeIdToID))
+            XCTAssertEqual(foo.foo, 42)
+            XCTAssertEqual(foo.bar, nil)
+            XCTAssertEqual(foo.baz, "vapor")
+            XCTAssertEqual(foo.waldoFredID, 2015)
         } catch {
             XCTFail("Could not decode row with keyDecodingStrategy \(error)")
         }
