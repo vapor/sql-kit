@@ -254,7 +254,7 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
             let foo: Int
             let bar: Double?
             let baz: String
-            let waldoFred: Int
+            let waldoFred: Int?
         }
 
         do {

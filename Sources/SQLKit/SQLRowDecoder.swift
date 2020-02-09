@@ -65,7 +65,6 @@ public struct SQLRowDecoder {
     {
         /// A reference to the decoder we're reading from.
         private let decoder: _Decoder
-
         let row: SQLRow
         var codingPath: [CodingKey] = []
         var allKeys: [Key] {
@@ -102,7 +101,8 @@ public struct SQLRowDecoder {
         }
 
         func decodeNil(forKey key: Key) throws -> Bool {
-            try self.row.decodeNil(column: self.column(for: key))
+            let res = try self.row.decodeNil(column: self.column(for: key))
+            return res
         }
 
         func decode<T>(_ type: T.Type, forKey key: Key) throws -> T
