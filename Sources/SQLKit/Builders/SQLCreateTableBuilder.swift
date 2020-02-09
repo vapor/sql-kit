@@ -6,7 +6,7 @@
 ///        .run()
 ///
 /// See `SQLColumnBuilder` and `SQLQueryBuilder` for more information.
-public final class SQLCreateTableBuilder: SQLQueryBuilder, SQLColumnBuilder {
+public final class SQLCreateTableBuilder: SQLQueryBuilder {
     /// `CreateTable` query being built.
     public var createTable: SQLCreateTable
     
@@ -29,8 +29,66 @@ public final class SQLCreateTableBuilder: SQLQueryBuilder, SQLColumnBuilder {
         self.createTable = createTable
         self.database = database
     }
+
+    public func column(
+        _ column: String,
+        type dataType: SQLDataType,
+        _ constraints: SQLColumnConstraintAlgorithm...
+    ) -> Self {
+        return self.column(SQLColumnDefinition(
+            column: SQLIdentifier(column),
+            dataType: dataType,
+            constraints: constraints
+        ))
+    }
+
+    public func column(
+        _ column: String,
+        type dataType: SQLDataType,
+        _ constraints: [SQLColumnConstraintAlgorithm]
+    ) -> Self {
+        return self.column(SQLColumnDefinition(
+            column: SQLIdentifier(column),
+            dataType: dataType,
+            constraints: constraints
+        ))
+    }
+
+    public func column(
+        _ column: SQLExpression,
+        type dataType: SQLExpression,
+        _ constraints: SQLExpression...
+    ) -> Self {
+        return self.column(SQLColumnDefinition(
+            column: column,
+            dataType: dataType,
+            constraints: constraints
+        ))
+    }
+
+    public func column(
+        _ column: SQLExpression,
+        type dataType: SQLExpression,
+        _ constraints: [SQLExpression]
+    ) -> Self {
+        return self.column(SQLColumnDefinition(
+            column: column,
+            dataType: dataType,
+            constraints: constraints
+        ))
+    }
+
+    public func column(_ columnDefinition: SQLExpression) -> Self {
+        self.columns.append(columnDefinition)
+        return self
+    }
     
-    
+    /// Sugar for `definitions.forEach { builder.column($0) }`
+    public func column(definitions: [SQLColumnDefinition]) -> SQLCreateTableBuilder {
+        self.columns.append(contentsOf: definitions)
+        return self
+    }
+
     /// If the "TEMP" or "TEMPORARY" keyword occurs between the "CREATE" and "TABLE" then the new table is created in the temp database.
     public func temporary() -> Self {
         createTable.temporary = true

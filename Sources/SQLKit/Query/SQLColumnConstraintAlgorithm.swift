@@ -94,8 +94,12 @@ public enum SQLColumnConstraintAlgorithm: SQLExpression {
         case .primaryKey(let autoIncrement):
             serializer.write("PRIMARY KEY")
             if autoIncrement {
-                serializer.write(" ")
-                serializer.dialect.autoIncrementClause.serialize(to: &serializer)
+                if serializer.database.dialect.supportsAutoIncrement {
+                    serializer.write(" ")
+                    serializer.dialect.autoIncrementClause.serialize(to: &serializer)
+                } else {
+                    serializer.database.logger.warning("Autoincrement not supported, skipping")
+                }
             }
         case .notNull:
             serializer.write("NOT NULL")

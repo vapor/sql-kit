@@ -7,6 +7,10 @@ public struct SQLFunction: SQLExpression {
         self.init(name, args: args.map { SQLIdentifier($0) })
     }
     
+    public init(_ name: String, args: [String]) {
+        self.init(name, args: args.map { SQLIdentifier($0) })
+    }
+    
     public init(_ name: String, args: SQLExpression...) {
         self.init(name, args: args)
     }

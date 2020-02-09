@@ -6,6 +6,11 @@ public enum SQLDataType: SQLExpression {
     case text
     case real
     case blob
+
+    public static func type(_ string: String) -> Self {
+        .custom(SQLIdentifier(string))
+    }
+
     case custom(SQLExpression)
     
     public func serialize(to serializer: inout SQLSerializer) {
