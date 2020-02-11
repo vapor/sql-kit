@@ -41,7 +41,7 @@ public struct SQLTriggerSyntax {
         public static let supportsOrder = Create(rawValue: 1 << 5)
         public static let supportsUpdateColumns = Create(rawValue: 1 << 6)
         public static let supportsConstraints = Create(rawValue: 1 << 7)
-        public static let postgreSqlChecks = Create(rawValue: 1 << 8)
+        public static let postgreSQLChecks = Create(rawValue: 1 << 8)
         public static let conditionRequiresParentheses = Create(rawValue: 1 << 9)
     }
 

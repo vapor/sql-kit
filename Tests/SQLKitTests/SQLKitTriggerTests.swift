@@ -56,8 +56,7 @@ final class SQLKitTriggerTests: XCTestCase {
 
         try db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
             .body(body)
-            .order(.precedes)
-            .orderTriggerName("other")
+            .order(precedence: .precedes, otherTriggerName: "other")
             .run().wait()
         XCTAssertEqual(db.results.popLast(), "CREATE TRIGGER `foo` BEFORE INSERT ON `planet` FOR EACH ROW PRECEDES `other` BEGIN \(bodyText()) END;")
     }
@@ -76,7 +75,7 @@ final class SQLKitTriggerTests: XCTestCase {
 
     func testPostgreSqlTriggerCreates() throws {
         var dialect = GenericDialect()
-        dialect.setTriggerSyntax(create: [.supportsForEach, .postgreSqlChecks, .supportsCondition, .conditionRequiresParentheses, .supportsConstraints])
+        dialect.setTriggerSyntax(create: [.supportsForEach, .postgreSQLChecks, .supportsCondition, .conditionRequiresParentheses, .supportsConstraints])
 
         db._dialect = dialect
 

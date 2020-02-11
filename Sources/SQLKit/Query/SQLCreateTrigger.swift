@@ -65,7 +65,7 @@ public struct SQLCreateTrigger: SQLExpression {
         let triggerCreateSyntax = serializer.dialect.triggerSyntax.create
 
         serializer.statement { statement in
-            if triggerCreateSyntax.contains(.postgreSqlChecks), let when = self.when as? SQLTriggerWhen, when == .instead {
+            if triggerCreateSyntax.contains(.postgreSQLChecks), let when = self.when as? SQLTriggerWhen, when == .instead {
                 if let event = self.event as? SQLTriggerEvent, event == .update && columns != nil {
                     fatalError("INSTEAD OF UPDATE events do not support lists of columns")
                 }
@@ -100,7 +100,7 @@ public struct SQLCreateTrigger: SQLExpression {
             statement.append(self.event)
 
             if let columns = self.columns, !columns.isEmpty, triggerCreateSyntax.contains(.supportsUpdateColumns) {
-                if triggerCreateSyntax.contains(.postgreSqlChecks) {
+                if triggerCreateSyntax.contains(.postgreSQLChecks) {
                     if let event = self.event as? SQLTriggerEvent {
                         guard event == .update else {
                             fatalError("Only UPDATE triggers may specify a list of columns.")
@@ -143,7 +143,7 @@ public struct SQLCreateTrigger: SQLExpression {
             }
 
             if let condition = self.condition, triggerCreateSyntax.contains(.supportsCondition) {
-                if let when = self.when as? SQLTriggerWhen, when == .instead, triggerCreateSyntax.contains(.postgreSqlChecks) {
+                if let when = self.when as? SQLTriggerWhen, when == .instead, triggerCreateSyntax.contains(.postgreSQLChecks) {
                     fatalError("INSTEAD OF triggers do not support WHEN conditions.")
                 }
 
