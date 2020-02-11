@@ -74,9 +74,24 @@ public enum SQLBinaryOperator: SQLExpression {
         case .lessThanOrEqual: serializer.write("<=")
         case .is: serializer.write("IS")
         case .isNot: serializer.write("IS NOT")
-        default:
-            print(self)
-            fatalError()
+        case .like: serializer.write("LIKE")
+        case .notLike: serializer.write("NOT LIKE")
+        case .multiply: serializer.write("*")
+        case .divide: serializer.write("/")
+        case .modulo: serializer.write("%")
+        case .add: serializer.write("+")
+        case .subtract: serializer.write("-")
+
+        // See https://dev.mysql.com/doc/refman/8.0/en/sql-mode.html#sqlmode_pipes_as_concat
+        case .concatenate:
+            fatalError("""
+                || is not implemented because MySQL doesn't always support it, even though everyone else does.
+                Use `SQLFunction("CONCAT", args...)` for MySQL or `SQLRaw("||")` with Postgres and SQLite.
+                """)
+        
+        // "warning: Default will never be executed".
+        //default:
+        //    fatalError("\(self) operator is not implemented, probably because it needs extra work across SQL dialects.")
         }
     }
 }

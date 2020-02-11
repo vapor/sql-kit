@@ -52,7 +52,17 @@ public final class SQLInsertBuilder: SQLQueryBuilder {
         return self
     }
     
+    public func columns(_ columns: [String]) -> Self {
+        self.insert.columns = columns.map(SQLIdentifier.init)
+        return self
+    }
+
     public func columns(_ columns: SQLExpression...) -> Self {
+        self.insert.columns = columns
+        return self
+    }
+    
+    public func columns(_ columns: [SQLExpression]) -> Self {
         self.insert.columns = columns
         return self
     }
@@ -63,7 +73,18 @@ public final class SQLInsertBuilder: SQLQueryBuilder {
         return self
     }
     
+    public func values(_ values: [Encodable]) -> Self {
+        let row: [SQLExpression] = values.map(SQLBind.init)
+        self.insert.values.append(row)
+        return self
+    }
+    
     public func values(_ values: SQLExpression...) -> Self {
+        self.insert.values.append(values)
+        return self
+    }
+
+    public func values(_ values: [SQLExpression]) -> Self {
         self.insert.values.append(values)
         return self
     }
