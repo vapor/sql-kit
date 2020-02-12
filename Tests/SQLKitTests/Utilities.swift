@@ -105,10 +105,6 @@ struct GenericDialect: SQLDialect {
     var autoIncrementClause: SQLExpression {
         return SQLRaw("AUTOINCREMENT")
     }
-    
-    var supportsAutoIncrementUsingDefaultFunction: Bool = false
 
-    var autoIncrementFunction: SQLExpression {
-        return SQLRaw("NEXTUNIQUE")
-    }
+    var autoIncrementFunction: SQLExpression? = nil
 }
