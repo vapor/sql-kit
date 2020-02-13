@@ -82,6 +82,7 @@ extension SQLDialect {
 
     public var supportsDropBehavior: Bool {
         return false
+    }
 
     public var triggerSyntax: SQLTriggerSyntax {
         return SQLTriggerSyntax()
