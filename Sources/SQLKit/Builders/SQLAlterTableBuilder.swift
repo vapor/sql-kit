@@ -39,9 +39,33 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
     }
 
     public func column(
+        _ column: String,
+        type dataType: SQLDataType,
+        _ constraints: [SQLColumnConstraintAlgorithm]
+    ) -> Self {
+        return self.addColumn(SQLColumnDefinition(
+            column: SQLIdentifier(column),
+            dataType: dataType,
+            constraints: constraints
+        ))
+    }
+
+    public func column(
         _ column: SQLExpression,
         type dataType: SQLExpression,
         _ constraints: SQLExpression...
+    ) -> Self {
+        return self.addColumn(SQLColumnDefinition(
+            column: column,
+            dataType: dataType,
+            constraints: constraints
+        ))
+    }
+
+    public func column(
+        _ column: SQLExpression,
+        type dataType: SQLExpression,
+        _ constraints: [SQLExpression]
     ) -> Self {
         return self.addColumn(SQLColumnDefinition(
             column: column,
@@ -68,9 +92,33 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
     }
 
     public func modifyColumn(
+        _ column: String,
+        type dataType: SQLDataType,
+        _ constraints: [SQLColumnConstraintAlgorithm]
+    ) -> Self {
+        return self.modifyColumn(SQLColumnDefinition(
+            column: SQLIdentifier(column),
+            dataType: dataType,
+            constraints: constraints
+        ))
+    }
+
+    public func modifyColumn(
         _ column: SQLExpression,
         type dataType: SQLExpression,
         _ constraints: SQLExpression...
+    ) -> Self {
+        return self.modifyColumn(SQLColumnDefinition(
+            column: column,
+            dataType: dataType,
+            constraints: constraints
+        ))
+    }
+
+    public func modifyColumn(
+        _ column: SQLExpression,
+        type dataType: SQLExpression,
+        _ constraints: [SQLExpression]
     ) -> Self {
         return self.modifyColumn(SQLColumnDefinition(
             column: column,

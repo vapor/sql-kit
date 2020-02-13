@@ -77,9 +77,7 @@ struct GenericDialect: SQLDialect {
         true
     }
 
-    var name: String {
-        "generic sql"
-    }
+    var name: String = "generic sql"
     
     var supportsIfExists: Bool = true
 
@@ -109,4 +107,11 @@ struct GenericDialect: SQLDialect {
     }
 
     var supportsDropBehavior: Bool = false
+
+    var triggerSyntax = SQLTriggerSyntax()
+
+    mutating func setTriggerSyntax(create: SQLTriggerSyntax.Create = [], drop: SQLTriggerSyntax.Drop = []) {
+        self.triggerSyntax.create = create
+        self.triggerSyntax.drop = drop
+    }
 }
