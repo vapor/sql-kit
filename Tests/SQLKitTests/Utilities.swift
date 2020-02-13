@@ -106,6 +106,8 @@ struct GenericDialect: SQLDialect {
 
     var autoIncrementFunction: SQLExpression? = nil
 
+    var supportsDropBehavior: Bool = false
+
     var triggerSyntax = SQLTriggerSyntax()
 
     mutating func setTriggerSyntax(create: SQLTriggerSyntax.Create = [], drop: SQLTriggerSyntax.Drop = []) {
