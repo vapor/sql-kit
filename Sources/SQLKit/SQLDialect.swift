@@ -8,6 +8,7 @@ public protocol SQLDialect {
     var literalDefault: SQLExpression { get }
     var supportsIfExists: Bool { get }
     var supportsAutoIncrement: Bool { get }
+    var autoIncrementFunction: SQLExpression? { get }
     var enumSyntax: SQLEnumSyntax { get }
     var supportsDropBehavior: Bool { get }
     var triggerSyntax: SQLTriggerSyntax { get }
@@ -78,6 +79,10 @@ extension SQLDialect {
 
     public var supportsIfExists: Bool {
         return true
+    }
+
+    public var autoIncrementFunction: SQLExpression? {
+        return nil
     }
 
     public var supportsDropBehavior: Bool {
