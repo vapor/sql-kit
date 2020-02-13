@@ -8,7 +8,12 @@ public struct SQLDropTable: SQLExpression {
     /// The optional `IF EXISTS` clause suppresses the error that would normally
     /// result if the table does not exist.
     public var ifExists: Bool
-    
+
+    /// The optional drop behavior clause specifies if objects that depend on the
+    /// table should also be dropped or not, for databases that supports this
+    /// (either `CASCADE` or `RESTRICT`).
+    public var behavior: SQLExpression?
+
     /// Creates a new `SQLDropTable`.
     public init(table: SQLExpression) {
         self.table = table
@@ -26,5 +31,13 @@ public struct SQLDropTable: SQLExpression {
             }
         }
         self.table.serialize(to: &serializer)
+        if serializer.dialect.supportsDropBehavior {
+            serializer.write(" ")
+            if let dropBehavior = behavior {
+                dropBehavior.serialize(to: &serializer)
+            } else {
+                SQLDropBehavior.restrict.serialize(to: &serializer)
+            }
+        }
     }
 }
