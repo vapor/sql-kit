@@ -3,14 +3,19 @@ import SQLKitBenchmark
 import XCTest
 
 final class SQLKitTests: XCTestCase {
+    var db: TestDatabase!
+
+    override func setUp() {
+        super.setUp()
+        self.db = TestDatabase()
+    }
+
     func testBenchmarker() throws {
-        let db = TestDatabase()
         let benchmarker = SQLBenchmarker(on: db)
         try benchmarker.run()
     }
     
     func testLockingClause_forUpdate() throws {
-        let db = TestDatabase()
         try db.select().column("*")
             .from("planets")
             .where("name", .equal, "Earth")
@@ -20,7 +25,6 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testLockingClause_lockInShareMode() throws {
-        let db = TestDatabase()
         try db.select().column("*")
             .from("planets")
             .where("name", .equal, "Earth")
@@ -30,7 +34,6 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testRawQueryStringInterpolation() throws {
-        let db = TestDatabase()
         let (table, planet) = ("planets", "Earth")
         let builder = db.raw("SELECT * FROM \(table) WHERE name = \(bind: planet)")
         var serializer = SQLSerializer(database: db)
@@ -58,7 +61,6 @@ final class SQLKitTests: XCTestCase {
     }
 
     func testGroupByHaving() throws {
-        let db = TestDatabase()
         try db.select().column("*")
             .from("planets")
             .groupBy("color")
@@ -68,14 +70,47 @@ final class SQLKitTests: XCTestCase {
     }
 
     func testIfExists() throws {
-        let db = TestDatabase()
-
         try db.drop(table: "planets").ifExists().run().wait()
         XCTAssertEqual(db.results[0], "DROP TABLE IF EXISTS `planets`")
 
         db._dialect.supportsIfExists = false
         try db.drop(table: "planets").ifExists().run().wait()
         XCTAssertEqual(db.results[1], "DROP TABLE `planets`")
+    }
+
+    func testDropBehavior() throws {
+        let db = TestDatabase()
+
+        try db.drop(table: "planets").run().wait()
+        XCTAssertEqual(db.results[0], "DROP TABLE `planets`")
+
+        try db.drop(table: "planets").behavior(.cascade).run().wait()
+        XCTAssertEqual(db.results[1], "DROP TABLE `planets`")
+
+        try db.drop(table: "planets").behavior(.restrict).run().wait()
+        XCTAssertEqual(db.results[2], "DROP TABLE `planets`")
+
+        try db.drop(table: "planets").cascade().run().wait()
+        XCTAssertEqual(db.results[3], "DROP TABLE `planets`")
+
+        try db.drop(table: "planets").restrict().run().wait()
+        XCTAssertEqual(db.results[4], "DROP TABLE `planets`")
+
+        db._dialect.supportsDropBehavior = true
+        try db.drop(table: "planets").run().wait()
+        XCTAssertEqual(db.results[5], "DROP TABLE `planets` RESTRICT")
+
+        try db.drop(table: "planets").behavior(.cascade).run().wait()
+        XCTAssertEqual(db.results[6], "DROP TABLE `planets` CASCADE")
+
+        try db.drop(table: "planets").behavior(.restrict).run().wait()
+        XCTAssertEqual(db.results[7], "DROP TABLE `planets` RESTRICT")
+
+        try db.drop(table: "planets").cascade().run().wait()
+        XCTAssertEqual(db.results[8], "DROP TABLE `planets` CASCADE")
+
+        try db.drop(table: "planets").restrict().run().wait()
+        XCTAssertEqual(db.results[9], "DROP TABLE `planets` RESTRICT")
     }
     
     func testDistinct() throws {
@@ -160,8 +195,6 @@ final class SQLKitTests: XCTestCase {
 
 extension SQLKitTests {
     func testColumnConstraints() throws {
-        let db = TestDatabase()
-
         try db.create(table: "planets")
             .column("id", type: .bigint, .primaryKey)
             .column("name", type: .text, .default("unnamed"))
@@ -181,8 +214,6 @@ CREATE TABLE `planets`(`id` BIGINT PRIMARY KEY AUTOINCREMENT, `name` TEXT DEFAUL
     }
 
     func testMultipleColumnConstraintsPerRow() throws {
-        let db = TestDatabase()
-
         try db.create(table: "planets")
             .column("id", type: .bigint, .notNull, .primaryKey)
             .run().wait()
@@ -191,8 +222,6 @@ CREATE TABLE `planets`(`id` BIGINT PRIMARY KEY AUTOINCREMENT, `name` TEXT DEFAUL
     }
 
     func testPrimaryKeyColumnConstraintVariants() throws {
-        let db = TestDatabase()
-
         try db.create(table: "planets1")
             .column("id", type: .bigint, .primaryKey)
             .run().wait()
@@ -206,9 +235,54 @@ CREATE TABLE `planets`(`id` BIGINT PRIMARY KEY AUTOINCREMENT, `name` TEXT DEFAUL
         XCTAssertEqual(db.results[1], "CREATE TABLE `planets2`(`id` BIGINT PRIMARY KEY)")
     }
 
-    func testDefaultColumnConstraintVariants() throws {
+    func testPrimaryKeyAutoIncrementVariants() throws {
         let db = TestDatabase()
 
+        db._dialect.supportsAutoIncrement = false
+
+        try db.create(table: "planets1")
+            .column("id", type: .bigint, .primaryKey)
+            .run().wait()
+
+        try db.create(table: "planets2")
+            .column("id", type: .bigint, .primaryKey(autoIncrement: false))
+            .run().wait()
+
+        db._dialect.supportsAutoIncrement = true
+
+        try db.create(table: "planets3")
+            .column("id", type: .bigint, .primaryKey)
+            .run().wait()
+
+        try db.create(table: "planets4")
+            .column("id", type: .bigint, .primaryKey(autoIncrement: false))
+            .run().wait()
+
+        db._dialect.supportsAutoIncrement = true
+        db._dialect.autoIncrementFunction = SQLRaw("NEXTUNIQUE")
+
+        try db.create(table: "planets5")
+            .column("id", type: .bigint, .primaryKey)
+            .run().wait()
+
+        try db.create(table: "planets6")
+            .column("id", type: .bigint, .primaryKey(autoIncrement: false))
+            .run().wait()
+
+        XCTAssertEqual(db.results[0], "CREATE TABLE `planets1`(`id` BIGINT PRIMARY KEY)")
+
+        XCTAssertEqual(db.results[1], "CREATE TABLE `planets2`(`id` BIGINT PRIMARY KEY)")
+
+        XCTAssertEqual(db.results[2], "CREATE TABLE `planets3`(`id` BIGINT PRIMARY KEY AUTOINCREMENT)")
+
+        XCTAssertEqual(db.results[3], "CREATE TABLE `planets4`(`id` BIGINT PRIMARY KEY)")
+
+        XCTAssertEqual(db.results[4], "CREATE TABLE `planets5`(`id` BIGINT DEFAULT NEXTUNIQUE PRIMARY KEY)")
+
+        XCTAssertEqual(db.results[5], "CREATE TABLE `planets6`(`id` BIGINT PRIMARY KEY)")
+    }
+
+    func testDefaultColumnConstraintVariants() throws {
         try db.create(table: "planets1")
             .column("name", type: .text, .default("unnamed"))
             .run().wait()
@@ -241,8 +315,6 @@ CREATE TABLE `planets`(`id` BIGINT PRIMARY KEY AUTOINCREMENT, `name` TEXT DEFAUL
     }
 
     func testForeignKeyColumnConstraintVariants() throws {
-        let db = TestDatabase()
-
         try db.create(table: "planets1")
             .column("galaxy_id", type: .bigint, .references("galaxies", "id"))
             .run().wait()
@@ -257,8 +329,6 @@ CREATE TABLE `planets`(`id` BIGINT PRIMARY KEY AUTOINCREMENT, `name` TEXT DEFAUL
     }
 
     func testTableConstraints() throws {
-        let db = TestDatabase()
-
         try db.create(table: "planets")
             .column("id", type: .bigint)
             .column("name", type: .text)
@@ -282,8 +352,6 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
     }
 
     func testCompositePrimaryKeyTableConstraint() throws {
-        let db = TestDatabase()
-
         try db.create(table: "planets1")
             .column("id1", type: .bigint)
             .column("id2", type: .bigint)
@@ -294,8 +362,6 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
     }
 
     func testCompositeUniqueTableConstraint() throws {
-        let db = TestDatabase()
-
         try db.create(table: "planets1")
             .column("id1", type: .bigint)
             .column("id2", type: .bigint)
@@ -306,8 +372,6 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
     }
 
     func testPrimaryKeyTableConstraintVariants() throws {
-        let db = TestDatabase()
-
         try db.create(table: "planets1")
             .column("galaxy_name", type: .text)
             .column("galaxy_id", type: .bigint)

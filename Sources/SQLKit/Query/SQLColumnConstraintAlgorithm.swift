@@ -92,14 +92,25 @@ public enum SQLColumnConstraintAlgorithm: SQLExpression {
     public func serialize(to serializer: inout SQLSerializer) {
         switch self {
         case .primaryKey(let autoIncrement):
-            serializer.write("PRIMARY KEY")
             if autoIncrement {
                 if serializer.database.dialect.supportsAutoIncrement {
-                    serializer.write(" ")
-                    serializer.dialect.autoIncrementClause.serialize(to: &serializer)
+                    if let function = serializer.database.dialect.autoIncrementFunction {
+                        serializer.dialect.literalDefault.serialize(to: &serializer)
+                        serializer.write(" ")
+                        function.serialize(to: &serializer)
+                        serializer.write(" ")
+                        serializer.write("PRIMARY KEY")
+                    } else {
+                        serializer.write("PRIMARY KEY")
+                        serializer.write(" ")
+                        serializer.dialect.autoIncrementClause.serialize(to: &serializer)
+                    }
                 } else {
                     serializer.database.logger.warning("Autoincrement not supported, skipping")
+                    serializer.write("PRIMARY KEY")
                 }
+            } else {
+                serializer.write("PRIMARY KEY")
             }
         case .notNull:
             serializer.write("NOT NULL")

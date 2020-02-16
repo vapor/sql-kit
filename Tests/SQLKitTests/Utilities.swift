@@ -73,13 +73,9 @@ extension Optional: OptionalType {
 }
 
 struct GenericDialect: SQLDialect {
-    var supportsAutoIncrement: Bool {
-        true
-    }
+    var supportsAutoIncrement: Bool = true
 
-    var name: String {
-        "generic sql"
-    }
+    var name: String = "generic sql"
     
     var supportsIfExists: Bool = true
 
@@ -106,5 +102,16 @@ struct GenericDialect: SQLDialect {
     
     var autoIncrementClause: SQLExpression {
         return SQLRaw("AUTOINCREMENT")
+    }
+
+    var autoIncrementFunction: SQLExpression? = nil
+
+    var supportsDropBehavior: Bool = false
+
+    var triggerSyntax = SQLTriggerSyntax()
+
+    mutating func setTriggerSyntax(create: SQLTriggerSyntax.Create = [], drop: SQLTriggerSyntax.Drop = []) {
+        self.triggerSyntax.create = create
+        self.triggerSyntax.drop = drop
     }
 }
