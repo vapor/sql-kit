@@ -15,16 +15,28 @@ public protocol SQLDialect {
     var alterTableSyntax: SQLAlterTableSyntax { get }
 }
 
+/// Controls `ALTER TABLE` syntax.
 public struct SQLAlterTableSyntax {
+    /// Expression for altering a column's definition.
+    ///
+    ///     ALTER TABLE table [alterColumnDefinitionClause] column column_definition
+    ///
+    /// `nil` indicates lack of support for altering existing column definitions.
     public var alterColumnDefinitionClause: SQLExpression?
-    public var alterColumnDefinitionTypeClause: SQLExpression?
+
+    /// Expression for altering a column definition's type.
+    ///
+    ///     ALTER TABLE table [alterColumnDefinitionClause] column [alterColumnDefinitionTypeClause] dataType
+    ///
+    /// `nil` indicates that no extra keyword is required. 
+    public var alterColumnDefinitionTypeKeyword: SQLExpression?
 
     public init(
         alterColumnDefinitionClause: SQLExpression? = nil,
-        alterColumnDefinitionTypeClause: SQLExpression? = nil
+        alterColumnDefinitionTypeKeyword: SQLExpression? = nil
     ) {
         self.alterColumnDefinitionClause = alterColumnDefinitionClause
-        self.alterColumnDefinitionTypeClause = alterColumnDefinitionTypeClause
+        self.alterColumnDefinitionTypeKeyword = alterColumnDefinitionTypeKeyword
     }
 }
 
