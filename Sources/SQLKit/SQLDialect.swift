@@ -28,7 +28,7 @@ public struct SQLAlterTableSyntax {
     ///
     ///     ALTER TABLE table [alterColumnDefinitionClause] column [alterColumnDefinitionTypeClause] dataType
     ///
-    /// `nil` indicates that no extra keyword is required. 
+    /// `nil` indicates that no extra keyword is required.
     public var alterColumnDefinitionTypeKeyword: SQLExpression?
 
     public init(

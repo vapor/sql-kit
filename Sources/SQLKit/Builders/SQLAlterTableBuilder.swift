@@ -127,6 +127,26 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
         ))
     }
 
+    public func update(
+        column: SQLIdentifier,
+        type dataType: SQLDataType
+    ) -> Self {
+        self.modifyColumn(SQLAlterColumnDefinitionType(
+            column: column,
+            dataType: dataType
+        ))
+    }
+
+    public func update(
+        column: SQLExpression,
+        type dataType: SQLExpression
+    ) -> Self {
+        self.modifyColumn(SQLAlterColumnDefinitionType(
+            column: column,
+            dataType: dataType
+        ))
+    }
+
     public func modifyColumn(_ columnDefinition: SQLExpression) -> Self {
         self.alterTable.modifyColumns.append(columnDefinition)
         return self
