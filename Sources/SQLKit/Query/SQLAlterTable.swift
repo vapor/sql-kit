@@ -9,9 +9,9 @@ public struct SQLAlterTable: SQLExpression {
     public var name: SQLExpression
     /// Columns to add.
     public var addColumns: [SQLExpression]
-    /// Columns to add.
+    /// Columns to update.
     public var modifyColumns: [SQLExpression]
-
+    /// Columns to delete.
     public var dropColumns: [SQLExpression]
     
     /// Creates a new `SQLAlterTable`. See `SQLAlterTableBuilder`.
@@ -30,9 +30,11 @@ public struct SQLAlterTable: SQLExpression {
                 $0.append("ADD")
                 $0.append(column)
             }
-            for column in self.modifyColumns{
-                $0.append("MODIFY")
-                $0.append(column)
+            if let clause = $0.dialect.alterTableSyntax.alterColumnDefinitionClause {
+                $0.append(clause)
+                for column in self.modifyColumns {
+                    $0.append(column)
+                }
             }
             for column in self.dropColumns {
                 $0.append("DROP")

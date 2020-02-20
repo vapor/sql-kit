@@ -12,6 +12,38 @@ public protocol SQLDialect {
     var enumSyntax: SQLEnumSyntax { get }
     var supportsDropBehavior: Bool { get }
     var triggerSyntax: SQLTriggerSyntax { get }
+    var alterTableSyntax: SQLAlterTableSyntax { get }
+}
+
+/// Controls `ALTER TABLE` syntax.
+public struct SQLAlterTableSyntax {
+    /// Expression for altering a column's definition.
+    ///
+    ///     ALTER TABLE table [alterColumnDefinitionClause] column column_definition
+    ///
+    /// `nil` indicates lack of support for altering existing column definitions.
+    public var alterColumnDefinitionClause: SQLExpression?
+
+    /// Expression for altering a column definition's type.
+    ///
+    ///     ALTER TABLE table [alterColumnDefinitionClause] column [alterColumnDefinitionTypeClause] dataType
+    ///
+    /// `nil` indicates that no extra keyword is required.
+    public var alterColumnDefinitionTypeKeyword: SQLExpression?
+
+    public init(
+        alterColumnDefinitionClause: SQLExpression? = nil,
+        alterColumnDefinitionTypeKeyword: SQLExpression? = nil
+    ) {
+        self.alterColumnDefinitionClause = alterColumnDefinitionClause
+        self.alterColumnDefinitionTypeKeyword = alterColumnDefinitionTypeKeyword
+    }
+}
+
+extension SQLDialect {
+    public var alterTableSyntax: SQLAlterTableSyntax {
+        .init()
+    }
 }
 
 public enum SQLEnumSyntax {
