@@ -12,6 +12,26 @@ public protocol SQLDialect {
     var enumSyntax: SQLEnumSyntax { get }
     var supportsDropBehavior: Bool { get }
     var triggerSyntax: SQLTriggerSyntax { get }
+    var alterTableSyntax: SQLAlterTableSyntax { get }
+}
+
+public struct SQLAlterTableSyntax {
+    public var alterColumnDefinitionClause: SQLExpression?
+    public var alterColumnDefinitionTypeClause: SQLExpression?
+
+    public init(
+        alterColumnDefinitionClause: SQLExpression? = nil,
+        alterColumnDefinitionTypeClause: SQLExpression? = nil
+    ) {
+        self.alterColumnDefinitionClause = alterColumnDefinitionClause
+        self.alterColumnDefinitionTypeClause = alterColumnDefinitionTypeClause
+    }
+}
+
+extension SQLDialect {
+    public var alterTableSyntax: SQLAlterTableSyntax {
+        .init()
+    }
 }
 
 public enum SQLEnumSyntax {
