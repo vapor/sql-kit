@@ -128,11 +128,11 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
     }
 
     public func update(
-        column: SQLIdentifier,
+        column: String,
         type dataType: SQLDataType
     ) -> Self {
         self.modifyColumn(SQLAlterColumnDefinitionType(
-            column: column,
+            column: SQLIdentifier(column),
             dataType: dataType
         ))
     }
