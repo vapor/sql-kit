@@ -30,7 +30,7 @@ public struct SQLAlterTable: SQLExpression {
                 $0.append("ADD")
                 $0.append(column)
             }
-            if let clause = $0.dialect.alterTableSyntax.alterColumnDefinitionClause {
+            if let clause = $0.dialect.alterTableSyntax.alterColumnDefinitionClause, !self.modifyColumns.isEmpty {
                 $0.append(clause)
                 for column in self.modifyColumns {
                     $0.append(column)
