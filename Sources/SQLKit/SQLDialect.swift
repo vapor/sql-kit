@@ -31,12 +31,18 @@ public struct SQLAlterTableSyntax {
     /// `nil` indicates that no extra keyword is required.
     public var alterColumnDefinitionTypeKeyword: SQLExpression?
 
+    /// If true, the dialect supports chaining multiple modifications together. If false,
+    /// the dialect requires separate statements for each change.
+    public var allowsBatch: Bool
+
     public init(
         alterColumnDefinitionClause: SQLExpression? = nil,
-        alterColumnDefinitionTypeKeyword: SQLExpression? = nil
+        alterColumnDefinitionTypeKeyword: SQLExpression? = nil,
+        allowsBatch: Bool = true
     ) {
         self.alterColumnDefinitionClause = alterColumnDefinitionClause
         self.alterColumnDefinitionTypeKeyword = alterColumnDefinitionTypeKeyword
+        self.allowsBatch = allowsBatch
     }
 }
 

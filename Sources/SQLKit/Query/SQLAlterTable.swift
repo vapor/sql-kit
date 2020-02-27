@@ -23,22 +23,35 @@ public struct SQLAlterTable: SQLExpression {
     }
     
     public func serialize(to serializer: inout SQLSerializer) {
+        if !serializer.dialect.alterTableSyntax.allowsBatch && self.addColumns.count + self.modifyColumns.count + self.dropColumns.count > 1 {
+            serializer.database.logger.warning("Database does not support batch table alterations. You will need to rewrite as individual alter statements.")
+        }
+
+        let additions = self.addColumns.map { column in
+            (SQLRaw("ADD"), column)
+        }
+
+        let removals = self.dropColumns.map { column in
+            (SQLRaw("DROP"), column)
+        }
+
+        let modifications = serializer.dialect.alterTableSyntax.alterColumnDefinitionClause.map { clause in
+            self.modifyColumns.map { column in
+                (clause, column)
+            }
+        } ?? []
+
+        let alterations = additions + removals + modifications
+
         serializer.statement {
             $0.append("ALTER TABLE")
             $0.append(self.name)
-            for column in self.addColumns {
-                $0.append("ADD")
-                $0.append(column)
-            }
-            if let clause = $0.dialect.alterTableSyntax.alterColumnDefinitionClause, !self.modifyColumns.isEmpty {
-                $0.append(clause)
-                for column in self.modifyColumns {
-                    $0.append(column)
+            for (idx, alteration) in alterations.enumerated() {
+                if idx > 0 {
+                    $0.append(",")
                 }
-            }
-            for column in self.dropColumns {
-                $0.append("DROP")
-                $0.append(column)
+                $0.append(alteration.0)
+                $0.append(alteration.1)
             }
         }
     }

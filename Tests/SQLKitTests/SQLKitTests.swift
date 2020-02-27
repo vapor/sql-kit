@@ -112,6 +112,53 @@ final class SQLKitTests: XCTestCase {
         try db.drop(table: "planets").restrict().run().wait()
         XCTAssertEqual(db.results[9], "DROP TABLE `planets` RESTRICT")
     }
+
+    func testAltering() throws {
+        let db = TestDatabase()
+
+        // SINGLE
+        try db.alter(table: "alterable")
+            .column("hello", type: .text)
+            .run().wait()
+        XCTAssertEqual(db.results[0], "ALTER TABLE `alterable` ADD `hello` TEXT")
+
+        try db.alter(table: "alterable")
+            .dropColumn("hello")
+            .run().wait()
+        XCTAssertEqual(db.results[1], "ALTER TABLE `alterable` DROP `hello`")
+
+        try db.alter(table: "alterable")
+            .modifyColumn("hello", type: .text)
+            .run().wait()
+        XCTAssertEqual(db.results[2], "ALTER TABLE `alterable` MODIFY `hello` TEXT")
+
+        // BATCH
+        try db.alter(table: "alterable")
+            .column("hello", type: .text)
+            .column("there", type: .text)
+            .run().wait()
+        XCTAssertEqual(db.results[3], "ALTER TABLE `alterable` ADD `hello` TEXT , ADD `there` TEXT")
+
+        try db.alter(table: "alterable")
+            .dropColumn("hello")
+            .dropColumn("there")
+            .run().wait()
+        XCTAssertEqual(db.results[4], "ALTER TABLE `alterable` DROP `hello` , DROP `there`")
+
+        try db.alter(table: "alterable")
+            .modifyColumn("hello", type: .text)
+            .modifyColumn("there", type: .text)
+            .run().wait()
+        XCTAssertEqual(db.results[5], "ALTER TABLE `alterable` MODIFY `hello` TEXT , MODIFY `there` TEXT")
+
+        // MIXED
+        try db.alter(table: "alterable")
+            .column("hello", type: .text)
+            .dropColumn("there")
+            .modifyColumn("again", type: .text)
+            .run().wait()
+        XCTAssertEqual(db.results[6], "ALTER TABLE `alterable` ADD `hello` TEXT , DROP `there` , MODIFY `again` TEXT")
+    }
     
     func testDistinct() throws {
         let db = TestDatabase()
