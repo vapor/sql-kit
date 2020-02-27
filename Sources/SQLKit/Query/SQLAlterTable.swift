@@ -23,21 +23,27 @@ public struct SQLAlterTable: SQLExpression {
     }
     
     public func serialize(to serializer: inout SQLSerializer) {
-        if !serializer.dialect.alterTableSyntax.allowsBatch && self.addColumns.count + self.modifyColumns.count + self.dropColumns.count > 1 {
+        let syntax = serializer.dialect.alterTableSyntax
+
+        if !syntax.allowsBatch && self.addColumns.count + self.modifyColumns.count + self.dropColumns.count > 1 {
             serializer.database.logger.warning("Database does not support batch table alterations. You will need to rewrite as individual alter statements.")
         }
 
+        if syntax.alterColumnDefinitionClause == nil && self.modifyColumns.count > 0 {
+            serializer.database.logger.warning("Database does not support column modifications. You will need to rewrite as drop and add clauses.")
+        }
+
         let additions = self.addColumns.map { column in
-            (SQLRaw("ADD"), column)
+            (verb: SQLRaw("ADD"), definition: column)
         }
 
         let removals = self.dropColumns.map { column in
-            (SQLRaw("DROP"), column)
+            (verb: SQLRaw("DROP"), definition: column)
         }
 
         let modifications = serializer.dialect.alterTableSyntax.alterColumnDefinitionClause.map { clause in
             self.modifyColumns.map { column in
-                (clause, column)
+                (verb: clause, definition: column)
             }
         } ?? []
 
@@ -50,8 +56,8 @@ public struct SQLAlterTable: SQLExpression {
                 if idx > 0 {
                     $0.append(",")
                 }
-                $0.append(alteration.0)
-                $0.append(alteration.1)
+                $0.append(alteration.verb)
+                $0.append(alteration.definition)
             }
         }
     }
