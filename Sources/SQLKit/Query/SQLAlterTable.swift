@@ -41,7 +41,7 @@ public struct SQLAlterTable: SQLExpression {
             (verb: SQLRaw("DROP"), definition: column)
         }
 
-        let modifications = serializer.dialect.alterTableSyntax.alterColumnDefinitionClause.map { clause in
+        let modifications = syntax.alterColumnDefinitionClause.map { clause in
             self.modifyColumns.map { column in
                 (verb: clause, definition: column)
             }
