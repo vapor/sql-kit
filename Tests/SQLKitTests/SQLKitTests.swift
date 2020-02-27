@@ -146,8 +146,8 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[4], "ALTER TABLE `alterable` DROP `hello` , DROP `there`")
 
         try db.alter(table: "alterable")
-            .modifyColumn("hello", type: .text)
-            .modifyColumn("there", type: .text)
+            .update(column: "hello", type: .text)
+            .update(column: "there", type: .text)
             .run().wait()
         XCTAssertEqual(db.results[5], "ALTER TABLE `alterable` MODIFY `hello` TEXT , MODIFY `there` TEXT")
 
@@ -155,7 +155,7 @@ final class SQLKitTests: XCTestCase {
         try db.alter(table: "alterable")
             .column("hello", type: .text)
             .dropColumn("there")
-            .modifyColumn("again", type: .text)
+            .update(column: "again", type: .text)
             .run().wait()
         XCTAssertEqual(db.results[6], "ALTER TABLE `alterable` ADD `hello` TEXT , DROP `there` , MODIFY `again` TEXT")
     }

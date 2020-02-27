@@ -92,7 +92,7 @@ extension SQLBenchmarker {
             // drop, add, and modify columns
             try self.db.alter(table: "planets")
                 .dropColumn("extra_extra")
-                .modifyColumn("extra", type: .text)
+                .update(column: "extra", type: .text)
                 .column("hi", type: .text)
                 .run().wait()
         }
