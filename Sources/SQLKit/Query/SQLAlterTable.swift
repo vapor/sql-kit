@@ -41,11 +41,10 @@ public struct SQLAlterTable: SQLExpression {
             (verb: SQLRaw("DROP"), definition: column)
         }
 
-        let modifications = syntax.alterColumnDefinitionClause.map { clause in
-            self.modifyColumns.map { column in
-                (verb: clause, definition: column)
-            }
-        } ?? []
+        let alterColumnDefinitionCaluse = syntax.alterColumnDefinitionClause ?? SQLRaw("MODIFY")
+        let modifications = self.modifyColumns.map { column in
+            (verb: alterColumnDefinitionCaluse, definition: column)
+        }
 
         let alterations = additions + removals + modifications
 
