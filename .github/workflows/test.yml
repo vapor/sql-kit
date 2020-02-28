@@ -4,21 +4,21 @@ on:
 jobs:
   xenial:
     container: 
-      image: vapor/swift:5.1-xenial
+      image: vapor/swift:5.2-xenial
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
     - run: swift test --enable-test-discovery --sanitize=thread
   bionic:
     container: 
-      image: vapor/swift:5.1-bionic
+      image: vapor/swift:5.2-bionic
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
     - run: swift test --enable-test-discovery --sanitize=thread
   sqlite:
     container: 
-      image: vapor/swift:5.1
+      image: vapor/swift:5.2
     runs-on: ubuntu-latest
     steps:
     - run: apt update -y; apt install -y libsqlite3-dev
@@ -30,7 +30,7 @@ jobs:
       working-directory: ./sqlite-kit
   postgres:
     container: 
-      image: vapor/swift:5.1
+      image: vapor/swift:5.2
     services:
       psql:
         image: postgres
@@ -52,7 +52,7 @@ jobs:
         POSTGRES_HOSTNAME: psql
   mysql:
     container: 
-      image: vapor/swift:5.1
+      image: vapor/swift:5.2
     services:
       mysql:
         image: mysql:5.7
