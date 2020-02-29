@@ -25,7 +25,7 @@ public struct SQLSerializer {
 
 extension SQLSerializer {
     public mutating func statement(_ closure: (inout SQLStatement) -> ()) {
-        var sql = SQLStatement(parts: [])
+        var sql = SQLStatement(parts: [], database: self.database)
         closure(&sql)
         sql.serialize(to: &self)
     }
@@ -33,6 +33,11 @@ extension SQLSerializer {
 
 public struct SQLStatement: SQLExpression {
     public var parts: [SQLExpression]
+    let database: SQLDatabase
+
+    public var dialect: SQLDialect {
+        self.database.dialect
+    }
 
     public mutating func append(_ raw: String) {
         self.append(SQLRaw(raw))

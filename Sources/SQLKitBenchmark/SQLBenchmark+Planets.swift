@@ -77,6 +77,25 @@ extension SQLBenchmarker {
             .from("planets")
             .where("galaxyID", .equal, SQLBind(5))
             .run().wait()
+
+        // add columns for the sake of testing adding columns
+        try self.db.alter(table: "planets")
+            .column("extra", type: .int)
+            .run().wait()
+
+        if self.db.dialect.alterTableSyntax.allowsBatch {
+            try self.db.alter(table: "planets")
+                .column("very_extra", type: .bigint)
+                .column("extra_extra", type: .text)
+                .run().wait()
+
+            // drop, add, and modify columns
+            try self.db.alter(table: "planets")
+                .dropColumn("extra_extra")
+                .update(column: "extra", type: .text)
+                .column("hi", type: .text)
+                .run().wait()
+        }
     }
 }
 

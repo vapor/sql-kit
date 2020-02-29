@@ -38,7 +38,7 @@ extension SQLBenchmarker {
                 .run().wait()
         case .inline:
             try self.db.alter(table: "planets")
-                .modifyColumn("type", type: .enum("smallRocky", "gasGiant", "dwarf"))
+                .update(column: "type", type: .enum("smallRocky", "gasGiant", "dwarf"))
                 .run().wait()
         case .unsupported:
             // do nothing
@@ -64,7 +64,7 @@ extension SQLBenchmarker {
             break
         case .inline:
             try self.db.alter(table: "planets")
-                .modifyColumn("type", type: .enum("smallRocky", "dwarf"))
+                .update(column: "type", type: .enum("smallRocky", "dwarf"))
                 .run().wait()
         case .unsupported:
             // do nothing
