@@ -5,7 +5,7 @@ public struct SQLRaw: SQLExpression {
     
     public init(_ sql: String, _ binds: [Encodable] = []) {
         self.sql = sql
-        self.binds = []
+        self.binds = binds
     }
     
     public func serialize(to serializer: inout SQLSerializer) {
