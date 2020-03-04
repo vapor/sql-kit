@@ -15,21 +15,25 @@ public enum SQLDataType: SQLExpression {
     
     public func serialize(to serializer: inout SQLSerializer) {
         let sql: SQLExpression
-        switch self {
-        case .smallint:
-            sql = SQLRaw("SMALLINT")
-        case .int:
-            sql = SQLRaw("INTEGER")
-        case .bigint:
-            sql = SQLRaw("BIGINT")
-        case .text:
-            sql = SQLRaw("TEXT")
-        case .real:
-            sql = SQLRaw("REAL")
-        case .blob:
-            sql = SQLRaw("BLOB")
-        case .custom(let expression):
-            sql = expression
+        if let dialect = serializer.dialect.customDataType(for: self) {
+            sql = dialect
+        } else {
+            switch self {
+            case .smallint:
+                sql = SQLRaw("SMALLINT")
+            case .int:
+                sql = SQLRaw("INTEGER")
+            case .bigint:
+                sql = SQLRaw("BIGINT")
+            case .text:
+                sql = SQLRaw("TEXT")
+            case .real:
+                sql = SQLRaw("REAL")
+            case .blob:
+                sql = SQLRaw("BLOB")
+            case .custom(let expression):
+                sql = expression
+            }
         }
         sql.serialize(to: &serializer)
     }
