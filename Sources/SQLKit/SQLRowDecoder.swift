@@ -1,5 +1,5 @@
 public struct SQLRowDecoder {
-    public var keyPrefix: String? = nil
+    public var prefix: String? = nil
     public var keyDecodingStrategy: KeyDecodingStrategy = .useDefaultKeys
 
     func decode<T>(_ type: T.Type, from row: SQLRow) throws -> T
@@ -10,19 +10,19 @@ public struct SQLRowDecoder {
 
     public enum KeyDecodingStrategy {
         case useDefaultKeys
+        // converts rows in snake_case to from coding keys in camelCase to 
         case convertFromSnakeCase
         case custom(([CodingKey]) -> CodingKey)
     }
 
     fileprivate struct _Options {
-        let keyPrefix: String?
+        let prefix: String?
         let keyDecodingStrategy: KeyDecodingStrategy
     }
 
     /// The options set on the top-level decoder.
     fileprivate var options: _Options {
-        return _Options(keyPrefix: keyPrefix,
-                        keyDecodingStrategy: keyDecodingStrategy)
+        return _Options(prefix: prefix, keyDecodingStrategy: keyDecodingStrategy)
     }
 
     enum _Error: Error {
@@ -84,12 +84,12 @@ public struct SQLRowDecoder {
             case .useDefaultKeys:
                 break
             case .convertFromSnakeCase:
-                decodedKey = decodedKey.snakeCased()
+                decodedKey = _convertToSnakeCase(decodedKey)
             case .custom(let customKeyDecodingFunc):
                 decodedKey = customKeyDecodingFunc([key]).stringValue
             }
 
-            if let prefix = self.decoder.options.keyPrefix {
+            if let prefix = self.decoder.options.prefix {
                 return prefix + decodedKey
             } else {
                 return decodedKey
@@ -133,61 +133,46 @@ public struct SQLRowDecoder {
     }
 }
 
-fileprivate extension String {
-    /// Returns a new string in snake cased format
+fileprivate extension SQLRowDecoder {
+    /// This is a custom implementation which does not require Foundation as opposed to the one at which needs CharacterSet from Foundation https://github.com/apple/swift/blob/master/stdlib/public/Darwin/Foundation/JSONEncoder.swift
     ///
-    ///     "ThisIsATest".snakeCased() //returns this_is_a_test
-    ///     "JSON123Test".snakeCased() //returns json_123_test
-    func snakeCased() -> String {
+    /// Provide a custom conversion to the key in the encoded JSON from the keys specified by the encoded types.
+    /// The full path to the current encoding position is provided for context (in case you need to locate this key within the payload). The returned key is used in place of the last component in the coding path before encoding.
+    /// If the result of the conversion is a duplicate key, then only one value will be present in the result.
+    static func _convertToSnakeCase(_ stringKey: String) -> String {
+        guard !stringKey.isEmpty else { return stringKey }
+
         enum Status {
             case uppercase
-            case number
             case lowercase
+            case number
         }
 
         var status = Status.lowercase
         var snakeCasedString = ""
-        var i = self.startIndex
-        while i < self.endIndex {
-            let nextIndex = self.index(i, offsetBy: 1)
+        var i = stringKey.startIndex
+        while i < stringKey.endIndex {
+            let nextIndex = stringKey.index(i, offsetBy: 1)
 
-            if self[i].isUppercase {
+            if stringKey[i].isUppercase {
                 switch status {
                 case .uppercase:
-                    if nextIndex < self.endIndex {
-                        if self[nextIndex].isLowercase {
+                    if nextIndex < stringKey.endIndex {
+                        if stringKey[nextIndex].isLowercase {
                             snakeCasedString.append("_")
                         }
                     }
-                case .number:
-                    if i != self.startIndex {
-                        snakeCasedString.append("_")
-                    }
-                case .lowercase:
-                    if i != self.startIndex {
+                case .lowercase,
+                     .number:
+                    if i != stringKey.startIndex {
                         snakeCasedString.append("_")
                     }
                 }
                 status = .uppercase
-                snakeCasedString.append(self[i].lowercased())
-            } else if self[i].isNumber {
-                switch status {
-                case .number:
-                    break
-                case .uppercase:
-                    if i != self.startIndex {
-                        snakeCasedString.append("_")
-                    }
-                case .lowercase:
-                    if i != self.startIndex {
-                        snakeCasedString.append("_")
-                    }
-                }
-                status = .number
-                snakeCasedString.append(self[i])
+                snakeCasedString.append(stringKey[i].lowercased())
             } else {
                 status = .lowercase
-                snakeCasedString.append(self[i])
+                snakeCasedString.append(stringKey[i])
             }
 
             i = nextIndex

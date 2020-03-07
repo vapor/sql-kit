@@ -7,11 +7,11 @@ public protocol SQLRow {
 }
 
 extension SQLRow {
-    public func decode<D>(model type: D.Type, keyPrefix: String? = nil, keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys) throws -> D
+    public func decode<D>(model type: D.Type, prefix: String? = nil, keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys) throws -> D
         where D: Decodable
     {
         var rowDecoder = SQLRowDecoder()
-        rowDecoder.keyPrefix = keyPrefix
+        rowDecoder.prefix = prefix
         rowDecoder.keyDecodingStrategy = keyDecodingStrategy
         return try rowDecoder.decode(D.self, from: self)
     }

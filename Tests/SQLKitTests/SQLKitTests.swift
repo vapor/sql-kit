@@ -496,7 +496,7 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
                 "foos_waldoFred": 2015
             ])
 
-            let foo = try row.decode(model: Foo.self, keyPrefix: "foos_")
+            let foo = try row.decode(model: Foo.self, prefix: "foos_")
             XCTAssertEqual(foo.foo, 42)
             XCTAssertEqual(foo.bar, nil)
             XCTAssertEqual(foo.baz, "vapor")
