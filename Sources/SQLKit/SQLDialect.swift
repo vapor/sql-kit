@@ -13,6 +13,13 @@ public protocol SQLDialect {
     var supportsDropBehavior: Bool { get }
     var triggerSyntax: SQLTriggerSyntax { get }
     var alterTableSyntax: SQLAlterTableSyntax { get }
+    func customDataType(for dataType: SQLDataType) -> SQLExpression?
+}
+
+extension SQLDialect {
+    public func customDataType(for dataType: SQLDataType) -> SQLExpression? {
+        nil
+    }
 }
 
 /// Controls `ALTER TABLE` syntax.
