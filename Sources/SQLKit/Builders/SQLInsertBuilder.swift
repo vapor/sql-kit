@@ -31,19 +31,29 @@ public final class SQLInsertBuilder: SQLQueryBuilder {
     /// - parameters:
     ///     - value: `Encodable` value to insert.
     /// - returns: Self for chaining.
-    public func model<E>(_ model: E) throws -> Self
-        where E: Encodable
-    {
-        let row = try SQLQueryEncoder().encode(model)
-        if self.insert.columns.isEmpty {
-            self.insert.columns += row.map { $0.0 }.map { SQLColumn($0, table: nil) }
-        } else {
-            assert(
-                self.insert.columns.count == row.count,
-                "Column count (\(self.insert.columns.count)) did not equal value count (\(row.count)): \(model)."
-            )
+    public func model<E>(_ model: E, prefix: String? = nil, keyEncodingStrategy: SQLQueryEncoder.KeyEncodingStrategy = .useDefaultKeys) throws -> Self
+        where E: Encodable {
+            return try models([model], prefix: prefix, keyEncodingStrategy: keyEncodingStrategy)
+    }
+
+    public func models<E>(_ models: [E], prefix: String? = nil, keyEncodingStrategy: SQLQueryEncoder.KeyEncodingStrategy = .useDefaultKeys) throws -> Self where E: Encodable {
+        var encoder = SQLQueryEncoder()
+        encoder.keyEncodingStrategy = keyEncodingStrategy
+        encoder.prefix = prefix
+
+        for model in models {
+            let row = try encoder.encode(model)
+            if self.insert.columns.isEmpty {
+                self.insert.columns += row.map { $0.0 }.map { SQLColumn($0, table: nil) }
+            } else {
+                assert(
+                    self.insert.columns.count == row.count,
+                    "Column count (\(self.insert.columns.count)) did not equal value count (\(row.count)): \(model)."
+                )
+            }
+            self.insert.values.append(.init(row.map { $0.1 }))
         }
-        self.insert.values.append(.init(row.map { $0.1 }))
+
         return self
     }
     
