@@ -1,8 +1,13 @@
 import Foundation
 
 public struct SQLRowDecoder {
-    public var prefix: String? = nil
-    public var keyDecodingStrategy: KeyDecodingStrategy = .useDefaultKeys
+    public var prefix: String?
+    public var keyDecodingStrategy: KeyDecodingStrategy
+
+    public init(prefix: String? = nil, keyDecodingStrategy: KeyDecodingStrategy = .useDefaultKeys) {
+        self.prefix = prefix
+        self.keyDecodingStrategy = keyDecodingStrategy
+    }
 
     func decode<T>(_ type: T.Type, from row: SQLRow) throws -> T
         where T: Decodable
