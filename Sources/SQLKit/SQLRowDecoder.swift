@@ -1,3 +1,5 @@
+import Foundation
+
 public struct SQLRowDecoder {
     public var prefix: String? = nil
     public var keyDecodingStrategy: KeyDecodingStrategy = .useDefaultKeys
@@ -84,7 +86,7 @@ public struct SQLRowDecoder {
             case .useDefaultKeys:
                 break
             case .convertFromSnakeCase:
-                decodedKey = _convertToSnakeCase(decodedKey)
+                decodedKey = _convertFromSnakeCase(decodedKey)
             case .custom(let customKeyDecodingFunc):
                 decodedKey = customKeyDecodingFunc([key]).stringValue
             }
@@ -134,50 +136,66 @@ public struct SQLRowDecoder {
 }
 
 fileprivate extension SQLRowDecoder {
-    /// This is a custom implementation which does not require Foundation as opposed to the one at which needs CharacterSet from Foundation https://github.com/apple/swift/blob/master/stdlib/public/Darwin/Foundation/JSONEncoder.swift
+    /// This is an implementation is taken from from Swift's JSON KeyDecodingStrategy
+    /// https://github.com/apple/swift/blob/master/stdlib/public/Darwin/Foundation/JSONEncoder.swift
+
+    // Convert from "snake_case_keys" to "camelCaseKeys" before attempting to match a key with the one specified by each type.
     ///
-    /// Provide a custom conversion to the key in the encoded JSON from the keys specified by the encoded types.
-    /// The full path to the current encoding position is provided for context (in case you need to locate this key within the payload). The returned key is used in place of the last component in the coding path before encoding.
-    /// If the result of the conversion is a duplicate key, then only one value will be present in the result.
-    static func _convertToSnakeCase(_ stringKey: String) -> String {
+    /// The conversion to upper case uses `Locale.system`, also known as the ICU "root" locale. This means the result is consistent regardless of the current user's locale and language preferences.
+    ///
+    /// Converting from snake case to camel case:
+    /// 1. Capitalizes the word starting after each `_`
+    /// 2. Removes all `_`
+    /// 3. Preserves starting and ending `_` (as these are often used to indicate private variables or other metadata).
+    /// For example, `one_two_three` becomes `oneTwoThree`. `_one_two_three_` becomes `_oneTwoThree_`.
+    ///
+    /// - Note: Using a key decoding strategy has a nominal performance cost, as each string key has to be inspected for the `_` character.
+    static func _convertFromSnakeCase(_ stringKey: String) -> String {
         guard !stringKey.isEmpty else { return stringKey }
 
-        enum Status {
-            case uppercase
-            case lowercase
-            case number
-        }
+        var words : [Range<String.Index>] = []
+        // The general idea of this algorithm is to split words on transition from lower to upper case, then on transition of >1 upper case characters to lowercase
+        //
+        // myProperty -> my_property
+        // myURLProperty -> my_url_property
+        //
+        // We assume, per Swift naming conventions, that the first character of the key is lowercase.
+        var wordStart = stringKey.startIndex
+        var searchRange = stringKey.index(after: wordStart)..<stringKey.endIndex
 
-        var status = Status.lowercase
-        var snakeCasedString = ""
-        var i = stringKey.startIndex
-        while i < stringKey.endIndex {
-            let nextIndex = stringKey.index(i, offsetBy: 1)
+        // Find next uppercase character
+        while let upperCaseRange = stringKey.rangeOfCharacter(from: CharacterSet.uppercaseLetters, options: [], range: searchRange) {
+            let untilUpperCase = wordStart..<upperCaseRange.lowerBound
+            words.append(untilUpperCase)
 
-            if stringKey[i].isUppercase {
-                switch status {
-                case .uppercase:
-                    if nextIndex < stringKey.endIndex {
-                        if stringKey[nextIndex].isLowercase {
-                            snakeCasedString.append("_")
-                        }
-                    }
-                case .lowercase,
-                     .number:
-                    if i != stringKey.startIndex {
-                        snakeCasedString.append("_")
-                    }
-                }
-                status = .uppercase
-                snakeCasedString.append(stringKey[i].lowercased())
-            } else {
-                status = .lowercase
-                snakeCasedString.append(stringKey[i])
+            // Find next lowercase character
+            searchRange = upperCaseRange.lowerBound..<searchRange.upperBound
+            guard let lowerCaseRange = stringKey.rangeOfCharacter(from: CharacterSet.lowercaseLetters, options: [], range: searchRange) else {
+                // There are no more lower case letters. Just end here.
+                wordStart = searchRange.lowerBound
+                break
             }
 
-            i = nextIndex
-        }
+            // Is the next lowercase letter more than 1 after the uppercase? If so, we encountered a group of uppercase letters that we should treat as its own word
+            let nextCharacterAfterCapital = stringKey.index(after: upperCaseRange.lowerBound)
+            if lowerCaseRange.lowerBound == nextCharacterAfterCapital {
+                // The next character after capital is a lower case character and therefore not a word boundary.
+                // Continue searching for the next upper case for the boundary.
+                wordStart = upperCaseRange.lowerBound
+            } else {
+                // There was a range of >1 capital letters. Turn those into a word, stopping at the capital before the lower case character.
+                let beforeLowerIndex = stringKey.index(before: lowerCaseRange.lowerBound)
+                words.append(upperCaseRange.lowerBound..<beforeLowerIndex)
 
-        return snakeCasedString
+                // Next word starts at the capital before the lowercase we just found
+                wordStart = beforeLowerIndex
+            }
+            searchRange = lowerCaseRange.upperBound..<searchRange.upperBound
+        }
+        words.append(wordStart..<searchRange.upperBound)
+        let result = words.map({ (range) in
+            return stringKey[range].lowercased()
+        }).joined(separator: "_")
+        return result
     }
 }
