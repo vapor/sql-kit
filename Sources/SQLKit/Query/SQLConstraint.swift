@@ -46,10 +46,10 @@ extension SQLDialect {
         }
         
         var utf8PostCutdownIndex = identifier.utf8.index(utf8Midpoint, offsetBy: excessCutdown)
-        var realPostCutdownIndex = utf8PreCutdownIndex.samePosition(in: identifier)
-        while realPostCutdownIndex == nil && utf8PreCutdownIndex > identifier.utf8.endIndex {
+        var realPostCutdownIndex = utf8PostCutdownIndex.samePosition(in: identifier)
+        while realPostCutdownIndex == nil && utf8PostCutdownIndex < identifier.utf8.endIndex {
             identifier.utf8.formIndex(after: &utf8PostCutdownIndex)
-            realPostCutdownIndex = utf8PreCutdownIndex.samePosition(in: identifier)
+            realPostCutdownIndex = utf8PostCutdownIndex.samePosition(in: identifier)
         }
         
         let cutdownRange = (realPreCutdownIndex!)...(realPostCutdownIndex!)
