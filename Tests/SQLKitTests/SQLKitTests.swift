@@ -259,6 +259,13 @@ CREATE TABLE `planets`(`id` BIGINT PRIMARY KEY AUTOINCREMENT, `name` TEXT DEFAUL
 """
                        )
     }
+    
+    func testConstraintLengthNormalization() {
+        XCTAssertEqual(
+            db.dialect.normalizeSQLConstraintIdentifier("fk:obnoxiously_long_table_name.other_table_name_id+other_table_name.id"),
+            "fk:obnoxiously_long_table_name.oable_name_id+other_table_name.id"
+        )
+    }
 
     func testMultipleColumnConstraintsPerRow() throws {
         try db.create(table: "planets")
