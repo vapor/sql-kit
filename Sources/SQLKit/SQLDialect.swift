@@ -14,6 +14,7 @@ public protocol SQLDialect {
     var triggerSyntax: SQLTriggerSyntax { get }
     var alterTableSyntax: SQLAlterTableSyntax { get }
     func customDataType(for dataType: SQLDataType) -> SQLExpression?
+    var maximumConstraintIdentifierLength: Int { get }
 }
 
 extension SQLDialect {
