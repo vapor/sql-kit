@@ -31,9 +31,23 @@ public struct SQLConstraint: SQLExpression {
 
 extension SQLDialect {
     public func normalizeSQLConstraintIdentifier(_ identifier: String) -> String {
-        guard identifier.utf8.count > self.maximumConstraintIdentifierLength else { return identifier }
-        let midPoint = (identifier.count >> 1) - ((identifier.utf8.count - self.maximumConstraintIdentifierLength) >> 1)
-        let maxPrefixVal = Swift.max(identifier.startIndex, identifier.index(identifier.startIndex, offsetBy: midPoint))
-        return String(identifier.prefix(upTo: maxPrefixVal) + identifier.suffix(midPoint))
+        guard identifier.utf8.count >= self.maximumConstraintIdentifierLength else { return identifier }
+        
+        var normalizedIdentifier = identifier
+        let midPoint = identifier.count >> 1 // midpoint as extended grapheme cluster count, rounding down
+        let utf8Midpoint = identifier.index(identifier.startIndex, offsetBy: midPoint).samePosition(in: identifier.utf8)!
+        let excessInBytes = identifier.utf8.count - self.maximumConstraintIdentifierLength // number of *bytes* by which the string is too long
+        let excessCutdown = excessInBytes >> 1 // number of bytes on either side of the midpoint to remove
+        let utf8PreCutdownIndex = identifier.utf8.index(utf8Midpoint, offsetBy: -excessCutdown)
+        let utf8PostCutdownIndex = identifier.utf8.index(utf8Midpoint, offsetBy: excessCutdown)
+        let realPreCutdownIndex = utf8PreCutdownIndex.samePosition(in: identifier)!
+        let realPostCutdownIndex = utf8PostCutdownIndex.samePosition(in: identifier)!
+        let cutdownRange = realPreCutdownIndex...realPostCutdownIndex
+
+        // make sure we didn't accidentally generate something that'll result in an empty string or out-of-bounds crash; this should only be possible if a dialect declares a maximum length of less than 4
+        assert(cutdownRange.lowerBound > identifier.startIndex && cutdownRange.upperBound < identifier.endIndex)
+        normalizedIdentifier.removeSubrange(realPreCutdownIndex...realPostCutdownIndex)
+        
+        return normalizedIdentifier
     }
 }
