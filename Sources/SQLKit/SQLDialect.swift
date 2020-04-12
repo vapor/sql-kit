@@ -138,4 +138,8 @@ extension SQLDialect {
     public var triggerSyntax: SQLTriggerSyntax {
         return SQLTriggerSyntax()
     }
+    
+    public var maximumConstraintIdentifierLength: Int {
+        return 64
+    }
 }
