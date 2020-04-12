@@ -263,10 +263,10 @@ CREATE TABLE `planets`(`id` BIGINT PRIMARY KEY AUTOINCREMENT, `name` TEXT DEFAUL
     func testConstraintLengthNormalization() {
         XCTAssertEqual(
             db.dialect.normalizeSQLConstraintIdentifier("fk:obnoxiously_long_table_name.other_table_name_id+other_table_name.id"),
-            "fk:obnoxiously_long_table_name.oble_name_id+other_table_name.id"
+            "fk:obnoxiously_long_table_name.oher_table_name_id+other_table_name.id"
         )
 
-        XCTAssertEqual(db.dialect.normalizeSQLConstraintIdentifier("smileyIdentifier😀IsASmiley"), "smileyIdentifier😀IsASmiley")
+        XCTAssertEqual(db.dialect.normalizeSQLConstraintIdentifier("smileyIdentifier😀😀😀😀😀😀😀😀😀😀😀😀IsASmileyIsASmileyIsASmiley"), "smileyIdentifier😀IsASmiley")
         XCTAssertEqual(db.dialect.normalizeSQLConstraintIdentifier("ohWellWhatA🤷🏻‍♀️KindOfDay"), "ohWellWhatA🤷🏻‍♀️KindOfDay")
         XCTAssertEqual(db.dialect.normalizeSQLConstraintIdentifier("checkOutHowĈôm̂b̂în̂în̂ĝT⃠h⃠i⃠n⃠g⃠s⃠Works"),"checkOutHowĈôm̂b̂în̂în̂ĝT⃠h⃠i⃠n⃠g⃠s⃠Works")
     }

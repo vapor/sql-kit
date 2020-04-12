@@ -38,15 +38,25 @@ extension SQLDialect {
         let utf8Midpoint = identifier.index(identifier.startIndex, offsetBy: midPoint).samePosition(in: identifier.utf8)!
         let excessInBytes = identifier.utf8.count - self.maximumConstraintIdentifierLength // number of *bytes* by which the string is too long
         let excessCutdown = excessInBytes >> 1 // number of bytes on either side of the midpoint to remove
-        let utf8PreCutdownIndex = identifier.utf8.index(utf8Midpoint, offsetBy: -excessCutdown)
-        let utf8PostCutdownIndex = identifier.utf8.index(utf8Midpoint, offsetBy: excessCutdown)
-        let realPreCutdownIndex = utf8PreCutdownIndex.samePosition(in: identifier)!
-        let realPostCutdownIndex = utf8PostCutdownIndex.samePosition(in: identifier)!
-        let cutdownRange = realPreCutdownIndex...realPostCutdownIndex
+        var utf8PreCutdownIndex = identifier.utf8.index(utf8Midpoint, offsetBy: -excessCutdown)
+        var realPreCutdownIndex = utf8PreCutdownIndex.samePosition(in: identifier)
+        while realPreCutdownIndex == nil && utf8PreCutdownIndex > identifier.utf8.startIndex {
+            identifier.utf8.formIndex(before: &utf8PreCutdownIndex)
+            realPreCutdownIndex = utf8PreCutdownIndex.samePosition(in: identifier)
+        }
+        
+        var utf8PostCutdownIndex = identifier.utf8.index(utf8Midpoint, offsetBy: excessCutdown)
+        var realPostCutdownIndex = utf8PreCutdownIndex.samePosition(in: identifier)
+        while realPostCutdownIndex == nil && utf8PreCutdownIndex > identifier.utf8.endIndex {
+            identifier.utf8.formIndex(after: &utf8PostCutdownIndex)
+            realPostCutdownIndex = utf8PreCutdownIndex.samePosition(in: identifier)
+        }
+        
+        let cutdownRange = (realPreCutdownIndex!)...(realPostCutdownIndex!)
 
         // make sure we didn't accidentally generate something that'll result in an empty string or out-of-bounds crash; this should only be possible if a dialect declares a maximum length of less than 4
         assert(cutdownRange.lowerBound > identifier.startIndex && cutdownRange.upperBound < identifier.endIndex)
-        normalizedIdentifier.removeSubrange(realPreCutdownIndex...realPostCutdownIndex)
+        normalizedIdentifier.removeSubrange((realPreCutdownIndex!)...(realPostCutdownIndex!))
         
         return normalizedIdentifier
     }
