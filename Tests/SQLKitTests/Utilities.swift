@@ -116,6 +116,4 @@ struct GenericDialect: SQLDialect {
         self.triggerSyntax.create = create
         self.triggerSyntax.drop = drop
     }
-    
-    var maximumConstraintIdentifierLength: Int = 64
 }

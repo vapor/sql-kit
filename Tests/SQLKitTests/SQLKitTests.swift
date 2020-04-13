@@ -261,14 +261,11 @@ CREATE TABLE `planets`(`id` BIGINT PRIMARY KEY AUTOINCREMENT, `name` TEXT DEFAUL
     }
     
     func testConstraintLengthNormalization() {
+        // Default impl is to leave as-is
         XCTAssertEqual(
-            db.dialect.normalizeSQLConstraintIdentifier("fk:obnoxiously_long_table_name.other_table_name_id+other_table_name.id"),
-            "fk:obnoxiously_long_table_name.oble_name_id+other_table_name.id"
+            db.dialect.normalizeSQLConstraintIdentifier(identifier: "fk:obnoxiously_long_table_name.other_table_name_id+other_table_name.id"),
+            "fk:obnoxiously_long_table_name.other_table_name_id+other_table_name.id"
         )
-
-        XCTAssertEqual(db.dialect.normalizeSQLConstraintIdentifier("smileyIdentifier😀😀😀😀😀😀😀😀😀😀😀😀IsASmileyIsASmileyIsASmiley"), "smileyIdentifier😀😀😀😀😀😀ileyIsASmileyIsASmiley")
-        XCTAssertEqual(db.dialect.normalizeSQLConstraintIdentifier("ohWellWhatA🤷🏻‍♀️🤷🏻‍♀️🤷🏻‍♀️🤷🏻‍♀️🤷🏻‍♀️🤷🏻‍♀️🤷🏻‍♀️🤷🏻‍♀️KindOfDayKindOfDayKindOfDay"), "ohWellWhatA🤷🏻‍♀️🤷🏻‍♀️fDayKindOfDay")
-        XCTAssertEqual(db.dialect.normalizeSQLConstraintIdentifier("checkOutHowĈôm̂b̂în̂în̂ĝôm̂b̂în̂în̂ĝôm̂b̂în̂în̂ĝT⃠h⃠i⃠i⃠i⃠n⃠g⃠s⃠WorksWorksWorksWorks"),"checkOutHowĈôm̂b̂în̂în̂ĝôm̂s⃠WorksWorksWorksWorks")
     }
 
     func testMultipleColumnConstraintsPerRow() throws {

@@ -18,7 +18,7 @@ public struct SQLConstraint: SQLExpression {
         if let name = self.name {
             serializer.write("CONSTRAINT ")
             if let identifier = (name as? SQLIdentifier)?.string {
-                let normalizedName = serializer.dialect.normalizeSQLConstraintIdentifier(identifier)
+                let normalizedName = serializer.dialect.normalizeSQLConstraintIdentifier(identifier: identifier)
                 SQLIdentifier(normalizedName).serialize(to: &serializer)
             } else {
                 name.serialize(to: &serializer)
@@ -26,18 +26,5 @@ public struct SQLConstraint: SQLExpression {
             serializer.write(" ")
         }
         self.algorithm.serialize(to: &serializer)
-    }
-}
-
-extension SQLDialect {
-    public func normalizeSQLConstraintIdentifier(_ identifier: String) -> String {
-        guard identifier.utf8.count >= self.maximumConstraintIdentifierLength else { return identifier }
-        
-        var normalizedIdentifier = identifier
-        while normalizedIdentifier.utf8.count >= self.maximumConstraintIdentifierLength && !normalizedIdentifier.isEmpty {
-            normalizedIdentifier.remove(at: normalizedIdentifier.index(normalizedIdentifier.startIndex, offsetBy: normalizedIdentifier.count >> 1))
-        }
-        
-        return normalizedIdentifier
     }
 }
