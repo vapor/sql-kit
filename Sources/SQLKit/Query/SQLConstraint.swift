@@ -17,12 +17,8 @@ public struct SQLConstraint: SQLExpression {
     public func serialize(to serializer: inout SQLSerializer) {
         if let name = self.name {
             serializer.write("CONSTRAINT ")
-            if let identifier = (name as? SQLIdentifier)?.string {
-                let normalizedName = serializer.dialect.normalizeSQLConstraintIdentifier(identifier: identifier)
-                SQLIdentifier(normalizedName).serialize(to: &serializer)
-            } else {
-                name.serialize(to: &serializer)
-            }
+            let normalizedName = serializer.dialect.normalizeSQLConstraint(identifier: name)
+            normalizedName.serialize(to: &serializer)
             serializer.write(" ")
         }
         self.algorithm.serialize(to: &serializer)

@@ -14,7 +14,7 @@ public protocol SQLDialect {
     var triggerSyntax: SQLTriggerSyntax { get }
     var alterTableSyntax: SQLAlterTableSyntax { get }
     func customDataType(for dataType: SQLDataType) -> SQLExpression?
-    func normalizeSQLConstraintIdentifier(identifier: String) -> String
+    func normalizeSQLConstraint(identifier: SQLExpression) -> SQLExpression
 }
 
 extension SQLDialect {
@@ -139,7 +139,7 @@ extension SQLDialect {
         return SQLTriggerSyntax()
     }
     
-    public func normalizeSQLConstraintIdentifier(identifier: String) -> String {
+    public func normalizeSQLConstraint(identifier: SQLExpression) -> SQLExpression {
         return identifier
     }
 }
