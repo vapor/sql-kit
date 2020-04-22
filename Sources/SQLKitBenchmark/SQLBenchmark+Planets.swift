@@ -26,6 +26,7 @@ extension SQLBenchmarker {
             .column("id")
             .unique()
             .run().wait()
+
         // INSERT INTO "galaxies" ("id", "name") VALUES (DEFAULT, $1)
         try self.db.insert(into: "galaxies")
             .columns("id", "name")
