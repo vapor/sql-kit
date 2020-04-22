@@ -1,6 +1,6 @@
 /// Builds `SQLCreateTable` queries.
 ///
-///    conn.create(table: Planet.self).ifNotExists()
+///    db.create(table: Planet.self).ifNotExists()
 ///        .column(for: \Planet.id, .primaryKey)
 ///        .column(for: \Planet.galaxyID, .references(\Galaxy.id))
 ///        .run()
@@ -10,15 +10,12 @@ public final class SQLCreateTableBuilder: SQLQueryBuilder {
     /// `CreateTable` query being built.
     public var createTable: SQLCreateTable
     
-    /// See `SQLQueryBuilder`.
     public var database: SQLDatabase
-    
-    /// See `SQLQueryBuilder`.
+
     public var query: SQLExpression {
         return self.createTable
     }
-    
-    /// See `SQLColumnBuilder`.
+
     public var columns: [SQLExpression] {
         get { return createTable.columns }
         set { createTable.columns = newValue }
@@ -275,7 +272,7 @@ extension SQLCreateTableBuilder {
 extension SQLDatabase {
     /// Creates a new `SQLCreateTableBuilder`.
     ///
-    ///     conn.create(table: "planets")...
+    ///     db.create(table: "planets")...
     ///
     /// - parameters:
     ///     - table: Table to create.
@@ -286,7 +283,7 @@ extension SQLDatabase {
     
     /// Creates a new `SQLCreateTableBuilder`.
     ///
-    ///     conn.create(table: SQLIdentifier("planets"))...
+    ///     db.create(table: SQLIdentifier("planets"))...
     ///
     /// - parameters:
     ///     - table: Table to create.

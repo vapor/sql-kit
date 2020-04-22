@@ -537,7 +537,7 @@ extension SQLSelectBuilder {
 extension SQLDatabase {
     /// Creates a new `SQLSelectBuilder`.
     ///
-    ///     conn.select()
+    ///     db.select()
     ///         .column("*")
     ///         .from("planets"")
     ///         .where("name", .equal, SQLBind("Earth"))

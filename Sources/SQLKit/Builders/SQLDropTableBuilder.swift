@@ -1,6 +1,6 @@
 /// Builds `SQLDropTable` queries.
 ///
-///     conn.drop(table: Planet.self).run()
+///     db.drop(table: Planet.self).run()
 ///
 /// See `SQLQueryBuilder` for more information.
 public final class SQLDropTableBuilder: SQLQueryBuilder {
@@ -56,7 +56,7 @@ public final class SQLDropTableBuilder: SQLQueryBuilder {
 extension SQLDatabase {
     /// Creates a new `SQLDropTable` builder.
     ///
-    ///     conn.drop(table: "planets").run()
+    ///     db.drop(table: "planets").run()
     ///
     public func drop(table: String) -> SQLDropTableBuilder {
         return self.drop(table: SQLIdentifier(table))
@@ -64,7 +64,7 @@ extension SQLDatabase {
     
     /// Creates a new `SQLDropTable` builder.
     ///
-    ///     conn.drop(table: "planets").run()
+    ///     db.drop(table: "planets").run()
     ///
     public func drop(table: SQLExpression) -> SQLDropTableBuilder {
         return .init(.init(table: table), on: self)

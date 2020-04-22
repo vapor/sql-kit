@@ -1,6 +1,6 @@
 /// Builds raw SQL queries.
 ///
-///     conn.raw("SELECT * FROM planets WHERE name = \(bind: "Earth")")
+///     db.raw("SELECT * FROM planets WHERE name = \(bind: "Earth")")
 ///         .all(decoding: Planet.self)
 ///
 public final class SQLRawBuilder: SQLQueryBuilder, SQLQueryFetcher {
@@ -27,7 +27,7 @@ public final class SQLRawBuilder: SQLQueryBuilder, SQLQueryFetcher {
 extension SQLDatabase {
     /// Creates a new `SQLRawBuilder`.
     ///
-    ///     conn.raw("SELECT * FROM ...")...
+    ///     db.raw("SELECT * FROM ...")...
     ///
     /// - parameters:
     ///     - sql: The SQL query string.

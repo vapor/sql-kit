@@ -17,7 +17,7 @@ extension SQLDatabase {
  }
 
 extension SQLDatabase {
-    public func with(_ logger: Logger) -> SQLDatabase {
+    public func logging(to logger: Logger) -> SQLDatabase {
         CustomLoggerSQLDatabase(database: self, logger: logger)
     }
 }

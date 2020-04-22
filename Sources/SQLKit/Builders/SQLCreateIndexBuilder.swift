@@ -1,6 +1,6 @@
 /// Builds `SQLCreateIndex` queries.
 ///
-///     conn.create(index: "planet_name_unique").on("planet").column("name").unique().run()
+///     db.create(index: "planet_name_unique").on("planet").column("name").unique().run()
 ///
 /// See `SQLCreateIndex`.
 public final class SQLCreateIndexBuilder: SQLQueryBuilder {
@@ -23,7 +23,7 @@ public final class SQLCreateIndexBuilder: SQLQueryBuilder {
     
     /// Creates a new `SQLCreateIndexBuilder`.
     ///
-    ///     conn.create(index: "foo").on("planets")...
+    ///     db.create(index: "foo").on("planets")...
     ///
     /// - parameters:
     ///     - table: Table to create index on.
@@ -34,7 +34,7 @@ public final class SQLCreateIndexBuilder: SQLQueryBuilder {
     
     /// Creates a new `SQLCreateIndexBuilder`.
     ///
-    ///     conn.create(index: "foo").on("planets")...
+    ///     db.create(index: "foo").on("planets")...
     ///
     /// - parameters:
     ///     - table: Table to create index on.
@@ -46,7 +46,7 @@ public final class SQLCreateIndexBuilder: SQLQueryBuilder {
     
     /// Creates a new `SQLCreateIndexBuilder`.
     ///
-    ///     conn.create(index: "foo").column("name")...
+    ///     db.create(index: "foo").column("name")...
     ///
     /// - parameters:
     ///     - column: Column to create index on.
@@ -57,7 +57,7 @@ public final class SQLCreateIndexBuilder: SQLQueryBuilder {
     
     /// Creates a new `SQLCreateIndexBuilder`.
     ///
-    ///     conn.create(index: "foo").column("name")...
+    ///     db.create(index: "foo").column("name")...
     ///
     /// - parameters:
     ///     - column: Column to create index on.
@@ -79,7 +79,7 @@ public final class SQLCreateIndexBuilder: SQLQueryBuilder {
 extension SQLDatabase {
     /// Creates a new `SQLCreateIndexBuilder`.
     ///
-    ///     conn.create(index: "foo")...
+    ///     db.create(index: "foo")...
     ///
     /// - parameters:
     ///     - name: Name for this index.
@@ -92,7 +92,7 @@ extension SQLDatabase {
     
     /// Creates a new `SQLCreateIndexBuilder`.
     ///
-    ///     conn.create(index: "foo")...
+    ///     db.create(index: "foo")...
     ///
     /// - parameters:
     ///     - name: Name for this index.

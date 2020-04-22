@@ -3,7 +3,7 @@
 extension SQLDatabase {
     /// Creates a new `SQLCreateEnumBuilder`.
     ///
-    ///     conn.create(enum: "meal", cases: "breakfast", "lunch", "dinner")...
+    ///     db.create(enum: "meal", cases: "breakfast", "lunch", "dinner")...
     ///
     /// - parameters:
     ///     - name: Name of ENUM type to create.
@@ -15,7 +15,7 @@ extension SQLDatabase {
 
     /// Creates a new `SQLCreateEnumBuilder`.
     ///
-    ///     conn.create(enum: SQLIdentifier("meal"), cases: "breakfast", "lunch", "dinner")...
+    ///     db.create(enum: SQLIdentifier("meal"), cases: "breakfast", "lunch", "dinner")...
     ///
     /// - parameters:
     ///     - name: Name of ENUM type to create.
@@ -28,7 +28,7 @@ extension SQLDatabase {
 
 /// Builds `SQLCreateEnum` queries.
 ///
-///    conn.create(enum: "meal", cases: "breakfast", "lunch", "dinner")
+///    db.create(enum: "meal", cases: "breakfast", "lunch", "dinner")
 ///        .run()
 ///
 /// See `SQLColumnBuilder` and `SQLQueryBuilder` for more information.
