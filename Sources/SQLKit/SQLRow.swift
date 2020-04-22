@@ -7,10 +7,19 @@ public protocol SQLRow {
 }
 
 extension SQLRow {
-    public func decode<D>(model type: D.Type, prefix: String? = nil) throws -> D
+    public func decode<D>(model type: D.Type, prefix: String? = nil, keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys) throws -> D
         where D: Decodable
     {
-        try SQLRowDecoder().decode(D.self, from: self, prefix: prefix)
+        var rowDecoder = SQLRowDecoder()
+        rowDecoder.prefix = prefix
+        rowDecoder.keyDecodingStrategy = keyDecodingStrategy
+        return try rowDecoder.decode(D.self, from: self)
+    }
+
+    public func decode<D>(model type: D.Type, with rowDecoder: SQLRowDecoder) throws -> D
+        where D: Decodable
+    {
+        return try rowDecoder.decode(D.self, from: self)
     }
     
     /// This method exists to enable the compiler to perform type inference on
