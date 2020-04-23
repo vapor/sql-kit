@@ -189,7 +189,7 @@ name != NULL AND (name == ? OR name == ?)
 
 ## Insert
 
-The `insert()` method creates an `INSERT` query builder. 
+The `insert(into:)` method creates an `INSERT` query builder. 
 
 ```swift
 try db.insert(into: "galaxies")
@@ -217,4 +217,17 @@ try builder.model(Galaxy(name: "Milky Way"))
 
 ## Update
 
-...
+The `update(_:)` method creates an `UPDATE` query builder.
+
+```swift
+try db.update("planets")
+    .where("name", .equal, "Jpuiter")
+    .set("name", to: "Jupiter")
+    .run().wait()
+```
+
+This code generates the following SQL:
+
+```sql
+UPDATE planets SET name = ? WHERE name = ?
+```

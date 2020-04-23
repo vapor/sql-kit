@@ -15,12 +15,21 @@ final class SQLKitTests: XCTestCase {
         try benchmarker.run()
     }
 
-    func testWhere_in() throws {
+    func testSelect_whereIn() throws {
         try db.select().column("*")
             .from("planets")
             .where("name", .in, ["Earth", "Mars"])
             .run().wait()
         XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE `name` IN (?, ?)")
+    }
+
+    func testUpdate() throws {
+        try db.update("planets")
+        .
+            .where("name", .equal, "Jpuiter")
+            .set("name", to: "Jupiter")
+            .run().wait()
+        XCTAssertEqual(db.results[0], "UPDATE `planets` SET `name` = ? WHERE `name` = ?")
     }
     
     func testLockingClause_forUpdate() throws {
