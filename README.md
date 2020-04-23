@@ -174,6 +174,35 @@ name = ? OR name = ?
 
 ## Insert
 
+The `insert()` method creates an `INSERT` query builder. 
+
+```swift
+try self.db.insert(into: "galaxies")
+    .columns("id", "name")
+    .values(SQLLiteral.default, SQLBind("Milky Way"))
+    .values(SQLLiteral.default, SQLBind("Andromeda"))
+    .run().wait()
+```
+
+This code would generate the following SQL:
+
+```sql
+INSERT INTO galaxies (id, name) VALUES (DEFAULT, ?) (DEFAULT, ?)
+```
+
+The insert builder also has a method for encoding a `Codable` type as a set of values.
+
+```swift
+struct Galaxy: Codable {
+    var name: String
+}
+
+try builder.model(Galaxy(name: "Milky Way"))
+```
+
+## Update
+
 ...
 
+```
 

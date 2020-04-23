@@ -17,7 +17,6 @@ final class SQLKitTests: XCTestCase {
 
     func testWhere_in() throws {
         try db.select().column("*")
-        .
             .from("planets")
             .where("name", .in, ["Earth", "Mars"])
             .run().wait()
