@@ -10,3 +10,9 @@ public struct SQLBind: SQLExpression {
         serializer.write(bind: self.encodable)
     }
 }
+
+extension SQLBind {
+    public static func group(_ items: [Encodable]) -> SQLExpression {
+        SQLGroupExpression(items.map(SQLBind.init))
+    }
+}

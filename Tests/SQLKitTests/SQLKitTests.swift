@@ -14,6 +14,14 @@ final class SQLKitTests: XCTestCase {
         let benchmarker = SQLBenchmarker(on: db)
         try benchmarker.run()
     }
+
+    func testWhere_in() throws {
+        try db.select().column("*")
+            .from("planets")
+            .where("name", .in, ["Earth", "Mars"])
+            .run().wait()
+        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE `name` IN (?, ?)")
+    }
     
     func testLockingClause_forUpdate() throws {
         try db.select().column("*")

@@ -3,7 +3,7 @@ public struct SQLColumn: SQLExpression {
     public var table: SQLExpression?
     
     public init(_ name: String, table: String? = nil) {
-        self.init(SQLIdentifier(name), table: table.flatMap(SQLIdentifier.init))
+        self.init(SQLIdentifier(name), table: table.flatMap(SQLIdentifier.init(_:)))
     }
     
     public init(_ name: SQLExpression, table: SQLExpression? = nil) {

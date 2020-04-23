@@ -124,4 +124,3 @@ let planets = try db.select()
 
 ## Select
 
-...

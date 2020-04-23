@@ -25,8 +25,8 @@ extension SQLPredicateBuilder {
     ///     - lhs: Left-hand side column name.
     ///     - op: Binary operator to use for comparison.
     ///     - rhs: Right-hand side column name.
-    public func `where`(_ lhs: String, _ op: SQLBinaryOperator, column rhs: String) -> Self {
-        return self.where(SQLIdentifier(lhs), op, SQLIdentifier(rhs))
+    public func `where`(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, column rhs: SQLIdentifier) -> Self {
+        self.where(lhs, op, rhs)
     }
 
     /// Adds a column to encodable comparison to this builder's `WHERE` clause by `AND`ing.
@@ -42,39 +42,59 @@ extension SQLPredicateBuilder {
     ///     - op: Binary operator to use for comparison.
     ///     - rhs: Encodable value.
     /// - returns: Self for chaining.
-    public func `where`(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: Encodable) -> Self {
-        return self.where(SQLIdentifier(lhs), op, SQLBind(rhs))
+    public func `where`<E>(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: E) -> Self
+        where E: Encodable
+    {
+        return self.where(lhs, op, SQLBind(rhs))
+    }
+
+    /// Adds a column to encodable comparison to this builder's `WHERE` clause by `AND`ing.
+    ///
+    ///     builder.where("name", .in, ["Earth", "Mars"])
+    ///
+    /// The encodable value supplied will be bound to the query as a parameter.
+    ///
+    ///     SELECT * FROM planets WHERE name = ? // Earth
+    ///
+    /// - parameters:
+    ///     - lhs: Left-hand side column name.
+    ///     - op: Binary operator to use for comparison.
+    ///     - rhs: Encodable value.
+    /// - returns: Self for chaining.
+    public func `where`<E>(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: [E]) -> Self
+        where E: Encodable
+    {
+        self.where(lhs, op, SQLBind.group(rhs))
     }
 
     /// Adds a column to expression comparison to the `WHERE` clause by `AND`ing.
     ///
-    ///     builder.where("name", .equal, .value("Earth"))
+    ///     builder.where(SQLIdentifier("name"), .equal, SQLBind("Earth"))
     ///
     /// - parameters:
     ///     - lhs: Left-hand side column name.
     ///     - op: Binary operator to use for comparison.
     ///     - rhs: Right-hand side expression.
-    public func `where`(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
-        return self.where(SQLIdentifier(lhs), op, rhs)
+    public func `where`(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
+        self.where(lhs, op as SQLExpression, rhs)
     }
 
-    /// Adds an expression to expression comparison to the `WHERE` clause by `AND`ing.
+    /// Adds a column to expression comparison to the `WHERE` clause by `AND`ing.
     ///
-    ///     builder.where("name", .equal, .value("Earth"))
+    ///     builder.where(SQLIdentifier("name"), .equal, SQLBind("Earth"))
     ///
     /// - parameters:
-    ///     - lhs: Left-hand side expression.
+    ///     - lhs: Left-hand side column name.
     ///     - op: Binary operator to use for comparison.
     ///     - rhs: Right-hand side expression.
-    /// - returns: Self for chaining.
     public func `where`(_ lhs: SQLExpression, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
-        return self.where(SQLBinaryExpression(left: lhs, op: op, right: rhs))
+        self.where(lhs, op as SQLExpression, rhs)
     }
 
     /// Adds an expression to expression comparison, with an arbitrary
     /// expression as operator, to the `WHERE` clause by `AND`ing.
     ///
-    ///     builder.where("name", .equal, .value("Earth"))
+    ///     builder.where(SQLIdentifier("name"), SQLBinaryOperator.equal, SQLBind("Earth"))
     ///
     /// - parameters:
     ///     - lhs: Left-hand side expression.
@@ -82,7 +102,7 @@ extension SQLPredicateBuilder {
     ///     - rhs: Right-hand side expression.
     /// - returns: Self for chaining.
     public func `where`(_ lhs: SQLExpression, _ op: SQLExpression, _ rhs: SQLExpression) -> Self {
-        return self.where(SQLBinaryExpression(left: lhs, op: op, right: rhs))
+        self.where(SQLBinaryExpression(left: lhs, op: op, right: rhs))
     }
 
     /// Adds an expression to the `WHERE` clause by `AND`ing.

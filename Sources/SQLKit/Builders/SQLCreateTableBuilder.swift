@@ -122,8 +122,8 @@ extension SQLCreateTableBuilder {
     ///     - constraintName: An optional name to give the constraint.
     public func primaryKey(_ columns: [String], named constraintName: String? = nil) -> Self {
         return primaryKey(
-            columns.map(SQLIdentifier.init),
-            named: constraintName.map(SQLIdentifier.init)
+            columns.map(SQLIdentifier.init(_:)),
+            named: constraintName.map(SQLIdentifier.init(_:))
         )
     }
 
@@ -158,8 +158,8 @@ extension SQLCreateTableBuilder {
     ///     - constraintName: An optional name to give the constraint.
     public func unique(_ columns: [String], named constraintName: String? = nil) -> Self {
         return unique(
-            columns.map(SQLIdentifier.init),
-            named: constraintName.map(SQLIdentifier.init)
+            columns.map(SQLIdentifier.init(_:)),
+            named: constraintName.map(SQLIdentifier.init(_:))
         )
     }
 
@@ -186,7 +186,7 @@ extension SQLCreateTableBuilder {
     public func check(_ expression: SQLExpression, named constraintName: String? = nil) -> Self {
         return self.check(
             expression,
-            named: constraintName.map(SQLIdentifier.init)
+            named: constraintName.map(SQLIdentifier.init(_:))
         )
     }
 
@@ -223,12 +223,12 @@ extension SQLCreateTableBuilder {
         named constraintName: String? = nil
     ) -> Self {
         return self.foreignKey(
-            columns.map(SQLIdentifier.init),
+            columns.map(SQLIdentifier.init(_:)),
             references: SQLIdentifier(foreignTable),
-            foreignColumns.map(SQLIdentifier.init),
+            foreignColumns.map(SQLIdentifier.init(_:)),
             onDelete: onDelete,
             onUpdate: onUpdate,
-            named: constraintName.map(SQLIdentifier.init)
+            named: constraintName.map(SQLIdentifier.init(_:))
         )
     }
 

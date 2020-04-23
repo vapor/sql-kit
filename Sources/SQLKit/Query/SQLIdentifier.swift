@@ -14,3 +14,9 @@ public struct SQLIdentifier: SQLExpression {
         serializer.dialect.identifierQuote.serialize(to: &serializer)
     }
 }
+
+extension SQLIdentifier: ExpressibleByStringLiteral {
+    public init(stringLiteral value: StringLiteralType) {
+        self.init(value)
+    }
+}

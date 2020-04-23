@@ -58,12 +58,12 @@ public final class SQLInsertBuilder: SQLQueryBuilder {
     }
     
     public func columns(_ columns: String...) -> Self {
-        self.insert.columns = columns.map(SQLIdentifier.init)
+        self.insert.columns = columns.map(SQLIdentifier.init(_:))
         return self
     }
     
     public func columns(_ columns: [String]) -> Self {
-        self.insert.columns = columns.map(SQLIdentifier.init)
+        self.insert.columns = columns.map(SQLIdentifier.init(_:))
         return self
     }
 
