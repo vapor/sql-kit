@@ -172,6 +172,21 @@ This code would generate the following SQL:
 name = ? OR name = ?
 ```
 
+`where` also supports creating grouped clauses. 
+
+```swift
+builder.where("name", .notEqual, SQLLiteral.null).where {
+    $0.where("name", .equal, SQLBind("Milky Way"))
+        .orWhere("name", .equal, SQLBind("Andromeda"))
+}
+```
+
+This code generates the following SQL:
+
+```sql
+name != NULL AND (name == ? OR name == ?)
+```
+
 ## Insert
 
 The `insert()` method creates an `INSERT` query builder. 
