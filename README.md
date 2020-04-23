@@ -177,7 +177,7 @@ name = ? OR name = ?
 The `insert()` method creates an `INSERT` query builder. 
 
 ```swift
-try self.db.insert(into: "galaxies")
+try db.insert(into: "galaxies")
     .columns("id", "name")
     .values(SQLLiteral.default, SQLBind("Milky Way"))
     .values(SQLLiteral.default, SQLBind("Andromeda"))
@@ -203,6 +203,3 @@ try builder.model(Galaxy(name: "Milky Way"))
 ## Update
 
 ...
-
-```
-
