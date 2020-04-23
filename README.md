@@ -147,14 +147,17 @@ SELECT id, name FROM planets WHERE name = ?
 
 Notice that `Encodable` values are automatically bound as parameters instead of being serialized directly to the query. 
 
-The select builder supports these additional features:
+The select builder has the following methods.
 
+- `columns`
+- `from`
+- `where` (`orWhere`)
 - `limit`
 - `offset`
 - `groupBy`
-- `having`
+- `having` (`orHaving`)
 - `distinct`
-- `for` (locking)
+- `for` (`lockingClause`)
 - `join`
 
 By default, query components like `where` will be joined by `AND`. Methods prefixed with `or` exist for joining by `OR`. 
@@ -168,4 +171,9 @@ This code would generate the following SQL:
 ```sql
 name = ? OR name = ?
 ```
+
+## Insert
+
+...
+
 
