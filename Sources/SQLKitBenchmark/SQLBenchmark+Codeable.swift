@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by Reid Nantes on 2020-03-07.
-//
-
 import Foundation
 
 import SQLKit
