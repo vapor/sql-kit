@@ -251,3 +251,24 @@ DELETE FROM planets WHERE name = ?
 ```
 
 The delete builder supports the same `where` and `orWhere` methods as the select builder.
+
+## Raw
+
+The `raw(_:)` method allows for passing custom SQL query strings with support for parameterized binds.
+
+```swift
+let table = "planets"
+let planets = try db.raw("SELECT * FROM \(table) WHERE name = \(bind: planet)")
+    .all().wait()
+```
+
+This code generates the following SQL:
+
+```sql
+SELECT * FROM planets WHERE name = ?
+```
+
+The `\(bind:)` interpolation should be used for any user input to avoid SQL injection.
+
+## Create Table
+
