@@ -25,11 +25,17 @@ final class SQLKitTests: XCTestCase {
 
     func testUpdate() throws {
         try db.update("planets")
-        .
             .where("name", .equal, "Jpuiter")
             .set("name", to: "Jupiter")
             .run().wait()
         XCTAssertEqual(db.results[0], "UPDATE `planets` SET `name` = ? WHERE `name` = ?")
+    }
+
+    func testDelete() throws {
+        try db.delete(from: "planets")
+            .where("name", .equal, "Jupiter")
+            .run().wait()
+        XCTAssertEqual(db.results[0], "DELETE FROM `planets` WHERE `name` = ?")
     }
     
     func testLockingClause_forUpdate() throws {

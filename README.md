@@ -231,3 +231,23 @@ This code generates the following SQL:
 ```sql
 UPDATE planets SET name = ? WHERE name = ?
 ```
+
+The update builder supports the same `where` and `orWhere` methods as the select builder.
+
+## Delete
+
+The `delete(from:)` method creates a `DELETE` query builder.
+
+```swift
+try db.delete(from: "planets")
+    .where("name", .equal, "Jupiter")
+    .run().wait()
+```
+
+This code generates the following SQL:
+
+```sql
+DELETE FROM planets WHERE name = ?
+```
+
+The delete builder supports the same `where` and `orWhere` methods as the select builder.
