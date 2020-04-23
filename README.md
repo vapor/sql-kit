@@ -269,6 +269,3 @@ SELECT * FROM planets WHERE name = ?
 ```
 
 The `\(bind:)` interpolation should be used for any user input to avoid SQL injection.
-
-## Create Table
-
