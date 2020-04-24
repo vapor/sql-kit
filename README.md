@@ -22,7 +22,7 @@ Build SQL queries in Swift. Extensible, protocol-based design that supports DQL,
 
 ### Major Releases
 
-The table below shows a list of PostgresNIO major releases alongside their compatible NIO and Swift versions. 
+The table below shows a list of SQLKit major releases alongside their compatible NIO and Swift versions. 
 
 |Version|NIO|Swift|SPM|
 |-|-|-|-|
