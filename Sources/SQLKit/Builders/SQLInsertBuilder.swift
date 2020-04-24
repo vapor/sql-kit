@@ -1,6 +1,6 @@
 /// Builds `SQLInsert` queries.
 ///
-///     conn.insert(into: "planets"")
+///     db.insert(into: "planets"")
 ///         .value(earth).run()
 ///
 /// See `SQLQueryBuilder` for more information.
@@ -25,35 +25,45 @@ public final class SQLInsertBuilder: SQLQueryBuilder {
     /// Adds a single encodable value to be inserted. Equivalent to calling `values(_:)`
     /// with single-element array.
     ///
-    ///     conn.insert(into: Planet.self)
+    ///     db.insert(into: Planet.self)
     ///         .value(earth).run()
     ///
     /// - parameters:
     ///     - value: `Encodable` value to insert.
     /// - returns: Self for chaining.
-    public func model<E>(_ model: E) throws -> Self
-        where E: Encodable
-    {
-        let row = try SQLQueryEncoder().encode(model)
-        if self.insert.columns.isEmpty {
-            self.insert.columns += row.map { $0.0 }.map { SQLColumn($0, table: nil) }
-        } else {
-            assert(
-                self.insert.columns.count == row.count,
-                "Column count (\(self.insert.columns.count)) did not equal value count (\(row.count)): \(model)."
-            )
+    public func model<E>(_ model: E, prefix: String? = nil, keyEncodingStrategy: SQLQueryEncoder.KeyEncodingStrategy = .useDefaultKeys) throws -> Self
+        where E: Encodable {
+            return try models([model], prefix: prefix, keyEncodingStrategy: keyEncodingStrategy)
+    }
+
+    public func models<E>(_ models: [E], prefix: String? = nil, keyEncodingStrategy: SQLQueryEncoder.KeyEncodingStrategy = .useDefaultKeys) throws -> Self where E: Encodable {
+        var encoder = SQLQueryEncoder()
+        encoder.keyEncodingStrategy = keyEncodingStrategy
+        encoder.prefix = prefix
+
+        for model in models {
+            let row = try encoder.encode(model)
+            if self.insert.columns.isEmpty {
+                self.insert.columns += row.map { $0.0 }.map { SQLColumn($0, table: nil) }
+            } else {
+                assert(
+                    self.insert.columns.count == row.count,
+                    "Column count (\(self.insert.columns.count)) did not equal value count (\(row.count)): \(model)."
+                )
+            }
+            self.insert.values.append(.init(row.map { $0.1 }))
         }
-        self.insert.values.append(.init(row.map { $0.1 }))
+
         return self
     }
     
     public func columns(_ columns: String...) -> Self {
-        self.insert.columns = columns.map(SQLIdentifier.init)
+        self.insert.columns = columns.map(SQLIdentifier.init(_:))
         return self
     }
     
     public func columns(_ columns: [String]) -> Self {
-        self.insert.columns = columns.map(SQLIdentifier.init)
+        self.insert.columns = columns.map(SQLIdentifier.init(_:))
         return self
     }
 
@@ -95,7 +105,7 @@ public final class SQLInsertBuilder: SQLQueryBuilder {
 extension SQLDatabase {
     /// Creates a new `SQLInsertBuilder`.
     ///
-    ///     conn.insert(into: "planets")...
+    ///     db.insert(into: "planets")...
     ///
     /// - parameters:
     ///     - table: Table to insert into.
@@ -106,7 +116,7 @@ extension SQLDatabase {
     
     /// Creates a new `SQLInsertBuilder`.
     ///
-    ///     conn.insert(into: "planets")...
+    ///     db.insert(into: "planets")...
     ///
     /// - parameters:
     ///     - table: Table to insert into.

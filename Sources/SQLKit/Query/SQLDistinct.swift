@@ -2,7 +2,7 @@ public struct SQLDistinct: SQLExpression {
     public let args: [SQLExpression]
     
     public  init(_ args: String...) {
-        self.args = args.map(SQLIdentifier.init)
+        self.args = args.map(SQLIdentifier.init(_:))
     }
     
     public init(_ args: SQLExpression...) {

@@ -1,6 +1,6 @@
 /// `ALTER TABLE` query.
 ///
-///     conn.alter(table: Planet.self)
+///     db.alter(table: Planet.self)
 ///         .column(for: \.name)
 ///         .run()
 ///

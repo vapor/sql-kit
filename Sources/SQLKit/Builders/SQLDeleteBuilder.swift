@@ -1,22 +1,19 @@
 /// Builds `SQLDelete` queries.
 ///
-///     conn.delete(from: Planet.self)
+///     db.delete(from: Planet.self)
 ///         .where(\.name != "Earth").run()
 ///
 /// See `SQLQueryBuilder` and `SQLPredicateBuilder` for more information.
 public final class SQLDeleteBuilder: SQLQueryBuilder, SQLPredicateBuilder {
     /// `Delete` query being built.
     public var delete: SQLDelete
-    
-    /// See `SQLQueryBuilder`.
+
     public var database: SQLDatabase
-    
-    /// See `SQLQueryBuilder`.
+
     public var query: SQLExpression {
         return self.delete
     }
-    
-    /// See `SQLWhereBuilder`.
+
     public var predicate: SQLExpression? {
         get { return self.delete.predicate }
         set { self.delete.predicate = newValue }
@@ -34,7 +31,7 @@ public final class SQLDeleteBuilder: SQLQueryBuilder, SQLPredicateBuilder {
 extension SQLDatabase {
     /// Creates a new `SQLDeleteBuilder`.
     ///
-    ///     conn.delete(from: Planet.self)...
+    ///     db.delete(from: "planets")...
     ///
     /// - parameters:
     ///     - table: Table to delete from.
@@ -44,8 +41,6 @@ extension SQLDatabase {
     }
     
     /// Creates a new `SQLDeleteBuilder`.
-    ///
-    ///     conn.delete(from: "planets")...
     ///
     /// - parameters:
     ///     - table: Table to delete from.

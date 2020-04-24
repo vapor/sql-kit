@@ -1,6 +1,6 @@
 /// Builds `SQLUpdate` queries.
 ///
-///     conn.update(Planet.self)
+///     db.update(Planet.self)
 ///         .set(\Planet.name == "Earth")
 ///         .where(\Planet.name == "Eatrh")
 ///         .run()
@@ -10,15 +10,12 @@ public final class SQLUpdateBuilder: SQLQueryBuilder, SQLPredicateBuilder {
     /// `Update` query being built.
     public var update: SQLUpdate
     
-    /// See `SQLQueryBuilder`.
     public var database: SQLDatabase
-    
-    /// See `SQLQueryBuilder`.
+
     public var query: SQLExpression {
         return self.update
     }
-    
-    /// See `SQLWhereBuilder`.
+
     public var predicate: SQLExpression? {
         get { return self.update.predicate }
         set { self.update.predicate = newValue }
@@ -56,7 +53,7 @@ public final class SQLUpdateBuilder: SQLQueryBuilder, SQLPredicateBuilder {
 extension SQLDatabase {
     /// Creates a new `SQLUpdateBuilder`.
     ///
-    ///     conn.update("planets")...
+    ///     db.update("planets")...
     ///
     /// - parameters:
     ///     - table: Table to update.
@@ -67,7 +64,7 @@ extension SQLDatabase {
     
     /// Creates a new `SQLUpdateBuilder`.
     ///
-    ///     conn.update("planets")...
+    ///     db.update("planets")...
     ///
     /// - parameters:
     ///     - table: Table to update.

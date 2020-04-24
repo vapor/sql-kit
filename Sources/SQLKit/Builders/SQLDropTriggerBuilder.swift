@@ -1,6 +1,6 @@
 /// Builds `SQLDropTrigger` query
 ///
-///   conn.drop()
+///   db.drop()
 ///
 /// See `SQLQueryBuilder` for more information.
 extension SQLDatabase {

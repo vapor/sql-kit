@@ -24,17 +24,15 @@ extension SQLDatabase {
 
 /// Builds `SQLDropEnumBuilder` queries.
 ///
-///     conn.drop(type: "meal").run()
+///     db.drop(type: "meal").run()
 ///
 /// See `SQLQueryBuilder` for more information.
 public final class SQLDropEnumBuilder: SQLQueryBuilder {
     /// `DropType` query being built.
     public var dropEnum: SQLDropEnum
 
-    /// See `SQLQueryBuilder`.
     public var database: SQLDatabase
 
-    /// See `SQLQueryBuilder`.
     public var query: SQLExpression {
         return self.dropEnum
     }

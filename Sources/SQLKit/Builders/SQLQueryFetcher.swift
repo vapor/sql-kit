@@ -9,7 +9,6 @@ public protocol SQLQueryFetcher: SQLQueryBuilder { }
 extension SQLQueryFetcher {
     // MARK: First
 
-
     public func first<D>(decoding: D.Type) -> EventLoopFuture<D?>
         where D: Decodable
     {
