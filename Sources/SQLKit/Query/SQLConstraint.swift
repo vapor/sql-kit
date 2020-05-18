@@ -7,6 +7,7 @@ public struct SQLConstraint: SQLExpression {
 
     /// Algorithm. See `SQLTableConstraintAlgorithm`
     /// and `SQLColumnConstraintAlgorithm`
+    /// TODO: Make optional.
     public var algorithm: SQLExpression
 
     public init(algorithm: SQLExpression, name: SQLExpression? = nil) {

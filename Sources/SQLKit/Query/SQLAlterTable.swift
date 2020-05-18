@@ -13,6 +13,10 @@ public struct SQLAlterTable: SQLExpression {
     public var modifyColumns: [SQLExpression]
     /// Columns to delete.
     public var dropColumns: [SQLExpression]
+    /// Table constraints, such as `FOREIGN KEY`, to add.
+    public var addTableConstraints: [SQLExpression]
+    /// Table constraints, such as `FOREIGN KEY`, to delete.
+    public var dropTableConstraints: [SQLExpression]
     
     /// Creates a new `SQLAlterTable`. See `SQLAlterTableBuilder`.
     public init(name: SQLExpression) {
@@ -20,6 +24,8 @@ public struct SQLAlterTable: SQLExpression {
         self.addColumns = []
         self.modifyColumns = []
         self.dropColumns = []
+        self.addTableConstraints = []
+        self.dropTableConstraints = []
     }
     
     public func serialize(to serializer: inout SQLSerializer) {
@@ -33,11 +39,11 @@ public struct SQLAlterTable: SQLExpression {
             serializer.database.logger.warning("Database does not support column modifications. You will need to rewrite as drop and add clauses.")
         }
 
-        let additions = self.addColumns.map { column in
+        let additions = (self.addColumns + self.addTableConstraints).map { column in
             (verb: SQLRaw("ADD"), definition: column)
         }
 
-        let removals = self.dropColumns.map { column in
+        let removals = (self.dropColumns + self.dropTableConstraints).map { column in
             (verb: SQLRaw("DROP"), definition: column)
         }
 
