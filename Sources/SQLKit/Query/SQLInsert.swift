@@ -12,6 +12,8 @@ public struct SQLInsert: SQLExpression {
     ///
     /// Use the `DEFAULT` literal to omit a value and that is specified as a column.
     public var values: [[SQLExpression]]
+
+    public var returning: SQLReturning?
     
     /// Creates a new `SQLInsert`.
     public init(table: SQLExpression) {
@@ -27,5 +29,6 @@ public struct SQLInsert: SQLExpression {
         SQLGroupExpression(self.columns).serialize(to: &serializer)
         serializer.write(" VALUES ")
         SQLList(self.values.map(SQLGroupExpression.init)).serialize(to: &serializer)
+        returning?.serialize(to: &serializer)
     }
 }

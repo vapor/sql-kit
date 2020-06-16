@@ -10,12 +10,15 @@ public struct SQLUpdate: SQLExpression {
     
     /// Optional predicate to limit updated rows.
     public var predicate: SQLExpression?
+
+    public var returning: SQLReturning?
     
     /// Creates a new `SQLUpdate`.
     public init(table: SQLExpression) {
         self.table = table
         self.values = []
         self.predicate = nil
+        self.returning = nil
     }
     
     public func serialize(to serializer: inout SQLSerializer) {
@@ -27,5 +30,6 @@ public struct SQLUpdate: SQLExpression {
             serializer.write(" WHERE ")
             predicate.serialize(to: &serializer)
         }
+        returning?.serialize(to: &serializer)
     }
 }

@@ -9,6 +9,8 @@ public struct SQLDelete: SQLExpression {
     /// then only those rows for which the WHERE clause boolean expression is true are deleted. Rows for which
     /// the expression is false or NULL are retained.
     public var predicate: SQLExpression?
+
+    public var returning: SQLReturning?
     
     /// Creates a new `SQLDelete`.
     public init(table: SQLExpression) {
@@ -22,5 +24,6 @@ public struct SQLDelete: SQLExpression {
             serializer.write(" WHERE ")
             predicate.serialize(to: &serializer)
         }
+        returning?.serialize(to: &serializer)
     }
 }
