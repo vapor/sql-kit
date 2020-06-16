@@ -18,7 +18,6 @@ public struct SQLUpdate: SQLExpression {
         self.table = table
         self.values = []
         self.predicate = nil
-        self.returning = nil
     }
     
     public func serialize(to serializer: inout SQLSerializer) {

@@ -1,16 +1,14 @@
 /// `RETURNING ...` statement.
 ///
-public enum SQLReturning: SQLExpression {
-    case all
-    case fields([SQLIdentifier])
+public struct SQLReturning: SQLExpression {
+    public var columns: [SQLExpression]
+
+    public init(_ columns: [SQLExpression]) {
+        self.columns = columns
+    }
 
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.write(" RETURNING ")
-        switch self {
-        case .all:
-            SQLLiteral.all.serialize(to: &serializer)
-        case let .fields(fields):
-            SQLList(fields).serialize(to: &serializer)
-        }
+        SQLList(columns).serialize(to: &serializer)
     }
 }
