@@ -1,6 +1,7 @@
 name: test
 on:
-- pull_request
+  pull_request:
+  push: { branches: [ main, master ] }
 defaults: { run: { shell: bash } }
 jobs:
   sql-kit_all:
