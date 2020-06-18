@@ -27,9 +27,8 @@ jobs:
           - swiftlang/swift:nightly-master-centos8
           - swiftlang/swift:nightly-master-amazonlinux2
         include:
-          - os: ubuntu-latest
-          - os: macos-latest
-            image: 
+          - { os: 'ubuntu-latest' }
+          - { os: 'macos-latest', image: '' }
     runs-on: ${{ matrix.os }}
     container: ${{ matrix.image }}
     steps:
@@ -60,7 +59,7 @@ jobs:
       MYSQL_TLS: true
     steps:
       - run: apt update -q && apt install -y libsqlite3-dev
-      - if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.os == 'ubuntu-latest' }}
       - uses: maxim-lobanov/setup-xcode@1.0
         with: { 'xcode-version': 'latest' }
         if: ${{ matrix.os == 'macos-latest' }}
