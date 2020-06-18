@@ -37,15 +37,9 @@ jobs:
         if: ${{ matrix.os == 'macos-latest' }}
       - uses: actions/checkout@v2
       - run: swift test --enable-test-discovery --sanitize=thread
-  driver-integration_all:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - { os: 'macos-latest', image: '', psqlhost: '127.0.0.1', mysqlhost: '127.0.0.1' }
-          - { os: 'ubuntu-latest', image: 'swift:5.2-bionic', psqlhost: psql, mysqlhost: mysql }
-    runs-on: ${{ matrix.os }}
-    container: ${{ matrix.image }}
+  driver-integration_linux:
+    runs-on: ubuntu-latest
+    container: swift:5.2-bionic
     services:
       psql:
         image: postgres:latest
@@ -59,18 +53,6 @@ jobs:
       MYSQL_TLS: true
     steps:
       - run: apt update -q && apt install -y libsqlite3-dev
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-      - uses: maxim-lobanov/setup-xcode@1.0
-        with: { 'xcode-version': 'latest' }
-        if: ${{ matrix.os == 'macos-latest' }}
-      - name: Setup macOS servers
-        run: |
-          brew uninstall --force postgresql php && rm -rf /usr/local/{etc,var}/{postgres,pg}*
-          brew install postgresql mysql
-          initdb --locale=C -E UTF-8 $(brew --prefix)/var/postgres
-          brew services start postgresql
-          brew services start mysql
-        if: ${{ matrix.os == 'macos-latest' }}
       - uses: actions/checkout@v2
         with: { path: sql-kit }
       - uses: actions/checkout@v2
