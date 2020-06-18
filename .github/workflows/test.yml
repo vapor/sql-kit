@@ -29,7 +29,7 @@ jobs:
         include:
           - os: ubuntu-latest
           - os: macos-latest
-            image: ''
+            image: 
     runs-on: ${{ matrix.os }}
     container: ${{ matrix.image }}
     steps:
@@ -38,9 +38,15 @@ jobs:
         if: ${{ matrix.os == 'macos-latest' }}
       - uses: actions/checkout@v2
       - run: swift test --enable-test-discovery --sanitize=thread
-  driver-integration_linux:
-    runs-on: ubuntu-latest
-    container: swift:5.2-bionic
+  driver-integration_all:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: 'macos-latest', image: '', psqlhost: '127.0.0.1', mysqlhost: '127.0.0.1' }
+          - { os: 'ubuntu-latest', image: 'swift:5.2-bionic', psqlhost: psql, mysqlhost: mysql }
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.image }}
     services:
       psql:
         image: postgres:latest
@@ -49,61 +55,23 @@ jobs:
         image: mysql:latest
         env: { MYSQL_ALLOW_EMPTY_PASSWORD: true, MYSQL_DATABASE: vapor_database, MYSQL_USER: vapor_username, MYSQL_PASSWORD: vapor_password }
     env:
-      POSTGRES_HOSTNAME: psql
-      MYSQL_HOSTNAME: mysql
+      POSTGRES_HOSTNAME: ${{ matrix.psqlhost }}
+      MYSQL_HOSTNAME: ${{ matrix.mysqlhost }}
       MYSQL_TLS: true
     steps:
       - run: apt update -q && apt install -y libsqlite3-dev
-      - uses: actions/checkout@v2
-        with: { path: sql-kit }
-      - uses: actions/checkout@v2
-        with: { repository: 'vapor/fluent-kit', path: fluent-kit }
-      - uses: actions/checkout@v2
-        with: { repository: 'vapor/sqlite-kit', path: sqlite-kit }
-      - uses: actions/checkout@v2
-        with: { repository: 'vapor/fluent-sqlite-driver', path: fluent-sqlite-driver }
-      - uses: actions/checkout@v2
-        with: { repository: 'vapor/postgres-kit', path: postgres-kit }
-      - uses: actions/checkout@v2
-        with: { repository: 'vapor/fluent-postgres-driver', path: fluent-postgres-driver }
-      - uses: actions/checkout@v2
-        with: { repository: 'vapor/mysql-kit', path: mysql-kit }
-      - uses: actions/checkout@v2
-        with: { repository: 'vapor/fluent-mysql-driver', path: fluent-mysql-driver }
-      - run: |
-          for p in {fluent,sqlite,postgres,mysql}-kit fluent-{sqlite,postgres,mysql}-driver; do
-            swift package --packpage-path $p edit sql-kit --path sql-kit
-          done      
-      - run: swift test --package-path fluent-kit --enable-test-discovery --sanitize=thread
-        continue-on-error: true
-      - run: swift test --package-path sqlite-kit --enable-test-discovery --sanitize=thread
-        continue-on-error: true
-      - run: swift test --package-path fluent-sqlite-driver --enable-test-discovery --sanitize=thread
-        continue-on-error: true
-      - run: swift test --package-path postgres-kit --enable-test-discovery --sanitize=thread
-        continue-on-error: true
-      - run: swift test --package-path fluent-postgres-driver --enable-test-discovery --sanitize=thread
-        continue-on-error: true
-      - run: swift test --package-path mysql-kit --enable-test-discovery --sanitize=thread
-        continue-on-error: true
-      - run: swift test --package-path fluent-mysql-driver --enable-test-discovery --sanitize=thread
-        continue-on-error: true
-  unit-and-integration_macos:
-    runs-on: macos-latest
-    env:
-      POSTGRES_HOSTNAME: '127.0.0.1'
-      MYSQL_HOSTNAME: '127.0.0.1'
-    steps:
-      - name: Select latest available Xcode
-        uses: maxim-lobanov/setup-xcode@1.0
+      - if: ${{ matrix.os == 'ubuntu-latest' }}
+      - uses: maxim-lobanov/setup-xcode@1.0
         with: { 'xcode-version': 'latest' }
-      - name: Replace Postgres install, add MySQL install, start servers
+        if: ${{ matrix.os == 'macos-latest' }}
+      - name: Setup macOS servers
         run: |
           brew uninstall --force postgresql php && rm -rf /usr/local/{etc,var}/{postgres,pg}*
           brew install postgresql mysql
           initdb --locale=C -E UTF-8 $(brew --prefix)/var/postgres
           brew services start postgresql
           brew services start mysql
+        if: ${{ matrix.os == 'macos-latest' }}
       - uses: actions/checkout@v2
         with: { path: sql-kit }
       - uses: actions/checkout@v2
@@ -122,10 +90,8 @@ jobs:
         with: { repository: 'vapor/fluent-mysql-driver', path: fluent-mysql-driver }
       - run: |
           for p in {fluent,sqlite,postgres,mysql}-kit fluent-{sqlite,postgres,mysql}-driver; do
-            swift package --packpage-path $p edit sql-kit --path sql-kit
+            swift package --package-path $p edit sql-kit --path sql-kit
           done      
-      - run: swift test --package-path sql-kit --enable-test-discovery --sanitize=thread
-        continue-on-error: true
       - run: swift test --package-path fluent-kit --enable-test-discovery --sanitize=thread
         continue-on-error: true
       - run: swift test --package-path sqlite-kit --enable-test-discovery --sanitize=thread
