@@ -10,7 +10,7 @@ public struct SQLDropTable: SQLExpression {
     public var ifExists: Bool
 
     /// The optional drop behavior clause specifies if objects that depend on the
-    /// table should also be dropped or not, for databases that supports this
+    /// table should also be dropped or not, for databases that support this
     /// (either `CASCADE` or `RESTRICT`).
     public var behavior: SQLExpression?
 

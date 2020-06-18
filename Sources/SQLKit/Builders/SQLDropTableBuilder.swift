@@ -30,21 +30,21 @@ public final class SQLDropTableBuilder: SQLQueryBuilder {
 
     /// The drop behavior clause specifies if objects that depend on a table
     /// should also be dropped or not when the table is dropped, for databases
-    /// that supports this.
+    /// that support this.
     public func behavior(_ behavior: SQLDropBehavior) -> Self {
         dropTable.behavior = behavior
         return self
     }
 
     /// Adds a `CASCADE` clause to the `DROP TABLE` statement instructing that
-    /// objects that depends on this table should also be dropped.
+    /// objects that depend on this table should also be dropped.
     public func cascade() -> Self {
         dropTable.behavior = SQLDropBehavior.cascade
         return self
     }
 
     /// Adds a `RESTRICT` clause to the `DROP TABLE` statement instructing that
-    /// if any objects depends on this table, the drop should be refused.
+    /// if any objects depend on this table, the drop should be refused.
     public func restrict() -> Self {
         dropTable.behavior = SQLDropBehavior.restrict
         return self

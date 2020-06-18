@@ -96,9 +96,16 @@ final class SQLKitTests: XCTestCase {
         try db.drop(table: "planets").ifExists().run().wait()
         XCTAssertEqual(db.results[0], "DROP TABLE IF EXISTS `planets`")
 
+        try db.drop(index: "planets_name_idx").ifExists().run().wait()
+        XCTAssertEqual(db.results[1], "DROP INDEX IF EXISTS `planets_name_idx`")
+
         db._dialect.supportsIfExists = false
+        
         try db.drop(table: "planets").ifExists().run().wait()
-        XCTAssertEqual(db.results[1], "DROP TABLE `planets`")
+        XCTAssertEqual(db.results[2], "DROP TABLE `planets`")
+
+        try db.drop(index: "planets_name_idx").ifExists().run().wait()
+        XCTAssertEqual(db.results[3], "DROP INDEX `planets_name_idx`")
     }
 
     func testDropBehavior() throws {
@@ -107,33 +114,64 @@ final class SQLKitTests: XCTestCase {
         try db.drop(table: "planets").run().wait()
         XCTAssertEqual(db.results[0], "DROP TABLE `planets`")
 
-        try db.drop(table: "planets").behavior(.cascade).run().wait()
-        XCTAssertEqual(db.results[1], "DROP TABLE `planets`")
+        try db.drop(index: "planets_name_idx").run().wait()
+        XCTAssertEqual(db.results[1], "DROP INDEX `planets_name_idx`")
 
-        try db.drop(table: "planets").behavior(.restrict).run().wait()
+        try db.drop(table: "planets").behavior(.cascade).run().wait()
         XCTAssertEqual(db.results[2], "DROP TABLE `planets`")
 
-        try db.drop(table: "planets").cascade().run().wait()
-        XCTAssertEqual(db.results[3], "DROP TABLE `planets`")
-
-        try db.drop(table: "planets").restrict().run().wait()
-        XCTAssertEqual(db.results[4], "DROP TABLE `planets`")
-
-        db._dialect.supportsDropBehavior = true
-        try db.drop(table: "planets").run().wait()
-        XCTAssertEqual(db.results[5], "DROP TABLE `planets` RESTRICT")
-
-        try db.drop(table: "planets").behavior(.cascade).run().wait()
-        XCTAssertEqual(db.results[6], "DROP TABLE `planets` CASCADE")
+        try db.drop(index: "planets_name_idx").behavior(.cascade).run().wait()
+        XCTAssertEqual(db.results[3], "DROP INDEX `planets_name_idx`")
 
         try db.drop(table: "planets").behavior(.restrict).run().wait()
-        XCTAssertEqual(db.results[7], "DROP TABLE `planets` RESTRICT")
+        XCTAssertEqual(db.results[4], "DROP TABLE `planets`")
+
+        try db.drop(index: "planets_name_idx").behavior(.restrict).run().wait()
+        XCTAssertEqual(db.results[5], "DROP INDEX `planets_name_idx`")
 
         try db.drop(table: "planets").cascade().run().wait()
-        XCTAssertEqual(db.results[8], "DROP TABLE `planets` CASCADE")
+        XCTAssertEqual(db.results[6], "DROP TABLE `planets`")
+
+        try db.drop(index: "planets_name_idx").cascade().run().wait()
+        XCTAssertEqual(db.results[7], "DROP INDEX `planets_name_idx`")
 
         try db.drop(table: "planets").restrict().run().wait()
-        XCTAssertEqual(db.results[9], "DROP TABLE `planets` RESTRICT")
+        XCTAssertEqual(db.results[8], "DROP TABLE `planets`")
+
+        try db.drop(index: "planets_name_idx").restrict().run().wait()
+        XCTAssertEqual(db.results[9], "DROP INDEX `planets_name_idx`")
+
+        db._dialect.supportsDropBehavior = true
+        
+        try db.drop(table: "planets").run().wait()
+        XCTAssertEqual(db.results[10], "DROP TABLE `planets` RESTRICT")
+
+        try db.drop(index: "planets_name_idx").run().wait()
+        XCTAssertEqual(db.results[11], "DROP INDEX `planets_name_idx` RESTRICT")
+
+        try db.drop(table: "planets").behavior(.cascade).run().wait()
+        XCTAssertEqual(db.results[12], "DROP TABLE `planets` CASCADE")
+
+        try db.drop(index: "planets_name_idx").behavior(.cascade).run().wait()
+        XCTAssertEqual(db.results[13], "DROP INDEX `planets_name_idx` CASCADE")
+
+        try db.drop(table: "planets").behavior(.restrict).run().wait()
+        XCTAssertEqual(db.results[14], "DROP TABLE `planets` RESTRICT")
+
+        try db.drop(index: "planets_name_idx").behavior(.restrict).run().wait()
+        XCTAssertEqual(db.results[15], "DROP INDEX `planets_name_idx` RESTRICT")
+
+        try db.drop(table: "planets").cascade().run().wait()
+        XCTAssertEqual(db.results[16], "DROP TABLE `planets` CASCADE")
+
+        try db.drop(index: "planets_name_idx").cascade().run().wait()
+        XCTAssertEqual(db.results[17], "DROP INDEX `planets_name_idx` CASCADE")
+
+        try db.drop(table: "planets").restrict().run().wait()
+        XCTAssertEqual(db.results[18], "DROP TABLE `planets` RESTRICT")
+
+        try db.drop(index: "planets_name_idx").restrict().run().wait()
+        XCTAssertEqual(db.results[19], "DROP INDEX `planets_name_idx` RESTRICT")
     }
 
     func testAltering() throws {
