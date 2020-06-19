@@ -11,6 +11,7 @@ public protocol SQLDialect {
     var autoIncrementFunction: SQLExpression? { get }
     var enumSyntax: SQLEnumSyntax { get }
     var supportsDropBehavior: Bool { get }
+    var supportsReturning: Bool { get }
     var triggerSyntax: SQLTriggerSyntax { get }
     var alterTableSyntax: SQLAlterTableSyntax { get }
     func customDataType(for dataType: SQLDataType) -> SQLExpression?
@@ -132,6 +133,10 @@ extension SQLDialect {
     }
 
     public var supportsDropBehavior: Bool {
+        return false
+    }
+
+    public var supportsReturning: Bool {
         return false
     }
 
