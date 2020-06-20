@@ -2,6 +2,7 @@ public struct SQLQueryString {
     enum Fragment {
         case literal(String)
         case value(Encodable)
+        case values([Encodable])
     }
     
     var fragments: [Fragment]
@@ -40,6 +41,12 @@ extension SQLQueryString: StringInterpolationProtocol {
     mutating public func appendInterpolation(bind value: Encodable) {
         fragments.append(.value(value))
     }
+
+    /// Binds multiple values in a comma separated list.
+    /// Commonly used with the `IN` operator.
+    mutating public func appendInterpolation(binds values: [Encodable]) {
+        fragments.append(.values(values))
+    }
 }
 
 extension SQLQueryString: SQLExpression {
@@ -50,6 +57,8 @@ extension SQLQueryString: SQLExpression {
                 serializer.write(str)
             case let .value(v):
                 serializer.write(bind: v)
+            case let .values(l):
+                SQLList(l.map { SQLBind($0) }).serialize(to: &serializer)
             }
         }
     }
