@@ -19,6 +19,8 @@ public struct SQLReturning: SQLExpression {
             return
         }
 
+        guard !columns.isEmpty else { return }
+
         serializer.statement {
             $0.append("RETURNING")
             $0.append(SQLList(columns))

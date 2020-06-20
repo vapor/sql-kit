@@ -6,7 +6,7 @@
 ///         .run()
 ///
 /// See `SQLQueryBuilder` and `SQLPredicateBuilder` for more information.
-public final class SQLUpdateBuilder: SQLQueryBuilder, SQLPredicateBuilder {
+public final class SQLUpdateBuilder: SQLQueryBuilder, SQLPredicateBuilder, SQLReturningBuilder {
     /// `Update` query being built.
     public var update: SQLUpdate
     
@@ -19,6 +19,11 @@ public final class SQLUpdateBuilder: SQLQueryBuilder, SQLPredicateBuilder {
     public var predicate: SQLExpression? {
         get { return self.update.predicate }
         set { self.update.predicate = newValue }
+    }
+
+    public var returning: SQLReturning? {
+        get { return self.update.returning }
+        set { self.update.returning = newValue }
     }
     
     /// Creates a new `SQLDeleteBuilder`.
