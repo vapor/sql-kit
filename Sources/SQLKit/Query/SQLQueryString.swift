@@ -114,6 +114,14 @@ extension SQLQueryString {
     }
 }
 
+extension Array where Element == SQLQueryString {
+    public func joined(separator: String) -> SQLQueryString {
+        let separator = "\(separator)" as SQLQueryString
+        
+        return self.first.map { self.dropFirst().lazy.reduce($0) { $0 + separator + $1 } } ?? ""
+    }
+}
+
 extension SQLQueryString: SQLExpression {
     /// See `SQLExpression.serialize(to:)`
     public func serialize(to serializer: inout SQLSerializer) {

@@ -85,4 +85,14 @@ final class SQLQueryStringTests: XCTestCase {
         builder.query.serialize(to: &serializer)
         XCTAssertEqual(serializer.sql, "INSERT INTO `anything` (`col1`,`col2`,`col3`) VALUES (?, ?, ?)")
     }
+    
+    func testQueryStringArrayJoin() throws {
+        var serializer = SQLSerializer(database: db)
+        let builder = db.raw(
+            "INSERT INTO \(ident: "anything") " as SQLQueryString +
+            ((0..<5).map { "\(literal: "\($0)")" as SQLQueryString }).joined(separator: "..")
+        )
+        builder.query.serialize(to: &serializer)
+        XCTAssertEqual(serializer.sql, "INSERT INTO `anything` '0'..'1'..'2'..'3'..'4'")
+    }
 }
