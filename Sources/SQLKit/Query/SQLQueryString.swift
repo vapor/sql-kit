@@ -108,6 +108,12 @@ extension SQLQueryString: StringInterpolationProtocol {
     }
 }
 
+extension SQLQueryString {
+    public static func +(lhs: SQLQueryString, rhs: SQLQueryString) -> SQLQueryString {
+        return "\(lhs)\(rhs)"
+    }
+}
+
 extension SQLQueryString: SQLExpression {
     /// See `SQLExpression.serialize(to:)`
     public func serialize(to serializer: inout SQLSerializer) {

@@ -74,4 +74,15 @@ final class SQLQueryStringTests: XCTestCase {
                 expression embeds: RESTRICT and CASCADE
             """)
     }
+    
+    func testAppendingQueryStringByOperatorPlus() throws {
+        var serializer = SQLSerializer(database: db)
+        let builder = db.raw(
+            "INSERT INTO \(ident: "anything") " as SQLQueryString +
+            "(\(idents: ["col1", "col2", "col3"], joinedBy: ",")) " as SQLQueryString +
+            "VALUES (\(binds: [1, 2, 3]))" as SQLQueryString
+        )
+        builder.query.serialize(to: &serializer)
+        XCTAssertEqual(serializer.sql, "INSERT INTO `anything` (`col1`,`col2`,`col3`) VALUES (?, ?, ?)")
+    }
 }
