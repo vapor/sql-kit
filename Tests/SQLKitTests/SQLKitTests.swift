@@ -96,6 +96,24 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(serializer.sql, "SELECT * FROM planets WHERE name = ?")
         XCTAssert(serializer.binds.first! as! String == "Earth")
     }
+    
+    func testRawQueryStringWithJoin() throws {
+        let (table, planet1, planet2, planet3) = ("planets", "Earth", "Mars", "Saturn")
+        let conditions: [SQLQueryString] = [planet1, planet2, planet3].map {
+            "name = \(bind: $0)"
+        }
+        let whereClause = "WHERE " + conditions.joined(separator: " OR ")
+        let query: SQLQueryString = "SELECT * FROM \(table) \(whereClause)"
+        
+        let builder = db.raw(query)
+        var serializer = SQLSerializer(database: db)
+        builder.query.serialize(to: &serializer)
+
+        XCTAssertEqual(serializer.sql, "SELECT * FROM planets WHERE name = ? OR name = ? OR name = ?")
+        XCTAssert(serializer.binds[0] as! String == "Earth")
+        XCTAssert(serializer.binds[1] as! String == "Mars")
+        XCTAssert(serializer.binds[2] as! String == "Saturn")
+    }
 
     func testGroupByHaving() throws {
         try db.select().column("*")

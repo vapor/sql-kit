@@ -77,3 +77,18 @@ extension SQLQueryString {
         self.init(fragments: lhs.fragments + rhs.fragments)
     }
 }
+
+extension Array where Element == SQLQueryString {
+    public func joined(separator: String) -> SQLQueryString {
+        guard var fragments = self.first?.fragments else {
+            return ""
+        }
+        
+        for element in self.dropFirst() {
+            fragments.append(.literal(separator))
+            fragments.append(contentsOf: element.fragments)
+        }
+        
+        return SQLQueryString(fragments: fragments)
+    }
+}
