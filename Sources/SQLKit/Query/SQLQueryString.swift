@@ -49,6 +49,63 @@ extension SQLQueryString: StringInterpolationProtocol {
     mutating public func appendInterpolation(binds values: [Encodable]) {
         self.fragments.append(SQLList(values.map(SQLBind.init)))
     }
+    
+    /// Embed an integer as a literal value, as if via `SQLLiteral.numeric()`
+    /// Use this preferentially to ensure values are appropriately represented in the database's dialect.
+    mutating public func appendInterpolation<I: BinaryInteger>(literal: I) {
+        self.fragments.append(SQLLiteral.numeric("\(literal)"))
+    }
+
+    /// Embed a `Bool` as a literal value, as if via `SQLLiteral.boolean()`
+    mutating public func appendInterpolation(_ value: Bool) {
+        self.fragments.append(SQLLiteral.boolean(value))
+    }
+
+    /// Embed a `String` as a literal value, as if via `SQLLiteral.string()`
+    /// Use this preferentially to ensure string values are appropriately represented in the database's dialect.
+    mutating public func appendInterpolation(literal: String) {
+        self.fragments.append(SQLLiteral.string(literal))
+    }
+
+    /// Embed an array of `Strings` as a list of literal values, using the `joiner` to separate them.
+    ///
+    /// Example:
+    ///
+    ///     "SELECT \(literals: "a", "b", "c", "d", joinedBy: "||") FROM nowhere"
+    ///
+    /// Rendered by the SQLite dialect:
+    ///
+    ///     SELECT 'a'||'b'||'c'||'d' FROM nowhere
+    mutating public func appendInterpolation(literals: [String], joinedBy joiner: String) {
+        self.fragments.append(SQLList(literals.map(SQLLiteral.string(_:)), separator: SQLRaw(joiner)))
+    }
+
+    /// Embed a `String` as an SQL identifier, as if with `SQLIdentifier`
+    /// Use this preferentially to ensure table names, column names, and other non-keyword identifiers are appropriately
+    /// represented in the database's dialect.
+    mutating public func appendInterpolation(ident: String) {
+        self.fragments.append(SQLIdentifier(ident))
+    }
+
+    /// Embed an array of `Strings` as a list of SQL identifiers, using the `joiner` to separate them.
+    ///
+    /// - Important: This interprets each string as an identifier, _not_ as a literal value!
+    ///
+    /// Example:
+    ///
+    ///     "SELECT \(idents: "a", "b", "c", "d", joinedBy: ",") FROM \(ident: "nowhere")"
+    ///
+    /// Rendered by the SQLite dialect:
+    ///
+    ///     SELECT "a", "b", "c", "d" FROM "nowhere"
+    mutating public func appendInterpolation(idents: [String], joinedBy joiner: String) {
+        self.fragments.append(SQLList(idents.map(SQLIdentifier.init(_:)), separator: SQLRaw(joiner)))
+    }
+
+    /// Embed any `SQLExpression` into the string, to be serialized according to its type.
+    mutating public func appendInterpolation(_ expression: SQLExpression) {
+        self.fragments.append(expression)
+    }
 }
 
 extension SQLQueryString: SQLExpression {
