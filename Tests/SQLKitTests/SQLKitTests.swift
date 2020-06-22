@@ -64,7 +64,7 @@ final class SQLKitTests: XCTestCase {
         builder.query.serialize(to: &serializer)
 
         XCTAssertEqual(serializer.sql, "SELECT * FROM planets WHERE name = ?")
-        XCTAssert(serializer.binds.first! as! String == "Earth")
+        XCTAssert(serializer.binds.first! as! String == planet)
     }
     
     func testRawQueryStringWithNonliteral() throws {
@@ -94,7 +94,7 @@ final class SQLKitTests: XCTestCase {
         builder.query.serialize(to: &serializer)
 
         XCTAssertEqual(serializer.sql, "SELECT * FROM planets WHERE name = ?")
-        XCTAssert(serializer.binds.first! as! String == "Earth")
+        XCTAssert(serializer.binds.first! as! String == planet)
     }
     
     func testRawQueryStringWithJoin() throws {
@@ -110,9 +110,9 @@ final class SQLKitTests: XCTestCase {
         builder.query.serialize(to: &serializer)
 
         XCTAssertEqual(serializer.sql, "SELECT * FROM planets WHERE name = ? OR name = ? OR name = ?")
-        XCTAssert(serializer.binds[0] as! String == "Earth")
-        XCTAssert(serializer.binds[1] as! String == "Mars")
-        XCTAssert(serializer.binds[2] as! String == "Saturn")
+        XCTAssert(serializer.binds[0] as! String == planet1)
+        XCTAssert(serializer.binds[1] as! String == planet2)
+        XCTAssert(serializer.binds[2] as! String == planet3)
     }
 
     func testGroupByHaving() throws {
