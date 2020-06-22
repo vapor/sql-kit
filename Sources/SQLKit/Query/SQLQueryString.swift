@@ -7,27 +7,31 @@ public struct SQLQueryString {
     
     var fragments: [Fragment]
     
+    init(fragments: [Fragment]) {
+        self.fragments = fragments
+    }
+    
     public init<S: StringProtocol>(_ string: S) {
-        fragments = [.literal(string.description)]
+        self.init(fragments: [.literal(string.description)])
     }
 }
 
 extension SQLQueryString: ExpressibleByStringLiteral {
     public init(stringLiteral value: String) {
-        fragments = [.literal(value)]
+        self.init(fragments: [.literal(value)])
     }
 }
 
 extension SQLQueryString: ExpressibleByStringInterpolation {
     
     public init(stringInterpolation: SQLQueryString) {
-        fragments = stringInterpolation.fragments
+        self.init(fragments: stringInterpolation.fragments)
     }
 }
 
 extension SQLQueryString: StringInterpolationProtocol {
     public init(literalCapacity: Int, interpolationCount: Int) {
-        fragments = []
+        self.init(fragments: [])
     }
     
     mutating public func appendLiteral(_ literal: String) {
