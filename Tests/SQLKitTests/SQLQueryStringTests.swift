@@ -17,7 +17,7 @@ final class SQLQueryStringTests: XCTestCase {
         builder.query.serialize(to: &serializer)
 
         XCTAssertEqual(serializer.sql, "SELECT * FROM planets WHERE name = ?")
-        XCTAssertEqual(serializer.binds.first! as! String, "Earth")
+        XCTAssertEqual(serializer.binds.first! as! String, planet)
     }
     
     func testRawQueryStringWithNonliteral() throws {
