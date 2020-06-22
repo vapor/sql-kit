@@ -71,3 +71,9 @@ extension SQLQueryString: SQLExpression {
         }
     }
 }
+
+extension SQLQueryString {
+    public static func +(lhs: SQLQueryString, rhs: SQLQueryString) -> SQLQueryString {
+        self.init(fragments: lhs.fragments + rhs.fragments)
+    }
+}

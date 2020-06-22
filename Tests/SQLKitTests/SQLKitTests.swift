@@ -83,6 +83,19 @@ final class SQLKitTests: XCTestCase {
         builder2.query.serialize(to: &serializer2)
         XCTAssertEqual(serializer2.sql, "SELECT * FROM staticTable WHERE name = uselessUnboundValue")
     }
+    
+    func testRawQueryStringWithPlus() throws {
+        let (table, planet) = ("planets", "Earth")
+        let query1: SQLQueryString = "SELECT * FROM \(table)"
+        let query2: SQLQueryString = " WHERE name = \(bind: planet)"
+        
+        let builder = db.raw(query1 + query2)
+        var serializer = SQLSerializer(database: db)
+        builder.query.serialize(to: &serializer)
+
+        XCTAssertEqual(serializer.sql, "SELECT * FROM planets WHERE name = ?")
+        XCTAssert(serializer.binds.first! as! String == "Earth")
+    }
 
     func testGroupByHaving() throws {
         try db.select().column("*")
