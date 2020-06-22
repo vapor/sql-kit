@@ -56,33 +56,6 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE `name` = ? LOCK IN SHARE MODE")
     }
     
-    func testRawQueryStringInterpolation() throws {
-        let (table, planet) = ("planets", "Earth")
-        let builder = db.raw("SELECT * FROM \(table) WHERE name = \(bind: planet)")
-        var serializer = SQLSerializer(database: db)
-        builder.query.serialize(to: &serializer)
-
-        XCTAssertEqual(serializer.sql, "SELECT * FROM planets WHERE name = ?")
-        XCTAssert(serializer.binds.first! as! String == "Earth")
-    }
-    
-    func testRawQueryStringWithNonliteral() throws {
-        let db = TestDatabase()
-        let (table, planet) = ("planets", "Earth")
-
-        var serializer1 = SQLSerializer(database: db)
-        let query1 = "SELECT * FROM \(table) WHERE name = \(planet)"
-        let builder1 = db.raw(.init(query1))
-        builder1.query.serialize(to: &serializer1)
-        XCTAssertEqual(serializer1.sql, "SELECT * FROM planets WHERE name = Earth")
-
-        var serializer2 = SQLSerializer(database: db)
-        let query2: Substring = "|||SELECT * FROM staticTable WHERE name = uselessUnboundValue|||".dropFirst(3).dropLast(3)
-        let builder2 = db.raw(.init(query2))
-        builder2.query.serialize(to: &serializer2)
-        XCTAssertEqual(serializer2.sql, "SELECT * FROM staticTable WHERE name = uselessUnboundValue")
-    }
-
     func testGroupByHaving() throws {
         try db.select().column("*")
             .from("planets")
@@ -109,8 +82,6 @@ final class SQLKitTests: XCTestCase {
     }
 
     func testDropBehavior() throws {
-        let db = TestDatabase()
-
         try db.drop(table: "planets").run().wait()
         XCTAssertEqual(db.results[0], "DROP TABLE `planets`")
 
@@ -175,8 +146,6 @@ final class SQLKitTests: XCTestCase {
     }
 
     func testAltering() throws {
-        let db = TestDatabase()
-
         // SINGLE
         try db.alter(table: "alterable")
             .column("hello", type: .text)
@@ -222,7 +191,6 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testDistinct() throws {
-        let db = TestDatabase()
         try db.select().column("*")
             .from("planets")
             .groupBy("color")
@@ -233,7 +201,6 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testDistinctColumns() throws {
-        let db = TestDatabase()
         try db.select()
             .distinct(on: "name", "color")
             .from("planets")
@@ -242,7 +209,6 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testDistinctExpression() throws {
-        let db = TestDatabase()
         try db.select()
             .column(SQLFunction("COUNT", args: SQLDistinct("name", "color")))
             .from("planets")
@@ -251,8 +217,6 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testSimpleJoin() throws {
-        let db = TestDatabase()
-        
         try db.select().column("*")
             .from("planets")
             .join("moons", on: "moons.planet_id=planets.id")
@@ -262,8 +226,6 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testMessyJoin() throws {
-        let db = TestDatabase()
-        
         try db.select().column("*")
             .from("planets")
             .join(
@@ -281,8 +243,6 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testBinaryOperators() throws {
-        let db = TestDatabase()
-        
         try db
             .update("planets")
             .set(SQLIdentifier("moons"),
@@ -352,8 +312,6 @@ CREATE TABLE `planets`(`id` BIGINT PRIMARY KEY AUTOINCREMENT, `name` TEXT DEFAUL
     }
 
     func testPrimaryKeyAutoIncrementVariants() throws {
-        let db = TestDatabase()
-
         db._dialect.supportsAutoIncrement = false
 
         try db.create(table: "planets1")
