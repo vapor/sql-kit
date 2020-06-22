@@ -58,7 +58,8 @@ final class SQLKitTests: XCTestCase {
     
     func testRawQueryStringInterpolation() throws {
         let (table, planet) = ("planets", "Earth")
-        let builder = db.raw("SELECT * FROM \(table) WHERE name = \(bind: planet)")
+        let whereClause: SQLQueryString = "WHERE name = \(bind: planet)"
+        let builder = db.raw("SELECT * FROM \(table) \(whereClause)")
         var serializer = SQLSerializer(database: db)
         builder.query.serialize(to: &serializer)
 

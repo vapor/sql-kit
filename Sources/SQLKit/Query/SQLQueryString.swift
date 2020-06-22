@@ -47,6 +47,10 @@ extension SQLQueryString: StringInterpolationProtocol {
     mutating public func appendInterpolation(binds values: [Encodable]) {
         fragments.append(.values(values))
     }
+    
+    mutating public func appendInterpolation(_ queryString: SQLQueryString) {
+        fragments.append(contentsOf: queryString.fragments)
+    }
 }
 
 extension SQLQueryString: SQLExpression {
