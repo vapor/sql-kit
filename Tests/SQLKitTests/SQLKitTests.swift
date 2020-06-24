@@ -266,9 +266,9 @@ final class SQLKitTests: XCTestCase {
         try db.insert(into: "planets")
             .columns("name")
             .values("Jupiter")
-            .returning("name")
+            .returning("id", "name")
             .run().wait()
-        XCTAssertEqual(db.results[0], "INSERT INTO `planets` (`name`) VALUES (?) RETURNING `name`")
+        XCTAssertEqual(db.results[0], "INSERT INTO `planets` (`name`) VALUES (?) RETURNING `id`, `name`")
 
         try db.update("planets")
             .set("name", to: "Jupiter")

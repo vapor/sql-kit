@@ -3,26 +3,32 @@ public protocol SQLReturningBuilder: SQLQueryBuilder {
 }
 
 extension SQLReturningBuilder {
-    /// Specify a column to be returned from the query. The column is a
-    /// string assumed to be a valid SQL identifier and is not qualified.
-    /// The string "*" (a single asterisk) is recognized and replaced by
-    /// `SQLLiteral.all`.
+    /// Specify a list of columns to be part of the result set of the query.
+    /// Each provided name is a string assumed to be a valid SQL identifier and
+    /// is not qualified.
     ///
-    /// - Parameter column: The name of the column to return, or "*" for all.
-    public func returning(_ column: String) -> Self {
-        if column == "*" {
-            self.returning = .init(SQLColumn(SQLLiteral.all))
-        } else {
-            self.returning = .init(SQLColumn(column))
+    /// - parameters:
+    ///     - columns: The names of the columns to return.
+    /// - returns: Self for chaining.
+    public func returning(_ columns: String...) -> Self {
+        let sqlColumns = columns.map { (column) -> SQLColumn in
+            if column == "*" {
+                return SQLColumn(SQLLiteral.all)
+            } else {
+                return SQLColumn(column)
+            }
         }
+
+        self.returning = .init(sqlColumns)
         return self
     }
 
     /// Specify a list of columns to be returned as the result of the query.
     /// Each input is an arbitrary expression.
     ///
-    /// - Parameter columns: A list of expressions identifying the desired data
-    ///                      to return.
+    /// - parameters:
+    ///     - columns: A list of expressions identifying the columns to return.
+    /// - returns: Self for chaining.
     public func returning(_ columns: SQLExpression...) -> Self {
         self.returning = .init(columns)
         return self
@@ -31,8 +37,9 @@ extension SQLReturningBuilder {
     /// Specify a list of columns to be returned as the result of the query.
     /// Each input is an arbitrary expression.
     ///
-    /// - Parameter columns: A list of expressions identifying the desired data
-    ///                      to return.
+    /// - parameters:
+    ///     - column: An array of expressions identifying the columns to return.
+    /// - returns: Self for chaining.
     public func returning(_ columns: [SQLExpression]) -> Self {
         self.returning = .init(columns)
         return self
