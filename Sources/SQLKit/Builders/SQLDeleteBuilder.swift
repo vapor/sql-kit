@@ -4,7 +4,7 @@
 ///         .where(\.name != "Earth").run()
 ///
 /// See `SQLQueryBuilder` and `SQLPredicateBuilder` for more information.
-public final class SQLDeleteBuilder: SQLQueryBuilder, SQLPredicateBuilder {
+public final class SQLDeleteBuilder: SQLQueryBuilder, SQLPredicateBuilder, SQLReturningBuilder {
     /// `Delete` query being built.
     public var delete: SQLDelete
 
@@ -17,6 +17,11 @@ public final class SQLDeleteBuilder: SQLQueryBuilder, SQLPredicateBuilder {
     public var predicate: SQLExpression? {
         get { return self.delete.predicate }
         set { self.delete.predicate = newValue }
+    }
+
+    public var returning: SQLReturning? {
+        get { return self.delete.returning }
+        set { self.delete.returning = newValue }
     }
     
     /// Creates a new `SQLDeleteBuilder`.

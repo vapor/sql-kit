@@ -9,6 +9,9 @@ public struct SQLDelete: SQLExpression {
     /// then only those rows for which the WHERE clause boolean expression is true are deleted. Rows for which
     /// the expression is false or NULL are retained.
     public var predicate: SQLExpression?
+
+    /// Optionally append a `RETURNING` clause that, where supported, returns the supplied supplied columns.
+    public var returning: SQLReturning?
     
     /// Creates a new `SQLDelete`.
     public init(table: SQLExpression) {
@@ -16,11 +19,16 @@ public struct SQLDelete: SQLExpression {
     }
     
     public func serialize(to serializer: inout SQLSerializer) {
-        serializer.write("DELETE FROM ")
-        self.table.serialize(to: &serializer)
-        if let predicate = self.predicate {
-            serializer.write(" WHERE ")
-            predicate.serialize(to: &serializer)
+        serializer.statement {
+            $0.append("DELETE FROM")
+            $0.append(self.table)
+            if let predicate = self.predicate {
+                $0.append("WHERE")
+                $0.append(predicate)
+            }
+            if let returning = self.returning {
+                $0.append(returning)
+            }
         }
     }
 }

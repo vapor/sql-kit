@@ -10,6 +10,9 @@ public struct SQLUpdate: SQLExpression {
     
     /// Optional predicate to limit updated rows.
     public var predicate: SQLExpression?
+
+    /// Optionally append a `RETURNING` clause that, where supported, returns the supplied supplied columns.
+    public var returning: SQLReturning?
     
     /// Creates a new `SQLUpdate`.
     public init(table: SQLExpression) {
@@ -19,13 +22,18 @@ public struct SQLUpdate: SQLExpression {
     }
     
     public func serialize(to serializer: inout SQLSerializer) {
-        serializer.write("UPDATE ")
-        self.table.serialize(to: &serializer)
-        serializer.write(" SET ")
-        SQLList(self.values).serialize(to: &serializer)
-        if let predicate = self.predicate {
-            serializer.write(" WHERE ")
-            predicate.serialize(to: &serializer)
+        serializer.statement {
+            $0.append("UPDATE")
+            $0.append(self.table)
+            $0.append("SET")
+            $0.append(SQLList(self.values))
+            if let predicate = self.predicate {
+                $0.append("WHERE")
+                $0.append(predicate)
+            }
+            if let returning = self.returning {
+                $0.append(returning)
+            }
         }
     }
 }

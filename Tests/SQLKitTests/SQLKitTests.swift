@@ -257,6 +257,28 @@ final class SQLKitTests: XCTestCase {
         
         XCTAssertEqual(db.results[0], "UPDATE `planets` SET `moons` = `moons` + 1 WHERE `best_at_space` >= ?")
     }
+
+    func testReturning() throws {
+        let db = TestDatabase()
+
+        try db.insert(into: "planets")
+            .columns("name")
+            .values("Jupiter")
+            .returning("id", "name")
+            .run().wait()
+        XCTAssertEqual(db.results[0], "INSERT INTO `planets` (`name`) VALUES (?) RETURNING `id`, `name`")
+
+        try db.update("planets")
+            .set("name", to: "Jupiter")
+            .returning(SQLColumn("name", table: "planets"))
+            .run().wait()
+        XCTAssertEqual(db.results[1], "UPDATE `planets` SET `name` = ? RETURNING `planets`.`name`")
+
+        try db.delete(from: "planets")
+            .returning("*")
+            .run().wait()
+        XCTAssertEqual(db.results[2], "DELETE FROM `planets` RETURNING *")
+    }
 }
 
 // MARK: Table Creation

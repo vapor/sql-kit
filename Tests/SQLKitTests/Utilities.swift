@@ -79,6 +79,8 @@ struct GenericDialect: SQLDialect {
     
     var supportsIfExists: Bool = true
 
+    var supportsReturning: Bool = true
+
     var identifierQuote: SQLExpression {
         return SQLRaw("`")
     }
