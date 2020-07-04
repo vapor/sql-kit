@@ -9,8 +9,8 @@ extension SQLReturningBuilder {
     ///
     /// - parameters:
     ///     - columns: The names of the columns to return.
-    /// - returns: Self for chaining.
-    public func returning(_ columns: String...) -> Self {
+    /// - returns: `SQLReturningResultBuilder` to complete the chain.
+    public func returning(_ columns: String...) -> SQLReturningResultBuilder<Self> {
         let sqlColumns = columns.map { (column) -> SQLColumn in
             if column == "*" {
                 return SQLColumn(SQLLiteral.all)
@@ -20,7 +20,7 @@ extension SQLReturningBuilder {
         }
 
         self.returning = .init(sqlColumns)
-        return self
+        return SQLReturningResultBuilder(self)
     }
 
     /// Specify a list of columns to be returned as the result of the query.
@@ -28,10 +28,10 @@ extension SQLReturningBuilder {
     ///
     /// - parameters:
     ///     - columns: A list of expressions identifying the columns to return.
-    /// - returns: Self for chaining.
-    public func returning(_ columns: SQLExpression...) -> Self {
+    /// - returns: `SQLReturningResultBuilder` to complete the chain.
+    public func returning(_ columns: SQLExpression...) -> SQLReturningResultBuilder<Self> {
         self.returning = .init(columns)
-        return self
+        return SQLReturningResultBuilder(self)
     }
 
     /// Specify a list of columns to be returned as the result of the query.
@@ -39,9 +39,22 @@ extension SQLReturningBuilder {
     ///
     /// - parameters:
     ///     - column: An array of expressions identifying the columns to return.
-    /// - returns: Self for chaining.
-    public func returning(_ columns: [SQLExpression]) -> Self {
+    /// - returns: `SQLReturningResultBuilder` to complete the chain.
+    public func returning(_ columns: [SQLExpression]) -> SQLReturningResultBuilder<Self> {
         self.returning = .init(columns)
-        return self
+        return SQLReturningResultBuilder(self)
+    }
+}
+
+/// Return type from `SQLReturningBuilder` methods which allows `SQLQueryFetcher` calls
+/// such as `first()` and `all()`. Therefore `returning(...)` must be the second last method
+/// in the query chain.
+public final class SQLReturningResultBuilder<QueryBuilder: SQLQueryBuilder>: SQLQueryFetcher {
+    public var query: SQLExpression
+    public var database: SQLDatabase
+
+    init(_ builder: QueryBuilder) {
+        query = builder.query
+        database = builder.database
     }
 }
