@@ -268,15 +268,15 @@ final class SQLKitTests: XCTestCase {
             .run().wait()
         XCTAssertEqual(db.results[0], "INSERT INTO `planets` (`name`) VALUES (?) RETURNING `id`, `name`")
 
-        try db.update("planets")
+        _ = try db.update("planets")
             .set("name", to: "Jupiter")
             .returning(SQLColumn("name", table: "planets"))
-            .run().wait()
+            .first().wait()
         XCTAssertEqual(db.results[1], "UPDATE `planets` SET `name` = ? RETURNING `planets`.`name`")
 
-        try db.delete(from: "planets")
+        _ = try db.delete(from: "planets")
             .returning("*")
-            .run().wait()
+            .all().wait()
         XCTAssertEqual(db.results[2], "DELETE FROM `planets` RETURNING *")
     }
 }
