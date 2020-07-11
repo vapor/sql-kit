@@ -29,41 +29,48 @@ extension SQLQueryString: StringInterpolationProtocol {
     
     /// Adds raw SQL to the string. Despite the use of the term "literal" dictated by the interpolation protocol, this
     /// produces `SQLRaw` content, _not_ SQL string literals.
-    mutating public func appendLiteral(_ literal: String) {
+    public mutating func appendLiteral(_ literal: String) {
+        self.fragments.append(SQLRaw(literal))
+    }    
+    
+    /// Adds an interpolated string of raw SQL. Despite the use of the term "literal" dictated by the interpolation
+    /// protocol, this produces `SQLRaw` content, _not_ SQL string literals.
+    @available(*, deprecated, message: "Use 'raw' label")
+    public mutating func appendInterpolation(_ literal: String) {
         self.fragments.append(SQLRaw(literal))
     }
     
     /// Adds an interpolated string of raw SQL. Despite the use of the term "literal" dictated by the interpolation
     /// protocol, this produces `SQLRaw` content, _not_ SQL string literals.
-    mutating public func appendInterpolation(_ literal: String) {
-        self.fragments.append(SQLRaw(literal))
+    public mutating func appendInterpolation(raw value: String) {
+        self.fragments.append(SQLRaw(value.description))
     }
     
     /// Embed an `Encodable` value as a binding in the SQL query.
-    mutating public func appendInterpolation(bind value: Encodable) {
+    public mutating func appendInterpolation(bind value: Encodable) {
         self.fragments.append(SQLBind(value))
     }
 
     /// Embed multiple `Encodable` values as bindings in the SQL query, separating the bind placeholders with commas.
     /// Most commonly useful when working with the `IN` operator.
-    mutating public func appendInterpolation(binds values: [Encodable]) {
+    public mutating func appendInterpolation(binds values: [Encodable]) {
         self.fragments.append(SQLList(values.map(SQLBind.init)))
     }
     
     /// Embed an integer as a literal value, as if via `SQLLiteral.numeric()`
     /// Use this preferentially to ensure values are appropriately represented in the database's dialect.
-    mutating public func appendInterpolation<I: BinaryInteger>(literal: I) {
+    public mutating func appendInterpolation<I: BinaryInteger>(literal: I) {
         self.fragments.append(SQLLiteral.numeric("\(literal)"))
     }
 
     /// Embed a `Bool` as a literal value, as if via `SQLLiteral.boolean()`
-    mutating public func appendInterpolation(_ value: Bool) {
+    public mutating func appendInterpolation(_ value: Bool) {
         self.fragments.append(SQLLiteral.boolean(value))
     }
 
     /// Embed a `String` as a literal value, as if via `SQLLiteral.string()`
     /// Use this preferentially to ensure string values are appropriately represented in the database's dialect.
-    mutating public func appendInterpolation(literal: String) {
+    public mutating func appendInterpolation(literal: String) {
         self.fragments.append(SQLLiteral.string(literal))
     }
 
@@ -76,14 +83,14 @@ extension SQLQueryString: StringInterpolationProtocol {
     /// Rendered by the SQLite dialect:
     ///
     ///     SELECT 'a'||'b'||'c'||'d' FROM nowhere
-    mutating public func appendInterpolation(literals: [String], joinedBy joiner: String) {
+    public mutating func appendInterpolation(literals: [String], joinedBy joiner: String) {
         self.fragments.append(SQLList(literals.map(SQLLiteral.string(_:)), separator: SQLRaw(joiner)))
     }
 
     /// Embed a `String` as an SQL identifier, as if with `SQLIdentifier`
     /// Use this preferentially to ensure table names, column names, and other non-keyword identifiers are appropriately
     /// represented in the database's dialect.
-    mutating public func appendInterpolation(ident: String) {
+    public mutating func appendInterpolation(ident: String) {
         self.fragments.append(SQLIdentifier(ident))
     }
 
@@ -98,12 +105,12 @@ extension SQLQueryString: StringInterpolationProtocol {
     /// Rendered by the SQLite dialect:
     ///
     ///     SELECT "a", "b", "c", "d" FROM "nowhere"
-    mutating public func appendInterpolation(idents: [String], joinedBy joiner: String) {
+    public mutating func appendInterpolation(idents: [String], joinedBy joiner: String) {
         self.fragments.append(SQLList(idents.map(SQLIdentifier.init(_:)), separator: SQLRaw(joiner)))
     }
 
     /// Embed any `SQLExpression` into the string, to be serialized according to its type.
-    mutating public func appendInterpolation(_ expression: SQLExpression) {
+    public mutating func appendInterpolation(_ expression: SQLExpression) {
         self.fragments.append(expression)
     }
 }
@@ -116,8 +123,7 @@ extension SQLQueryString {
 
 extension Array where Element == SQLQueryString {
     public func joined(separator: String) -> SQLQueryString {
-        let separator = "\(separator)" as SQLQueryString
-        
+        let separator = "\(raw: separator)" as SQLQueryString
         return self.first.map { self.dropFirst().lazy.reduce($0) { $0 + separator + $1 } } ?? ""
     }
 }
