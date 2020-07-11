@@ -12,7 +12,7 @@ final class SQLQueryStringTests: XCTestCase {
 
     func testRawQueryStringInterpolation() throws {
         let (table, planet) = ("planets", "Earth")
-        let builder = db.raw("SELECT * FROM \(table) WHERE name = \(bind: planet)")
+        let builder = db.raw("SELECT * FROM \(raw: table) WHERE name = \(bind: planet)")
         var serializer = SQLSerializer(database: db)
         builder.query.serialize(to: &serializer)
 
@@ -48,7 +48,7 @@ final class SQLQueryStringTests: XCTestCase {
         var serializer = SQLSerializer(database: db)
         let builder = db.raw("""
             Query string embeds:
-                \("plain string embed")
+                \(raw: "plain string embed")
                 \(bind: "single bind embed")
                 \(binds: ["multi-bind embed one", "multi-bind embed two"])
                 numeric literal embed \(literal: 1)

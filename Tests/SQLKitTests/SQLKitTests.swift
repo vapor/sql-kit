@@ -279,11 +279,20 @@ final class SQLKitTests: XCTestCase {
             .all().wait()
         XCTAssertEqual(db.results[2], "DELETE FROM `planets` RETURNING *")
     }
-}
 
-// MARK: Table Creation
+    func testRawCustomStringConvertible() throws {
+        struct MyField: CustomStringConvertible {
+            var description: String {
+                "foo"
+            }
+        }
+        let db = TestDatabase()
+        _ = try db.raw("SELECT \(raw: MyField()) FROM users").all().wait()
+        XCTAssertEqual(db.results[0], "SELECT foo FROM users")
+    }
 
-extension SQLKitTests {
+    // MARK: Table Creation
+
     func testColumnConstraints() throws {
         try db.create(table: "planets")
             .column("id", type: .bigint, .primaryKey)

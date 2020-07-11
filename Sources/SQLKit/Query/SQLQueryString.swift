@@ -31,12 +31,19 @@ extension SQLQueryString: StringInterpolationProtocol {
     /// produces `SQLRaw` content, _not_ SQL string literals.
     mutating public func appendLiteral(_ literal: String) {
         self.fragments.append(SQLRaw(literal))
+    }    
+    
+    /// Adds an interpolated string of raw SQL. Despite the use of the term "literal" dictated by the interpolation
+    /// protocol, this produces `SQLRaw` content, _not_ SQL string literals.
+    @available(*, deprecated, message: "Use 'raw' label")
+    public mutating func appendInterpolation(_ literal: String) {
+        self.fragments.append(SQLRaw(literal))
     }
     
     /// Adds an interpolated string of raw SQL. Despite the use of the term "literal" dictated by the interpolation
     /// protocol, this produces `SQLRaw` content, _not_ SQL string literals.
-    mutating public func appendInterpolation(_ literal: String) {
-        self.fragments.append(SQLRaw(literal))
+    mutating public func appendInterpolation(raw value: CustomStringConvertible) {
+        self.fragments.append(SQLRaw(value.description))
     }
     
     /// Embed an `Encodable` value as a binding in the SQL query.
@@ -116,8 +123,7 @@ extension SQLQueryString {
 
 extension Array where Element == SQLQueryString {
     public func joined(separator: String) -> SQLQueryString {
-        let separator = "\(separator)" as SQLQueryString
-        
+        let separator = "\(raw: separator)" as SQLQueryString
         return self.first.map { self.dropFirst().lazy.reduce($0) { $0 + separator + $1 } } ?? ""
     }
 }
