@@ -42,7 +42,7 @@ extension SQLQueryString: StringInterpolationProtocol {
     
     /// Adds an interpolated string of raw SQL. Despite the use of the term "literal" dictated by the interpolation
     /// protocol, this produces `SQLRaw` content, _not_ SQL string literals.
-    public mutating func appendInterpolation(raw value: CustomStringConvertible) {
+    public mutating func appendInterpolation(raw value: String) {
         self.fragments.append(SQLRaw(value.description))
     }
     

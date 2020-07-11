@@ -281,14 +281,10 @@ final class SQLKitTests: XCTestCase {
     }
 
     func testRawCustomStringConvertible() throws {
-        struct MyField: CustomStringConvertible {
-            var description: String {
-                "foo"
-            }
-        }
+        let field = "name"
         let db = TestDatabase()
-        _ = try db.raw("SELECT \(raw: MyField()) FROM users").all().wait()
-        XCTAssertEqual(db.results[0], "SELECT foo FROM users")
+        _ = try db.raw("SELECT \(raw: field) FROM users").all().wait()
+        XCTAssertEqual(db.results[0], "SELECT name FROM users")
     }
 
     // MARK: Table Creation
