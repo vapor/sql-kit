@@ -3,7 +3,7 @@ import SQLKit
 
 extension SQLBenchmarker {
     func testPlanets() throws {
-	let textType:SQLDataType = ( db.dialect.name == "mysql" ) ? .custom( SQLRaw("TEXT") ) : .text 
+	let textType:SQLDataType = ( db.dialect.name == "mysql" ) ? .text : .custom( SQLRaw("TEXT") ) 
         try self.db.drop(table: "planets")
             .ifExists()
             .run().wait()
