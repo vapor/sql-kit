@@ -3,6 +3,7 @@ import SQLKit
 
 extension SQLBenchmarker {
     func testPlanets() throws {
+	let textType:SQLDataType = ( db.dialect.name == "mysql" ) ? .custom( SQLRaw("TEXT") ) : .text 
         try self.db.drop(table: "planets")
             .ifExists()
             .run().wait()
@@ -11,7 +12,7 @@ extension SQLBenchmarker {
             .run().wait()
         try self.db.create(table: "galaxies")
             .column("id", type: .bigint, .primaryKey)
-            .column("name", type: .text)
+            .column("name", type: textType)
             .run().wait()
         try self.db.create(table: "planets")
             .ifNotExists()
@@ -19,7 +20,7 @@ extension SQLBenchmarker {
             .column("galaxyID", type: .bigint, .references("galaxies", "id"))
             .run().wait()
         try self.db.alter(table: "planets")
-            .column("name", type: .text, .default(SQLLiteral.string("Unamed Planet")))
+            .column("name", type: textType, .default(SQLLiteral.string("Unamed Planet")))
             .run().wait()
         try self.db.create(index: "test_index")
             .on("planets")
