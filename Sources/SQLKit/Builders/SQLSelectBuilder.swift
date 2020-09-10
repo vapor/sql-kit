@@ -159,6 +159,116 @@ extension SQLSelectBuilder {
 
 }
 
+// MARK: Switch
+
+extension SQLSelectBuilder {
+    private func lastCase(_ closure: (inout SQLCaseExpression) -> ()) {
+        guard let index = self.select.columns.lastIndex(where: { $0 as? SQLCaseExpression != nil }) else {
+            return
+        }
+        guard var expression = self.select.columns[index] as? SQLCaseExpression else {
+            return
+        }
+
+        closure(&expression)
+        self.select.columns[index] = expression
+    }
+
+
+    // MARK: Case
+
+    public func `case`() -> Self {
+        return self.case(nil)
+    }
+
+    public func `case`<E>(_ identifier: SQLIdentifier, _ operator: SQLBinaryExpression, _ value: [E]) -> Self
+        where E: Encodable
+    {
+        return self.case(identifier, `operator`, SQLBind.group(value))
+    }
+
+    public func `case`<E>(_ identifier: SQLIdentifier, _ operator: SQLBinaryExpression, _ value: E) -> Self
+        where E: Encodable
+    {
+        return self.case(identifier, `operator`, SQLBind(value))
+    }
+
+    public func `case`(_ identifier: SQLExpression, _ operator: SQLBinaryExpression, _ value: SQLExpression) -> Self {
+        return self.case(identifier, `operator` as SQLExpression, value)
+    }
+
+    public func `case`(_ identifier: SQLExpression, _ operator: SQLExpression, _ value: SQLExpression) -> Self {
+        return self.case(SQLBinaryExpression(left: identifier, op: `operator`, right: value))
+    }
+
+    public func `case`(_ expression: SQLExpression?) -> Self {
+        self.select.columns.append(SQLCaseExpression(expression, when: [], else: nil))
+        return self
+    }
+
+    // MARK: When
+
+    public func when<P, E>(_ match: P, then result: E) -> Self
+        where P: Encodable, E: Encodable
+    {
+        return self.when(SQLBind(match), then: SQLBind(result))
+    }
+
+    public func when<E, R>(
+        _ identifier: SQLIdentifier, _ operator: SQLBinaryOperator, _ value: E,
+        then result: R
+    ) -> Self
+        where E: Encodable, R: Encodable
+    {
+        return self.when(identifier, `operator`, SQLBind(value), then: SQLBind(value))
+    }
+
+    public func when<E>(
+        _ identifier: SQLIdentifier, _ operator: SQLBinaryOperator, _ value: E,
+        then result: SQLIdentifier
+    ) -> Self
+        where E: Encodable
+    {
+        return self.when(identifier, `operator`, SQLBind(value), then: result)
+    }
+
+    public func when(
+        _ identifier: SQLExpression, _ operator: SQLBinaryOperator, _ value: SQLExpression,
+        then result: SQLExpression
+    ) -> Self {
+        return self.when(identifier, `operator` as SQLExpression, value, then: result)
+    }
+
+    public func when(
+        _ identifier: SQLExpression, _ operator: SQLExpression, _ value: SQLExpression,
+        then result: SQLExpression
+    ) -> Self {
+        return self.when(SQLBinaryExpression(left: identifier, op: `operator`, right: value), then: result)
+    }
+
+    public func when(_ predicate: SQLExpression, then result: SQLExpression) -> Self {
+        self.lastCase { $0.cases.append((predicate, result)) }
+        return self
+    }
+
+    // MARK: Else
+
+    public func `else`<E>(_ value: E) -> Self
+        where E: Encodable
+    {
+        return self.else(SQLBind(value))
+    }
+
+    public func `else`(_ identifier: SQLIdentifier) -> Self {
+        return self.else(identifier as SQLExpression)
+    }
+
+    public func `else`(_ expression: SQLExpression) -> Self {
+        self.lastCase { $0.alternative = expression }
+        return self
+    }
+}
+
 // MARK: From
 
 extension SQLSelectBuilder {
