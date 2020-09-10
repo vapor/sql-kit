@@ -404,11 +404,17 @@ extension SQLSelectBuilder {
         return self.else(SQLBind(value))
     }
 
-    /// Sets the column that
+    /// Sets the column that the value returned from the `CASE` statement will come from if
+    /// none of the `WHEN` predicates pass.
+    ///
+    /// - Parameter identifier: The column name to return from the `CASE` statement.
     public func `else`(_ identifier: SQLIdentifier) -> Self {
         return self.else(identifier as SQLExpression)
     }
 
+    /// Sets the result of the `CASE` statement if none of the `WHERE` caluse predicates pass.
+    ///
+    /// - Parameter expression: The fallback return value of the `CASE` statement.
     public func `else`(_ expression: SQLExpression) -> Self {
         self.lastCase { $0.alternative = expression }
         return self
