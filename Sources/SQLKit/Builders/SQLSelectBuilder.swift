@@ -275,12 +275,32 @@ extension SQLSelectBuilder {
 
     // MARK: When
 
+    /// Add a `WHEN` clause to the most recent `CASE` statement added to the builder.
+    ///
+    /// Checks the `CASE` predicate expression against a value, and returns a value if it matches.
+    ///
+    ///     builder.case("address_type").when(AddressType.residential, then: "House/Apartment")
+    ///
+    /// - Parameters:
+    ///   - match: The value to check against the `CASE` predicate.
+    ///   - result: The value to return if the `match` value matches the `CASE` predicate.
     public func when<P, E>(_ match: P, then result: E) -> Self
         where P: Encodable, E: Encodable
     {
         return self.when(SQLBind(match), then: SQLBind(result))
     }
 
+    /// Add a `WHEN` clause to the most recent `CASE` statement added to the builder.
+    ///
+    /// Checks the predicate passed in and returns a value if it is true.
+    ///
+    ///     builder.case().when("address_type", .equal, AddressType.residential, then: "House/Apartment")
+    ///
+    /// - Parameters:
+    ///   - identifier: The column who's value to check in the predicate.
+    ///   - operator: The operator in the predicate used to match the column and value.
+    ///   - value: The value to check against the given column in the predicate.
+    ///   - result: The value to return from the `CASE` statement if the predicate is true.
     public func when<E, R>(
         _ identifier: SQLIdentifier, _ operator: SQLBinaryOperator, _ value: E,
         then result: R
@@ -290,6 +310,17 @@ extension SQLSelectBuilder {
         return self.when(identifier, `operator`, SQLBind(value), then: SQLBind(value))
     }
 
+    /// Add a `WHEN` clause to the most recent `CASE` statement added to the builder.
+    ///
+    /// Checks the predicate passed in and returns a column's value if it is true.
+    ///
+    ///     builder.case().when("address_type", .equal, AddressType.residential, then: "street")
+    ///
+    /// - Parameters:
+    ///   - identifier: The column who's value to check in the predicate.
+    ///   - operator: The operator in the predicate used to match the column and value.
+    ///   - value: The value to check against the given column in the predicate.
+    ///   - result: The column to return the value from if the predicate is true.
     public func when<E>(
         _ identifier: SQLIdentifier, _ operator: SQLBinaryOperator, _ value: E,
         then result: SQLIdentifier
@@ -299,20 +330,64 @@ extension SQLSelectBuilder {
         return self.when(identifier, `operator`, SQLBind(value), then: result)
     }
 
+    /// Add a `WHEN` clause to the most recent `CASE` statement added to the builder.
+    ///
+    /// Checks the predicate passed in and returns a column's value if it is true.
+    ///
+    ///     builder.case().when(
+    ///         SQLIdentifier("address_type"), .equal, SQLBind(AddressType.residential),
+    ///         then: SQLLiteral.string("House/Apartment")
+    ///     )
+    ///
+    /// - Parameters:
+    ///   - left: The left expression of the `WHEN` clause matching predicate.
+    ///   - operator: The operator in the predicate used to match the left and right expressions.
+    ///   - right: The right expression of the `WHEN` clause matching predicate.
+    ///   - result: The expression to return from the `CASE` statement if the predicate is true.
     public func when(
-        _ identifier: SQLExpression, _ operator: SQLBinaryOperator, _ value: SQLExpression,
+        _ left: SQLExpression, _ operator: SQLBinaryOperator, _ right: SQLExpression,
         then result: SQLExpression
     ) -> Self {
-        return self.when(identifier, `operator` as SQLExpression, value, then: result)
+        return self.when(left, `operator` as SQLExpression, right, then: result)
     }
 
+    /// Add a `WHEN` clause to the most recent `CASE` statement added to the builder.
+    ///
+    /// Checks the predicate passed in and returns a column's value if it is true.
+    ///
+    ///     builder.case().when(
+    ///         SQLIdentifier("address_type"), SQLBinaryOperator.equal, SQLBind(AddressType.residential),
+    ///         then: SQLLiteral.string("House/Apartment")
+    ///     )
+    ///
+    /// - Parameters:
+    ///   - left: The left expression of the `WHEN` clause matching predicate.
+    ///   - operator: The operator in the predicate used to match the left and right expressions.
+    ///   - right: The right expression of the `WHEN` clause matching predicate.
+    ///   - result: The expression to return from the `CASE` statement if the predicate is true.
     public func when(
-        _ identifier: SQLExpression, _ operator: SQLExpression, _ value: SQLExpression,
+        _ left: SQLExpression, _ operator: SQLExpression, _ right: SQLExpression,
         then result: SQLExpression
     ) -> Self {
-        return self.when(SQLBinaryExpression(left: identifier, op: `operator`, right: value), then: result)
+        return self.when(SQLBinaryExpression(left: left, op: `operator`, right: right), then: result)
     }
 
+    /// Add a `WHEN` clause to the most recent `CASE` statement added to the builder.
+    ///
+    /// Checks the predicate passed in and returns a column's value if it is true.
+    ///
+    ///     builder.case().when(
+    ///         SQLBinaryExpression(
+    ///             left: SQLIdentifier("address_type"),
+    ///             op: SQLBinaryOperator.equal,
+    ///             right: SQLBind(AddressType.residential)
+    ///         ),
+    ///         then: SQLLiteral.string("House/Apartment")
+    ///     )
+    ///
+    /// - Parameters:
+    ///   - predicate: The predicate to check for the `WHEN` clause.
+    ///   - result: The expression to return from the `CASE` statement if the predicate is true.
     public func when(_ predicate: SQLExpression, then result: SQLExpression) -> Self {
         self.lastCase { $0.cases.append((predicate, result)) }
         return self
