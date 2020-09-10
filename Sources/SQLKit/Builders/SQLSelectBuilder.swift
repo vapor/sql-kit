@@ -177,30 +177,97 @@ extension SQLSelectBuilder {
 
     // MARK: Case
 
+    /// Specify a new `SELECT CASE` statement without a base predicate.
+    ///
+    /// This method is used when the predicates should exist in the `WHEN` clauses instead, i.e.
+    ///
+    /// ```sql
+    /// CASE WHEN COUNT(table.id) > 0 THEN 'Not Empty' ELSE 'Empty' END
+    /// ```
     public func `case`() -> Self {
         return self.case(nil)
     }
 
-    public func `case`<E>(_ identifier: SQLIdentifier, _ operator: SQLBinaryExpression, _ value: [E]) -> Self
+    /// Specify a new `SELECT CASE` statement with a value to switch over
+    ///
+    ///     builder.case(42)
+    ///
+    /// This method probably only exists for completeness sake, but maybe someone will find it useful. 🐐
+    ///
+    /// - Parameters:
+    ///   - value: The value ti switch over the the case's `WHEN` statements.
+    public func `case`<E>(_ value: E) -> Self
+        where E: Encodable
+    {
+        return self.case(SQLBind(value))
+    }
+
+
+    /// Specify a new `SELECT CASE` statement with a column to switch over
+    ///
+    ///     builder.case("address_type")
+    ///
+    /// - Parameters:
+    ///   - identifier: The identifier for the column to switch over in the `CASE` statement.
+    public func `case`(_ identifier: SQLIdentifier) -> Self {
+        return self.case(identifier as SQLExpression)
+    }
+
+    /// Specify a new `SELECT CASE` statement with a base predicate.
+    ///
+    ///     builder.case("address_type", .in, ["residental", "buisness"])
+    ///
+    /// - Parameters:
+    ///   - left: The column identifier to match a value against.
+    ///   - operator: The operator used to check if the column and value match.
+    ///   - value: The value that the identified column should contain. This value is an array in this case.
+    public func `case`<E>(_ identifier: SQLIdentifier, _ operator: SQLBinaryOperator, _ value: [E]) -> Self
         where E: Encodable
     {
         return self.case(identifier, `operator`, SQLBind.group(value))
     }
 
-    public func `case`<E>(_ identifier: SQLIdentifier, _ operator: SQLBinaryExpression, _ value: E) -> Self
+    /// Specify a new `SELECT CASE` statement with a base predicate.
+    ///
+    ///     builder.case("address_type", .equal, "residential")
+    ///
+    /// - Parameters:
+    ///   - left: The column identifier to match a value against.
+    ///   - operator: The operator used to check if the column and value match.
+    ///   - value: The value that the identified column should contain.
+    public func `case`<E>(_ identifier: SQLIdentifier, _ operator: SQLBinaryOperator, _ value: E) -> Self
         where E: Encodable
     {
         return self.case(identifier, `operator`, SQLBind(value))
     }
 
-    public func `case`(_ identifier: SQLExpression, _ operator: SQLBinaryExpression, _ value: SQLExpression) -> Self {
-        return self.case(identifier, `operator` as SQLExpression, value)
+    /// Specify a new `SELECT CASE` statement with a base predicate.
+    ///
+    ///     builder.case(SQLFunction("COUNT", args: SQLIdentifier("id")), .equal, SQLLiteral.numeric("1"))
+    ///
+    /// - Parameters:
+    ///   - left: The left expression in the `CASE` matching clause.
+    ///   - operator: The operator used to check if the two expressions match or not.
+    ///   - right: The right expression in the `CASE` matching clause.
+    public func `case`(_ left: SQLExpression, _ operator: SQLBinaryOperator, _ right: SQLExpression) -> Self {
+        return self.case(left, `operator` as SQLExpression, right)
     }
 
-    public func `case`(_ identifier: SQLExpression, _ operator: SQLExpression, _ value: SQLExpression) -> Self {
-        return self.case(SQLBinaryExpression(left: identifier, op: `operator`, right: value))
+    /// Specify a new `SELECT CASE` statement with a base predicate.
+    ///
+    ///     builder.case(SQLFunction("COUNT", args: SQLIdentifier("id")), SQLBinaryOperator.equal, SQLLiteral.numeric("1"))
+    ///
+    /// - Parameters:
+    ///   - left: The left expression in the `CASE` matching clause.
+    ///   - operator: The operator used to check if the two expressions match or not.
+    ///   - right: The right expression in the `CASE` matching clause.
+    public func `case`(_ left: SQLExpression, _ operator: SQLExpression, _ right: SQLExpression) -> Self {
+        return self.case(SQLBinaryExpression(left: left, op: `operator`, right: right))
     }
 
+    /// Specify a new `SELECT CASE` statement with an optional base predicate.
+    ///
+    /// - Parameter expression: The expression value to switch over in the subsequent `WHEN` statements.
     public func `case`(_ expression: SQLExpression?) -> Self {
         self.select.columns.append(SQLCaseExpression(expression, when: [], else: nil))
         return self
@@ -253,12 +320,16 @@ extension SQLSelectBuilder {
 
     // MARK: Else
 
+    /// Sets the value that the `CASE` clause will return if none of the `WHEN` statements match.
+    ///
+    /// - Parameter value: The value that the `CASE` statement should return.
     public func `else`<E>(_ value: E) -> Self
         where E: Encodable
     {
         return self.else(SQLBind(value))
     }
 
+    /// Sets the column that
     public func `else`(_ identifier: SQLIdentifier) -> Self {
         return self.else(identifier as SQLExpression)
     }
