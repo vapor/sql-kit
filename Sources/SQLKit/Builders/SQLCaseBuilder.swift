@@ -75,3 +75,16 @@ extension SQLCaseBuilder {
         return self.else(SQLBind(value))
     }
 }
+
+
+extension SQLSelectBuilder {
+    public func column(`case`: (SQLCaseBuilder) -> SQLCaseBuilder) -> Self {
+        return self.column(`case`(.init()).query)
+    }
+}
+
+extension SQLPredicateBuilder {
+    public func `where`(`case`: (SQLCaseBuilder) -> SQLCaseBuilder) -> Self {
+        return self.where(`case`(.init()).query)
+    }
+}
