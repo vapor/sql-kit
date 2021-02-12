@@ -280,39 +280,6 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[2], "DELETE FROM `planets` RETURNING *")
     }
 
-    func testCodableWithNillableColumnWithNonnilValue() throws {
-        struct Gas: Codable {
-            let name: String
-            let color: String?
-        }
-        let db = TestDatabase()
-        var serializer = SQLSerializer(database: db)
-
-        let insertBuilder = try db.insert(into: "gasses").model(Gas(name: "iodine", color: "purple"))
-        insertBuilder.insert.serialize(to: &serializer)
-
-        XCTAssertEqual(serializer.sql, "INSERT INTO `gasses` (`name`, `color`) VALUES (?, ?)")
-        XCTAssertEqual(serializer.binds.count, 2)
-        XCTAssertEqual(serializer.binds[0] as? String, "iodine")
-        XCTAssertEqual(serializer.binds[1] as? String, "purple")
-    }
-
-    func testCodableWithNillableColumnWithNilValue() throws {
-        struct Gas: Codable {
-            let name: String
-            let color: String?
-        }
-        let db = TestDatabase()
-        var serializer = SQLSerializer(database: db)
-
-        let insertBuilder = try db.insert(into: "gasses").model(Gas(name: "oxygen", color: nil))
-        insertBuilder.insert.serialize(to: &serializer)
-
-        XCTAssertEqual(serializer.sql, "INSERT INTO `gasses` (`name`, `color`) VALUES (?, NULL)")
-        XCTAssertEqual(serializer.binds.count, 1)
-        XCTAssertEqual(serializer.binds[0] as? String, "oxygen")
-    }
-
     func testRawCustomStringConvertible() throws {
         let field = "name"
         let db = TestDatabase()
