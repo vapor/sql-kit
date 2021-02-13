@@ -36,14 +36,15 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder {
     /// - parameters:
     ///     - value: `Encodable` value to insert.
     /// - returns: Self for chaining.
-    public func model<E>(_ model: E, prefix: String? = nil, keyEncodingStrategy: SQLQueryEncoder.KeyEncodingStrategy = .useDefaultKeys) throws -> Self
+    public func model<E>(_ model: E, prefix: String? = nil, keyEncodingStrategy: SQLQueryEncoder.KeyEncodingStrategy = .useDefaultKeys, nilEncodingStrategy: SQLQueryEncoder.NilEncodingStrategy = .standard) throws -> Self
         where E: Encodable {
-            return try models([model], prefix: prefix, keyEncodingStrategy: keyEncodingStrategy)
+        return try models([model], prefix: prefix, keyEncodingStrategy: keyEncodingStrategy, nilEncodingStrategy: nilEncodingStrategy)
     }
 
-    public func models<E>(_ models: [E], prefix: String? = nil, keyEncodingStrategy: SQLQueryEncoder.KeyEncodingStrategy = .useDefaultKeys) throws -> Self where E: Encodable {
+    public func models<E>(_ models: [E], prefix: String? = nil, keyEncodingStrategy: SQLQueryEncoder.KeyEncodingStrategy = .useDefaultKeys, nilEncodingStrategy: SQLQueryEncoder.NilEncodingStrategy = .standard) throws -> Self where E: Encodable {
         var encoder = SQLQueryEncoder()
         encoder.keyEncodingStrategy = keyEncodingStrategy
+        encoder.nilEncodingStrategy = nilEncodingStrategy
         encoder.prefix = prefix
 
         for model in models {
