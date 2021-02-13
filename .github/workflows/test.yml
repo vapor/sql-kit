@@ -9,24 +9,9 @@ jobs:
       fail-fast: false
       matrix:
         image:
-          # 5.2 Stable
-          - swift:5.2-xenial
-          - swift:5.2-bionic
           - swift:5.2-focal
-          - swift:5.2-centos8
-          - swift:5.2-amazonlinux2
-          # 5.2 Unstable
-          - swiftlang/swift:nightly-5.2-xenial
-          - swiftlang/swift:nightly-5.2-bionic
-          # 5.3 Unstable
-          - swiftlang/swift:nightly-5.3-xenial
-          - swiftlang/swift:nightly-5.3-bionic
-          # Main Unstable
-          - swiftlang/swift:nightly-master-xenial
-          - swiftlang/swift:nightly-master-bionic
+          - swift:5.3-focal
           - swiftlang/swift:nightly-master-focal
-          - swiftlang/swift:nightly-master-centos8
-          - swiftlang/swift:nightly-master-amazonlinux2
         include:
           - { os: 'ubuntu-latest' }
           - { os: 'macos-latest', image: '' }
@@ -40,7 +25,7 @@ jobs:
       - run: swift test --enable-test-discovery --sanitize=thread
   driver-integration_linux:
     runs-on: ubuntu-latest
-    container: swift:5.2-bionic
+    container: swift:5.3-focal
     services:
       psql:
         image: postgres:latest
@@ -49,8 +34,8 @@ jobs:
         image: mysql:latest
         env: { MYSQL_ALLOW_EMPTY_PASSWORD: true, MYSQL_DATABASE: vapor_database, MYSQL_USER: vapor_username, MYSQL_PASSWORD: vapor_password }
     env:
-      POSTGRES_HOSTNAME: ${{ matrix.psqlhost }}
-      MYSQL_HOSTNAME: ${{ matrix.mysqlhost }}
+      POSTGRES_HOSTNAME: psql
+      MYSQL_HOSTNAME: mysql
       MYSQL_TLS: true
     steps:
       - run: apt update -q && apt install -y libsqlite3-dev
