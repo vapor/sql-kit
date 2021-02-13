@@ -321,7 +321,7 @@ final class SQLKitTests: XCTestCase {
         let db = TestDatabase()
         var serializer = SQLSerializer(database: db)
 
-        let insertBuilder = try db.insert(into: "gasses").model(Gas(name: "oxygen", color: nil), nilEncodingStrategy: .asNull)
+        let insertBuilder = try db.insert(into: "gasses").model(Gas(name: "oxygen", color: nil), nilEncodingStrategy: .asNil)
         insertBuilder.insert.serialize(to: &serializer)
 
         XCTAssertEqual(serializer.sql, "INSERT INTO `gasses` (`name`, `color`) VALUES (?, NULL)")

@@ -14,8 +14,10 @@ public struct SQLQueryEncoder {
     }
 
     public enum NilEncodingStrategy {
+        /// Standard nil encoding
         case standard
-        case asNull
+        /// Encodes nilable columns with nil values as nil. Useful when using `SQLInsertBuilder` to insert `Codable` models without Fluent
+        case asNil
     }
 
     public enum KeyEncodingStrategy {
@@ -61,7 +63,7 @@ private final class _Encoder: Encoder {
 
     func container<Key>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> where Key : CodingKey {
         switch options.nilEncodingStrategy {
-        case .asNull:
+        case .asNil:
             return KeyedEncodingContainer(_NilColumnKeyedEncoder(self))
         case .standard:
             return KeyedEncodingContainer(_KeyedEncoder(self))
