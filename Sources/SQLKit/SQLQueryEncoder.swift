@@ -1,7 +1,7 @@
 public struct SQLQueryEncoder {
     public var prefix: String? = nil
     public var keyEncodingStrategy: KeyEncodingStrategy = .useDefaultKeys
-    public var nilEncodingStrategy: NilEncodingStrategy = .standard
+    public var nilEncodingStrategy: NilEncodingStrategy = .default
 
     public init() { }
 
@@ -14,8 +14,8 @@ public struct SQLQueryEncoder {
     }
 
     public enum NilEncodingStrategy {
-        /// Standard nil encoding
-        case standard
+        /// Skips nilable columns with nil values during encoding.
+        case `default`
         /// Encodes nilable columns with nil values as nil. Useful when using `SQLInsertBuilder` to insert `Codable` models without Fluent
         case asNil
     }
@@ -65,7 +65,7 @@ private final class _Encoder: Encoder {
         switch options.nilEncodingStrategy {
         case .asNil:
             return KeyedEncodingContainer(_NilColumnKeyedEncoder(self))
-        case .standard:
+        case .default:
             return KeyedEncodingContainer(_KeyedEncoder(self))
         }
     }
