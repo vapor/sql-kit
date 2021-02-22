@@ -52,8 +52,10 @@ public struct SQLSelect: SQLExpression {
             serializer.write("DISTINCT ")
         }
         SQLList(self.columns).serialize(to: &serializer)
-        serializer.write(" FROM ")
-        SQLList(self.tables).serialize(to: &serializer)
+        if !self.tables.isEmpty {
+            serializer.write(" FROM ")
+            SQLList(self.tables).serialize(to: &serializer)
+        }
         if !self.joins.isEmpty {
             serializer.write(" ")
             SQLList(self.joins, separator: SQLRaw(" ")).serialize(to: &serializer)
