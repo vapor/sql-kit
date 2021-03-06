@@ -23,6 +23,14 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE `name` IN (?, ?)")
     }
 
+    func testSelect_withoutFrom() throws {
+        try db.select()
+            .column(SQLAlias.init(SQLFunction("LAST_INSERT_ID"), as: SQLIdentifier.init("id")))
+            .first()
+            .wait()
+        XCTAssertEqual(db.results[0], "SELECT LAST_INSERT_ID() AS `id`")
+    }
+
     func testUpdate() throws {
         try db.update("planets")
             .where("name", .equal, "Jpuiter")
