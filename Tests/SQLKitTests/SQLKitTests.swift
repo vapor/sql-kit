@@ -28,7 +28,7 @@ final class SQLKitTests: XCTestCase {
             .column(SQLAlias.init(SQLFunction("LAST_INSERT_ID"), as: SQLIdentifier.init("id")))
             .first()
             .wait()
-        XCTAssertEqual(db.results[0], "SELECT LAST_INSERT_ID() as `id`")
+        XCTAssertEqual(db.results[0], "SELECT LAST_INSERT_ID() AS `id`")
     }
 
     func testUpdate() throws {
