@@ -7,7 +7,7 @@
 ///     builder.where(\Planet.name == "Earth").orWhere(\Planet.name == "Mars")
 ///
 /// See `SQLPredicateGroupBuilder` for building expression groups.
-public protocol SQLPredicateBuilder: class {
+public protocol SQLPredicateBuilder: AnyObject {
     /// Expression being built.
     var predicate: SQLExpression? { get set }
 }

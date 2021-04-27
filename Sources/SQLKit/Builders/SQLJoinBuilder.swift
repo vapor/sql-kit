@@ -1,4 +1,4 @@
-public protocol SQLJoinBuilder: class {
+public protocol SQLJoinBuilder: AnyObject {
     var joins: [SQLExpression] { get set }
 }
 
