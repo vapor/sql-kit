@@ -4,7 +4,7 @@ import NIO
 ///
 ///     builder.run()
 ///
-public protocol SQLQueryBuilder: class {
+public protocol SQLQueryBuilder: AnyObject {
     /// Query being built.
     var query: SQLExpression { get }
     
