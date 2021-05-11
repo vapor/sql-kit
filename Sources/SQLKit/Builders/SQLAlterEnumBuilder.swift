@@ -19,11 +19,13 @@ public final class SQLAlterEnumBuilder: SQLQueryBuilder {
         self.database = database
         self.alterEnum = .init(name: name, value: nil)
     }
-
+    
+    @discardableResult
     public func add(value: String) -> Self {
         self.add(value: SQLLiteral.string(value))
     }
-
+    
+    @discardableResult
     public func add(value: SQLExpression) -> Self {
         self.alterEnum.value = value
         return self

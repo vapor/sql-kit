@@ -16,6 +16,7 @@ public final class SQLCreateIndexBuilder: SQLQueryBuilder {
     }
     
     /// Adds `UNIQUE` modifier to the index being created.
+    @discardableResult
     public func unique() -> Self {
         self.createIndex.modifier = SQLColumnConstraintAlgorithm.unique
         return self
@@ -28,6 +29,7 @@ public final class SQLCreateIndexBuilder: SQLQueryBuilder {
     /// - parameters:
     ///     - table: Table to create index on.
     /// - returns: `SQLCreateIndexBuilder`.
+    @discardableResult
     public func on(_ table: String) -> Self {
         return self.on(SQLIdentifier(table))
     }
@@ -39,6 +41,7 @@ public final class SQLCreateIndexBuilder: SQLQueryBuilder {
     /// - parameters:
     ///     - table: Table to create index on.
     /// - returns: `SQLCreateIndexBuilder`.
+    @discardableResult
     public func on(_ column: SQLExpression) -> Self {
         self.createIndex.table = column
         return self
@@ -51,6 +54,7 @@ public final class SQLCreateIndexBuilder: SQLQueryBuilder {
     /// - parameters:
     ///     - column: Column to create index on.
     /// - returns: `SQLCreateIndexBuilder`.
+    @discardableResult
     public func column(_ column: String) -> Self {
         return self.column(SQLIdentifier(column))
     }
@@ -62,6 +66,7 @@ public final class SQLCreateIndexBuilder: SQLQueryBuilder {
     /// - parameters:
     ///     - column: Column to create index on.
     /// - returns: `SQLCreateIndexBuilder`.
+    @discardableResult
     public func column(_ column: SQLExpression) -> Self {
         self.createIndex.columns.append(column)
         return self

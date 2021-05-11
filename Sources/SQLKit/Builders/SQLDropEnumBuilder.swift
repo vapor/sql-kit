@@ -45,6 +45,7 @@ public final class SQLDropEnumBuilder: SQLQueryBuilder {
 
     /// The optional `IF EXISTS` clause suppresses the error that would normally
     /// result if the type does not exist.
+    @discardableResult
     public func ifExists() -> Self {
         self.dropEnum.ifExists = true
         return self
@@ -53,6 +54,7 @@ public final class SQLDropEnumBuilder: SQLQueryBuilder {
     /// The optional `CASCADE` clause drops other objects that depend on this type
     /// (such as table columns, functions, and operators), and in turn all objects
     /// that depend on those objects.
+    @discardableResult
     public func cascade() -> Self {
         self.dropEnum.cascade = true
         return self

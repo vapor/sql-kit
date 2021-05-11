@@ -23,6 +23,7 @@ public final class SQLDropIndexBuilder: SQLQueryBuilder {
 
     /// The optional `IF EXISTS` clause suppresses the error that would normally
     /// result if the index does not exist.
+    @discardableResult
     public func ifExists() -> Self {
         dropIndex.ifExists = true
         return self
@@ -31,6 +32,7 @@ public final class SQLDropIndexBuilder: SQLQueryBuilder {
     /// The drop behavior clause specifies if objects that depend on a index
     /// should also be dropped or not when the index is dropped, for databases
     /// that support this.
+    @discardableResult
     public func behavior(_ behavior: SQLDropBehavior) -> Self {
         dropIndex.behavior = behavior
         return self
@@ -38,6 +40,7 @@ public final class SQLDropIndexBuilder: SQLQueryBuilder {
 
     /// Adds a `CASCADE` clause to the `DROP INDEX` statement instructing that
     /// objects that depend on this index should also be dropped.
+    @discardableResult
     public func cascade() -> Self {
         dropIndex.behavior = SQLDropBehavior.cascade
         return self
@@ -45,6 +48,7 @@ public final class SQLDropIndexBuilder: SQLQueryBuilder {
 
     /// Adds a `RESTRICT` clause to the `DROP INDEX` statement instructing that
     /// if any objects depend on this index, the drop should be refused.
+    @discardableResult
     public func restrict() -> Self {
         dropIndex.behavior = SQLDropBehavior.restrict
         return self

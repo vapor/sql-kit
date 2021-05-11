@@ -24,6 +24,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
 
     /// Identifies whether the trigger applies to each row or each statement.
     /// - Parameter value: The option to use.
+    @discardableResult
     public func each(_ value: SQLTriggerEach) -> SQLCreateTriggerBuilder {
         createTrigger.each = value
         return self
@@ -31,12 +32,14 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
 
     /// Identifies whether the trigger applies to each row or each statement.
     /// - Parameter value: The appropriate row or statement value for the language.
+    @discardableResult
     public func each(_ value: SQLExpression) -> SQLCreateTriggerBuilder {
         createTrigger.each = value
         return self
     }
 
     /// Specifies this is a constraint trigger.
+    @discardableResult
     public func isConstraint() -> SQLCreateTriggerBuilder {
         createTrigger.isConstraint = true
         return self
@@ -44,6 +47,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
 
     /// The columns which the trigger applies to.
     /// - Parameter columns: The names of the columns.
+    @discardableResult
     public func columns(_ columns: [String]) -> SQLCreateTriggerBuilder {
         createTrigger.columns = columns.map { SQLRaw($0) }
         return self
@@ -51,6 +55,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
 
     /// The columns which the trigger applies to.
     /// - Parameter columns: The names of the columns.
+    @discardableResult
     public func columns(_ columns: [SQLExpression]) -> SQLCreateTriggerBuilder {
         createTrigger.columns = columns
         return self
@@ -60,6 +65,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     /// - Parameter value: When the trigger applies.
     /// ### Note ###
     /// Only applicable to constraint triggers.
+    @discardableResult
     public func timing(_ value: SQLTriggerTiming) -> SQLCreateTriggerBuilder {
         createTrigger.timing = value
         return self
@@ -69,6 +75,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     /// - Parameter value: The appropriate option.
     /// ### Note ###
     /// Only applicable to constraint triggers.
+    @discardableResult
     public func timing(_ value: SQLExpression) -> SQLCreateTriggerBuilder {
         createTrigger.timing = value
         return self
@@ -76,6 +83,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
 
     /// A Boolean expression that determines whether the trigger function will actually be executed
     /// - Parameter value: The condition
+    @discardableResult
     public func condition(_ value: String) -> SQLCreateTriggerBuilder {
         createTrigger.condition = SQLRaw(value)
         return self
@@ -83,6 +91,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
 
     /// A Boolean expression that determines whether the trigger function will actually be executed
     /// - Parameter value: The condition
+    @discardableResult
     public func condition(_ value: SQLExpression) -> SQLCreateTriggerBuilder {
         createTrigger.condition = value
         return self
@@ -92,6 +101,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     /// - Parameter value: The name of the table.
     /// ### Note ###
     /// This option is used for foreign-key constraints and is not recommended for general use. This can only be specified for constraint triggers.
+    @discardableResult
     public func referencedTable(_ value: String) -> SQLCreateTriggerBuilder {
         createTrigger.referencedTable = SQLIdentifier(value)
         return self
@@ -101,6 +111,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     /// - Parameter value: The name of the table.
     /// ### Note ###
     /// This option is used for foreign-key constraints and is not recommended for general use. This can only be specified for constraint triggers.
+    @discardableResult
     public func referencedTable(_ value: SQLExpression) -> SQLCreateTriggerBuilder {
         createTrigger.referencedTable = value
         return self
@@ -108,6 +119,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
 
     /// The body of the trigger for those dialects that include the body in the trigger itself.
     /// - Parameter statements: The statements for the body of the trigger.
+    @discardableResult
     public func body(_ statements: [String]) -> SQLCreateTriggerBuilder {
         createTrigger.body = statements.map { SQLRaw($0) }
         return self
@@ -115,6 +127,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
 
     /// The body of the trigger for those dialects that include the body in the trigger itself.
     /// - Parameter statements: The statements for the body of the trigger.
+    @discardableResult
     public func body(_ statements: [SQLExpression]) -> SQLCreateTriggerBuilder {
         createTrigger.body = statements
         return self
@@ -122,6 +135,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
 
     /// The name of the procedure the trigger will execute for dialects that don't include the body in the trigger itself.
     /// - Parameter name: The name of the procedure.
+    @discardableResult
     public func procedure(_ name: String) -> SQLCreateTriggerBuilder {
         createTrigger.procedure = SQLIdentifier(name)
         return self
@@ -129,6 +143,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
 
     /// The name of the procedure the trigger will execute for dialects that don't include the body in the trigger itself.
     /// - Parameter name: The name of the procedure.
+    @discardableResult
     public func procedure(_ name: SQLExpression) -> SQLCreateTriggerBuilder {
         createTrigger.procedure = name
         return self
@@ -138,6 +153,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     /// - Parameters:
     ///   - precedence: The precedence of this trigger in relation to `otherTriggerName`
     ///   - otherTriggerName: The name of the other trigger.
+    @discardableResult
     public func order(precedence: SQLTriggerOrder, otherTriggerName: String) -> SQLCreateTriggerBuilder {
         createTrigger.order = precedence
         createTrigger.orderTriggerName = SQLIdentifier(otherTriggerName)
@@ -148,6 +164,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     /// - Parameters:
     ///   - precedence: The precedence of this trigger in relation to `otherTriggerName`
     ///   - otherTriggerName: The name of the other trigger.
+    @discardableResult
     public func order(precedence: SQLTriggerOrder, otherTriggerName: SQLExpression) -> SQLCreateTriggerBuilder {
         createTrigger.order = otherTriggerName
         createTrigger.orderTriggerName = otherTriggerName
@@ -158,6 +175,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     /// - Parameters:
     ///   - precedence: The precedence of this trigger in relation to `otherTriggerName`
     ///   - otherTriggerName: The name of the other trigger.
+    @discardableResult
     public func order(precedence: SQLExpression, otherTriggerName: SQLExpression) -> SQLCreateTriggerBuilder {
         createTrigger.order = precedence
         createTrigger.orderTriggerName = otherTriggerName

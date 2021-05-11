@@ -25,6 +25,7 @@ extension SQLPredicateBuilder {
     ///     - lhs: Left-hand side column name.
     ///     - op: Binary operator to use for comparison.
     ///     - rhs: Right-hand side column name.
+    @discardableResult
     public func `where`(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, column rhs: SQLIdentifier) -> Self {
         self.where(lhs, op, rhs)
     }
@@ -42,6 +43,7 @@ extension SQLPredicateBuilder {
     ///     - op: Binary operator to use for comparison.
     ///     - rhs: Encodable value.
     /// - returns: Self for chaining.
+    @discardableResult
     public func `where`<E>(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: E) -> Self
         where E: Encodable
     {
@@ -61,6 +63,7 @@ extension SQLPredicateBuilder {
     ///     - op: Binary operator to use for comparison.
     ///     - rhs: Encodable value.
     /// - returns: Self for chaining.
+    @discardableResult
     public func `where`<E>(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: [E]) -> Self
         where E: Encodable
     {
@@ -75,6 +78,7 @@ extension SQLPredicateBuilder {
     ///     - lhs: Left-hand side column name.
     ///     - op: Binary operator to use for comparison.
     ///     - rhs: Right-hand side expression.
+    @discardableResult
     public func `where`(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
         self.where(lhs, op as SQLExpression, rhs)
     }
@@ -87,6 +91,7 @@ extension SQLPredicateBuilder {
     ///     - lhs: Left-hand side column name.
     ///     - op: Binary operator to use for comparison.
     ///     - rhs: Right-hand side expression.
+    @discardableResult
     public func `where`(_ lhs: SQLExpression, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
         self.where(lhs, op as SQLExpression, rhs)
     }
@@ -101,6 +106,7 @@ extension SQLPredicateBuilder {
     ///     - op: Binary operator to use for comparison.
     ///     - rhs: Right-hand side expression.
     /// - returns: Self for chaining.
+    @discardableResult
     public func `where`(_ lhs: SQLExpression, _ op: SQLExpression, _ rhs: SQLExpression) -> Self {
         self.where(SQLBinaryExpression(left: lhs, op: op, right: rhs))
     }
@@ -111,6 +117,7 @@ extension SQLPredicateBuilder {
     ///
     /// - parameters:
     ///     - expression: Expression to be added to the predicate.
+    @discardableResult
     public func `where`(_ expression: SQLExpression) -> Self {
         if let existing = self.predicate {
             self.predicate = SQLBinaryExpression(
@@ -132,6 +139,7 @@ extension SQLPredicateBuilder {
     ///     - lhs: Left-hand side column name.
     ///     - op: Binary operator to use for comparison.
     ///     - rhs: Right-hand side expression.
+    @discardableResult
     public func orWhere(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
         return self.orWhere(SQLIdentifier(lhs), op, rhs)
     }
@@ -145,6 +153,7 @@ extension SQLPredicateBuilder {
     ///     - op: Binary operator to use for comparison.
     ///     - rhs: Right-hand side expression.
     /// - returns: Self for chaining.
+    @discardableResult
     public func orWhere(_ lhs: SQLExpression, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
         return self.orWhere(SQLBinaryExpression(left: lhs, op: op, right: rhs))
     }
@@ -159,6 +168,7 @@ extension SQLPredicateBuilder {
     ///     - op: Binary operator to use for comparison.
     ///     - rhs: Right-hand side expression.
     /// - returns: Self for chaining.
+    @discardableResult
     public func orWhere(_ lhs: SQLExpression, _ op: SQLExpression, _ rhs: SQLExpression) -> Self {
         return self.orWhere(SQLBinaryExpression(left: lhs, op: op, right: rhs))
     }
@@ -169,6 +179,7 @@ extension SQLPredicateBuilder {
     ///
     /// - parameters:
     ///     - expression: Expression to be added to the predicate.
+    @discardableResult
     public func orWhere(_ expression: SQLExpression) -> Self {
         if let existing = self.predicate {
             self.predicate = SQLBinaryExpression(

@@ -49,11 +49,13 @@ public final class SQLCreateEnumBuilder: SQLQueryBuilder {
         self.createEnum = .init(name: name, values: [])
         self.database = database
     }
-
+    
+    @discardableResult
     public func value(_ value: String) -> Self {
         self.value(SQLLiteral.string(value))
     }
-
+    
+    @discardableResult
     public func value(_ value: SQLExpression) -> Self {
         self.createEnum.values.append(value)
         return self
