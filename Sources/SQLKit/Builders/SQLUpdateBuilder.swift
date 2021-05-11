@@ -31,7 +31,8 @@ public final class SQLUpdateBuilder: SQLQueryBuilder, SQLPredicateBuilder, SQLRe
         self.update = update
         self.database = database
     }
-
+    
+    @discardableResult
     public func set<E>(model: E) throws -> Self where E: Encodable {
         let row = try SQLQueryEncoder().encode(model)
         row.forEach { column, value in
@@ -41,11 +42,13 @@ public final class SQLUpdateBuilder: SQLQueryBuilder, SQLPredicateBuilder, SQLRe
     }
     
     /// Sets a column (specified by an identifier) to an expression.
+    @discardableResult
     public func set(_ column: String, to bind: Encodable) -> Self {
         return self.set(SQLIdentifier(column), to: SQLBind(bind))
     }
     
     /// Sets a column (specified by an identifier) to an expression.
+    @discardableResult
     public func set(_ column: SQLExpression, to value: SQLExpression) -> Self {
         let binary = SQLBinaryExpression(left: column, op: SQLBinaryOperator.equal, right: value)
         update.values.append(binary)

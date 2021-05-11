@@ -26,7 +26,8 @@ public final class SQLCreateTableBuilder: SQLQueryBuilder {
         self.createTable = createTable
         self.database = database
     }
-
+    
+    @discardableResult
     public func column(
         _ column: String,
         type dataType: SQLDataType,
@@ -38,7 +39,8 @@ public final class SQLCreateTableBuilder: SQLQueryBuilder {
             constraints: constraints
         ))
     }
-
+    
+    @discardableResult
     public func column(
         _ column: String,
         type dataType: SQLDataType,
@@ -50,7 +52,8 @@ public final class SQLCreateTableBuilder: SQLQueryBuilder {
             constraints: constraints
         ))
     }
-
+    
+    @discardableResult
     public func column(
         _ column: SQLExpression,
         type dataType: SQLExpression,
@@ -62,7 +65,8 @@ public final class SQLCreateTableBuilder: SQLQueryBuilder {
             constraints: constraints
         ))
     }
-
+    
+    @discardableResult
     public func column(
         _ column: SQLExpression,
         type dataType: SQLExpression,
@@ -74,19 +78,22 @@ public final class SQLCreateTableBuilder: SQLQueryBuilder {
             constraints: constraints
         ))
     }
-
+    
+    @discardableResult
     public func column(_ columnDefinition: SQLExpression) -> Self {
         self.columns.append(columnDefinition)
         return self
     }
     
     /// Sugar for `definitions.forEach { builder.column($0) }`
+    @discardableResult
     public func column(definitions: [SQLColumnDefinition]) -> SQLCreateTableBuilder {
         self.columns.append(contentsOf: definitions)
         return self
     }
 
     /// If the "TEMP" or "TEMPORARY" keyword occurs between the "CREATE" and "TABLE" then the new table is created in the temp database.
+    @discardableResult
     public func temporary() -> Self {
         createTable.temporary = true
         return self
@@ -97,6 +104,7 @@ public final class SQLCreateTableBuilder: SQLQueryBuilder {
     /// of the same name already exists, the CREATE TABLE command simply has no effect (and no error message is returned). An
     /// error is still returned if the table cannot be created because of an existing index, even if the "IF NOT EXISTS" clause is
     /// specified.
+    @discardableResult
     public func ifNotExists() -> Self {
         createTable.ifNotExists = true
         return self
@@ -111,6 +119,7 @@ extension SQLCreateTableBuilder {
     /// - parameters:
     ///     - columns: One or more  columns of the table currently being built to make into a Primary Key.
     ///     - constraintName: An optional name to give the constraint.
+    @discardableResult
     public func primaryKey(_ columns: String..., named constraintName: String? = nil) -> Self {
         return primaryKey(columns, named: constraintName)
     }
@@ -120,6 +129,7 @@ extension SQLCreateTableBuilder {
     /// - parameters:
     ///     - columns: One or more  columns of the table currently being built to make into a Primary Key.
     ///     - constraintName: An optional name to give the constraint.
+    @discardableResult
     public func primaryKey(_ columns: [String], named constraintName: String? = nil) -> Self {
         return primaryKey(
             columns.map(SQLIdentifier.init(_:)),
@@ -132,6 +142,7 @@ extension SQLCreateTableBuilder {
     /// - parameters:
     ///     - columns: One or more  columns of the table currently being built to make into a Primary Key.
     ///     - constraintName: An optional name to give the constraint.
+    @discardableResult
     public func primaryKey(_ columns: [SQLExpression], named constraintName: SQLExpression? = nil) -> Self {
         createTable.tableConstraints.append(
             SQLConstraint(
@@ -147,6 +158,7 @@ extension SQLCreateTableBuilder {
     /// - parameters:
     ///     - columns: One or more  columns of the table currently being built to make into a UNIQUE constraint.
     ///     - constraintName: An optional name to give the constraint.
+    @discardableResult
     public func unique(_ columns: String..., named constraintName: String? = nil) -> Self {
         return unique(columns, named: constraintName)
     }
@@ -156,6 +168,7 @@ extension SQLCreateTableBuilder {
     /// - parameters:
     ///     - columns: One or more  columns of the table currently being built to make into a UNIQUE constraint.
     ///     - constraintName: An optional name to give the constraint.
+    @discardableResult
     public func unique(_ columns: [String], named constraintName: String? = nil) -> Self {
         return unique(
             columns.map(SQLIdentifier.init(_:)),
@@ -168,6 +181,7 @@ extension SQLCreateTableBuilder {
     /// - parameters:
     ///     - columns: One or more  columns of the table currently being built to make into a UNIQUE constraint.
     ///     - constraintName: An optional name to give the constraint.
+    @discardableResult
     public func unique(_ columns: [SQLExpression], named constraintName: SQLExpression? = nil) -> Self {
         createTable.tableConstraints.append(
             SQLConstraint(
@@ -183,6 +197,7 @@ extension SQLCreateTableBuilder {
     /// - parameters:
     ///     - expression: A check constraint expression.
     ///     - constraintName: An optional name to give the constraint.
+    @discardableResult
     public func check(_ expression: SQLExpression, named constraintName: String? = nil) -> Self {
         return self.check(
             expression,
@@ -195,6 +210,7 @@ extension SQLCreateTableBuilder {
     /// - parameters:
     ///     - expression: A check constraint expression.
     ///     - constraintName: An optional name to give the constraint.
+    @discardableResult
     public func check(_ expression: SQLExpression, named constraintName: SQLExpression? = nil) -> Self {
         createTable.tableConstraints.append(
             SQLConstraint(
@@ -214,6 +230,7 @@ extension SQLCreateTableBuilder {
     ///     - onDelete: Optional foreign key action to perform on delete.
     ///     - onUpdate: Optional foreign key action to perform on update.
     ///     - constraintName: An optional name to give the constraint.
+    @discardableResult
     public func foreignKey(
         _ columns: [String],
         references foreignTable: String,
@@ -241,6 +258,7 @@ extension SQLCreateTableBuilder {
     ///     - onDelete: Optional foreign key action to perform on delete.
     ///     - onUpdate: Optional foreign key action to perform on update.
     ///     - constraintName: An optional name to give the constraint.
+    @discardableResult
     public func foreignKey(
         _ columns: [SQLExpression],
         references foreignTable: SQLExpression,

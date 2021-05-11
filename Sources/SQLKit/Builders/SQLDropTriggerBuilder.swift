@@ -32,6 +32,7 @@ public final class SQLDropTriggerBuilder: SQLQueryBuilder {
 
     /// The optional `IF EXISTS` clause suppresses the error that would normally
     /// result if the table does not exist.
+    @discardableResult
     public func ifExists() -> Self {
         dropTrigger.ifExists = true
         return self 
@@ -40,16 +41,19 @@ public final class SQLDropTriggerBuilder: SQLQueryBuilder {
     /// The optional `CASCADE` clause drops other objects that depend on this type
     /// (such as table columns, functions, and operators), and in turn all objects
     /// that depend on those objects.
+    @discardableResult
     public func cascade() -> Self {
         dropTrigger.cascade = true
         return self
     }
-
+    
+    @discardableResult
     public func table(_ name: String) -> Self {
         dropTrigger.table = SQLIdentifier(name)
         return self
     }
-
+    
+    @discardableResult
     public func table(_ name: SQLExpression) -> Self {
         dropTrigger.table = name
         return self

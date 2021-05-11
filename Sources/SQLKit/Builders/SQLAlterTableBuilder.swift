@@ -18,7 +18,8 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
         self.alterTable = alterTable
         self.database = database
     }
-
+    
+    @discardableResult
     public func column(
         _ column: String,
         type dataType: SQLDataType,
@@ -30,7 +31,8 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
             constraints: constraints
         ))
     }
-
+    
+    @discardableResult
     public func column(
         _ column: String,
         type dataType: SQLDataType,
@@ -42,7 +44,8 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
             constraints: constraints
         ))
     }
-
+    
+    @discardableResult
     public func column(
         _ column: SQLExpression,
         type dataType: SQLExpression,
@@ -54,7 +57,8 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
             constraints: constraints
         ))
     }
-
+    
+    @discardableResult
     public func column(
         _ column: SQLExpression,
         type dataType: SQLExpression,
@@ -66,12 +70,14 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
             constraints: constraints
         ))
     }
-
+    
+    @discardableResult
     public func addColumn(_ columnDefinition: SQLExpression) -> Self {
         self.alterTable.addColumns.append(columnDefinition)
         return self
     }
-
+    
+    @discardableResult
     public func modifyColumn(
         _ column: String,
         type dataType: SQLDataType,
@@ -83,7 +89,8 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
             constraints: constraints
         ))
     }
-
+    
+    @discardableResult
     public func modifyColumn(
         _ column: String,
         type dataType: SQLDataType,
@@ -95,7 +102,8 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
             constraints: constraints
         ))
     }
-
+    
+    @discardableResult
     public func modifyColumn(
         _ column: SQLExpression,
         type dataType: SQLExpression,
@@ -107,7 +115,8 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
             constraints: constraints
         ))
     }
-
+    
+    @discardableResult
     public func modifyColumn(
         _ column: SQLExpression,
         type dataType: SQLExpression,
@@ -119,7 +128,8 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
             constraints: constraints
         ))
     }
-
+    
+    @discardableResult
     public func update(
         column: String,
         type dataType: SQLDataType
@@ -129,7 +139,8 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
             dataType: dataType
         ))
     }
-
+    
+    @discardableResult
     public func update(
         column: SQLExpression,
         type dataType: SQLExpression
@@ -139,18 +150,21 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
             dataType: dataType
         ))
     }
-
+    
+    @discardableResult
     public func modifyColumn(_ columnDefinition: SQLExpression) -> Self {
         self.alterTable.modifyColumns.append(columnDefinition)
         return self
     }
-
+    
+    @discardableResult
     public func dropColumn(
         _ column: String
     ) -> Self {
         return self.dropColumn(SQLIdentifier(column))
     }
-
+    
+    @discardableResult
     public func dropColumn(
         _ column: SQLExpression
     ) -> Self {

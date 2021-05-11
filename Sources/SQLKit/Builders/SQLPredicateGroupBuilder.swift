@@ -23,6 +23,7 @@ extension SQLPredicateBuilder {
     ///
     ///     WHERE "type" = "smallRocky" AND ("name" = "Earth" OR "name" = "Mars")
     ///
+    @discardableResult
     public func `where`(group: (SQLPredicateGroupBuilder) -> (SQLPredicateGroupBuilder)) -> Self {
         let builder = SQLPredicateGroupBuilder()
         _ = group(builder)
@@ -43,6 +44,7 @@ extension SQLPredicateBuilder {
     ///
     ///     WHERE "name" = "Jupiter" OR ("name" = "Earth" AND "type" = "smallRocky")
     ///
+    @discardableResult
     public func orWhere(group: (SQLPredicateGroupBuilder) -> (SQLPredicateGroupBuilder)) -> Self {
         let builder = SQLPredicateGroupBuilder()
         _ = group(builder)

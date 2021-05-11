@@ -15,6 +15,7 @@ extension SQLJoinBuilder {
     ///   - table: The name of the table to join.
     ///   - method: The join method to use.
     ///   - expression: A string containing a join condition.
+    @discardableResult
     public func join(_ table: String, method: SQLJoinMethod = .inner, on expression: String) -> Self {
          self.join(SQLIdentifier(table), method: method, on: SQLRaw(expression))
     }
@@ -29,6 +30,7 @@ extension SQLJoinBuilder {
     ///   - table: An expression identifying the table to join.
     ///   - method: An expression providing the join method to use.
     ///   - expression: An expression used as the join condition.
+    @discardableResult
     public func join(_ table: SQLExpression, method: SQLExpression = SQLJoinMethod.inner, on expression: SQLExpression) -> Self {
         self.joins.append(SQLJoin(method: method, table: table, expression: expression))
         return self
@@ -47,6 +49,7 @@ extension SQLJoinBuilder {
     ///   - left: The left side of a binary expression used as a join condition.
     ///   - op: The operator in a binary expression used as a join condition.
     ///   - right: The right side of a binary expression used as a join condition.
+    @discardableResult
     public func join(
         _ table: SQLExpression,
         method: SQLExpression = SQLJoinMethod.inner,
@@ -69,6 +72,7 @@ extension SQLJoinBuilder {
     ///   - method: An expression providing the join method to use.
     ///   - column: An expression giving a list of columns to match between
     ///             the joined tables.
+    @discardableResult
     public func join(_ table: SQLExpression, method: SQLExpression = SQLJoinMethod.inner, using columns: SQLExpression) -> Self {
         // TODO TODO TODO: Figure out a nice way to make `SQLJoin` aware of the
         // `USING()` syntax; this method is hacky and doesn't respect

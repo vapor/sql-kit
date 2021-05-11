@@ -23,6 +23,7 @@ public final class SQLDropTableBuilder: SQLQueryBuilder {
     
     /// The optional `IF EXISTS` clause suppresses the error that would normally
     /// result if the table does not exist.
+    @discardableResult
     public func ifExists() -> Self {
         dropTable.ifExists = true
         return self
@@ -31,6 +32,7 @@ public final class SQLDropTableBuilder: SQLQueryBuilder {
     /// The drop behavior clause specifies if objects that depend on a table
     /// should also be dropped or not when the table is dropped, for databases
     /// that support this.
+    @discardableResult
     public func behavior(_ behavior: SQLDropBehavior) -> Self {
         dropTable.behavior = behavior
         return self
@@ -38,6 +40,7 @@ public final class SQLDropTableBuilder: SQLQueryBuilder {
 
     /// Adds a `CASCADE` clause to the `DROP TABLE` statement instructing that
     /// objects that depend on this table should also be dropped.
+    @discardableResult
     public func cascade() -> Self {
         dropTable.behavior = SQLDropBehavior.cascade
         return self
@@ -45,6 +48,7 @@ public final class SQLDropTableBuilder: SQLQueryBuilder {
 
     /// Adds a `RESTRICT` clause to the `DROP TABLE` statement instructing that
     /// if any objects depend on this table, the drop should be refused.
+    @discardableResult
     public func restrict() -> Self {
         dropTable.behavior = SQLDropBehavior.restrict
         return self
