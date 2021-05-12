@@ -258,7 +258,7 @@ The `raw(_:)` method allows for passing custom SQL query strings with support fo
 
 ```swift
 let table = "planets"
-let planets = try db.raw("SELECT * FROM \(table) WHERE name = \(bind: planet)")
+let planets = try db.raw("SELECT * FROM \(raw: table) WHERE name = \(bind: planet)")
     .all().wait()
 ```
 
