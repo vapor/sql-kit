@@ -31,6 +31,26 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[0], "SELECT `planets`.* FROM `planets` WHERE `name` IN (?, ?)")
     }
 
+    func testSelect_whereGroup() throws {
+        try db.select().column("*")
+            .from("planets")
+            .where {
+                $0.where("name", .equal, "Earth")
+                    .orWhere("name", .equal, "Mars")
+            }
+            .where("color", .equal, "blue")
+            .run().wait()
+        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE (`name` = ? OR `name` = ?) AND `color` = ?")
+    }
+    
+    func testSelect_whereColumn() throws {
+        try db.select().column("*")
+            .from("planets")
+            .where("name", .notEqual, column: "color")
+            .run().wait()
+        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE `name` <> `color`")
+	}
+	
     func testSelect_withoutFrom() throws {
         try db.select()
             .column(SQLAlias.init(SQLFunction("LAST_INSERT_ID"), as: SQLIdentifier.init("id")))
