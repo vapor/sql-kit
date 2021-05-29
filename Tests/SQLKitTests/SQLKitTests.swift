@@ -22,6 +22,14 @@ final class SQLKitTests: XCTestCase {
             .run().wait()
         XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE `name` IN (?, ?)")
     }
+    
+    func testSelect_tableAllCols() throws {
+        try db.select().column(table: "planets", column: "*")
+            .from("planets")
+            .where("name", .in, ["Earth", "Mars"])
+            .run().wait()
+        XCTAssertEqual(db.results[0], "SELECT `planets`.* FROM `planets` WHERE `name` IN (?, ?)")
+    }
 
     func testSelect_withoutFrom() throws {
         try db.select()
