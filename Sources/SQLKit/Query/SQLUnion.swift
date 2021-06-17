@@ -1,12 +1,14 @@
 public struct SQLUnion: SQLExpression {
     public let args: [SQLExpression]
+    public let all: Bool
 
-    public init(_ args: SQLExpression...) {
-        self.init(args)
+    public init(_ args: SQLExpression..., all: Bool = false) {
+        self.init(args, all: all)
     }
 
-    public init(_ args: [SQLExpression]) {
+    public init(_ args: [SQLExpression], all: Bool = false) {
         self.args = args
+        self.all = all
     }
 
     public func serialize(to serializer: inout SQLSerializer) {
@@ -14,7 +16,11 @@ public struct SQLUnion: SQLExpression {
         guard let first = groups.first else { return }
         first.serialize(to: &serializer)
         for arg in groups.dropFirst() {
-            serializer.write(" UNION ")
+            if all {
+                serializer.write(" UNION ALL ")
+            } else {
+                serializer.write(" UNION ")
+            }
             arg.serialize(to: &serializer)
         }
     }

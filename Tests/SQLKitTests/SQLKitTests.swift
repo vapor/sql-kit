@@ -740,4 +740,17 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
         XCTAssertEqual(db.results[0], "(SELECT `id` FROM `t1` WHERE `f1` = ? LIMIT 1) UNION (SELECT `id` FROM `t2` WHERE `f2` = ? LIMIT 2) UNION (SELECT `id` FROM `t3` WHERE `f3` = ? LIMIT 3)")
     }
 
+    func testUnionAll() throws {
+        try db.unionAll(
+            db.select()
+                .column("id")
+                .from("t1"),
+            db.select()
+                .column("id")
+                .from("t2")
+        ).run().wait()
+
+        XCTAssertEqual(db.results[0], "(SELECT `id` FROM `t1`) UNION ALL (SELECT `id` FROM `t2`)")
+    }
+
 }

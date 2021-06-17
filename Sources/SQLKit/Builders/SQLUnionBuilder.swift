@@ -6,8 +6,10 @@ public final class SQLUnionBuilder: SQLQueryBuilder {
     public var union: SQLUnion
     public var database: SQLDatabase
 
-    public init(on database: SQLDatabase, _ args: [SQLSelectBuilder]) {
-        self.union = .init(args.map { $0.select })
+    public init(on database: SQLDatabase,
+                _ args: [SQLSelectBuilder],
+                all: Bool = false) {
+        self.union = .init(args.map { $0.select }, all: all)
         self.database = database
     }
 }
@@ -15,5 +17,9 @@ public final class SQLUnionBuilder: SQLQueryBuilder {
 extension SQLDatabase {
     public func union(_ args: SQLSelectBuilder...) -> SQLUnionBuilder {
         SQLUnionBuilder(on: self, args)
+    }
+
+    public func unionAll(_ args: SQLSelectBuilder...) -> SQLUnionBuilder {
+        SQLUnionBuilder(on: self, args, all: true)
     }
 }
