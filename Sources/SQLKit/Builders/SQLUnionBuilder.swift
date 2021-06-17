@@ -9,7 +9,7 @@ public final class SQLUnionBuilder: SQLQueryBuilder {
     public init(on database: SQLDatabase,
                 _ args: [SQLSelectBuilder],
                 all: Bool = false) {
-        self.union = .init(args.map { $0.select }, all: all)
+        self.union = .init(args.map(\.select), all: all)
         self.database = database
     }
 }
