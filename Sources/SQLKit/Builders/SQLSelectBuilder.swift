@@ -110,9 +110,17 @@ extension SQLSelectBuilder {
     /// - Parameters:
     ///   - table: The name of a table to qualify the column name.
     ///   - column: The name of the column to return.
+    ///   The string "*" (a single asterisk) is recognized and replaced by
+    ///   `SQLLiteral.all`.
     @discardableResult
     public func column(table: String, column: String) -> Self {
-        return self.column(SQLColumn(SQLIdentifier(column), table: SQLIdentifier(table)))
+        let columnExpr: SQLExpression
+        if column == "*" {
+            columnExpr = SQLLiteral.all
+        } else {
+            columnExpr = SQLIdentifier(column)
+        }
+        return self.column(SQLColumn(columnExpr, table: SQLIdentifier(table)))
     }
     
     /// Specify a column to be part of the result set of the query. The column
