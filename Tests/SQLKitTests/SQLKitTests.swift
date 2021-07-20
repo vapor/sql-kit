@@ -14,21 +14,31 @@ final class SQLKitTests: XCTestCase {
         let benchmarker = SQLBenchmarker(on: db)
         try benchmarker.run()
     }
-
-    func testSelect_whereIn() throws {
-        try db.select().column("*")
-            .from("planets")
-            .where("name", .in, ["Earth", "Mars"])
-            .run().wait()
-        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE `name` IN (?, ?)")
-    }
     
     func testSelect_tableAllCols() throws {
         try db.select().column(table: "planets", column: "*")
             .from("planets")
-            .where("name", .in, ["Earth", "Mars"])
+            .where("name", .equal, SQLBind("Earth"))
             .run().wait()
-        XCTAssertEqual(db.results[0], "SELECT `planets`.* FROM `planets` WHERE `name` IN (?, ?)")
+        XCTAssertEqual(db.results[0], "SELECT `planets`.* FROM `planets` WHERE `name` = ?")
+    }
+    
+    func testSelect_whereEncodable() throws {
+        try db.select().column("*")
+            .from("planets")
+            .where("name", .equal, "Earth")
+            .orWhere("name", .equal, "Mars")
+            .run().wait()
+        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE `name` = ? OR `name` = ?")
+    }
+    
+    func testSelect_whereList() throws {
+        try db.select().column("*")
+            .from("planets")
+            .where("name", .in, ["Earth", "Mars"])
+            .orWhere("name", .in, ["Venus", "Mercury"])
+            .run().wait()
+        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE `name` IN (?, ?) OR `name` IN (?, ?)")
     }
 
     func testSelect_whereGroup() throws {
@@ -47,8 +57,9 @@ final class SQLKitTests: XCTestCase {
         try db.select().column("*")
             .from("planets")
             .where("name", .notEqual, column: "color")
+            .orWhere("name", .equal, column: "greekName")
             .run().wait()
-        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE `name` <> `color`")
+        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE `name` <> `color` OR `name` = `greekName`")
 	}
 	
     func testSelect_withoutFrom() throws {
