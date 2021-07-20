@@ -56,7 +56,7 @@ extension SQLPredicateBuilder {
     ///
     /// The encodable value supplied will be bound to the query as a parameter.
     ///
-    ///     SELECT * FROM planets WHERE name = ? // Earth
+    ///     SELECT * FROM planets WHERE name = (?, ?) // Earth, Mars
     ///
     /// - parameters:
     ///     - lhs: Left-hand side column name.
@@ -187,7 +187,7 @@ extension SQLPredicateBuilder {
     ///
     /// The encodable value supplied will be bound to the query as a parameter.
     ///
-    ///     SELECT * FROM planets WHERE name = ? // Earth
+    ///     SELECT * FROM planets WHERE name IN (?, ?) // Earth, Mars
     ///
     /// - parameters:
     ///     - lhs: Left-hand side column name.
