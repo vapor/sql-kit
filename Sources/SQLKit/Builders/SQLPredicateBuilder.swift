@@ -56,7 +56,7 @@ extension SQLPredicateBuilder {
     ///
     /// The encodable value supplied will be bound to the query as a parameter.
     ///
-    ///     SELECT * FROM planets WHERE name = ? // Earth
+    ///     SELECT * FROM planets WHERE name = (?, ?) // Earth, Mars
     ///
     /// - parameters:
     ///     - lhs: Left-hand side column name.
@@ -143,6 +143,64 @@ extension SQLPredicateBuilder {
     public func orWhere(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: SQLExpression) -> Self {
         return self.orWhere(SQLIdentifier(lhs), op, rhs)
     }
+    
+    /// Adds a column to column comparison to this builder's `WHERE` clause by `OR`ing.
+    ///
+    ///     builder.orWhere("firstName", .equal, column: "lastName")
+    ///
+    /// This method compares two _columns_.
+    ///
+    ///     SELECT * FROM users WHERE firstName = lastName
+    ///
+    /// - parameters:
+    ///     - lhs: Left-hand side column name.
+    ///     - op: Binary operator to use for comparison.
+    ///     - rhs: Right-hand side column name.
+    @discardableResult
+    public func orWhere(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, column rhs: SQLIdentifier) -> Self {
+        return self.orWhere(lhs, op, rhs)
+    }
+    
+    /// Adds a column to encodable comparison to the `WHERE` clause by `OR`ing.
+    ///
+    ///     builder.orWhere("name", .equal, "Earth")
+    ///
+    /// The encodable value supplied will be bound to the query as a parameter.
+    ///
+    ///     SELECT * FROM planets WHERE name = ? // Earth
+    ///
+    /// - parameters:
+    ///     - lhs: Left-hand side column name.
+    ///     - op: Binary operator to use for comparison.
+    ///     - rhs: Encodable value.
+    /// - returns: Self for chaining.
+    @discardableResult
+    public func orWhere<E>(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: E) -> Self
+        where E: Encodable
+    {
+        return self.orWhere(lhs, op, SQLBind(rhs))
+    }
+
+    /// Adds a column to encodable comparison to this builder's `WHERE` clause by `AND`ing.
+    ///
+    ///     builder.orWhere("name", .in, ["Earth", "Mars"])
+    ///
+    /// The encodable value supplied will be bound to the query as a parameter.
+    ///
+    ///     SELECT * FROM planets WHERE name IN (?, ?) // Earth, Mars
+    ///
+    /// - parameters:
+    ///     - lhs: Left-hand side column name.
+    ///     - op: Binary operator to use for comparison.
+    ///     - rhs: Encodable value.
+    /// - returns: Self for chaining.
+    @discardableResult
+    public func orWhere<E>(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: [E]) -> Self
+        where E: Encodable
+    {
+        self.orWhere(lhs, op, SQLBind.group(rhs))
+    }
+
 
     /// Adds an expression to expression comparison to the `WHERE` clause by `OR`ing.
     ///
