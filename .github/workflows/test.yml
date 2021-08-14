@@ -16,8 +16,8 @@ jobs:
           - swiftlang/swift:nightly-main-focal
         include:
           - { os: 'ubuntu-latest' }
-          - { os: 'macos-latest', image: 'latest' }
-          - { os: 'macos-latest', image: 'latest-stable' }
+          - { os: 'macos-latest', image: '', xcode: 'latest' }
+          - { os: 'macos-latest', image: '', xcode: 'latest-stable' }
     runs-on: ${{ matrix.os }}
     container: ${{ matrix.image }}
     steps:
