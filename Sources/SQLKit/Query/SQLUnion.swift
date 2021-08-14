@@ -2,13 +2,13 @@ public struct SQLUnion: SQLExpression {
     public let args: [SQLExpression]
     public let all: Bool
 
-    public init(all: Bool = false, _ args: SQLExpression...) {
-        self.init(all: all, args)
+    public init(_ args: SQLExpression..., all: Bool = false) {
+        self.init(args, all: all)
     }
 
-    public init(all: Bool = false, _ args: [SQLExpression]) {
-        self.all = all
+    public init(_ args: [SQLExpression], all: Bool = false) {
         self.args = args
+        self.all = all
     }
 
     public func serialize(to serializer: inout SQLSerializer) {
