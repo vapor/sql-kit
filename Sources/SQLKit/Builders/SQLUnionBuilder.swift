@@ -7,19 +7,15 @@ public final class SQLUnionBuilder: SQLQueryBuilder {
     public var database: SQLDatabase
 
     public init(on database: SQLDatabase,
-                _ args: [SQLSelectBuilder],
-                all: Bool = false) {
-        self.union = .init(args.map(\.select), all: all)
+                all: Bool = false,
+                _ args: [SQLSelectBuilder]) {
+        self.union = .init(all: all, args.map(\.select))
         self.database = database
     }
 }
 
 extension SQLDatabase {
-    public func union(_ args: SQLSelectBuilder...) -> SQLUnionBuilder {
-        SQLUnionBuilder(on: self, args)
-    }
-
-    public func unionAll(_ args: SQLSelectBuilder...) -> SQLUnionBuilder {
-        SQLUnionBuilder(on: self, args, all: true)
+    public func union(all: Bool = false, _ args: SQLSelectBuilder...) -> SQLUnionBuilder {
+        SQLUnionBuilder(on: self, all: all, args)
     }
 }

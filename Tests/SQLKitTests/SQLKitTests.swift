@@ -741,7 +741,8 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
     }
 
     func testUnionAll() throws {
-        try db.unionAll(
+        try db.union(
+            all: true,
             db.select()
                 .column("id")
                 .from("t1"),
