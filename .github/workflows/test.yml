@@ -11,21 +11,25 @@ jobs:
         image:
           - swift:5.2-focal
           - swift:5.3-focal
+          - swift:5.4-focal
+          - swiftlang/swift:nightly-5.5-focal
           - swiftlang/swift:nightly-main-focal
         include:
           - { os: 'ubuntu-latest' }
-          - { os: 'macos-latest', image: '' }
+          - { os: 'macos-latest', image: 'latest' }
+          - { os: 'macos-latest', image: 'latest-stable' }
     runs-on: ${{ matrix.os }}
     container: ${{ matrix.image }}
     steps:
       - uses: maxim-lobanov/setup-xcode@v1
-        with: { 'xcode-version': 'latest' }
+        with:
+          xcode-version: ${{ matrix.image }}
         if: ${{ matrix.os == 'macos-latest' }}
       - uses: actions/checkout@v2
       - run: swift test --enable-test-discovery --sanitize=thread
   driver-integration_linux:
     runs-on: ubuntu-latest
-    container: swift:5.3-focal
+    container: swift:5.4-focal
     services:
       psql:
         image: postgres:latest
