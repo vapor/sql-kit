@@ -13,13 +13,22 @@ public struct SQLUnion: SQLExpression {
     }
 
     public func serialize(to serializer: inout SQLSerializer) {
-        let groups = self.args.map(SQLGroupExpression.init)
-        guard let first = groups.first else { return }
-        first.serialize(to: &serializer)
-        for arg in groups.dropFirst() {
-            serializer.write(all ? " UNION ALL " : " UNION ")
-            arg.serialize(to: &serializer)
-        }
+        self.args
+            .map { [SQLGroupExpression($0)] }
+            .joined(separator: [SQLUnionJoiner(all: self.all)])
+            .forEach { (item: SQLExpression) in item.serialize(to: &serializer) }
+    }
+}
+
+public struct SQLUnionJoiner: SQLExpression {
+    public var all: Bool
+    
+    public init(all: Bool) {
+        self.all = all
+    }
+    
+    public func serialize(to serializer: inout SQLSerializer) {
+        serializer.write(" UNION\(self.all ? " ALL" : "") ")
     }
 }
 
