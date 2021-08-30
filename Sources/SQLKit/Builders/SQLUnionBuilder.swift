@@ -40,3 +40,21 @@ extension SQLUnionBuilder {
         return self.union(all: predicate(.init(on: self.database)).select)
     }
 }
+
+extension SQLSelectBuilder {
+    public func union(distinct predicate: (SQLSelectBuilder) -> SQLSelectBuilder) -> SQLUnionBuilder {
+        return SQLUnionBuilder(on: self.database, initialQuery: self.select)
+            .union(distinct: predicate(.init(on: self.database)).select)
+    }
+
+    /// Alias the `distinct` variant so it acts as the "default".
+    public func union(_ predicate: (SQLSelectBuilder) -> SQLSelectBuilder) -> SQLUnionBuilder {
+        return SQLUnionBuilder(on: self.database, initialQuery: self.select)
+            .union(distinct: predicate(.init(on: self.database)).select)
+    }
+
+    public func union(all predicate: (SQLSelectBuilder) -> SQLSelectBuilder) -> SQLUnionBuilder {
+        return SQLUnionBuilder(on: self.database, initialQuery: self.select)
+            .union(all: predicate(.init(on: self.database)).select)
+    }
+}
