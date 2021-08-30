@@ -1,22 +1,24 @@
 public struct SQLUnion: SQLExpression {
-    public let args: [SQLExpression]
-    public let all: Bool
+    public var initialQuery: SQLSelect
+    public var unions: [(SQLUnionJoiner, SQLSelect)]
 
-    public init(_ args: SQLExpression..., all: Bool = false) {
-        self.init(args, all: all)
+    public init(initialQuery: SQLSelect, unions: [(SQLUnionJoiner, SQLSelect)] = []) {
+        self.initialQuery = initialQuery
+        self.unions = unions
     }
 
-    public init(_ args: [SQLExpression], all: Bool = false) {
-        precondition(!args.isEmpty, "Empty SQLUnions are not valid.") 
-        self.args = args
-        self.all = all
+    public mutating func add(_ query: SQLSelect, all: Bool) {
+        self.unions.append((.init(all: all), query))
     }
 
     public func serialize(to serializer: inout SQLSerializer) {
-        self.args
-            .map { [SQLGroupExpression($0)] }
-            .joined(separator: [SQLUnionJoiner(all: self.all)])
-            .forEach { (item: SQLExpression) in item.serialize(to: &serializer) }
+        assert(!self.unions.isEmpty, "Serializing a union with only one query is invalid.")
+        SQLGroupExpression(self.initialQuery).serialize(to: &serializer)
+        self.unions
+            .forEach { (joiner, select) in
+                joiner.serialize(to: &serializer)
+                SQLGroupExpression(select).serialize(to: &serializer)
+            }
     }
 }
 
