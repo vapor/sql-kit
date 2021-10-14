@@ -175,6 +175,23 @@ extension SQLSelectBuilder {
         return columns.reduce(self) { $0.column($1) }
     }
 
+    /// Specify a column to retrieve as a `String`, and an alias for it with another `String`.
+    @discardableResult
+    public func column(_ column: String, as alias: String) -> Self {
+        self.column(SQLIdentifier(column), as: SQLIdentifier(alias))
+    }
+
+    /// Specify a column to retrieve as an `SQLExpression`, and an alias for it with a `String`.
+    @discardableResult
+    public func column(_ column: SQLExpression, as alias: String) -> Self {
+        self.column(column, as: SQLIdentifier(alias))
+    }
+
+    /// Specify a column to retrieve as an `SQLExpression`, and an alias for it with another `SQLExpression`.
+    @discardableResult
+    public func column(_ column: SQLExpression, as alias: SQLExpression) -> Self {
+        self.column(SQLAlias(column, as: alias))
+    }
 }
 
 // MARK: From
