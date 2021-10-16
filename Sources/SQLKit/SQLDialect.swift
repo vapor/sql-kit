@@ -16,6 +16,7 @@ public protocol SQLDialect {
     var alterTableSyntax: SQLAlterTableSyntax { get }
     func customDataType(for dataType: SQLDataType) -> SQLExpression?
     func normalizeSQLConstraint(identifier: SQLExpression) -> SQLExpression
+    var upsertSyntax: SQLUpsertSyntax { get }
 }
 
 extension SQLDialect {
@@ -115,6 +116,20 @@ public struct SQLTriggerSyntax {
     }
 }
 
+/// The supported syntax variants which a SQL dialect can use to to specify `UPSERT` clauses.
+public enum SQLUpsertSyntax: Equatable, CaseIterable {
+    /// Indicates usage of the SQL-standard `ON CONFLICT ...` syntax, including index and update predicates, the
+    /// `excluded.` pseudo-table name, and the `DO NOTHING` action for "ignore conflicts".
+    case standard
+    
+    /// Indicates usage of the nonstandard `ON DUPLICATE KEY UPDATE ...` syntax, the `VALUES()` function, and
+    /// `INSERT IGNORE` for "ignore conflicts". This syntax does not support conflict targets or update predicates.
+    case mysqlLike
+    
+    /// Indicates that upserts are not supported at all.
+    case unsupported
+}
+
 extension SQLDialect {
     public var literalDefault: SQLExpression {
         return SQLRaw("DEFAULT")
@@ -146,5 +161,9 @@ extension SQLDialect {
     
     public func normalizeSQLConstraint(identifier: SQLExpression) -> SQLExpression {
         return identifier
+    }
+    
+    public var upsertSyntax: SQLUpsertSyntax {
+        return .unsupported
     }
 }
