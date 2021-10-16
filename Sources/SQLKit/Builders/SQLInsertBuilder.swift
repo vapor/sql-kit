@@ -114,6 +114,39 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder {
         self.insert.values.append(values)
         return self
     }
+
+    @discardableResult
+    public func ignoringConflicts(with targetIndexes: [String] = []) -> Self {
+        return self.ignoringConflicts(with: targetIndexes.map(SQLIdentifier.init(_:)))
+    }
+
+    @discardableResult
+    public func ignoringConflicts(with targetIndexes: [SQLExpression] = []) -> Self {
+        self.insert.conflictTargets = targetIndexes
+        self.insert.conflictAction = .noAction
+        return self
+    }
+
+    @discardableResult
+    public func onConflict(
+        with targetIndexes: [String] = [],
+        `do` updatePredicate: (SQLConflictUpdateBuilder) throws -> SQLConflictUpdateBuilder
+    ) rethrows -> Self {
+        return try self.onConflict(with: targetIndexes.map(SQLIdentifier.init(_:)), do: updatePredicate)
+    }
+    
+    @discardableResult
+    public func onConflict(
+        with targetIndexes: [SQLExpression] = [],
+        `do` updatePredicate: (SQLConflictUpdateBuilder) throws -> SQLConflictUpdateBuilder
+    ) rethrows -> Self {
+        let conflictBuilder = SQLConflictUpdateBuilder()
+        _ = try updatePredicate(conflictBuilder)
+        
+        self.insert.conflictTargets = targetIndexes
+        self.insert.conflictAction = .update(assignments: conflictBuilder.values, predicate: conflictBuilder.predicate)
+        return self
+    }
 }
 
 // MARK: Connection
