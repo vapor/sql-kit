@@ -116,35 +116,38 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder {
     }
 
     @discardableResult
-    public func ignoringConflicts(with targetIndexes: [String] = []) -> Self {
-        return self.ignoringConflicts(with: targetIndexes.map(SQLIdentifier.init(_:)))
+    public func ignoringConflicts(with targetColumns: [String] = []) -> Self {
+        self.insert.conflictStrategy = .init(targets: targetColumns, action: .noAction)
+        return self
     }
 
     @discardableResult
-    public func ignoringConflicts(with targetIndexes: [SQLExpression] = []) -> Self {
-        self.insert.conflictTargets = targetIndexes
-        self.insert.conflictAction = .noAction
+    public func ignoringConflicts(with targetColumns: [SQLExpression] = []) -> Self {
+        self.insert.conflictStrategy = .init(targets: targetColumns, action: .noAction)
         return self
     }
 
     @discardableResult
     public func onConflict(
-        with targetIndexes: [String] = [],
-        `do` updatePredicate: (SQLConflictUpdateBuilder) throws -> SQLConflictUpdateBuilder
-    ) rethrows -> Self {
-        return try self.onConflict(with: targetIndexes.map(SQLIdentifier.init(_:)), do: updatePredicate)
-    }
-    
-    @discardableResult
-    public func onConflict(
-        with targetIndexes: [SQLExpression] = [],
+        with targetColumns: [String] = [],
         `do` updatePredicate: (SQLConflictUpdateBuilder) throws -> SQLConflictUpdateBuilder
     ) rethrows -> Self {
         let conflictBuilder = SQLConflictUpdateBuilder()
         _ = try updatePredicate(conflictBuilder)
         
-        self.insert.conflictTargets = targetIndexes
-        self.insert.conflictAction = .update(assignments: conflictBuilder.values, predicate: conflictBuilder.predicate)
+        self.insert.conflictStrategy = .init(targets: targetColumns, action: .update(assignments: conflictBuilder.values, predicate: conflictBuilder.predicate))
+        return self
+    }
+    
+    @discardableResult
+    public func onConflict(
+        with targetColumns: [SQLExpression] = [],
+        `do` updatePredicate: (SQLConflictUpdateBuilder) throws -> SQLConflictUpdateBuilder
+    ) rethrows -> Self {
+        let conflictBuilder = SQLConflictUpdateBuilder()
+        _ = try updatePredicate(conflictBuilder)
+        
+        self.insert.conflictStrategy = .init(targets: targetColumns, action: .update(assignments: conflictBuilder.values, predicate: conflictBuilder.predicate))
         return self
     }
 }
