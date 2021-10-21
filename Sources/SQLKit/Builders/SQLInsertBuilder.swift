@@ -145,11 +145,7 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder {
         with targetColumns: [String] = [],
         `do` updatePredicate: (SQLConflictUpdateBuilder) throws -> SQLConflictUpdateBuilder
     ) rethrows -> Self {
-        let conflictBuilder = SQLConflictUpdateBuilder()
-        _ = try updatePredicate(conflictBuilder)
-        
-        self.insert.conflictStrategy = .init(targets: targetColumns, action: .update(assignments: conflictBuilder.values, predicate: conflictBuilder.predicate))
-        return self
+        try self.onConflict(with: targetColumns.map { SQLColumn($0) }, do: updatePredicate)
     }
     
     @discardableResult

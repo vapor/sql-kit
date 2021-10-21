@@ -27,6 +27,8 @@ public struct SQLExcludedColumn: SQLExpression {
         switch serializer.dialect.upsertSyntax {
             case .standard:
                 /// The `excluded` table name is a context-specific keyword, _not_ an identifier.
+                /// Accordingly, we must add the separating `.` between the keyword and the column
+                /// name manually, since `SQLColumn` would do the wrong thing here.
                 serializer.write("EXCLUDED.")
                 self.name.serialize(to: &serializer)
             case .mysqlLike:

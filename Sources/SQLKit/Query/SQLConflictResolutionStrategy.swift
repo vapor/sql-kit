@@ -2,14 +2,12 @@
 /// An `INSERT` with a conflict strategy is often refered to as an `UPSERT` ("insert or update").
 /// Databases are not required to support any given subset of upsert functionality, or any at all.
 ///
-/// Unfortunately, in MySQL the "no action" strategy must use `INSERT IGNORE` and deal with that
-/// being a different clause of the query than any of the other strategies. For now that's
-/// implemented by using two "related" expressions which both check whether to emit. SQLKit doesn't
-/// do well with this kind of syntax difference; there has not been a previous need.
-///
-/// It is our most fervent hope for a future in which MySQL finally provides more compliant syntax
-/// (or refuses for good), and gets promptly squashed by the giant foot from Monty Python (and a
-/// classic System 7 AV utility's About dialog), leaving PostgreSQL free to take over the world at last.
+/// Unfortunately, in MySQL the "no action" strategy must use `INSERT IGNORE`, which appears in a
+/// completely different place in the query than the update strategy. For now, this is implemented
+/// by providing an additional expression that `SQLInsert` has to embed at the appropriate point
+/// if provided, which is gated on both the dialect's syntax and the conflict action. There hasn't
+/// been a need to deal with this particular kind of syntax issue before, so this method of handling
+/// it is something of an experiment.
 public struct SQLConflictResolutionStrategy: SQLExpression {
     /// The column or columns which comprise the uniquness constraint to which the strategy
     /// should apply. The exact rules for how a matching constraint is found when an exact
