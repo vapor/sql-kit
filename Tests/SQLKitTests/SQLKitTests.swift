@@ -324,6 +324,65 @@ final class SQLKitTests: XCTestCase {
             .all().wait()
         XCTAssertEqual(db.results[2], "DELETE FROM `planets` RETURNING *")
     }
+    
+    func testUpsert() throws {
+        // Test the thoroughly underpowered and inconvenient MySQL syntax first
+        db._dialect.upsertSyntax = .mysqlLike
+        
+        let cols = ["id", "serial_number", "star_id", "last_known_status"]
+        let vals = { (s: String) -> [SQLExpression] in [SQLLiteral.default, SQLBind(UUID()), SQLBind(1), SQLBind(s)] }
+        
+        try db.insert(into: "jumpgates").columns(cols).values(vals("calibration"))
+            .run().wait()
+        try db.insert(into: "jumpgates").columns(cols).values(vals("unicorn dust application"))
+            .ignoringConflicts()
+            .run().wait()
+        try db.insert(into: "jumpgates").columns(cols).values(vals("planet-size snake oil jar purchasing"))
+            .onConflict() { $0
+                .set("last_known_status", to: "Hooloovoo engineer refraction")
+                .set(excludedValueOf: "serial_number")
+            }
+            .run().wait()
+        
+        XCTAssertEqual(db.results[0], "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (DEFAULT, ?, ?, ?)")
+        XCTAssertEqual(db.results[1], "INSERT IGNORE INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (DEFAULT, ?, ?, ?)")
+        XCTAssertEqual(db.results[2], "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (DEFAULT, ?, ?, ?) ON DUPLICATE KEY UPDATE `last_known_status` = ?, `serial_number` = VALUES(`serial_number`)")
+        
+        // Now the standard SQL syntax
+        db._dialect.upsertSyntax = .standard
+        
+        try db.insert(into: "jumpgates").columns(cols).values(vals("calibration"))
+            .run().wait()
+        try db.insert(into: "jumpgates").columns(cols).values(vals("unicorn dust application"))
+            .ignoringConflicts()
+            .run().wait()
+        try db.insert(into: "jumpgates").columns(cols).values(vals("Vorlon pinching"))
+            .ignoringConflicts(with: ["serial_number", "star_id"])
+            .run().wait()
+        try db.insert(into: "jumpgates").columns(cols).values(vals("planet-size snake oil jar purchasing"))
+            .onConflict() { $0
+                .set("last_known_status", to: "Hooloovoo engineer refraction").set(excludedValueOf: "serial_number")
+            }
+            .run().wait()
+        try db.insert(into: "jumpgates").columns(cols).values(vals("slashfic writing"))
+            .onConflict(with: ["serial_number"]) { $0
+                .set("last_known_status", to: "tachyon antitelephone dialing the").set(excludedValueOf: "star_id")
+            }
+            .run().wait()
+        try db.insert(into: "jumpgates").columns(cols).values(vals("protection racket payoff"))
+            .onConflict(with: ["id"]) { $0
+                .set("last_known_status", to: "insurance fraud planning")
+                .where("last_known_status", .notEqual, "evidence disposal")
+            }
+            .run().wait()
+
+        XCTAssertEqual(db.results[3], "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (DEFAULT, ?, ?, ?)")
+        XCTAssertEqual(db.results[4], "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (DEFAULT, ?, ?, ?) ON CONFLICT DO NOTHING")
+        XCTAssertEqual(db.results[5], "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (DEFAULT, ?, ?, ?) ON CONFLICT (`serial_number`, `star_id`) DO NOTHING")
+        XCTAssertEqual(db.results[6], "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (DEFAULT, ?, ?, ?) ON CONFLICT DO UPDATE SET `last_known_status` = ?, `serial_number` = EXCLUDED.`serial_number`")
+        XCTAssertEqual(db.results[7], "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (DEFAULT, ?, ?, ?) ON CONFLICT (`serial_number`) DO UPDATE SET `last_known_status` = ?, `star_id` = EXCLUDED.`star_id`")
+        XCTAssertEqual(db.results[8], "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (DEFAULT, ?, ?, ?) ON CONFLICT (`id`) DO UPDATE SET `last_known_status` = ? WHERE `last_known_status` <> ?")
+    }
 
     func testCodableWithNillableColumnWithSomeValue() throws {
         struct Gas: Codable {
