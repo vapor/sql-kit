@@ -1,16 +1,16 @@
-import SQLKit
-import SQLKitBenchmark
+@testable import SQLKit
+@testable import SQLKitBenchmark
 import XCTest
 
 final class SQLKitTests: XCTestCase {
     var db: TestDatabase!
 
-    override func setUp() {
-        super.setUp()
+    override func setUpWithError() throws {
+        try super.setUpWithError()
         self.db = TestDatabase()
     }
 
-    func testBenchmarker() throws {
+    func testBenchmark() throws {
         let benchmarker = SQLBenchmarker(on: db)
         try benchmarker.run()
     }
@@ -65,7 +65,7 @@ final class SQLKitTests: XCTestCase {
     func testSelect_withoutFrom() throws {
         try db.select()
             .column(SQLAlias.init(SQLFunction("LAST_INSERT_ID"), as: SQLIdentifier.init("id")))
-            .first()
+            .run()
             .wait()
         XCTAssertEqual(db.results[0], "SELECT LAST_INSERT_ID() AS `id`")
     }
@@ -306,8 +306,6 @@ final class SQLKitTests: XCTestCase {
     }
 
     func testReturning() throws {
-        let db = TestDatabase()
-
         try db.insert(into: "planets")
             .columns("name")
             .values("Jupiter")
@@ -697,15 +695,12 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
             }
 
             func decodeIdToID(_ keys: [CodingKey]) -> CodingKey {
-                let key = keys.last!
-                let keyString = key.stringValue
-                if keyString.hasSuffix("Id") {
-                    var transformedKeyStringValue = keyString
-                    transformedKeyStringValue.removeLast(2)
-                    transformedKeyStringValue.append("ID")
-                    return AnyKey(stringValue: transformedKeyStringValue)!
+                let keyString = keys.last!.stringValue
+
+                if let range = keyString.range(of: "Id", options: [.anchored, .backwards]) {
+                    return AnyKey(stringValue: keyString[..<range.lowerBound] + "ID")!
                 }
-                return key
+                return keys.last!
             }
 
             let foo = try row.decode(model: FooWithForeignKey.self, keyDecodingStrategy: .custom(decodeIdToID))
