@@ -45,8 +45,10 @@ public struct SQLColumnAssignment: SQLExpression {
     
     /// See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
-        self.columnName.serialize(to: &serializer)
-        serializer.write("=") // do not use SQLBinaryOperator.equal, which may be `==` in some dialects
-        self.value.serialize(to: &serializer)
+        serializer.statement {
+            $0.append(self.columnName)
+            $0.append("=") // do not use SQLBinaryOperator.equal, which may be `==` in some dialects
+            $0.append(self.value)
+        }
     }
 }

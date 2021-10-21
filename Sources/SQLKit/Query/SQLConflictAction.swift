@@ -11,10 +11,6 @@
 ///   to SQL in isolation (but again, _only_ because MySQL couldn't be bothered), and this
 ///   enum can not conform to `SQLExpression`.
 public enum SQLConflictAction {
-    /// Specifies that conflicts this action is applied to should be handled normally. This usually means the
-    /// query will fail with a constraint violation error.
-    case `default`
-    
     /// Specifies that conflicts this action is applied to should be ignored, allowing the query to complete
     /// successfully without inserting any new rows or changing any existing rows.
     case noAction
