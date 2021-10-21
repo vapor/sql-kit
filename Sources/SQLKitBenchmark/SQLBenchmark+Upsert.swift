@@ -35,7 +35,7 @@ extension SQLBenchmarker {
     ] }
     // do an insert of the given rows allowing extra config of the insert, if ok is false then assert that the insert
     // errors out otherwise assert that it does not
-    fileprivate func testInsert(ok: Bool, _ vals: [SQLExpression], _ moreConfig: (SQLInsertBuilder) -> SQLInsertBuilder = { $0 }, file: StaticString = #filePath, line: UInt = #line) {
+    fileprivate func testInsert(ok: Bool, _ vals: [SQLExpression], file: StaticString = #file, line: UInt = #line, _ moreConfig: (SQLInsertBuilder) -> SQLInsertBuilder = { $0 }) {
         if !ok {
             XCTAssertThrowsError(
                 try moreConfig(self.database.insert(into: Self.testSchema).columns(Self.testCols).values(vals)).run().wait(), "",
