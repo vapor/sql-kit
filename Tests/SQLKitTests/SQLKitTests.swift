@@ -1,5 +1,5 @@
-@testable import SQLKit
-@testable import SQLKitBenchmark
+import SQLKit
+import SQLKitBenchmark
 import XCTest
 
 final class SQLKitTests: XCTestCase {

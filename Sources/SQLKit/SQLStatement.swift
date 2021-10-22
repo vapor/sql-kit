@@ -37,7 +37,7 @@ public struct SQLStatement: SQLExpression {
         self.parts.append(part)
     }
 
-    /// See `SQLSerializer.serialize(to:)`.
+    // See `SQLSerializer.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         for i in self.parts.indices {
             if i > self.parts.startIndex {

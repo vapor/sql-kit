@@ -47,7 +47,7 @@ public struct SQLConflictResolutionStrategy: SQLExpression {
         return nil
     }
 
-    /// See `SQLSerializer.serialize(to:)`.
+    // See `SQLSerializer.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {
             switch ($0.dialect.upsertSyntax, self.action) {
@@ -79,7 +79,7 @@ public struct SQLConflictResolutionStrategy: SQLExpression {
 
 /// Simple helper for working around MySQL's refusal to implement standard SQL. Only emits SQL when needed.
 public struct SQLInsertModifier: SQLExpression {
-    /// See `SQLSerializer.serialize(to:)`.
+    // See `SQLSerializer.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.write("IGNORE")
     }
