@@ -114,6 +114,51 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder {
         self.insert.values.append(values)
         return self
     }
+
+    @discardableResult
+    public func ignoringConflicts(with targetColumn: String) -> Self {
+        self.ignoringConflicts(with: [targetColumn])
+    }
+
+    @discardableResult
+    public func ignoringConflicts(with targetColumns: [String] = []) -> Self {
+        self.insert.conflictStrategy = .init(targets: targetColumns, action: .noAction)
+        return self
+    }
+
+    @discardableResult
+    public func ignoringConflicts(with targetColumns: [SQLExpression]) -> Self {
+        self.insert.conflictStrategy = .init(targets: targetColumns, action: .noAction)
+        return self
+    }
+
+    @discardableResult
+    public func onConflict(
+        with targetColumn: String,
+        `do` updatePredicate: (SQLConflictUpdateBuilder) throws -> SQLConflictUpdateBuilder
+    ) rethrows -> Self {
+        try self.onConflict(with: [targetColumn], do: updatePredicate)
+    }
+
+    @discardableResult
+    public func onConflict(
+        with targetColumns: [String] = [],
+        `do` updatePredicate: (SQLConflictUpdateBuilder) throws -> SQLConflictUpdateBuilder
+    ) rethrows -> Self {
+        try self.onConflict(with: targetColumns.map { SQLColumn($0) }, do: updatePredicate)
+    }
+    
+    @discardableResult
+    public func onConflict(
+        with targetColumns: [SQLExpression],
+        `do` updatePredicate: (SQLConflictUpdateBuilder) throws -> SQLConflictUpdateBuilder
+    ) rethrows -> Self {
+        let conflictBuilder = SQLConflictUpdateBuilder()
+        _ = try updatePredicate(conflictBuilder)
+        
+        self.insert.conflictStrategy = .init(targets: targetColumns, action: .update(assignments: conflictBuilder.values, predicate: conflictBuilder.predicate))
+        return self
+    }
 }
 
 // MARK: Connection
