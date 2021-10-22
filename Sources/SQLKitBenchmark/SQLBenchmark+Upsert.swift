@@ -56,50 +56,60 @@ extension SQLBenchmarker {
     
     /// Sets up tables and indexes used for testing.
     public func testUpserts_createSchema() throws {
-        try self.database.drop(table: Self.testSchema).ifExists().run().wait()
-        try self.database.create(table: Self.testSchema).column(definitions: Self.testColDefs).unique(["planet_id", "point_of_origin"]).run().wait()
-        try self.database.insert(into: Self.testSchema)
-            .columns(Self.testCols)
-            .values(Self.testVals(planet: 1, poi: "𑀙", setting: 299_792_458.0/*𝑐*/, start: Date() - (31_557_600 * 1.8)))
-            .values(Self.testVals(planet: 1, poi: "𑀵", setting: nil, start: Date() - 8_640_000.0, finish: Date.distantFuture))
-            .values(Self.testVals(planet: 2, poi: "ᛡ", setting: 3.141592653589793238/*π*/, start: Date() - 31_557_600_000.0))
-            .values(Self.testVals(planet: 3, poi: "𐋈", setting: 2.7182818284/*𝑒*/, start: Date.distantPast))
-            .values(Self.testVals(planet: 4, poi: "𑁍", setting: 1.4142135623/*√2*/, start: Date())) // Date.bigBang sadly isn't a thing
-            .values(Self.testVals(planet: 4, poi: "𑁞", setting: 6.62607015/*𝒉×10³⁴*/, start: Date(timeIntervalSinceReferenceDate: Date.timeIntervalSinceReferenceDate.nextUp)))
-            .run().wait()
+        try self.runTest {
+            try self.database.drop(table: Self.testSchema).ifExists().run().wait()
+            try self.database.create(table: Self.testSchema).column(definitions: Self.testColDefs).unique(["planet_id", "point_of_origin"]).run().wait()
+            try self.database.insert(into: Self.testSchema)
+                .columns(Self.testCols)
+                .values(Self.testVals(planet: 1, poi: "A", setting: 299_792_458.0/*𝑐*/, start: Date() - (31_557_600 * 1.8)))
+                .values(Self.testVals(planet: 1, poi: "B", setting: nil, start: Date() - 8_640_000.0, finish: Date.distantFuture))
+                .values(Self.testVals(planet: 2, poi: "C", setting: 3.141592653589793238/*π*/, start: Date() - 31_557_600_000.0))
+                .values(Self.testVals(planet: 3, poi: "D", setting: 2.7182818284/*𝑒*/, start: Date.distantPast))
+                .values(Self.testVals(planet: 4, poi: "E", setting: 1.4142135623/*√2*/, start: Date())) // Date.bigBang sadly isn't a thing
+                .values(Self.testVals(planet: 4, poi: "F", setting: 6.62607015/*𝒉×10³⁴*/, start: Date(timeIntervalSinceReferenceDate: Date.timeIntervalSinceReferenceDate.nextUp)))
+                .run().wait()
+        }
     }
     
     /// Tests the "ignore conflicts" functionality. (Technically part of upserts.)
     public func testUpserts_ignoreAction() throws {
-        testInsert(ok: true,  Self.testVals(id: 1, planet: 5, poi: "0")) { $0.ignoringConflicts(with: ["id"]) }
-        
-        guard self.database.dialect.upsertSyntax != .mysqlLike else { return }
-        
-        testInsert(ok: false, Self.testVals(id: 1, planet: 5, poi: "0")) { $0.ignoringConflicts(with: ["planet_id"]) }
+        try self.runTest {
+            testInsert(ok: true,  Self.testVals(id: 1, planet: 5, poi: "0")) { $0.ignoringConflicts(with: ["id"]) }
+            
+            guard self.database.dialect.upsertSyntax != .mysqlLike else { return }
+            
+            testInsert(ok: false, Self.testVals(id: 1, planet: 5, poi: "0")) { $0.ignoringConflicts(with: ["planet_id"]) }
+        }
     }
     
     /// Tests upserts with simple updates.
     public func testUpserts_simpleUpdate() throws {
-        testInsert(ok: true, Self.testVals(id: 1, planet: 1, poi: "0")) { $0.onConflict(with: ["id"]) { $0.set("last_status_update", to: Date().timeIntervalSince1970) } }
-        XCTAssertEqual(try self.testCount { $0.where("last_status_update", .isNot, SQLLiteral.null) }, 1)
-            
-        testInsert(ok: true, Self.testVals(planet: 2, poi: "ᛡ", update: Date())) { $0.onConflict(with: ["planet_id", "point_of_origin"]) { $0.set(excludedValueOf: "last_status_update") } }
-        XCTAssertEqual(try self.testCount { $0.where("planet_id", .equal, 2).where("point_of_origin", .equal, "ᛡ").where("last_status_update", .isNot, SQLLiteral.null) }, 1)
-            
-        /// Lots of other cases need verification - collisions with multiple uniques in the same row and different
-        /// rows, updates of multiple rows, etc.
+        try self.runTest {
+            testInsert(ok: true, Self.testVals(id: 1, planet: 1, poi: "0")) { $0.onConflict(with: ["id"]) { $0.set("last_status_update", to: Date().timeIntervalSince1970) } }
+            XCTAssertEqual(try self.testCount { $0.where("last_status_update", .isNot, SQLLiteral.null) }, 1)
+                
+            testInsert(ok: true, Self.testVals(planet: 2, poi: "C", update: Date())) { $0.onConflict(with: ["planet_id", "point_of_origin"]) { $0.set(excludedValueOf: "last_status_update") } }
+            XCTAssertEqual(try self.testCount { $0.where("planet_id", .equal, 2).where("point_of_origin", .equal, "C").where("last_status_update", .isNot, SQLLiteral.null) }, 1)
+                
+            /// Lots of other cases need verification - collisions with multiple uniques in the same row and different
+            /// rows, updates of multiple rows, etc.
+        }
     }
     
     /// Tests upserts with updates using predicates (when supported).
     public func testUpserts_predicateUpdate() throws {
-        guard self.database.dialect.upsertSyntax != .mysqlLike else { return } // not supported by MySQL syntax
-        
-        testInsert(ok: true, Self.testVals(planet: 4, poi: "𑁞", update: Date())) { $0.onConflict(with: ["planet_id", "point_of_origin"]) { $0.set(excludedValueOf: "last_status_update").where(SQLExcludedColumn("last_status_update"), .is, SQLLiteral.null) } }
-        XCTAssertEqual(try self.testCount { $0.where("planet_id", .equal, 4).where("point_of_origin", .equal, "𑁞").where("last_status_update", .isNot, SQLLiteral.null) }, 0)
+        try self.runTest {
+            guard self.database.dialect.upsertSyntax != .mysqlLike else { return } // not supported by MySQL syntax
+            
+            testInsert(ok: true, Self.testVals(planet: 4, poi: "F", update: Date())) { $0.onConflict(with: ["planet_id", "point_of_origin"]) { $0.set(excludedValueOf: "last_status_update").where(SQLExcludedColumn("last_status_update"), .is, SQLLiteral.null) } }
+            XCTAssertEqual(try self.testCount { $0.where("planet_id", .equal, 4).where("point_of_origin", .equal, "F").where("last_status_update", .isNot, SQLLiteral.null) }, 0)
+        }
     }
     
     /// Remove tables used by these tests.
     public func testUpserts_cleanupSchema() throws {
-        try self.database.drop(table: Self.testSchema).run().wait()
+        try self.runTest {
+            try self.database.drop(table: Self.testSchema).run().wait()
+        }
     }
 }

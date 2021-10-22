@@ -9,7 +9,7 @@ extension SQLBenchmarker {
     }
     
     private func testPlanets_createSchema() throws {
-        try self.runTest() {
+        try self.runTest {
             try self.database.drop(table: "planets")
                 .ifExists()
                 .run().wait()
@@ -37,7 +37,7 @@ extension SQLBenchmarker {
     }
 
     private func testPlanets_seedTables() throws {
-        try self.runTest() {
+        try self.runTest {
             // INSERT INTO "galaxies" ("id", "name") VALUES (DEFAULT, $1)
             try self.database.insert(into: "galaxies")
                 .columns("id", "name")
