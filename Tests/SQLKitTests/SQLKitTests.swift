@@ -201,6 +201,11 @@ final class SQLKitTests: XCTestCase {
         try db.drop(index: "planets_name_idx").restrict().run().wait()
         XCTAssertEqual(db.results[19], "DROP INDEX `planets_name_idx` RESTRICT")
     }
+    
+    func testDropTemporary() throws {
+        try db.drop(table: "normalized_planet_names").temporary().run().wait()
+        XCTAssertEqual(db.results[0], "DROP TEMPORARY TABLE `normalized_planet_names`")
+    }
 
     func testAltering() throws {
         // SINGLE

@@ -197,6 +197,11 @@ final class AsyncSQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[19], "DROP INDEX `planets_name_idx` RESTRICT")
     }
 
+    func testDropTemporary() async throws {
+        try await db.drop(table: "normalized_planet_names").temporary().run()
+        XCTAssertEqual(db.results[0], "DROP TEMPORARY TABLE `normalized_planet_names`")
+    }
+
     func testAltering() async throws {
         // SINGLE
         try await db.alter(table: "alterable")
