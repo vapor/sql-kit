@@ -13,6 +13,8 @@ final class AsyncSQLKitTests: XCTestCase {
         self.db = TestDatabase()
     }
     
+    // MARK: Basic Queries
+    
     func testSelect_tableAllCols() async throws {
         try await db.select().column(table: "planets", column: "*")
             .from("planets")
@@ -82,6 +84,8 @@ final class AsyncSQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[0], "DELETE FROM `planets` WHERE `name` = ?")
     }
     
+    // MARK: Locking Clauses
+    
     func testLockingClause_forUpdate() async throws {
         try await db.select().column("*")
             .from("planets")
@@ -100,6 +104,8 @@ final class AsyncSQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE `name` = ? LOCK IN SHARE MODE")
     }
     
+    // MARK: Group By/Having
+    
     func testGroupByHaving() async throws {
         try await db.select().column("*")
             .from("planets")
@@ -108,6 +114,8 @@ final class AsyncSQLKitTests: XCTestCase {
             .run()
         XCTAssertEqual(db.results[0], "SELECT * FROM `planets` GROUP BY `color` HAVING `color` = ?")
     }
+
+    // MARK: Dialect-Specific Behaviors
 
     func testIfExists() async throws {
         try await db.drop(table: "planets").ifExists().run()
@@ -234,6 +242,8 @@ final class AsyncSQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[6], "ALTER TABLE `alterable` ADD `hello` TEXT , DROP `there` , MODIFY `again` TEXT")
     }
     
+    // MARK: Distinct
+    
     func testDistinct() async throws {
         try await db.select().column("*")
             .from("planets")
@@ -259,6 +269,8 @@ final class AsyncSQLKitTests: XCTestCase {
             .run()
         XCTAssertEqual(db.results[0], "SELECT COUNT(DISTINCT(`name`, `color`)) FROM `planets`")
     }
+    
+    // MARK: Joins
     
     func testSimpleJoin() async throws {
         try await db.select().column("*")
@@ -286,6 +298,8 @@ final class AsyncSQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[0], "SELECT * FROM `planets` OUTER JOIN (SELECT `name` FROM `stars` WHERE `orion` = `please space`) AS `star` ON `moons`.`planet_id` IS NOT %%%%%% WHERE NULL")
     }
     
+    // MARK: Operators
+    
     func testBinaryOperators() async throws {
         try await db
             .update("planets")
@@ -301,6 +315,8 @@ final class AsyncSQLKitTests: XCTestCase {
         
         XCTAssertEqual(db.results[0], "UPDATE `planets` SET `moons` = `moons` + 1 WHERE `best_at_space` >= ?")
     }
+
+    // MARK: Returning
 
     func testReturning() async throws {
         try await db.insert(into: "planets")
@@ -321,6 +337,8 @@ final class AsyncSQLKitTests: XCTestCase {
             .all()
         XCTAssertEqual(db.results[2], "DELETE FROM `planets` RETURNING *")
     }
+    
+    // MARK: Upsert
     
     func testUpsert() async throws {
         // Test the thoroughly underpowered and inconvenient MySQL syntax first
@@ -380,6 +398,8 @@ final class AsyncSQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[7], "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (DEFAULT, ?, ?, ?) ON CONFLICT (`serial_number`) DO UPDATE SET `last_known_status` = ?, `star_id` = EXCLUDED.`star_id`")
         XCTAssertEqual(db.results[8], "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (DEFAULT, ?, ?, ?) ON CONFLICT (`id`) DO UPDATE SET `last_known_status` = ? WHERE `last_known_status` <> ?")
     }
+
+    // MARK: Codable Nullity
 
     func testCodableWithNillableColumnWithSomeValue() async throws {
         struct Gas: Codable {
@@ -673,6 +693,8 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
         XCTAssertEqual(db.results[0], "CREATE TABLE `normalized_planet_names`(`id` BIGINT PRIMARY KEY NOT NULL, `name` TEXT UNIQUE NOT NULL) AS SELECT DISTINCT `id` AS `id`, LOWER(`name`) AS `name` FROM `planets` WHERE `galaxy_id` = ?")
     }
 
+    // MARK: Row Decoder
+    
     func testSQLRowDecoder() async throws {
         struct Foo: Codable {
             let id: UUID
