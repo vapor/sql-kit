@@ -31,20 +31,22 @@ public struct SQLCreateTable: SQLExpression {
     }
     
     public func serialize(to serializer: inout SQLSerializer) {
-        serializer.write("CREATE ")
-        if self.temporary {
-            serializer.write("TEMPORARY ")
-        }
-        serializer.write("TABLE ")
-        if self.ifNotExists {
-            if serializer.dialect.supportsIfExists {
-                serializer.write("IF NOT EXISTS ")
-            } else {
-                serializer.database.logger.warning("\(serializer.dialect.name) does not support IF NOT EXISTS")
+        serializer.statement {
+            $0.append("CREATE")
+            if self.temporary {
+                $0.append("TEMPORARY")
             }
+            $0.append("TABLE")
+            if self.ifNotExists {
+                if $0.dialect.supportsIfExists {
+                    $0.append("IF NOT EXISTS")
+                } else {
+                    $0.database.logger.warning("\($0.dialect.name) does not support IF NOT EXISTS")
+                }
+            }
+            // There's no reason not to have a space between the table name and its definitions, but not
+            // having it is the established behavior, which the tests check for.
+            $0.append(SQLList([self.table, SQLGroupExpression(self.columns + self.tableConstraints)], separator: SQLRaw("")))
         }
-        self.table.serialize(to: &serializer)
-        SQLGroupExpression(self.columns + self.tableConstraints)
-            .serialize(to: &serializer)
     }
 }
