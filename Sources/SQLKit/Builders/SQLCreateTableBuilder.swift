@@ -109,6 +109,17 @@ public final class SQLCreateTableBuilder: SQLQueryBuilder {
         createTable.ifNotExists = true
         return self
     }
+    
+    /// Specify a `SELECT` query to be used to populate the new table.
+    ///
+    /// If called more than once, each subsequent invocation overwrites the query from the one before.
+    @discardableResult
+    public func select(_ closure: (SQLCreateTableAsSubqueryBuilder) -> SQLCreateTableAsSubqueryBuilder) -> Self {
+        let builder = SQLCreateTableAsSubqueryBuilder()
+        _ = closure(builder)
+        createTable.asQuery = builder.select
+        return self
+    }
 }
 
 // MARK: Constraints

@@ -21,6 +21,9 @@ public struct SQLCreateTable: SQLExpression {
     /// Table constraints, such as `FOREIGN KEY`, to add.
     public var tableConstraints: [SQLExpression]
     
+    /// A subquery which, when present, is used to fill in the contents of the new table.
+    public var asQuery: SQLExpression?
+    
     /// Creates a new `SQLCreateTable` query.
     public init(name: SQLExpression) {
         self.table = name
@@ -28,6 +31,7 @@ public struct SQLCreateTable: SQLExpression {
         self.ifNotExists = false
         self.columns = []
         self.tableConstraints = []
+        self.asQuery = nil
     }
     
     public func serialize(to serializer: inout SQLSerializer) {
@@ -47,6 +51,10 @@ public struct SQLCreateTable: SQLExpression {
             // There's no reason not to have a space between the table name and its definitions, but not
             // having it is the established behavior, which the tests check for.
             $0.append(SQLList([self.table, SQLGroupExpression(self.columns + self.tableConstraints)], separator: SQLRaw("")))
+            if let asQuery = self.asQuery {
+                $0.append("AS")
+                $0.append(asQuery)
+            }
         }
     }
 }

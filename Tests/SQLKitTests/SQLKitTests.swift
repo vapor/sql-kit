@@ -659,6 +659,22 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
 
         XCTAssertEqual(db.results[2], "CREATE TABLE `planets3`(`galaxy_id` BIGINT, FOREIGN KEY (`galaxy_id`) REFERENCES `galaxies` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE)")
     }
+    
+    func testCreateTableAsSelectQuery() throws {
+        try db.create(table: "normalized_planet_names")
+            .column("id", type: .bigint, .primaryKey(autoIncrement: false), .notNull)
+            .column("name", type: .text, .unique, .notNull)
+            .select { $0
+                .distinct()
+                .column("id", as: "id")
+                .column(SQLFunction("LOWER", args: SQLColumn("name")), as: "name")
+                .from("planets")
+                .where("galaxy_id", .equal, SQLBind(1))
+            }
+            .run().wait()
+            
+        XCTAssertEqual(db.results[0], "CREATE TABLE `normalized_planet_names`(`id` BIGINT PRIMARY KEY NOT NULL, `name` TEXT UNIQUE NOT NULL) AS SELECT DISTINCT `id` AS `id`, LOWER(`name`) AS `name` FROM `planets` WHERE `galaxy_id` = ?")
+    }
 
     func testSQLRowDecoder() throws {
         struct Foo: Codable {
