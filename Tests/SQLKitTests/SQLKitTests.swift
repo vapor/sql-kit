@@ -311,9 +311,9 @@ final class SQLKitTests: XCTestCase {
         }
         
         try weird(db.insert(into: "planets")
-            .columns("name")
-            , values: ["Jupiter"])
-            .run().wait()
+            .columns("name"),
+            values: ["Jupiter"]
+        ).run().wait()
         XCTAssertEqual(db.results[0], "INSERT INTO `planets` (`name`) VALUES (?)")
         XCTAssertEqual(db.bindResults[0] as? [String], ["Jupiter"]) // instead of [["Jupiter"]]
     }
