@@ -93,7 +93,6 @@ jobs:
     steps:
       - name: Install SQLite dependencies
         run: apt-get -q update && apt-get -q install -y libsqlite3-dev
-        if: ${{ contains(matrix.dependent, 'sqlite') }}
 
       - name: Check out sql-kit
         uses: actions/checkout@v2
