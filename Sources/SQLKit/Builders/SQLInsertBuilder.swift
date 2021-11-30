@@ -90,6 +90,7 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder {
     }
     
     @discardableResult
+    @_disfavoredOverload
     public func values(_ values: Encodable...) -> Self {
         let row: [SQLExpression] = values.map(SQLBind.init)
         self.insert.values.append(row)
