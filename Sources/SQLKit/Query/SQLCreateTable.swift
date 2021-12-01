@@ -21,6 +21,9 @@ public struct SQLCreateTable: SQLExpression {
     /// Table constraints, such as `FOREIGN KEY`, to add.
     public var tableConstraints: [SQLExpression]
     
+    /// A subquery which, when present, is used to fill in the contents of the new table.
+    public var asQuery: SQLExpression?
+    
     /// Creates a new `SQLCreateTable` query.
     public init(name: SQLExpression) {
         self.table = name
@@ -28,23 +31,30 @@ public struct SQLCreateTable: SQLExpression {
         self.ifNotExists = false
         self.columns = []
         self.tableConstraints = []
+        self.asQuery = nil
     }
     
     public func serialize(to serializer: inout SQLSerializer) {
-        serializer.write("CREATE ")
-        if self.temporary {
-            serializer.write("TEMPORARY ")
-        }
-        serializer.write("TABLE ")
-        if self.ifNotExists {
-            if serializer.dialect.supportsIfExists {
-                serializer.write("IF NOT EXISTS ")
-            } else {
-                serializer.database.logger.warning("\(serializer.dialect.name) does not support IF NOT EXISTS")
+        serializer.statement {
+            $0.append("CREATE")
+            if self.temporary {
+                $0.append("TEMPORARY")
+            }
+            $0.append("TABLE")
+            if self.ifNotExists {
+                if $0.dialect.supportsIfExists {
+                    $0.append("IF NOT EXISTS")
+                } else {
+                    $0.database.logger.warning("\($0.dialect.name) does not support IF NOT EXISTS")
+                }
+            }
+            // There's no reason not to have a space between the table name and its definitions, but not
+            // having it is the established behavior, which the tests check for.
+            $0.append(SQLList([self.table, SQLGroupExpression(self.columns + self.tableConstraints)], separator: SQLRaw("")))
+            if let asQuery = self.asQuery {
+                $0.append("AS")
+                $0.append(asQuery)
             }
         }
-        self.table.serialize(to: &serializer)
-        SQLGroupExpression(self.columns + self.tableConstraints)
-            .serialize(to: &serializer)
     }
 }

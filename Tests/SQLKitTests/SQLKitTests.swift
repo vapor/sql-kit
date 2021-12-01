@@ -9,11 +9,15 @@ final class SQLKitTests: XCTestCase {
         try super.setUpWithError()
         self.db = TestDatabase()
     }
+    
+    // MARK: SQLBenchmark
 
     func testBenchmark() throws {
         let benchmarker = SQLBenchmarker(on: db)
         try benchmarker.run()
     }
+    
+    // MARK: Basic Queries
     
     func testSelect_tableAllCols() throws {
         try db.select().column(table: "planets", column: "*")
@@ -85,6 +89,8 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[0], "DELETE FROM `planets` WHERE `name` = ?")
     }
     
+    // MARK: Locking Clauses
+    
     func testLockingClause_forUpdate() throws {
         try db.select().column("*")
             .from("planets")
@@ -103,6 +109,8 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE `name` = ? LOCK IN SHARE MODE")
     }
     
+    // MARK: Group By/Having
+    
     func testGroupByHaving() throws {
         try db.select().column("*")
             .from("planets")
@@ -111,6 +119,8 @@ final class SQLKitTests: XCTestCase {
             .run().wait()
         XCTAssertEqual(db.results[0], "SELECT * FROM `planets` GROUP BY `color` HAVING `color` = ?")
     }
+    
+    // MARK: Dialect-Specific Behaviors
 
     func testIfExists() throws {
         try db.drop(table: "planets").ifExists().run().wait()
@@ -191,6 +201,11 @@ final class SQLKitTests: XCTestCase {
         try db.drop(index: "planets_name_idx").restrict().run().wait()
         XCTAssertEqual(db.results[19], "DROP INDEX `planets_name_idx` RESTRICT")
     }
+    
+    func testDropTemporary() throws {
+        try db.drop(table: "normalized_planet_names").temporary().run().wait()
+        XCTAssertEqual(db.results[0], "DROP TEMPORARY TABLE `normalized_planet_names`")
+    }
 
     func testAltering() throws {
         // SINGLE
@@ -237,6 +252,8 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[6], "ALTER TABLE `alterable` ADD `hello` TEXT , DROP `there` , MODIFY `again` TEXT")
     }
     
+    // MARK: Distinct
+    
     func testDistinct() throws {
         try db.select().column("*")
             .from("planets")
@@ -263,6 +280,8 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[0], "SELECT COUNT(DISTINCT(`name`, `color`)) FROM `planets`")
     }
     
+    // MARK: Joins
+    
     func testSimpleJoin() throws {
         try db.select().column("*")
             .from("planets")
@@ -288,6 +307,8 @@ final class SQLKitTests: XCTestCase {
         // Yes, this query is very much pure gibberish.
         XCTAssertEqual(db.results[0], "SELECT * FROM `planets` OUTER JOIN (SELECT `name` FROM `stars` WHERE `orion` = `please space`) AS `star` ON `moons`.`planet_id` IS NOT %%%%%% WHERE NULL")
     }
+    
+    // MARK: Operators
     
     func testBinaryOperators() throws {
         try db
@@ -318,6 +339,8 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(db.bindResults[0] as? [String], ["Jupiter"]) // instead of [["Jupiter"]]
     }
 
+    // MARK: Returning
+
     func testReturning() throws {
         try db.insert(into: "planets")
             .columns("name")
@@ -337,6 +360,8 @@ final class SQLKitTests: XCTestCase {
             .all().wait()
         XCTAssertEqual(db.results[2], "DELETE FROM `planets` RETURNING *")
     }
+    
+    // MARK: Upsert
     
     func testUpsert() throws {
         // Test the thoroughly underpowered and inconvenient MySQL syntax first
@@ -396,6 +421,8 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[7], "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (DEFAULT, ?, ?, ?) ON CONFLICT (`serial_number`) DO UPDATE SET `last_known_status` = ?, `star_id` = EXCLUDED.`star_id`")
         XCTAssertEqual(db.results[8], "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (DEFAULT, ?, ?, ?) ON CONFLICT (`id`) DO UPDATE SET `last_known_status` = ? WHERE `last_known_status` <> ?")
     }
+    
+    // MARK: Codable Nullity
 
     func testCodableWithNillableColumnWithSomeValue() throws {
         struct Gas: Codable {
@@ -672,7 +699,25 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
 
         XCTAssertEqual(db.results[2], "CREATE TABLE `planets3`(`galaxy_id` BIGINT, FOREIGN KEY (`galaxy_id`) REFERENCES `galaxies` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE)")
     }
+    
+    func testCreateTableAsSelectQuery() throws {
+        try db.create(table: "normalized_planet_names")
+            .column("id", type: .bigint, .primaryKey(autoIncrement: false), .notNull)
+            .column("name", type: .text, .unique, .notNull)
+            .select { $0
+                .distinct()
+                .column("id", as: "id")
+                .column(SQLFunction("LOWER", args: SQLColumn("name")), as: "name")
+                .from("planets")
+                .where("galaxy_id", .equal, SQLBind(1))
+            }
+            .run().wait()
+            
+        XCTAssertEqual(db.results[0], "CREATE TABLE `normalized_planet_names`(`id` BIGINT PRIMARY KEY NOT NULL, `name` TEXT UNIQUE NOT NULL) AS SELECT DISTINCT `id` AS `id`, LOWER(`name`) AS `name` FROM `planets` WHERE `galaxy_id` = ?")
+    }
 
+    // MARK: Row Decoder
+    
     func testSQLRowDecoder() throws {
         struct Foo: Codable {
             let id: UUID
