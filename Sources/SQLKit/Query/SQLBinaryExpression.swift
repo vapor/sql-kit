@@ -17,3 +17,9 @@ public struct SQLBinaryExpression: SQLExpression {
         self.right.serialize(to: &serializer)
     }
 }
+
+extension SQLBinaryExpression {
+    public init(_ left: SQLExpression, _ op: SQLBinaryOperator, _ right: SQLExpression) {
+        self.init(left: left, op: op, right: right)
+    }
+}

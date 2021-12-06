@@ -1,16 +1,34 @@
 import SQLKit
+import XCTest
 
-/// Benchmarks SQL conformance.
 public final class SQLBenchmarker {
-    internal let db: SQLDatabase
+    internal let database: SQLDatabase
     
-    /// Creates a new `SQLBenchmark`.
-    public init(on db: SQLDatabase) {
-        self.db = db
+    public init(on database: SQLDatabase) {
+        self.database = database
     }
     
-    /// Runs the SQL benchmark.
+    public func testAll() throws {
+        try self.testPlanets()
+        try self.testCodable()
+        try self.testEnum()
+        if self.database.dialect.name != "generic sql" {
+            try self.testUpserts()
+        }
+    }
+    
     public func run() throws {
-        try testPlanets()
+        try self.testAll()
+    }
+
+    internal func runTest(
+        _ name: String = #function,
+        on database: SQLDatabase? = nil,
+        _ test: () throws -> ()
+    ) throws {
+        let database = database ?? self.database
+        database.logger.notice("[SQLBenchmark] Running \(name)...")
+
+        try test()
     }
 }

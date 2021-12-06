@@ -13,3 +13,9 @@ public struct SQLAlias: SQLExpression {
         self.alias.serialize(to: &serializer)
     }
 }
+
+extension SQLAlias {
+    public init(_ expression: SQLExpression, as alias: String) {
+        self.init(expression, as: SQLIdentifier(alias))
+    }
+}

@@ -5,6 +5,7 @@ final class TestDatabase: SQLDatabase {
     let logger: Logger
     let eventLoop: EventLoop
     var results: [String]
+    var bindResults: [[Encodable]]
     var dialect: SQLDialect {
         self._dialect
     }
@@ -14,6 +15,7 @@ final class TestDatabase: SQLDatabase {
         self.logger = .init(label: "codes.vapor.sql.test")
         self.eventLoop = EmbeddedEventLoop()
         self.results = []
+        self.bindResults = []
         self._dialect = GenericDialect()
     }
     
@@ -21,6 +23,7 @@ final class TestDatabase: SQLDatabase {
         var serializer = SQLSerializer(database: self)
         query.serialize(to: &serializer)
         results.append(serializer.sql)
+        bindResults.append(serializer.binds)
         return self.eventLoop.makeSucceededFuture(())
     }
 }
@@ -113,6 +116,8 @@ struct GenericDialect: SQLDialect {
     var triggerSyntax = SQLTriggerSyntax()
 
     var alterTableSyntax = SQLAlterTableSyntax(alterColumnDefinitionClause: SQLRaw("MODIFY"), alterColumnDefinitionTypeKeyword: nil)
+    
+    var upsertSyntax: SQLUpsertSyntax = .standard
 
     mutating func setTriggerSyntax(create: SQLTriggerSyntax.Create = [], drop: SQLTriggerSyntax.Drop = []) {
         self.triggerSyntax.create = create

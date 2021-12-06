@@ -14,29 +14,36 @@ public struct SQLDropTable: SQLExpression {
     /// (either `CASCADE` or `RESTRICT`).
     public var behavior: SQLExpression?
 
+    /// If the "TEMPORARY" keyword occurs between "DROP" and "TABLE" then only temporary tables are dropped,
+    /// and the drop does not cause an implicit transaction commit.
+    public var temporary: Bool
+
     /// Creates a new `SQLDropTable`.
     public init(table: SQLExpression) {
         self.table = table
         self.ifExists = false
+        self.behavior = nil
+        self.temporary = false
     }
     
     /// See `SQLExpression`.
     public func serialize(to serializer: inout SQLSerializer) {
-        serializer.write("DROP TABLE ")
-        if self.ifExists {
-            if serializer.dialect.supportsIfExists {
-                serializer.write("IF EXISTS ")
-            } else {
-                serializer.database.logger.warning("\(serializer.dialect.name) does not support IF EXISTS")
+        serializer.statement {
+            $0.append("DROP")
+            if self.temporary { // TODO: Add `SQLDialect` field to signal support for this, only MySQL has it
+                $0.append("TEMPORARY")
             }
-        }
-        self.table.serialize(to: &serializer)
-        if serializer.dialect.supportsDropBehavior {
-            serializer.write(" ")
-            if let dropBehavior = behavior {
-                dropBehavior.serialize(to: &serializer)
-            } else {
-                SQLDropBehavior.restrict.serialize(to: &serializer)
+            $0.append("TABLE")
+            if self.ifExists {
+                if $0.dialect.supportsIfExists {
+                    $0.append("IF EXISTS")
+                } else {
+                    $0.database.logger.warning("\($0.dialect.name) does not support IF EXISTS")
+                }
+            }
+            $0.append(self.table)
+            if $0.dialect.supportsDropBehavior {
+                $0.append(self.behavior ?? (SQLDropBehavior.restrict as SQLExpression))
             }
         }
     }

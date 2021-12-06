@@ -25,3 +25,22 @@ public struct SQLColumnDefinition: SQLExpression {
         }
     }
 }
+
+extension SQLColumnDefinition {
+    /// Create a new column definition from a string, data type, and array of constraints.
+    ///
+    /// Turns this:
+    /// ```swift
+    /// SQLColumnDefinition(
+    ///     column: SQLIdentifier("id"),
+    ///     dataType: SQLDataType.bigInt,
+    ///     constraints: [SQLColumnConstraintAlgorithm.primaryKey, SQLColumnConstraintAlgorithm.notNull]
+    /// )
+    /// ```
+    /// into this:
+    ///
+    /// `SQLColumnDefinition("id", dataType: .bigint, constraints: [.primaryKey, .notNull]`
+    public init(_ name: String, dataType: SQLDataType, constraints: [SQLColumnConstraintAlgorithm] = []) {
+        self.init(column: SQLIdentifier(name), dataType: dataType, constraints: constraints)
+    }
+}

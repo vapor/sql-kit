@@ -7,10 +7,10 @@ public final class SQLDropTableBuilder: SQLQueryBuilder {
     /// `DropTable` query being built.
     public var dropTable: SQLDropTable
     
-    /// See `SQLQueryBuilder`.
+    // See `SQLQueryBuilder.database`.
     public var database: SQLDatabase
     
-    /// See `SQLQueryBuilder`.
+    // See `SQLQueryBuilder.query`.
     public var query: SQLExpression {
         return self.dropTable
     }
@@ -51,6 +51,14 @@ public final class SQLDropTableBuilder: SQLQueryBuilder {
     @discardableResult
     public func restrict() -> Self {
         dropTable.behavior = SQLDropBehavior.restrict
+        return self
+    }
+
+    /// If the "TEMPORARY" keyword occurs between "DROP" and "TABLE" then only temporary tables are dropped,
+    /// and the drop does not cause an implicit transaction commit.
+    @discardableResult
+    public func temporary() -> Self {
+        dropTable.temporary = true
         return self
     }
 }

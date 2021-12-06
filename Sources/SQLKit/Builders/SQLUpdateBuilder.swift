@@ -6,7 +6,7 @@
 ///         .run()
 ///
 /// See `SQLQueryBuilder` and `SQLPredicateBuilder` for more information.
-public final class SQLUpdateBuilder: SQLQueryBuilder, SQLPredicateBuilder, SQLReturningBuilder {
+public final class SQLUpdateBuilder: SQLQueryBuilder, SQLPredicateBuilder, SQLReturningBuilder, SQLColumnUpdateBuilder {
     /// `Update` query being built.
     public var update: SQLUpdate
     
@@ -14,6 +14,11 @@ public final class SQLUpdateBuilder: SQLQueryBuilder, SQLPredicateBuilder, SQLRe
 
     public var query: SQLExpression {
         return self.update
+    }
+    
+    public var values: [SQLExpression] {
+        get { return self.update.values }
+        set { self.update.values = newValue }
     }
 
     public var predicate: SQLExpression? {
@@ -26,33 +31,10 @@ public final class SQLUpdateBuilder: SQLQueryBuilder, SQLPredicateBuilder, SQLRe
         set { self.update.returning = newValue }
     }
     
-    /// Creates a new `SQLDeleteBuilder`.
+    /// Creates a new `SQLUpdateBuilder`.
     public init(_ update: SQLUpdate, on database: SQLDatabase) {
         self.update = update
         self.database = database
-    }
-    
-    @discardableResult
-    public func set<E>(model: E) throws -> Self where E: Encodable {
-        let row = try SQLQueryEncoder().encode(model)
-        row.forEach { column, value in
-            _ = self.set(SQLColumn(column), to: value)
-        }
-        return self
-    }
-    
-    /// Sets a column (specified by an identifier) to an expression.
-    @discardableResult
-    public func set(_ column: String, to bind: Encodable) -> Self {
-        return self.set(SQLIdentifier(column), to: SQLBind(bind))
-    }
-    
-    /// Sets a column (specified by an identifier) to an expression.
-    @discardableResult
-    public func set(_ column: SQLExpression, to value: SQLExpression) -> Self {
-        let binary = SQLBinaryExpression(left: column, op: SQLBinaryOperator.equal, right: value)
-        update.values.append(binary)
-        return self
     }
 }
 
