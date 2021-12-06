@@ -829,4 +829,40 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
             XCTFail("Could not decode row with keyDecodingStrategy \(error)")
         }
     }
+
+    func testUnion() throws {
+        try db.select()
+            .column("id")
+            .from("t1")
+            .where("f1", .equal, "foo")
+            .limit(1)
+            .union({
+                $0.column("id")
+                    .from("t2")
+                    .where("f2", .equal, "bar")
+                    .limit(2)
+            }).union({
+                $0.column("id")
+                    .from("t3")
+                    .where("f3", .equal, "baz")
+                    .limit(3)
+            })
+            .run().wait()
+
+        XCTAssertEqual(db.results[0], "(SELECT `id` FROM `t1` WHERE `f1` = ? LIMIT 1) UNION (SELECT `id` FROM `t2` WHERE `f2` = ? LIMIT 2) UNION (SELECT `id` FROM `t3` WHERE `f3` = ? LIMIT 3)")
+    }
+
+    func testUnionAll() throws {
+        try db.select()
+            .column("id")
+            .from("t1")
+            .union(all: {
+                $0.column("id")
+                    .from("t2")
+            })
+            .run().wait()
+
+        XCTAssertEqual(db.results[0], "(SELECT `id` FROM `t1`) UNION ALL (SELECT `id` FROM `t2`)")
+    }
+
 }
