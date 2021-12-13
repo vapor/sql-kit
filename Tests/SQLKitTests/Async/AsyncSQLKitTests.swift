@@ -719,11 +719,11 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
 
         do {
             let row = TestRow(data: [
-                "id": UUID(),
-                "foo": 42,
-                "bar": Double?.none as Any,
-                "baz": "vapor",
-                "waldoFred": 2015
+                "id": .some(UUID()),
+                "foo": .some(42),
+                "bar": .none,
+                "baz": .some("vapor"),
+                "waldoFred": .some(2015)
             ])
 
             let foo = try row.decode(model: Foo.self)
@@ -736,11 +736,11 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
         }
         do {
             let row = TestRow(data: [
-                "foos_id": UUID(),
-                "foos_foo": 42,
-                "foos_bar": Double?.none as Any,
-                "foos_baz": "vapor",
-                "foos_waldoFred": 2015
+                "foos_id": .some(UUID()),
+                "foos_foo": .some(42),
+                "foos_bar": .none,
+                "foos_baz": .some("vapor"),
+                "foos_waldoFred": .some(2015)
             ])
 
             let foo = try row.decode(model: Foo.self, prefix: "foos_")
@@ -753,11 +753,11 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
         }
         do {
             let row = TestRow(data: [
-                "id": UUID(),
-                "foo": 42,
-                "bar": Double?.none as Any,
-                "baz": "vapor",
-                "waldo_fred": 2015
+                "id": .some(UUID()),
+                "foo": .some(42),
+                "bar": .none,
+                "baz": .some("vapor"),
+                "waldo_fred": .some(2015)
             ])
 
             let foo = try row.decode(model: Foo.self, keyDecodingStrategy: .convertFromSnakeCase)
@@ -770,11 +770,11 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
         }
         do {
             let row = TestRow(data: [
-                "id": UUID(),
-                "foo": 42,
-                "bar": Double?.none as Any,
-                "baz": "vapor",
-                "waldoFredID": 2015
+                "id": .some(UUID()),
+                "foo": .some(42),
+                "bar": .none,
+                "baz": .some("vapor"),
+                "waldoFredID": .some(2015)
             ])
 
             /// An implementation of CodingKey that's useful for combining and transforming keys as strings.

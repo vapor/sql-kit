@@ -29,7 +29,12 @@ final class TestDatabase: SQLDatabase {
 }
 
 struct TestRow: SQLRow {
-    var data: [String: Any]
+    enum Datum { // yes, this is just Optional by another name
+        case some(Encodable)
+        case none
+    }
+    
+    var data: [String: Datum]
 
     enum _Error: Error {
         case missingColumn(String)
@@ -45,17 +50,14 @@ struct TestRow: SQLRow {
     }
 
     func decodeNil(column: String) throws -> Bool {
-        if let value = self.data[column], let optional = value as? OptionalType {
-            return optional.isNil
-        } else {
-            return false
-        }
+        if case .some(.none) = self.data[column] { return true }
+        return false
     }
 
     func decode<D>(column: String, as type: D.Type) throws -> D
         where D : Decodable
     {
-        guard let value = self.data[column] else {
+        guard case let .some(.some(value)) = self.data[column] else {
             throw _Error.missingColumn(column)
         }
         guard let cast = value as? D else {
@@ -65,58 +67,22 @@ struct TestRow: SQLRow {
     }
 }
 
-protocol OptionalType {
-    var isNil: Bool { get }
-}
-
-extension Optional: OptionalType {
-    var isNil: Bool {
-        self == nil
-    }
-}
-
 struct GenericDialect: SQLDialect {
+    var name: String { "generic" }
+
+    func bindPlaceholder(at position: Int) -> SQLExpression { SQLRaw("?") }
+    func literalBoolean(_ value: Bool) -> SQLExpression { SQLRaw("\(value)") }
     var supportsAutoIncrement: Bool = true
-
-    var name: String = "generic sql"
-    
     var supportsIfExists: Bool = true
-
     var supportsReturning: Bool = true
-
-    var identifierQuote: SQLExpression {
-        return SQLRaw("`")
-    }
-    
-    var literalStringQuote: SQLExpression {
-        return SQLRaw("'")
-    }
-    
-    func bindPlaceholder(at position: Int) -> SQLExpression {
-        return SQLRaw("?")
-    }
-    
-    func literalBoolean(_ value: Bool) -> SQLExpression {
-        switch value {
-        case true: return SQLRaw("true")
-        case false: return SQLRaw("false")
-        }
-    }
-
+    var identifierQuote: SQLExpression = SQLRaw("`")
+    var literalStringQuote: SQLExpression = SQLRaw("'")
     var enumSyntax: SQLEnumSyntax = .inline
-    
-    var autoIncrementClause: SQLExpression {
-        return SQLRaw("AUTOINCREMENT")
-    }
-
+    var autoIncrementClause: SQLExpression = SQLRaw("AUTOINCREMENT")
     var autoIncrementFunction: SQLExpression? = nil
-
     var supportsDropBehavior: Bool = false
-
-    var triggerSyntax = SQLTriggerSyntax()
-
+    var triggerSyntax = SQLTriggerSyntax(create: [], drop: [])
     var alterTableSyntax = SQLAlterTableSyntax(alterColumnDefinitionClause: SQLRaw("MODIFY"), alterColumnDefinitionTypeKeyword: nil)
-    
     var upsertSyntax: SQLUpsertSyntax = .standard
 
     mutating func setTriggerSyntax(create: SQLTriggerSyntax.Create = [], drop: SQLTriggerSyntax.Drop = []) {

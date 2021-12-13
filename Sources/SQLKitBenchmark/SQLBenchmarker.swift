@@ -12,7 +12,7 @@ public final class SQLBenchmarker {
         try self.testPlanets()
         try self.testCodable()
         try self.testEnum()
-        if self.database.dialect.name != "generic sql" {
+        if self.database.dialect.name != "generic" {
             try self.testUpserts()
         }
     }
