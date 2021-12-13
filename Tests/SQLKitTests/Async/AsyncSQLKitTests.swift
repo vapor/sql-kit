@@ -811,6 +811,78 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
             XCTFail("Could not decode row with keyDecodingStrategy \(error)")
         }
     }
+
+    func testUnions() async throws {
+        // Check that queries are explicitly malformed without the feature flags
+        db._dialect.unionFeatures = []
+        try await db.select().column("id").from("t1").union(distinct: { $0.column("id").from("t2") }).run()
+        try await db.select().column("id").from("t1").union(all: { $0.column("id").from("t2") }).run()
+        try await db.select().column("id").from("t1").intersect(distinct: { $0.column("id").from("t2") }).run()
+        try await db.select().column("id").from("t1").intersect(all: { $0.column("id").from("t2") }).run()
+        try await db.select().column("id").from("t1").except(distinct: { $0.column("id").from("t2") }).run()
+        try await db.select().column("id").from("t1").except(all: { $0.column("id").from("t2") }).run()
+
+        XCTAssertEqual(db.results[0],  "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[1],  "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[2],  "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[3],  "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[4],  "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[5],  "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`")
+        
+
+        // Test that queries are correctly formed with the feature flags
+        db._dialect.unionFeatures.formUnion([.union, .unionAll, .intersect, .intersectAll, .except, .exceptAll])
+        try await db.select().column("id").from("t1").union(distinct: { $0.column("id").from("t2") }).run()
+        try await db.select().column("id").from("t1").union(all: { $0.column("id").from("t2") }).run()
+        try await db.select().column("id").from("t1").intersect(distinct: { $0.column("id").from("t2") }).run()
+        try await db.select().column("id").from("t1").intersect(all: { $0.column("id").from("t2") }).run()
+        try await db.select().column("id").from("t1").except(distinct: { $0.column("id").from("t2") }).run()
+        try await db.select().column("id").from("t1").except(all: { $0.column("id").from("t2") }).run()
+        
+        XCTAssertEqual(db.results[6],  "SELECT `id` FROM `t1` UNION SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[7],  "SELECT `id` FROM `t1` UNION ALL SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[8],  "SELECT `id` FROM `t1` INTERSECT SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[9],  "SELECT `id` FROM `t1` INTERSECT ALL SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[10], "SELECT `id` FROM `t1` EXCEPT SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[11], "SELECT `id` FROM `t1` EXCEPT ALL SELECT `id` FROM `t2`")
+        
+
+        // Test that the explicit distinct flag is respected
+        db._dialect.unionFeatures.insert(.explicitDistinct)
+        try await db.select().column("id").from("t1").union(distinct: { $0.column("id").from("t2") }).run()
+        try await db.select().column("id").from("t1").intersect(distinct: { $0.column("id").from("t2") }).run()
+        try await db.select().column("id").from("t1").except(distinct: { $0.column("id").from("t2") }).run()
+
+        XCTAssertEqual(db.results[12], "SELECT `id` FROM `t1` UNION DISTINCT SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[13], "SELECT `id` FROM `t1` INTERSECT DISTINCT SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[14], "SELECT `id` FROM `t1` EXCEPT DISTINCT SELECT `id` FROM `t2`")
+        
+
+        // Test that the parenthesized subqueries flag does as expected, including for multiple unions
+        db._dialect.unionFeatures.formSymmetricDifference([.explicitDistinct, .parenthesizedSubqueries])
+        try await db.select().column("id").from("t1").union(distinct: { $0.column("id").from("t2") }).run()
+        try await db.select().column("id").from("t1")
+              .union(distinct: { $0.column("id").from("t2") })
+              .union(distinct: { $0.column("id").from("t3") })
+              .run()
+        
+        XCTAssertEqual(db.results[15], "(SELECT `id` FROM `t1`) UNION (SELECT `id` FROM `t2`)")
+        XCTAssertEqual(db.results[16], "(SELECT `id` FROM `t1`) UNION (SELECT `id` FROM `t2`) UNION (SELECT `id` FROM `t3`)")
+        
+
+        // Test that chaining and mixing multiple union types works
+        db._dialect.unionFeatures.insert(.explicitDistinct)
+        try await db.select().column("id").from("t1")
+              .union(distinct:     { $0.column("id").from("t2") })
+              .union(all:          { $0.column("id").from("t3") })
+              .intersect(distinct: { $0.column("id").from("t4") })
+              .intersect(all:      { $0.column("id").from("t5") })
+              .except(distinct:    { $0.column("id").from("t6") })
+              .except(all:         { $0.column("id").from("t7") })
+              .run()
+        
+        XCTAssertEqual(db.results[17], "(SELECT `id` FROM `t1`) UNION DISTINCT (SELECT `id` FROM `t2`) UNION ALL (SELECT `id` FROM `t3`) INTERSECT DISTINCT (SELECT `id` FROM `t4`) INTERSECT ALL (SELECT `id` FROM `t5`) EXCEPT DISTINCT (SELECT `id` FROM `t6`) EXCEPT ALL (SELECT `id` FROM `t7`)")
+    }
 }
 
 #endif

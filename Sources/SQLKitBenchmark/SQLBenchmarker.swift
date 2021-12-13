@@ -14,6 +14,7 @@ public final class SQLBenchmarker {
         try self.testEnum()
         if self.database.dialect.name != "generic" {
             try self.testUpserts()
+            try self.testUnions()
         }
     }
     
