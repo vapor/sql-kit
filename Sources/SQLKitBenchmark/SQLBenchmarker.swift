@@ -23,12 +23,9 @@ public final class SQLBenchmarker {
 
     internal func runTest(
         _ name: String = #function,
-        on database: SQLDatabase? = nil,
-        _ test: () throws -> ()
+        _ test: (SQLDatabase) throws -> ()
     ) throws {
-        let database = database ?? self.database
-        database.logger.notice("[SQLBenchmark] Running \(name)...")
-
-        try test()
+        self.database.logger.notice("[SQLBenchmark] Running \(name)...")
+        try test(self.database)
     }
 }
