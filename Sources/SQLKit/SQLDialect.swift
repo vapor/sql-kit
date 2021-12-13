@@ -149,6 +149,12 @@ public protocol SQLDialect {
     ///
     /// Defaults to `.unsupported`.
     var upsertSyntax: SQLUpsertSyntax { get }
+    
+    /// A set of feature flags describing the dialect's support for various forms of `UNION` with
+    /// `SELECT` queries. See ``SQLUnionFeatures`` for the possible flags and more information.
+    ///
+    /// Defaults to `[.union, .unionAll]`.
+    var unionFeatures: SQLUnionFeatures { get }
 }
 
 /// Controls `ALTER TABLE` syntax.
@@ -246,6 +252,46 @@ public enum SQLUpsertSyntax: Equatable, CaseIterable {
     case unsupported
 }
 
+/// A set of feature support flags for `UNION` queries.
+///
+/// - Note: The `union` and `unionAll` flags are a bit redundant, since every dialect SQLKit supports
+///   at the time of this writing supports them. Still, there are SQL dialects in the wild that do not,
+///   such as mSQL, so the flags are here for completeness' sake.
+public struct SQLUnionFeatures: OptionSet {
+    // See ``RawRepresentable.rawValue``.
+    public var rawValue: Int = 0
+    
+    // See ``RawRepresentable.init(rawValue:)``.
+    public init(rawValue: Int) {
+        self.rawValue = rawValue
+    }
+    
+    /// Indicates basic support for `UNION` queries. All other flags are ignored unless this one is set.
+    public static var union: Self                   { .init(rawValue: 1 << 0) }
+    
+    /// Indicates whether the dialect supports `UNION ALL`.
+    public static var unionAll: Self                { .init(rawValue: 1 << 1) }
+    
+    /// Indicates whether the dialect supports `INTERSECT`.
+    public static var intersect: Self               { .init(rawValue: 1 << 2) }
+    
+    /// Indicates whether the dialect supports `INTERSECT ALL`.
+    public static var intersectAll: Self            { .init(rawValue: 1 << 3) }
+    
+    /// Indicates whether the dialect supports `EXCEPT`.
+    public static var except: Self                  { .init(rawValue: 1 << 4) }
+    
+    /// Indicates whether the dialect supports `EXCEPT ALL`.
+    public static var exceptAll: Self               { .init(rawValue: 1 << 5) }
+
+    /// Indicates whether the dialect supports explicitly specifying `DISTINCT` on supported union types.
+    public static var explicitDistinct: Self        { .init(rawValue: 1 << 6) }
+    
+    /// Indicates whether the dialect allows parenthesizing the individual `SELECT` queries in a union.
+    public static var parenthesizedSubqueries: Self { .init(rawValue: 1 << 7) }
+    
+}
+
 /// Provides defaults for many of the `SQLDialect` properties. The defaults are chosen to reflect
 /// a baseline set of syntax and features which are correct for as many dialects as possible,
 /// so as to avoid breaking all existing dialects every time a new requirement is added to the
@@ -262,4 +308,5 @@ extension SQLDialect {
     public func customDataType(for dataType: SQLDataType) -> SQLExpression? { nil }
     public func normalizeSQLConstraint(identifier: SQLExpression) -> SQLExpression { identifier }
     public var upsertSyntax: SQLUpsertSyntax { .unsupported }
+    public var unionFeatures: SQLUnionFeatures { [.union, .unionAll] }
 }
