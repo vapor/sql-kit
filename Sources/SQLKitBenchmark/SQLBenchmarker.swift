@@ -12,8 +12,9 @@ public final class SQLBenchmarker {
         try self.testPlanets()
         try self.testCodable()
         try self.testEnum()
-        if self.database.dialect.name != "generic sql" {
+        if self.database.dialect.name != "generic" {
             try self.testUpserts()
+            try self.testUnions()
         }
     }
     
@@ -23,12 +24,9 @@ public final class SQLBenchmarker {
 
     internal func runTest(
         _ name: String = #function,
-        on database: SQLDatabase? = nil,
-        _ test: () throws -> ()
+        _ test: (SQLDatabase) throws -> ()
     ) throws {
-        let database = database ?? self.database
-        database.logger.notice("[SQLBenchmark] Running \(name)...")
-
-        try test()
+        self.database.logger.notice("[SQLBenchmark] Running \(name)...")
+        try test(self.database)
     }
 }

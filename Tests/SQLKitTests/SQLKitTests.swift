@@ -737,11 +737,11 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
 
         do {
             let row = TestRow(data: [
-                "id": UUID(),
-                "foo": 42,
-                "bar": Double?.none as Any,
-                "baz": "vapor",
-                "waldoFred": 2015
+                "id": .some(UUID()),
+                "foo": .some(42),
+                "bar": .none,
+                "baz": .some("vapor"),
+                "waldoFred": .some(2015)
             ])
 
             let foo = try row.decode(model: Foo.self)
@@ -754,11 +754,11 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
         }
         do {
             let row = TestRow(data: [
-                "foos_id": UUID(),
-                "foos_foo": 42,
-                "foos_bar": Double?.none as Any,
-                "foos_baz": "vapor",
-                "foos_waldoFred": 2015
+                "foos_id": .some(UUID()),
+                "foos_foo": .some(42),
+                "foos_bar": .none,
+                "foos_baz": .some("vapor"),
+                "foos_waldoFred": .some(2015)
             ])
 
             let foo = try row.decode(model: Foo.self, prefix: "foos_")
@@ -771,11 +771,11 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
         }
         do {
             let row = TestRow(data: [
-                "id": UUID(),
-                "foo": 42,
-                "bar": Double?.none as Any,
-                "baz": "vapor",
-                "waldo_fred": 2015
+                "id": .some(UUID()),
+                "foo": .some(42),
+                "bar": .none,
+                "baz": .some("vapor"),
+                "waldo_fred": .some(2015)
             ])
 
             let foo = try row.decode(model: Foo.self, keyDecodingStrategy: .convertFromSnakeCase)
@@ -788,11 +788,11 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
         }
         do {
             let row = TestRow(data: [
-                "id": UUID(),
-                "foo": 42,
-                "bar": Double?.none as Any,
-                "baz": "vapor",
-                "waldoFredID": 2015
+                "id": .some(UUID()),
+                "foo": .some(42),
+                "bar": .none,
+                "baz": .some("vapor"),
+                "waldoFredID": .some(2015)
             ])
 
             /// An implementation of CodingKey that's useful for combining and transforming keys as strings.
@@ -830,39 +830,75 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
         }
     }
 
-    func testUnion() throws {
-        try db.select()
-            .column("id")
-            .from("t1")
-            .where("f1", .equal, "foo")
-            .limit(1)
-            .union({
-                $0.column("id")
-                    .from("t2")
-                    .where("f2", .equal, "bar")
-                    .limit(2)
-            }).union({
-                $0.column("id")
-                    .from("t3")
-                    .where("f3", .equal, "baz")
-                    .limit(3)
-            })
-            .run().wait()
+    func testUnions() throws {
+        // Check that queries are explicitly malformed without the feature flags
+        db._dialect.unionFeatures = []
+        try db.select().column("id").from("t1").union(distinct: { $0.column("id").from("t2") }).run().wait()
+        try db.select().column("id").from("t1").union(all: { $0.column("id").from("t2") }).run().wait()
+        try db.select().column("id").from("t1").intersect(distinct: { $0.column("id").from("t2") }).run().wait()
+        try db.select().column("id").from("t1").intersect(all: { $0.column("id").from("t2") }).run().wait()
+        try db.select().column("id").from("t1").except(distinct: { $0.column("id").from("t2") }).run().wait()
+        try db.select().column("id").from("t1").except(all: { $0.column("id").from("t2") }).run().wait()
 
-        XCTAssertEqual(db.results[0], "(SELECT `id` FROM `t1` WHERE `f1` = ? LIMIT 1) UNION (SELECT `id` FROM `t2` WHERE `f2` = ? LIMIT 2) UNION (SELECT `id` FROM `t3` WHERE `f3` = ? LIMIT 3)")
+        XCTAssertEqual(db.results[0],  "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[1],  "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[2],  "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[3],  "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[4],  "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[5],  "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`")
+
+
+        // Test that queries are correctly formed with the feature flags
+        db._dialect.unionFeatures.formUnion([.union, .unionAll, .intersect, .intersectAll, .except, .exceptAll])
+        try db.select().column("id").from("t1").union(distinct: { $0.column("id").from("t2") }).run().wait()
+        try db.select().column("id").from("t1").union(all: { $0.column("id").from("t2") }).run().wait()
+        try db.select().column("id").from("t1").intersect(distinct: { $0.column("id").from("t2") }).run().wait()
+        try db.select().column("id").from("t1").intersect(all: { $0.column("id").from("t2") }).run().wait()
+        try db.select().column("id").from("t1").except(distinct: { $0.column("id").from("t2") }).run().wait()
+        try db.select().column("id").from("t1").except(all: { $0.column("id").from("t2") }).run().wait()
+        
+        XCTAssertEqual(db.results[6],  "SELECT `id` FROM `t1` UNION SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[7],  "SELECT `id` FROM `t1` UNION ALL SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[8],  "SELECT `id` FROM `t1` INTERSECT SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[9],  "SELECT `id` FROM `t1` INTERSECT ALL SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[10], "SELECT `id` FROM `t1` EXCEPT SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[11], "SELECT `id` FROM `t1` EXCEPT ALL SELECT `id` FROM `t2`")
+
+
+        // Test that the explicit distinct flag is respected
+        db._dialect.unionFeatures.insert(.explicitDistinct)
+        try db.select().column("id").from("t1").union(distinct: { $0.column("id").from("t2") }).run().wait()
+        try db.select().column("id").from("t1").intersect(distinct: { $0.column("id").from("t2") }).run().wait()
+        try db.select().column("id").from("t1").except(distinct: { $0.column("id").from("t2") }).run().wait()
+
+        XCTAssertEqual(db.results[12], "SELECT `id` FROM `t1` UNION DISTINCT SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[13], "SELECT `id` FROM `t1` INTERSECT DISTINCT SELECT `id` FROM `t2`")
+        XCTAssertEqual(db.results[14], "SELECT `id` FROM `t1` EXCEPT DISTINCT SELECT `id` FROM `t2`")
+
+
+        // Test that the parenthesized subqueries flag does as expected, including for multiple unions
+        db._dialect.unionFeatures.formSymmetricDifference([.explicitDistinct, .parenthesizedSubqueries])
+        try db.select().column("id").from("t1").union(distinct: { $0.column("id").from("t2") }).run().wait()
+        try db.select().column("id").from("t1")
+              .union(distinct: { $0.column("id").from("t2") })
+              .union(distinct: { $0.column("id").from("t3") })
+              .run().wait()
+
+        XCTAssertEqual(db.results[15], "(SELECT `id` FROM `t1`) UNION (SELECT `id` FROM `t2`)")
+        XCTAssertEqual(db.results[16], "(SELECT `id` FROM `t1`) UNION (SELECT `id` FROM `t2`) UNION (SELECT `id` FROM `t3`)")
+
+
+        // Test that chaining and mixing multiple union types works
+        db._dialect.unionFeatures.insert(.explicitDistinct)
+        try db.select().column("id").from("t1")
+              .union(distinct:     { $0.column("id").from("t2") })
+              .union(all:          { $0.column("id").from("t3") })
+              .intersect(distinct: { $0.column("id").from("t4") })
+              .intersect(all:      { $0.column("id").from("t5") })
+              .except(distinct:    { $0.column("id").from("t6") })
+              .except(all:         { $0.column("id").from("t7") })
+              .run().wait()
+
+        XCTAssertEqual(db.results[17], "(SELECT `id` FROM `t1`) UNION DISTINCT (SELECT `id` FROM `t2`) UNION ALL (SELECT `id` FROM `t3`) INTERSECT DISTINCT (SELECT `id` FROM `t4`) INTERSECT ALL (SELECT `id` FROM `t5`) EXCEPT DISTINCT (SELECT `id` FROM `t6`) EXCEPT ALL (SELECT `id` FROM `t7`)")
     }
-
-    func testUnionAll() throws {
-        try db.select()
-            .column("id")
-            .from("t1")
-            .union(all: {
-                $0.column("id")
-                    .from("t2")
-            })
-            .run().wait()
-
-        XCTAssertEqual(db.results[0], "(SELECT `id` FROM `t1`) UNION ALL (SELECT `id` FROM `t2`)")
-    }
-
 }
