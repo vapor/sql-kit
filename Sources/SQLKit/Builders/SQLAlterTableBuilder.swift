@@ -20,6 +20,21 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
     }
     
     @discardableResult
+    public func rename(
+        to newName: String
+    ) -> Self {
+        return self.rename(to: SQLIdentifier(newName))
+    }
+    
+    @discardableResult
+    public func rename(
+        to newName: SQLExpression
+    ) -> Self {
+        self.alterTable.renameTo = newName
+        return self
+    }
+    
+    @discardableResult
     public func column(
         _ column: String,
         type dataType: SQLDataType,

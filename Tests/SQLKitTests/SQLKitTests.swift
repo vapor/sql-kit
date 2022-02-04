@@ -250,6 +250,12 @@ final class SQLKitTests: XCTestCase {
             .update(column: "again", type: .text)
             .run().wait()
         XCTAssertEqual(db.results[6], "ALTER TABLE `alterable` ADD `hello` TEXT , DROP `there` , MODIFY `again` TEXT")
+
+        // Table renaming
+        try db.alter(table: "alterable")
+            .rename(to: "new_alterable")
+            .run().wait()
+        XCTAssertEqual(db.results[7], "ALTER TABLE `alterable` RENAME TO `new_alterable`")
     }
     
     // MARK: Distinct

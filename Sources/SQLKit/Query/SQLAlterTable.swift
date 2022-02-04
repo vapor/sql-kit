@@ -7,6 +7,9 @@
 /// See `SQLAlterTableBuilder` for more information.
 public struct SQLAlterTable: SQLExpression {
     public var name: SQLExpression
+    
+    /// New name
+    public var renameTo: SQLExpression?
     /// Columns to add.
     public var addColumns: [SQLExpression]
     /// Columns to update.
@@ -21,6 +24,7 @@ public struct SQLAlterTable: SQLExpression {
     /// Creates a new `SQLAlterTable`. See `SQLAlterTableBuilder`.
     public init(name: SQLExpression) {
         self.name = name
+        self.renameTo = nil
         self.addColumns = []
         self.modifyColumns = []
         self.dropColumns = []
@@ -30,7 +34,7 @@ public struct SQLAlterTable: SQLExpression {
     
     public func serialize(to serializer: inout SQLSerializer) {
         let syntax = serializer.dialect.alterTableSyntax
-
+        
         if !syntax.allowsBatch && self.addColumns.count + self.modifyColumns.count + self.dropColumns.count > 1 {
             serializer.database.logger.warning("Database does not support batch table alterations. You will need to rewrite as individual alter statements.")
         }
@@ -57,6 +61,10 @@ public struct SQLAlterTable: SQLExpression {
         serializer.statement {
             $0.append("ALTER TABLE")
             $0.append(self.name)
+            if let renameTo = renameTo {
+                $0.append("RENAME TO")
+                $0.append(renameTo)
+            }
             for (idx, alteration) in alterations.enumerated() {
                 if idx > 0 {
                     $0.append(",")
