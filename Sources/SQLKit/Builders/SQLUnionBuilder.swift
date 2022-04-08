@@ -1,4 +1,4 @@
-public final class SQLUnionBuilder: SQLQueryBuilder, SQLQueryFetcher {
+public final class SQLUnionBuilder: SQLQueryBuilder, SQLQueryFetcher, SQLPartialResultBuilder {
     public var query: SQLExpression { self.union }
 
     public var union: SQLUnion
@@ -37,6 +37,23 @@ public final class SQLUnionBuilder: SQLQueryBuilder, SQLQueryFetcher {
     public func except(all query: SQLSelect) -> Self {
         self.union.add(query, joiner: .init(type: .exceptAll))
        return self
+    }
+}
+
+extension SQLUnionBuilder {
+    public var orderBys: [SQLExpression] {
+        get { self.union.orderBys }
+        set { self.union.orderBys = newValue }
+    }
+    
+    public var limit: Int? {
+        get { self.union.limit }
+        set { self.union.limit = newValue }
+    }
+    
+    public var offset: Int? {
+        get { self.union.offset }
+        set { self.union.offset = newValue }
     }
 }
 
