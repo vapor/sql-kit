@@ -20,6 +20,9 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
     }
     
     @discardableResult
+    /// Rename the table.
+    /// - Parameter newName: The new name to apply to the table
+    /// - Returns: `self` for chaining.
     public func rename(
         to newName: String
     ) -> Self {
@@ -27,6 +30,9 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
     }
     
     @discardableResult
+    /// Rename the table.
+    /// - Parameter newName: The new name to apply to the table
+    /// - Returns: `self` for chaining.
     public func rename(
         to newName: SQLExpression
     ) -> Self {
@@ -35,6 +41,12 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
     }
     
     @discardableResult
+    /// Add a column to the table.
+    /// - Parameters:
+    ///   - column: The name of the new column
+    ///   - dataType: The new datatype of the new column
+    ///   - constraints: Constraints for the new column
+    /// - Returns: `self` for chaining.
     public func column(
         _ column: String,
         type dataType: SQLDataType,
@@ -48,6 +60,12 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
     }
     
     @discardableResult
+    /// Add a column to the table.
+    /// - Parameters:
+    ///   - column: The name of the new column
+    ///   - dataType: The new datatype of the new column
+    ///   - constraints: Constraints for the new column
+    /// - Returns: `self` for chaining.
     public func column(
         _ column: String,
         type dataType: SQLDataType,
@@ -61,6 +79,12 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
     }
     
     @discardableResult
+    /// Add a column to the table.
+    /// - Parameters:
+    ///   - column: The name of the new column
+    ///   - dataType: The new datatype of the new column
+    ///   - constraints: Constraints for the new column
+    /// - Returns: `self` for chaining.
     public func column(
         _ column: SQLExpression,
         type dataType: SQLExpression,
@@ -74,6 +98,12 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
     }
     
     @discardableResult
+    /// Add a column to the table.
+    /// - Parameters:
+    ///   - column: The name of the new column
+    ///   - dataType: The new datatype of the new column
+    ///   - constraints: Constraints for the new column
+    /// - Returns: `self` for chaining.
     public func column(
         _ column: SQLExpression,
         type dataType: SQLExpression,
@@ -87,12 +117,21 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
     }
     
     @discardableResult
+    /// Add a column to the table.
+    /// - Parameter columnDefinition: Expression defining the column
+    /// - Returns: `self` for chaining.
     public func addColumn(_ columnDefinition: SQLExpression) -> Self {
         self.alterTable.addColumns.append(columnDefinition)
         return self
     }
     
     @discardableResult
+    /// Alter a column in the table.
+    /// - Parameters:
+    ///   - column: The name of the column to alter
+    ///   - dataType: The datatype to change the column to
+    ///   - constraints: Constraints to apply to the altered column
+    /// - Returns: `self` for chaining.
     public func modifyColumn(
         _ column: String,
         type dataType: SQLDataType,
@@ -106,6 +145,12 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
     }
     
     @discardableResult
+    /// Alter a column in the table.
+    /// - Parameters:
+    ///   - column: The name of the column to alter
+    ///   - dataType: The datatype to change the column to
+    ///   - constraints: Constraints to apply to the altered column
+    /// - Returns: `self` for chaining.
     public func modifyColumn(
         _ column: String,
         type dataType: SQLDataType,
@@ -119,6 +164,12 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
     }
     
     @discardableResult
+    /// Alter a column in the table.
+    /// - Parameters:
+    ///   - column: The name of the column to alter
+    ///   - dataType: The datatype to change the column to
+    ///   - constraints: Constraints to apply to the altered column
+    /// - Returns: `self` for chaining.
     public func modifyColumn(
         _ column: SQLExpression,
         type dataType: SQLExpression,
@@ -132,6 +183,12 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
     }
     
     @discardableResult
+    /// Alter a column in the table.
+    /// - Parameters:
+    ///   - column: The name of the column to alter
+    ///   - dataType: The datatype to change the column to
+    ///   - constraints: Constraints to apply to the altered column
+    /// - Returns: `self` for chaining.
     public func modifyColumn(
         _ column: SQLExpression,
         type dataType: SQLExpression,
@@ -145,6 +202,11 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
     }
     
     @discardableResult
+    /// Alter a column in the table.
+    /// - Parameters:
+    ///   - column: The name of the column to alter
+    ///   - dataType: The datatype to change the column to
+    /// - Returns: `self` for chaining.
     public func update(
         column: String,
         type dataType: SQLDataType
@@ -156,6 +218,11 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
     }
     
     @discardableResult
+    /// Alter a column in the table.
+    /// - Parameters:
+    ///   - column: The name of the column to alter
+    ///   - dataType: The datatype to change the column to
+    /// - Returns: `self` for chaining.
     public func update(
         column: SQLExpression,
         type dataType: SQLExpression
@@ -167,12 +234,18 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
     }
     
     @discardableResult
+    /// Alter a column in the table.
+    /// - Parameter columnDefinition: Expression defining the column changes
+    /// - Returns: `self` for chaining.
     public func modifyColumn(_ columnDefinition: SQLExpression) -> Self {
         self.alterTable.modifyColumns.append(columnDefinition)
         return self
     }
     
     @discardableResult
+    /// Drop the column from the table
+    /// - Parameter column: The name of the column to drop
+    /// - Returns: `self` for chaining.
     public func dropColumn(
         _ column: String
     ) -> Self {
@@ -180,6 +253,9 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
     }
     
     @discardableResult
+    /// Drop the column from the table
+    /// - Parameter column: The name of the column to drop
+    /// - Returns: `self` for chaining.
     public func dropColumn(
         _ column: SQLExpression
     ) -> Self {
