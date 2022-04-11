@@ -16,7 +16,9 @@ public struct SQLUnion: SQLExpression {
     }
 
     public func serialize(to serializer: inout SQLSerializer) {
-        assert(!self.unions.isEmpty, "Serializing a union with only one query is invalid.")
+        guard !self.unions.isEmpty else {
+            return initialQuery.serialize(to: &serializer)
+        }
 
         serializer.statement { statement in
             func appendQuery(_ query: SQLSelect) {
