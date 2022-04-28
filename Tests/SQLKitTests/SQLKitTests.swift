@@ -206,6 +206,11 @@ final class SQLKitTests: XCTestCase {
         try db.drop(table: "normalized_planet_names").temporary().run().wait()
         XCTAssertEqual(db.results[0], "DROP TEMPORARY TABLE `normalized_planet_names`")
     }
+    
+    func testOwnerObjectsForDropIndex() throws {
+        try db.drop(index: "some_crummy_mysql_index").on("some_darn_mysql_table").run().wait()
+        XCTAssertEqual(db.results[0], "DROP INDEX `some_crummy_mysql_index` ON `some_darn_mysql_table`")
+    }
 
     func testAltering() throws {
         // SINGLE
