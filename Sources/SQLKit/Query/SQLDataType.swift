@@ -7,6 +7,7 @@ public enum SQLDataType: SQLExpression {
     case real
     case blob
 
+    @available(*, deprecated, message: "This is a test utility method that was incorrectly made public. Use `.custom()` directly instead.")
     public static func type(_ string: String) -> Self {
         .custom(SQLIdentifier(string))
     }

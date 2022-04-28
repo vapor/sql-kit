@@ -8,6 +8,10 @@ public struct SQLDropIndex: SQLExpression {
     /// The optional `IF EXISTS` clause suppresses the error that would normally
     /// result if the index does not exist.
     public var ifExists: Bool
+    
+    /// The object (usually a table) on which the index exists. Not all databases support specifying
+    /// this, while others require it.
+    public var owningObject: SQLExpression?
 
     /// The optional drop behavior clause specifies if objects that depend on the
     /// index should also be dropped or not, for databases that support this
@@ -22,21 +26,18 @@ public struct SQLDropIndex: SQLExpression {
     
     /// See `SQLExpression`.
     public func serialize(to serializer: inout SQLSerializer) {
-        serializer.write("DROP INDEX ")
-        if self.ifExists {
-            if serializer.dialect.supportsIfExists {
-                serializer.write("IF EXISTS ")
-            } else {
-                serializer.database.logger.warning("\(serializer.dialect.name) does not support IF EXISTS")
+        serializer.statement {
+            $0.append("DROP INDEX")
+            if self.ifExists, $0.dialect.supportsIfExists {
+                $0.append("IF EXISTS")
             }
-        }
-        self.name.serialize(to: &serializer)
-        if serializer.dialect.supportsDropBehavior {
-            serializer.write(" ")
-            if let dropBehavior = behavior {
-                dropBehavior.serialize(to: &serializer)
-            } else {
-                SQLDropBehavior.restrict.serialize(to: &serializer)
+            $0.append(self.name)
+            if let owningObject = self.owningObject {
+                $0.append("ON")
+                $0.append(owningObject)
+            }
+            if $0.dialect.supportsDropBehavior {
+                $0.append(self.behavior ?? SQLDropBehavior.restrict)
             }
         }
     }

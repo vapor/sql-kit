@@ -28,6 +28,25 @@ public final class SQLDropIndexBuilder: SQLQueryBuilder {
         dropIndex.ifExists = true
         return self
     }
+    
+    /// Convenience method for specifying an owning object using a `String`. See
+    /// ``on(_:)-84xo2`` for details.
+    @discardableResult
+    public func on(_ owningObject: String) -> Self {
+        return self.on(SQLIdentifier(owningObject))
+    }
+
+    /// The object (usually a table) which owns the index may be explicitly specified.
+    /// Some dialects treat indexes as database-level objects in their own right and
+    /// treat specifying an owner as an error, while others require the owning object
+    /// in order to perform the drop operation at all. At the time of this writing,
+    /// there is no support for specifying this in `SQLDialect`; callers must ensure
+    /// that they either specify or omit an owning object as appropriate.
+    @discardableResult
+    public func on(_ owningObject: SQLExpression) -> Self {
+        dropIndex.owningObject = owningObject
+        return self
+    }
 
     /// The drop behavior clause specifies if objects that depend on a index
     /// should also be dropped or not when the index is dropped, for databases
