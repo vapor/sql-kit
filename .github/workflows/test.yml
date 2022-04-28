@@ -3,108 +3,80 @@ on:
   pull_request:
 
 jobs:
-  linux-all:
-    strategy:
-      fail-fast: false
-      matrix:
-        swiftver:
-          - swift:5.2
-          - swift:5.3
-          - swift:5.4
-          - swift:5.5
-          - swiftlang/swift:nightly-main
-        swiftos:
-          - focal
-    container: ${{ format('{0}-{1}', matrix.swiftver, matrix.swiftos) }}
-    runs-on: ubuntu-latest
-    env:
-      LOG_LEVEL: debug
-    steps:
-      - name: Check out package
-        uses: actions/checkout@v2
-      - name: Run tests with Thread Sanitizer
-        run: swift test --enable-test-discovery --sanitize=thread
+  unit-tests:
+    uses: vapor/ci/.github/workflows/run-unit-tests.yml@reusable-workflows
+    with:
+      with_coverage: true
+      with_tsan: true
 
-  macos-all:
-    strategy:
-      fail-fast: false
-      matrix:
-        xcode:
-          - latest-stable
-          - latest
-    runs-on: macos-11
-    env:
-      LOG_LEVEL: debug
-    steps:
-      - name: Select latest available Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: ${{ matrix.xcode }}
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Run tests and Thread Sanitizer
-        run: |
-          swift test --enable-test-discovery ${{ matrix.filter }} --sanitize=thread \
-            -Xlinker -rpath \
-            -Xlinker $(xcode-select -p)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.5/macosx
-
-  driver-integration:
+  integration-tests:
     services:
       mysql-a:
         image: mysql:latest
-        env: { MYSQL_ALLOW_EMPTY_PASSWORD: "true", MYSQL_USER: vapor_username, MYSQL_PASSWORD: vapor_password, MYSQL_DATABASE: vapor_database }
+        env: { MYSQL_ALLOW_EMPTY_PASSWORD: "true", MYSQL_USER: test_username, MYSQL_PASSWORD: test_password, MYSQL_DATABASE: test_database }
       mysql-b:
         image: mysql:latest
-        env: { MYSQL_ALLOW_EMPTY_PASSWORD: "true", MYSQL_USER: vapor_username, MYSQL_PASSWORD: vapor_password, MYSQL_DATABASE: vapor_database }
+        env: { MYSQL_ALLOW_EMPTY_PASSWORD: "true", MYSQL_USER: test_username, MYSQL_PASSWORD: test_password, MYSQL_DATABASE: test_database }
       postgres-a:
         image: postgres:latest
-        env: { POSTGRES_USER: vapor_username, POSTGRES_PASSWORD: vapor_password, POSTGRES_DB: vapor_database }
+        env: { POSTGRES_USER: test_username, POSTGRES_PASSWORD: test_password, POSTGRES_DB: test_database }
       postgres-b:
         image: postgres:latest
-        env: { POSTGRES_USER: vapor_username, POSTGRES_PASSWORD: vapor_password, POSTGRES_DB: vapor_database }
+        env: { POSTGRES_USER: test_username, POSTGRES_PASSWORD: test_password, POSTGRES_DB: test_database }
     strategy:
       fail-fast: false
       matrix:
         swiftver:
-          - swift:5.2
+          - swift:5.4
           - swift:5.5
+          - swift:5.6
+          - swiftlang/swift:nightly-main
         swiftos:
           - focal
     runs-on: ubuntu-latest
     container: ${{ format('{0}-{1}', matrix.swiftver, matrix.swiftos) }}
     env:
       LOG_LEVEL: debug
+      POSTGRES_HOSTNAME: postgres-a
       POSTGRES_HOSTNAME_A: postgres-a
-      POSTGRES_USER_A: vapor_username
-      POSTGRES_PASSWORD_A: vapor_password
-      POSTGRES_DB_A: vapor_database
       POSTGRES_HOSTNAME_B: postgres-b
-      POSTGRES_USER_B: vapor_username
-      POSTGRES_PASSWORD_B: vapor_password
-      POSTGRES_DB_B: vapor_database
+      POSTGRES_DB: test_database
+      POSTGRES_DB_A: test_database
+      POSTGRES_DB_B: test_database
+      POSTGRES_USER: test_username
+      POSTGRES_USER_A: test_username
+      POSTGRES_USER_B: test_username
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_PASSWORD_A: test_password
+      POSTGRES_PASSWORD_B: test_password
+      MYSQL_DATABASE: test_database
+      MYSQL_DATABASE_A: test_database
+      MYSQL_DATABASE_B: test_database
+      MYSQL_USER: tet_username
+      MYSQL_USERNAME: test_username
+      MYSQL_USERNAME_A: test_username
+      MYSQL_USERNAME_B: test_username
+      MYSQL_PASSWORD: test_password
+      MYSQL_PASSWORD_A: test_password
+      MYSQL_PASSWORD_B: test_password
+      MYSQL_HOSTNAME: mysql-a
       MYSQL_HOSTNAME_A: mysql-a
-      MYSQL_USERNAME_A: vapor_username
-      MYSQL_PASSWORD_A: vapor_password
-      MYSQL_DATABASE_A: vapor_database
       MYSQL_HOSTNAME_B: mysql-b
-      MYSQL_USERNAME_B: vapor_username
-      MYSQL_PASSWORD_B: vapor_password
-      MYSQL_DATABASE_B: vapor_database
     steps:
       - name: Install SQLite dependencies
         run: apt-get -q update && apt-get -q install -y libsqlite3-dev
 
       - name: Check out sql-kit
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with: { path: sql-kit }
       - name: Check out fluent-sqlite-driver
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with: { repository: 'vapor/fluent-sqlite-driver', path: fluent-sqlite-driver }
       - name: Check out fluent-postgres-driver
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with: { repository: 'vapor/fluent-postgres-driver', path: fluent-postgres-driver }
       - name: Check out fluent-mysql-driver
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with: { repository: 'vapor/fluent-mysql-driver', path: fluent-mysql-driver }
 
       - name: Use sql-kit in fluent-sqlite-driver
@@ -115,8 +87,8 @@ jobs:
         run: swift package --package-path fluent-mysql-driver edit sql-kit --path sql-kit
         
       - name: Run fluent-sqlite-driver tests with Thread Sanitizer
-        run: swift test --package-path fluent-sqlite-driver --enable-test-discovery --sanitize=thread
+        run: swift test --package-path fluent-sqlite-driver --sanitize=thread
       - name: Run fluent-postgres-driver tests with Thread Sanitizer
-        run: swift test --package-path fluent-postgres-driver --enable-test-discovery --sanitize=thread
+        run: swift test --package-path fluent-postgres-driver --sanitize=thread
       - name: Run fluent-mysql-driver tests with Thread Sanitizer
-        run: swift test --package-path fluent-mysql-driver --enable-test-discovery --sanitize=thread
+        run: swift test --package-path fluent-mysql-driver --sanitize=thread
