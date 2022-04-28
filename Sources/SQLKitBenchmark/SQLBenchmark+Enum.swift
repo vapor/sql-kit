@@ -14,7 +14,7 @@ extension SQLBenchmarker {
             let planetType: SQLDataType
             switch $0.dialect.enumSyntax {
             case .typeName:
-                planetType = .type("planet_type")
+                planetType = .custom(SQLIdentifier("planet_type"))
                 try $0.create(enum: "planet_type")
                     .value("smallRocky")
                     .value("gasGiant")
