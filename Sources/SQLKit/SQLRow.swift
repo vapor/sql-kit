@@ -1,12 +1,27 @@
+/// Represents a single row in a result set returned from an executed SQL query.
 public protocol SQLRow {
+    /// The list of all column names available in the row. Not guaranteed to be in any particular order.
     var allColumns: [String] { get }
+    
+    /// Returns `true` if the given column name is available in the row, `false `otherwise.
     func contains(column: String) -> Bool
+    
+    /// Must return `true` if the given column name is missing from the row **or** if it exists but has a
+    /// value equivalent to an SQL `NULL`, or `false` if the column name exists with a non-`NULL` value.
+    ///
+    /// - Note: This deliberately matches the semantics of ``Swift/KeyedDecodingContainer/decodeNil(forKey:)``
+    ///   as regards the treatment of "missing" keys.
     func decodeNil(column: String) throws -> Bool
+    
+    /// If the given column name exists in the row, attempt to decode it as the given type and return the
+    /// result if successful. Must throw an error if the column name does not exist in the row.
     func decode<D>(column: String, as type: D.Type) throws -> D
         where D: Decodable
 }
 
 extension SQLRow {
+    /// Decode an entire `Decodable` type at once, optionally applying a prefix and/or a decoding strategy
+    /// to each key of the type before looking it up in the row.
     public func decode<D>(model type: D.Type, prefix: String? = nil, keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys) throws -> D
         where D: Decodable
     {
@@ -15,7 +30,8 @@ extension SQLRow {
         rowDecoder.keyDecodingStrategy = keyDecodingStrategy
         return try rowDecoder.decode(D.self, from: self)
     }
-
+    
+    /// Decode an entire `Decodable` type at once using an explicit `SQLRowDecoder`.
     public func decode<D>(model type: D.Type, with rowDecoder: SQLRowDecoder) throws -> D
         where D: Decodable
     {
