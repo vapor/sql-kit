@@ -92,7 +92,7 @@ extension SQLDatabase {
 extension SQLDatabase {
     /// Returns a ``SQLDatabase`` which is exactly the same database as the original, except that
     /// all logging done to the new ``SQLDatabase`` will go to the specified ``Logger`` instead.
-    public func logging(to logger: Logger) -> any SQLDatabase {
+    public func logging(to logger: Logger) -> SQLDatabase {
         CustomLoggerSQLDatabase(database: self, logger: logger)
     }
 }
