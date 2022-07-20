@@ -3,6 +3,20 @@ on:
   pull_request:
 
 jobs:
+  api-breakage:
+    runs-on: ubuntu-latest
+    container: swift:5.6-focal
+    steps:
+      - name: Check out package
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      # https://github.com/actions/checkout/issues/766
+      - name: Mark the workspace as safe
+        run: git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - name: Check for API breaking changes
+        run: swift package diagnose-api-breaking-changes origin/main
+
   unit-tests:
     uses: vapor/ci/.github/workflows/run-unit-tests.yml@reusable-workflows
     with:
