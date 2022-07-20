@@ -35,6 +35,21 @@ public protocol SQLDatabase {
     /// is based on Swift Concurrency or some other asynchronous execution technology), it is recommended
     /// to return an event loop from ``NIOCore/EventLoopGroup/any()``.
     var eventLoop: EventLoop { get }
+    
+    /// The version number the connection reports for itself, provided as a type conforming to the
+    /// ``SQLDatabaseReportedVersion`` protocol. If the version number is not applicable (such as for
+    /// a connection pool dispatch wrapper) or not yet known, `nil` may be returned. Version numbers
+    /// may also change at runtime (for example, if a connection is auto-reconnected after a remote
+    /// update), or even become unknown again after being known.
+    ///
+    /// - Warning: This version number has nothing to do with ``SQLKit`` or (usually) of the driver
+    ///   implementation for the database, nor does it represent any data stored within the database;
+    ///   it is the version of the database implementation _itself_ (such as of a MySQL server or
+    ///   `libsqlite3` library). A significant part of the motivation to finally add this property comes
+    ///   from a larger desire to enable customizing a given ``SQLDialect``'s configuration based on the
+    ///   actual feature set available at runtime instead of having to hardcode a "safe" baseline.
+    var version: SQLDatabaseReportedVersion? { get }
+
     /// The descriptor for the SQL dialect supported by the given database. It is permitted for different
     /// connections to the same database to have different dialects, though it's unclear how this would
     /// be useful in practice.
@@ -48,6 +63,14 @@ public protocol SQLDatabase {
         sql query: SQLExpression,
         _ onRow: @escaping (SQLRow) -> ()
     ) -> EventLoopFuture<Void>
+}
+
+extension SQLDatabase {
+    /// The ``version-22wnn`` property was added to ``SQLDatabase`` long, long after the protocol's
+    /// original definition; it is in fact the first time the protocol's been changed in any way since
+    /// Fluent 4's original release! As such, we must provide a default value so that drivers which haven't
+    /// been updated yet don't lose source compatibility.
+    public var version: SQLDatabaseReportedVersion? { nil }
 }
 
 extension SQLDatabase {
@@ -83,6 +106,7 @@ private struct CustomLoggerSQLDatabase: SQLDatabase {
     let database: SQLDatabase
     let logger: Logger
     var eventLoop: EventLoop { self.database.eventLoop }
+    var version: SQLDatabaseReportedVersion? { self.database.version }
     var dialect: SQLDialect { self.database.dialect }
     func execute(sql query: SQLExpression, _ onRow: @escaping (SQLRow) -> ()) -> EventLoopFuture<Void> { self.database.execute(sql: query, onRow) }
 }
