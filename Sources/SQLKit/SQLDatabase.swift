@@ -66,7 +66,7 @@ public protocol SQLDatabase {
     /// Requests that the given generic SQL query be serialized and executed on the database, and that
     /// the ``onRow`` closure be invoked once for each result row the query returns (if any).
     ///
-    /// - Note: See also ``SQLDatabase/execute(sql:_:)-2gf3v`.`
+    /// - Note: See also ``SQLDatabase/execute(sql:_:)-2gf3v``.
     func execute(
         sql query: SQLExpression,
         _ onRow: @escaping (SQLRow) -> ()
