@@ -13,18 +13,26 @@ import NIOCore
 /// - Note: Most of ``SQLDatabase``'s functionality is relatively low-level. Clients of SQLKit
 ///   who want to query a database should use the higher-level API rooted at ``SQLQueryBuilder``.
 ///
-/// Example of manually executing an SQLKit query:
+/// Example of manually constructing and executing a query from expressions without a query builder:
 ///
 /// ```swift
-/// let sqlDb = // obtain an SQLDatabase from somewhere
-/// let query = sqlDb.select().column("x").from("y").where("z", .equal, SQLLiteral.numeric("1")).select
+/// var select = SQLSelect()
+/// select.columns = [SQLColumn(SQLIdentifier("x"))]
+/// select.tables = [SQLIdentifier("y")]
+/// select.predicate = SQLBinaryExpression(
+///     left: SQLColumn(SQLIdentifier("z")),
+///     op: SQLBinaryOperator.equal,
+///     right: SQLLiteral.numeric("1")
+/// )
 /// var resultRows: [SQLRow] = []
+/// let sqlDb = // obtain an SQLDatabase from somewhere
 ///
-/// try await sqlDb.execute(sql: query, resultRows.append(_:))
+/// try await sqlDb.execute(sql: select, resultRows.append(_:))
+/// // Executed query: SELECT x FROM y WHERE z = 1, as represented in the database's SQL dialect.
 /// ```
 ///
 /// It should almost never be necessary for a client to call ``SQLDatabase/execute(sql:_:)-90wi9``
-/// directly; such a need generally indicates a design flaw or functionality gap in SQLKit itself.
+/// directly; such a need usually indicates a design flaw or functionality gap in SQLKit itself.
 public protocol SQLDatabase {
     /// The ``Logger`` to be used for logging all SQLKit operations relating to a given database.
     var logger: Logger { get }
@@ -66,22 +74,21 @@ public protocol SQLDatabase {
 }
 
 extension SQLDatabase {
-    /// The ``version-22wnn`` property was added to ``SQLDatabase`` long, long after the protocol's
-    /// original definition; it is in fact the first time the protocol's been changed in any way since
-    /// Fluent 4's original release! As such, we must provide a default value so that drivers which haven't
-    /// been updated yet don't lose source compatibility.
+    /// The ``version-22wnn`` property was added to ``SQLDatabase`` multiple years after the protocol's
+    /// original definition; it was in fact the first change of any kind to the protocol since Fluent 4's
+    /// original release. As such, we must provide a default value so that drivers which haven't been
+    /// updated don't lose source compatibility. Conveniently, a value of `nil` represents "database
+    /// version is unknown", an obvious choice for this scenario.
     public var version: SQLDatabaseReportedVersion? { nil }
 }
 
 extension SQLDatabase {
     /// Convenience utility for serializing arbitrary ``SQLExpression``s.
     ///
-    /// The expression need not represent a complete query. Serialization transform the
-    /// expression into:
+    /// The expression need not represent a complete query. Serialization transforms the expression into:
     ///
     /// 1. A corresponding string of raw SQL in the database's dialect, and,
-    /// 2. Where applicable, an array of values for any bound parameters of the query.
-    ///    If not applicable, an empty array is returned.
+    /// 2. An array of inputs to use as the values of any bound parameters of the query.
     public func serialize(_ expression: SQLExpression) -> (sql: String, binds: [Encodable]) {
         var serializer = SQLSerializer(database: self)
         expression.serialize(to: &serializer)
