@@ -911,5 +911,11 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
               .run().wait()
 
         XCTAssertEqual(db.results[17], "(SELECT `id` FROM `t1`) UNION DISTINCT (SELECT `id` FROM `t2`) UNION ALL (SELECT `id` FROM `t3`) INTERSECT DISTINCT (SELECT `id` FROM `t4`) INTERSECT ALL (SELECT `id` FROM `t5`) EXCEPT DISTINCT (SELECT `id` FROM `t6`) EXCEPT ALL (SELECT `id` FROM `t7`)")
+        
+        // Test that having a single entry in the union just executes that entry
+        try db.union { select in
+            select.column("id").from("t1")
+        }.run().wait()
+        XCTAssertEqual(db.results[18], "SELECT `id` FROM `t1`")
     }
 }
