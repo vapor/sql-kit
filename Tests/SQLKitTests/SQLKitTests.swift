@@ -358,6 +358,8 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[0], "UPDATE `planets` SET `moons` = `moons` + 1 WHERE `best_at_space` >= ?")
     }
     
+    // MARK: Insert
+    
     func testInsertWithArrayOfEncodable() throws {
         func weird<S: Sequence>(_ builder: SQLInsertBuilder, values: S) -> SQLInsertBuilder where S.Element: Encodable {
             builder.values(Array(values))
@@ -369,6 +371,17 @@ final class SQLKitTests: XCTestCase {
         ).run().wait()
         XCTAssertEqual(db.results[0], "INSERT INTO `planets` (`name`) VALUES (?)")
         XCTAssertEqual(db.bindResults[0] as? [String], ["Jupiter"]) // instead of [["Jupiter"]]
+    }
+    
+    func testInsertValuesExpression() throws {
+        // Test multiple values calls make multiple rows
+        try db.insert(into: "planets")
+            .columns(["name", "color"])
+            .values(["Jupiter", "orange"])
+            .values([SQLBind("Mars"), SQLBind("red")])
+            .run().wait()
+        XCTAssertEqual(db.results[3], "INSERT INTO `planets` (`name`, `color`) VALUES (?, ?), (?, ?)")
+        XCTAssertEqual(db.bindResults[3] as? [String], ["Jupiter", "orange", "Mars", "red"])
     }
 
     // MARK: Returning
