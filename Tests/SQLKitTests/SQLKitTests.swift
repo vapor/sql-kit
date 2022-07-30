@@ -73,7 +73,19 @@ final class SQLKitTests: XCTestCase {
             .wait()
         XCTAssertEqual(db.results[0], "SELECT LAST_INSERT_ID() AS `id`")
     }
-
+    
+    func testSelect_limitAndOrder() throws {
+        try db.select()
+            .column("*")
+            .from("planets")
+            .limit(3)
+            .offset(5)
+            .orderBy("name")
+            .run()
+            .wait()
+        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` ORDER BY `name` ASC LIMIT 3 OFFSET 5")
+    }
+    
     func testUpdate() throws {
         try db.update("planets")
             .where("name", .equal, "Jpuiter")
@@ -917,5 +929,32 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
             select.column("id").from("t1")
         }.run().wait()
         XCTAssertEqual(db.results[18], "SELECT `id` FROM `t1`")
+
+        // Test LIMIT, OFFSET, and ORDERBY
+        db._dialect.unionFeatures.remove(.explicitDistinct)
+        try db.select()
+            .column("id").from("t1")
+            .union({
+                $0.column("id").from("t2")
+            })
+            .limit(3)
+            .offset(5)
+            .orderBy("id")
+            .run()
+            .wait()
+        XCTAssertEqual(db.results[19], "(SELECT `id` FROM `t1`) UNION (SELECT `id` FROM `t2`) ORDER BY `id` ASC LIMIT 3 OFFSET 5")
+        
+        // Test multiple ORDERBY statements
+        db._dialect.unionFeatures.remove(.explicitDistinct)
+        try db.select()
+            .column("*").from("t1")
+            .union({
+                $0.column("*").from("t2")
+            })
+            .orderBy("id")
+            .orderBy("name", .descending)
+            .run()
+            .wait()
+        XCTAssertEqual(db.results[20], "(SELECT * FROM `t1`) UNION (SELECT * FROM `t2`) ORDER BY `id` ASC, `name` DESC")
     }
 }
