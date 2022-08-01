@@ -68,6 +68,17 @@ final class AsyncSQLKitTests: XCTestCase {
             .run()
         XCTAssertEqual(db.results[0], "SELECT LAST_INSERT_ID() AS `id`")
     }
+    
+    func testSelect_limitAndOrder() async throws {
+        try await db.select()
+            .column("*")
+            .from("planets")
+            .limit(3)
+            .offset(5)
+            .orderBy("name")
+            .run()
+        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` ORDER BY `name` ASC LIMIT 3 OFFSET 5")
+    }
 
     func testUpdate() async throws {
         try await db.update("planets")
@@ -882,6 +893,19 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
               .run()
         
         XCTAssertEqual(db.results[17], "(SELECT `id` FROM `t1`) UNION DISTINCT (SELECT `id` FROM `t2`) UNION ALL (SELECT `id` FROM `t3`) INTERSECT DISTINCT (SELECT `id` FROM `t4`) INTERSECT ALL (SELECT `id` FROM `t5`) EXCEPT DISTINCT (SELECT `id` FROM `t6`) EXCEPT ALL (SELECT `id` FROM `t7`)")
+        
+        // Test that LIMIT, OFFSET, and ORDERBY are applied correctly
+        db._dialect.unionFeatures.remove(.explicitDistinct)
+        try await db.select()
+            .column("id").from("t1")
+            .union({
+                $0.column("id").from("t2")
+            })
+            .limit(3)
+            .offset(5)
+            .orderBy("id")
+            .run()
+        XCTAssertEqual(db.results[18], "(SELECT `id` FROM `t1`) UNION (SELECT `id` FROM `t2`) ORDER BY `id` ASC LIMIT 3 OFFSET 5")
     }
 }
 

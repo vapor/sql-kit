@@ -10,7 +10,7 @@
 /// - Note: The primary motivation for the existence of this protocol is to make it easier
 ///   to construct `SELECT` queries without specifying a database or providing the
 ///   `SQLQueryBuilder` and `SQLQueryFetcher` methods in inappropriate contexts.
-public protocol SQLSubqueryClauseBuilder: SQLJoinBuilder, SQLPredicateBuilder, SQLSecondaryPredicateBuilder {
+public protocol SQLSubqueryClauseBuilder: SQLJoinBuilder, SQLPredicateBuilder, SQLSecondaryPredicateBuilder, SQLPartialResultBuilder {
     var select: SQLSelect { get set }
 }
 
@@ -32,6 +32,23 @@ extension SQLSubqueryClauseBuilder {
     public var secondaryPredicate: SQLExpression? {
         get { return self.select.having }
         set { self.select.having = newValue }
+    }
+}
+
+extension SQLSubqueryClauseBuilder {
+    public var orderBys: [SQLExpression] {
+        get { self.select.orderBy }
+        set { self.select.orderBy = newValue }
+    }
+    
+    public var limit: Int? {
+        get { self.select.limit }
+        set { self.select.limit = newValue }
+    }
+    
+    public var offset: Int? {
+        get { self.select.offset }
+        set { self.select.offset = newValue }
     }
 }
 
@@ -220,30 +237,6 @@ extension SQLSubqueryClauseBuilder {
     }
 }
 
-// MARK: - Limit/offset
-
-extension SQLSubqueryClauseBuilder {
-    /// Adds a `LIMIT` clause to the query. If called more than once, the last call wins.
-    ///
-    /// - Parameter max: Optional maximum limit. If `nil`, any existing limit is removed.
-    /// - Returns: `self` for chaining.
-    @discardableResult
-    public func limit(_ max: Int?) -> Self {
-        self.select.limit = max
-        return self
-    }
-
-    /// Adds a `OFFSET` clause to the query. If called more than once, the last call wins.
-    ///
-    /// - Parameter max: Optional offset. If `nil`, any existing offset is removed.
-    /// - Returns: `self` for chaining.
-    @discardableResult
-    public func offset(_ n: Int?) -> Self {
-        self.select.offset = n
-        return self
-    }
-}
-
 // MARK: - Group By
 
 extension SQLSubqueryClauseBuilder {
@@ -263,43 +256,6 @@ extension SQLSubqueryClauseBuilder {
     @discardableResult
     public func groupBy(_ expression: SQLExpression) -> Self {
         self.select.groupBy.append(expression)
-        return self
-    }
-}
-
-// MARK: - Order
-
-extension SQLSubqueryClauseBuilder {
-    /// Adds an `ORDER BY` clause to the query with the specified column and ordering.
-    ///
-    /// - Parameters:
-    ///   - column: Name of column to sort results by. Appended to any previously added orderings.
-    ///   - direction: The sort direction for the column.
-    /// - Returns: `self` for chaining.
-    @discardableResult
-    public func orderBy(_ column: String, _ direction: SQLDirection = .ascending) -> Self {
-        return self.orderBy(SQLColumn(column), direction)
-    }
-
-
-    /// Adds an `ORDER BY` clause to the query with the specifed expression and ordering.
-    ///
-    /// - Parameters:
-    ///   - expression: Expression to sort results by. Appended to any previously added orderings.
-    ///   - direction: An expression describing the sort direction for the ordering expression.
-    /// - Returns: `self` for chaining.
-    @discardableResult
-    public func orderBy(_ expression: SQLExpression, _ direction: SQLExpression) -> Self {
-        return self.orderBy(SQLOrderBy(expression: expression, direction: direction))
-    }
-
-    /// Adds an `ORDER BY` clause to the query using the specified expression.
-    ///
-    /// - Parameter expression: Expression to sort results by. Appended to any previously added orderings.
-    /// - Returns: `self` for chaining.
-    @discardableResult
-    public func orderBy(_ expression: SQLExpression) -> Self {
-        select.orderBy.append(expression)
         return self
     }
 }
