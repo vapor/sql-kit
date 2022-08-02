@@ -36,6 +36,11 @@ public struct SQLStatement: SQLExpression {
     public mutating func append(_ part: SQLExpression) {
         self.parts.append(part)
     }
+    
+    /// Add an ``SQLExpression`` of any kind to the output, but only if it isn't `nil`.
+    public mutating func append(_ maybePart: SQLExpression?) {
+        maybePart.map { self.append($0) }
+    }
 
     // See `SQLSerializer.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
