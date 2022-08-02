@@ -267,28 +267,35 @@ extension SQLSubqueryClauseBuilder {
     ///
     /// ```swift
     /// db.select()...for(.update)
+    /// db.select()...for(.share)
     /// ```
     ///
-    /// Also called locking reads, the `SELECT ... FOR UPDATE` syntax locks all selected rows
-    /// for the duration of the current transaction. How the rows are locked depends on the
-    /// specific expression supplied and the underlying database implementation.
+    /// Also referred to as locking or "consistent" reads, the locking clause syntax locks
+    /// all selected rows for the duration of the current transaction with a type of lock
+    /// determined by the specific locking clause and the underlying database's support for
+    /// this construct.
     ///
-    /// - Parameter lockingClause: The type of lock to obtain.
+    /// - Warning: If the database in use does not support locking reads, the locking clause
+    ///   will be silently ignored regardless of its value.
+    ///
+    /// - Parameter lockingClause: The type of lock to obtain. See ``SQLLockingClause``.
     /// - Returns: `self` for chaining.
     @discardableResult
     public func `for`(_ lockingClause: SQLLockingClause) -> Self {
         return self.lockingClause(lockingClause)
     }
 
-    /// Adds a locking clause to this query. If called more than once, the last call wins.
+    /// Adds a locking clause to this query as specified by an arbitrary ``SQLExpression``.
+    /// If called more than once, the last call wins.
     ///
     /// ```swift
     /// db.select()...lockingClause(...)
     /// ```
     ///
-    /// Also called locking reads, the `SELECT ... FOR UPDATE` syntax locks all selected rows
-    /// for the duration of the current transaction. How the rows are locked depends on the
-    /// specific expression supplied and the underlying database implementation.
+    /// Also referred to as locking or "consistent" reads, the locking clause syntax locks
+    /// all selected rows for the duration of the current transaction with a type of lock
+    /// determined by the specific locking clause and the underlying database's support for
+    /// this construct.
     ///
     /// - Note: This method allows providing an arbitrary SQL expression as the locking clause.
     ///

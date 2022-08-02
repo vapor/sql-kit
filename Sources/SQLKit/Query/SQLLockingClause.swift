@@ -1,22 +1,23 @@
-/// General locking expressions for a SQL locking clause.
+/// General locking expressions for a SQL locking clause. The actual locking clause syntax
+/// for any given SQL dialect is defined by the dialect.
 ///
 ///     SELECT ... FOR UPDATE
 ///
-/// See `SQLSelectBuilder.for` and `SQLSelect.lockingClause`.
+/// See ``SQLSubqueryClauseBuilder/for(_:)`` and ``SQLSelect/lockingClause``.
 public enum SQLLockingClause: SQLExpression {
-    /// `UPDATE`
+    /// Request an exclusive "writer" lock.
     case update
     
-    /// `SHARE`
+    /// Request a shared "reader" lock.
     case share
     
-    /// See `SQLExpression`.
+    /// See ``SQLExpression/serialize(to:)``.
     public func serialize(to serializer: inout SQLSerializer) {
-        switch self {
-        case .share:
-            serializer.write("FOR SHARE")
-        case .update:
-            serializer.write("FOR UPDATE")
+        serializer.statement {
+            switch self {
+            case .share: $0.append($0.dialect.sharedSelectLockExpression)
+            case .update: $0.append($0.dialect.exclusiveSelectLockExpression)
+            }
         }
     }
 }
