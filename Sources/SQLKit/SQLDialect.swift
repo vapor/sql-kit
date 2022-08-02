@@ -155,6 +155,17 @@ public protocol SQLDialect {
     ///
     /// Defaults to `[.union, .unionAll]`.
     var unionFeatures: SQLUnionFeatures { get }
+    
+    /// A serialization for ``SQLLockingClause/share``, representing a request for a shared "reader"
+    /// lock on rows retrieved by a `SELECT` query. A `nil` value means the database doesn't
+    /// support shared locking requests, which causes the locking clause to be silently ignored.
+    var sharedSelectLockExpression: SQLExpression? { get }
+    
+    /// A serialization for ``SQLLockingClause/update``, representing a request for an exclusive
+    /// "writer" lock on rows retrieved by a `SELECT` query. A `nil` value means the database doesn't
+    /// support exclusive locking requests, which causes the locking clause to be silently ignored.
+    var exclusiveSelectLockExpression: SQLExpression? { get }
+    
 }
 
 /// Controls `ALTER TABLE` syntax.
@@ -309,4 +320,6 @@ extension SQLDialect {
     public func normalizeSQLConstraint(identifier: SQLExpression) -> SQLExpression { identifier }
     public var upsertSyntax: SQLUpsertSyntax { .unsupported }
     public var unionFeatures: SQLUnionFeatures { [.union, .unionAll] }
+    public var sharedSelectLockExpression: SQLExpression? { nil }
+    public var exclusiveSelectLockExpression: SQLExpression? { nil }
 }

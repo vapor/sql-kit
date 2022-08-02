@@ -112,7 +112,16 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE `name` = ? FOR UPDATE")
     }
     
-    func testLockingClause_lockInShareMode() throws {
+    func testLockingClause_forShare() throws {
+        try db.select().column("*")
+            .from("planets")
+            .where("name", .equal, "Earth")
+            .for(.share)
+            .run().wait()
+        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE `name` = ? FOR SHARE")
+    }
+    
+    func testLockingClause_raw() throws {
         try db.select().column("*")
             .from("planets")
             .where("name", .equal, "Earth")

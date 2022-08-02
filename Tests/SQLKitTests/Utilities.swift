@@ -85,6 +85,8 @@ struct GenericDialect: SQLDialect {
     var alterTableSyntax = SQLAlterTableSyntax(alterColumnDefinitionClause: SQLRaw("MODIFY"), alterColumnDefinitionTypeKeyword: nil)
     var upsertSyntax: SQLUpsertSyntax = .standard
     var unionFeatures: SQLUnionFeatures = []
+    var sharedSelectLockExpression: SQLExpression? { SQLRaw("FOR SHARE") }
+    var exclusiveSelectLockExpression: SQLExpression? { SQLRaw("FOR UPDATE") }
 
     mutating func setTriggerSyntax(create: SQLTriggerSyntax.Create = [], drop: SQLTriggerSyntax.Drop = []) {
         self.triggerSyntax.create = create

@@ -106,7 +106,16 @@ final class AsyncSQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE `name` = ? FOR UPDATE")
     }
     
-    func testLockingClause_lockInShareMode() async throws {
+    func testLockingClause_forShare() async throws {
+        try await db.select().column("*")
+            .from("planets")
+            .where("name", .equal, "Earth")
+            .for(.share)
+            .run()
+        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` WHERE `name` = ? FOR SHARE")
+    }
+    
+    func testLockingClause_raw() async throws {
         try await db.select().column("*")
             .from("planets")
             .where("name", .equal, "Earth")
