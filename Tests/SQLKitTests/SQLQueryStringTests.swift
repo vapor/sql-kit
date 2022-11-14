@@ -86,6 +86,18 @@ final class SQLQueryStringTests: XCTestCase {
         XCTAssertEqual(serializer.sql, "INSERT INTO `anything` (`col1`,`col2`,`col3`) VALUES (?, ?, ?)")
     }
     
+    func testAppendingQueryStringByOperatorPlusEquals() throws {
+        var serializer = SQLSerializer(database: db)
+        
+        var query = "INSERT INTO \(ident: "anything") " as SQLQueryString
+        query += "(\(idents: ["col1", "col2", "col3"], joinedBy: ",")) " as SQLQueryString
+        query += "VALUES (\(binds: [1, 2, 3]))" as SQLQueryString
+        
+        let builder = db.raw(query)
+        builder.query.serialize(to: &serializer)
+        XCTAssertEqual(serializer.sql, "INSERT INTO `anything` (`col1`,`col2`,`col3`) VALUES (?, ?, ?)")
+    }
+    
     func testQueryStringArrayJoin() throws {
         var serializer = SQLSerializer(database: db)
         let builder = db.raw(
