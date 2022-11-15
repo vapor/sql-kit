@@ -119,6 +119,10 @@ extension SQLQueryString {
     public static func +(lhs: SQLQueryString, rhs: SQLQueryString) -> SQLQueryString {
         return "\(lhs)\(rhs)"
     }
+    
+    public static func +=(lhs: inout SQLQueryString, rhs: SQLQueryString) {
+        lhs.fragments.append(contentsOf: rhs.fragments)
+    }
 }
 
 extension Array where Element == SQLQueryString {
