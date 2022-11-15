@@ -121,7 +121,7 @@ extension SQLQueryString {
     }
     
     public static func +=(lhs: inout SQLQueryString, rhs: SQLQueryString) {
-        lhs = "\(lhs)\(rhs)"
+        lhs.fragments.insert(contentsOf: rhs.fragments, at: lhs.fragments.startIndex)
     }
 }
 
