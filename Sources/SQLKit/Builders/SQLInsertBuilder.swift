@@ -1,6 +1,6 @@
 /// Builds `SQLInsert` queries.
 ///
-///     db.insert(into: "planets"")
+///     db.insert(into: "planets")
 ///         .value(earth).run()
 ///
 /// See `SQLQueryBuilder` for more information.
