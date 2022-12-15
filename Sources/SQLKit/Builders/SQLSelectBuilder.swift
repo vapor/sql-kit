@@ -4,7 +4,7 @@ extension SQLDatabase {
     /// ```sql
     /// db.select()
     ///     .column("*")
-    ///     .from("planets"")
+    ///     .from("planets")
     ///     .where("name", .equal, SQLBind("Earth"))
     ///     .all()
     /// ```
