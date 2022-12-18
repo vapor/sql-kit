@@ -165,7 +165,14 @@ public protocol SQLDialect {
     /// "writer" lock on rows retrieved by a `SELECT` query. A `nil` value means the database doesn't
     /// support exclusive locking requests, which causes the locking clause to be silently ignored.
     var exclusiveSelectLockExpression: SQLExpression? { get }
-    
+
+    /// `true` if the dialect supports inserting multiple rows with a single statement. If `false`,
+    /// the dialect requires separate statements for each insert.
+    ///
+    ///     INSERT INTO table(col1, col2) VALUES (val1, val2), (val3, val4)
+    ///
+    /// Defaults to `true`.
+    var supportsMultiRowInsert: Bool { get }
 }
 
 /// Controls `ALTER TABLE` syntax.
@@ -322,4 +329,5 @@ extension SQLDialect {
     public var unionFeatures: SQLUnionFeatures { [.union, .unionAll] }
     public var sharedSelectLockExpression: SQLExpression? { nil }
     public var exclusiveSelectLockExpression: SQLExpression? { nil }
+    public var supportsMultiRowInsert: Bool { true }
 }

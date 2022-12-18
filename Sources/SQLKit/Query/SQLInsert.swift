@@ -30,6 +30,10 @@ public struct SQLInsert: SQLExpression {
     
     public func serialize(to serializer: inout SQLSerializer) {
         let modifier = self.conflictStrategy?.queryModifier(for: serializer)
+
+        if !serializer.dialect.supportsMultiRowInsert && self.values.count > 1 {
+            serializer.database.logger.warning("Database does not support inserting multiple row in a single statement. You will need to rewrite as individual insert statements.")
+        }
         
         serializer.statement {
             $0.append("INSERT")
