@@ -1,6 +1,6 @@
 public struct SQLList: SQLExpression {
-    public let expressions: [SQLExpression]
-    public let separator: SQLExpression
+    public var expressions: [SQLExpression]
+    public var separator: SQLExpression
 
     public init(_ expressions: [SQLExpression], separator: SQLExpression = SQLRaw(", ")) {
         self.expressions = expressions
