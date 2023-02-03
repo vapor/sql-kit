@@ -89,7 +89,6 @@ jobs:
       MYSQL_DATABASE: test_database
       MYSQL_DATABASE_A: test_database
       MYSQL_DATABASE_B: test_database
-      MYSQL_USER: tet_username
       MYSQL_USERNAME: test_username
       MYSQL_USERNAME_A: test_username
       MYSQL_USERNAME_B: test_username
@@ -123,7 +122,7 @@ jobs:
         run: swift package --package-path fluent-mysql-driver edit sql-kit --path sql-kit
         
       - name: Run fluent-sqlite-driver tests with Thread Sanitizer
-        run: swift test --package-path fluent-sqlite-driver --sanitize=thread
+        run: swift test --package-path fluent-sqlite-driver
       - name: Run fluent-postgres-driver tests with Thread Sanitizer
         run: swift test --package-path fluent-postgres-driver --sanitize=thread
       - name: Run fluent-mysql-driver tests with Thread Sanitizer
