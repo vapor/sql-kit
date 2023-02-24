@@ -1,3 +1,5 @@
+import NIOCore
+
 extension SQLDatabase {
     /// Creates a new `SQLDropEnumBuilder`.
     ///
