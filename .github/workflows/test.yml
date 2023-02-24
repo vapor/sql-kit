@@ -127,3 +127,14 @@ jobs:
         run: swift test --package-path fluent-postgres-driver --sanitize=thread
       - name: Run fluent-mysql-driver tests with Thread Sanitizer
         run: swift test --package-path fluent-mysql-driver --sanitize=thread
+
+  test-exports:
+    name: Test exports
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Vapor
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Build
+        run: swift build -Xswiftc -DBUILDING_DOCC

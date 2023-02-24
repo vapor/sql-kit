@@ -1,3 +1,5 @@
+import NIOCore
+
 // MARK: Connection
 
 extension SQLDatabase {

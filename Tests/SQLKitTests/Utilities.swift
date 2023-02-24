@@ -1,5 +1,7 @@
 import SQLKit
-import NIO
+import NIOCore
+import NIOEmbedded
+import Logging
 
 final class TestDatabase: SQLDatabase {
     let logger: Logger

@@ -1,3 +1,5 @@
+import NIOCore
+
 extension SQLDatabase {
     public func create(trigger: String, table: String, when: SQLTriggerWhen, event: SQLTriggerEvent) -> SQLCreateTriggerBuilder {
         self.create(trigger: SQLIdentifier(trigger), table: SQLIdentifier(table), when: when, event: event)

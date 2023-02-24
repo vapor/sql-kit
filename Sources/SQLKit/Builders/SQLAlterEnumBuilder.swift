@@ -1,3 +1,5 @@
+import NIOCore
+
 extension SQLDatabase {
     public func alter(enum name: String) -> SQLAlterEnumBuilder {
         self.alter(enum: SQLIdentifier(name))
