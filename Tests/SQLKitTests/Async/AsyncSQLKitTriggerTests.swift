@@ -1,10 +1,7 @@
-#if compiler(>=5.5) && canImport(_Concurrency)
-#if !os(Linux)
 import SQLKit
 import SQLKitBenchmark
 import XCTest
 
-@available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
 final class AsyncSQLKitTriggerTests: XCTestCase {
     private let body = [
         "IF NEW.amount < 0 THEN",
@@ -94,6 +91,3 @@ final class AsyncSQLKitTriggerTests: XCTestCase {
         XCTAssertEqual(db.results.popLast(), "CREATE CONSTRAINT TRIGGER `foo` AFTER INSERT ON `planet` FROM `galaxies` INITIALLY DEFERRED FOR EACH ROW WHEN (foo = bar) EXECUTE PROCEDURE `qwer`")
     }
 }
-
-#endif
-#endif

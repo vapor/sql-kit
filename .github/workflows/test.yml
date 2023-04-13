@@ -28,9 +28,9 @@ jobs:
 
   # Check for API breakage versus main
   api-breakage:
-    if: github.event_name == 'pull_request'
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
-    container: swift:5.7-jammy
+    container: swift:5.8-jammy
     steps:
       - name: Check out package
         uses: actions/checkout@v3
@@ -67,9 +67,10 @@ jobs:
       fail-fast: false
       matrix:
         swiftver:
-          - swift:5.5-bionic
           - swift:5.6-focal
           - swift:5.7-jammy
+          - swift:5.8-jammy
+          - swiftlang/swift:nightly-5.9-jammy
           - swiftlang/swift:nightly-main-jammy
     runs-on: ubuntu-latest
     container: ${{ matrix.swiftver }}
@@ -131,6 +132,7 @@ jobs:
   test-exports:
     name: Test exports
     runs-on: ubuntu-latest
+    container: swift:5.8-jammy
     steps:
       - name: Check out Vapor
         uses: actions/checkout@v3
