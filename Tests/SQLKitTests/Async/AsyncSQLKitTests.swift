@@ -1,10 +1,7 @@
-#if compiler(>=5.5) && canImport(_Concurrency)
-#if !os(Linux)
 import SQLKit
 import SQLKitBenchmark
 import XCTest
 
-@available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
 final class AsyncSQLKitTests: XCTestCase {
     var db: TestDatabase!
 
@@ -917,6 +914,3 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
         XCTAssertEqual(db.results[18], "(SELECT `id` FROM `t1`) UNION (SELECT `id` FROM `t2`) ORDER BY `id` ASC LIMIT 3 OFFSET 5")
     }
 }
-
-#endif
-#endif
