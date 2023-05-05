@@ -1,4 +1,4 @@
-/// Column constraint algorithms used by `SQLConstraint`
+/// Column constraint algorithms used by ``SQLColumnDefinition``
 public enum SQLColumnConstraintAlgorithm: SQLExpression {
     /// `PRIMARY KEY`column constraint.
     case primaryKey(autoIncrement: Bool)
@@ -10,61 +10,68 @@ public enum SQLColumnConstraintAlgorithm: SQLExpression {
     case unique
 
     /// `CHECK` column constraint.
-    case check(SQLExpression)
+    case check(any SQLExpression)
 
     /// `COLLATE` column constraint.
-    case collate(name: SQLExpression)
+    case collate(name: any SQLExpression)
 
     /// `DEFAULT` column constraint.
-    case `default`(SQLExpression)
+    case `default`(any SQLExpression)
 
     /// `FOREIGN KEY` column constraint.
-    case foreignKey(references: SQLExpression)
+    case foreignKey(references: any SQLExpression)
 
     /// `GENERATED ALWAYS AS` column constraint.
-    case generated(SQLExpression)
+    case generated(any SQLExpression)
 
-    /// Just serializes `SQLExpression`
-    case custom(SQLExpression)
+    /// Just serializes ``SQLExpression``
+    case custom(any SQLExpression)
 
     /// `PRIMARY KEY` with auto incrementing turned on.
+    @inlinable
     public static var primaryKey: SQLColumnConstraintAlgorithm {
-        return .primaryKey(autoIncrement: true)
+        .primaryKey(autoIncrement: true)
     }
 
     /// `COLLATE` column constraint.
+    @inlinable
     public static func collate(name: String) -> SQLColumnConstraintAlgorithm {
-        return .collate(name: SQLIdentifier(name))
+        .collate(name: SQLIdentifier(name))
     }
 
     /// `DEFAULT` column constraint.
+    @inlinable
     public static func `default`(_ value: String) -> SQLColumnConstraintAlgorithm {
-        return .default(SQLLiteral.string(value))
+        .default(SQLLiteral.string(value))
     }
 
     /// `DEFAULT` column constraint.
+    @inlinable
     public static func `default`<T: BinaryInteger>(_ value: T) -> SQLColumnConstraintAlgorithm {
-        return .default(SQLLiteral.numeric("\(value)"))
+        .default(SQLLiteral.numeric("\(value)"))
     }
 
     /// `DEFAULT` column constraint.
+    @inlinable
     public static func `default`<T: FloatingPoint>(_ value: T) -> SQLColumnConstraintAlgorithm {
-        return .default(SQLLiteral.numeric("\(value)"))
+        .default(SQLLiteral.numeric("\(value)"))
     }
 
     /// `DEFAULT` column constraint.
+    @inlinable
     public static func `default`(_ value: Bool) -> SQLColumnConstraintAlgorithm {
-        return .default(SQLLiteral.boolean(value))
+        .default(SQLLiteral.boolean(value))
     }
 
     /// `FOREIGN KEY` column constraint.
+    @inlinable
     public static func references(
         _ table: String,
         _ column: String,
         onDelete: SQLForeignKeyAction? = nil,
         onUpdate: SQLForeignKeyAction? = nil
     ) -> SQLColumnConstraintAlgorithm {
-        return self.references(
+        self.references(
             SQLIdentifier(table),
             SQLIdentifier(column),
             onDelete: onDelete,
@@ -73,13 +80,14 @@ public enum SQLColumnConstraintAlgorithm: SQLExpression {
     }
 
     /// `FOREIGN KEY` column constraint.
+    @inlinable
     public static func references(
-        _ table: SQLExpression,
-        _ column: SQLExpression,
-        onDelete: SQLExpression? = nil,
-        onUpdate: SQLExpression? = nil
+        _ table: any SQLExpression,
+        _ column: any SQLExpression,
+        onDelete: (any SQLExpression)? = nil,
+        onUpdate: (any SQLExpression)? = nil
     ) -> SQLColumnConstraintAlgorithm {
-        return .foreignKey(
+        .foreignKey(
             references: SQLForeignKey(
                 table: table,
                 columns: [column],

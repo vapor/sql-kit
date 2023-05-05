@@ -1,18 +1,22 @@
 public struct SQLDistinct: SQLExpression {
-    public let args: [SQLExpression]
+    public let args: [any SQLExpression]
     
+    @inlinable
     public  init(_ args: String...) {
-        self.args = args.map(SQLIdentifier.init(_:))
+        self.init(args.map(SQLIdentifier.init(_:)))
     }
     
-    public init(_ args: SQLExpression...) {
-        self.args = args
+    @inlinable
+    public init(_ args: any SQLExpression...) {
+        self.init(args)
     }
     
-    public init(_ args: [SQLExpression]) {
+    @inlinable
+    public init(_ args: [any SQLExpression]) {
         self.args = args
     }
 
+    @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         guard !args.isEmpty else { return }
         serializer.write("DISTINCT")
@@ -21,6 +25,7 @@ public struct SQLDistinct: SQLExpression {
 }
 
 extension SQLDistinct {
+    @inlinable
     public static var all: SQLDistinct {
         .init(SQLLiteral.all)
     }

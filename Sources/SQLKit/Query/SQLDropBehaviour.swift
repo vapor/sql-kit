@@ -9,10 +9,11 @@ public enum SQLDropBehavior: SQLExpression {
     /// Automatically drop objects that depend on the table (such as views).
     case cascade
     
+    @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         switch self {
         case .restrict: serializer.write("RESTRICT")
-        case .cascade: serializer.write("CASCADE")
+        case .cascade:  serializer.write("CASCADE")
         }
     }
 }

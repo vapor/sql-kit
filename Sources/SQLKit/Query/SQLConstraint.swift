@@ -1,16 +1,17 @@
-/// Constraints for `SQLCreateTable` (column and table constraints).
+/// Constraints for ``SQLCreateTable`` (column and table constraints).
 public struct SQLConstraint: SQLExpression {
     /// Name of constraint
     ///
     ///     `CONSTRAINT <name>`
-    public var name: SQLExpression?
+    public var name: (any SQLExpression)?
 
     /// Algorithm. See `SQLTableConstraintAlgorithm`
     /// and `SQLColumnConstraintAlgorithm`
     /// TODO: Make optional.
-    public var algorithm: SQLExpression
+    public var algorithm: any SQLExpression
 
-    public init(algorithm: SQLExpression, name: SQLExpression? = nil) {
+    @inlinable
+    public init(algorithm: any SQLExpression, name: (any SQLExpression)? = nil) {
         self.name = name
         self.algorithm = algorithm
     }

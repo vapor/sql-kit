@@ -1,65 +1,59 @@
-/// Builds `SQLUpdate` queries.
+/// Builds ``SQLUpdate`` queries.
 ///
-///     db.update(Planet.self)
-///         .set(\Planet.name == "Earth")
-///         .where(\Planet.name == "Eatrh")
+///     db.update(Planet.schema)
+///         .set("name", to: "Earth")
+///         .where("name", .equal, "Earth")
 ///         .run()
-///
-/// See `SQLQueryBuilder` and `SQLPredicateBuilder` for more information.
 public final class SQLUpdateBuilder: SQLQueryBuilder, SQLPredicateBuilder, SQLReturningBuilder, SQLColumnUpdateBuilder {
-    /// `Update` query being built.
+    /// ``SQLUpdate`` query being built.
     public var update: SQLUpdate
     
-    public var database: SQLDatabase
+    /// See ``SQLQueryBuilder/database``.
+    public var database: any SQLDatabase
 
-    public var query: SQLExpression {
-        return self.update
+    /// See ``SQLQueryBuilder/query``.
+    @inlinable
+    public var query: any SQLExpression {
+        self.update
     }
     
-    public var values: [SQLExpression] {
-        get { return self.update.values }
+    /// See ``SQLColumnUpdateBuilder/values``.
+    @inlinable
+    public var values: [any SQLExpression] {
+        get { self.update.values }
         set { self.update.values = newValue }
     }
 
-    public var predicate: SQLExpression? {
-        get { return self.update.predicate }
+    /// See ``SQLPredicateBuilder/predicate``.
+    @inlinable
+    public var predicate: (any SQLExpression)? {
+        get { self.update.predicate }
         set { self.update.predicate = newValue }
     }
 
+    /// See ``SQLReturningBuilder/returning``.
+    @inlinable
     public var returning: SQLReturning? {
-        get { return self.update.returning }
+        get { self.update.returning }
         set { self.update.returning = newValue }
     }
     
-    /// Creates a new `SQLUpdateBuilder`.
-    public init(_ update: SQLUpdate, on database: SQLDatabase) {
+    /// Create a new ``SQLUpdateBuilder``.
+    @inlinable
+    public init(_ update: SQLUpdate, on database: any SQLDatabase) {
         self.update = update
         self.database = database
     }
 }
 
-// MARK: Connection
-
 extension SQLDatabase {
-    /// Creates a new `SQLUpdateBuilder`.
-    ///
-    ///     db.update("planets")...
-    ///
-    /// - parameters:
-    ///     - table: Table to update.
-    /// - returns: Newly created `SQLUpdateBuilder`.
+    /// Create a new ``SQLUpdateBuilder``.
     public func update(_ table: String) -> SQLUpdateBuilder {
-        return self.update(SQLIdentifier(table))
+        self.update(SQLIdentifier(table))
     }
     
-    /// Creates a new `SQLUpdateBuilder`.
-    ///
-    ///     db.update("planets")...
-    ///
-    /// - parameters:
-    ///     - table: Table to update.
-    /// - returns: Newly created `SQLUpdateBuilder`.
-    public func update(_ table: SQLExpression) -> SQLUpdateBuilder {
-        return .init(.init(table: table), on: self)
+    /// Create a new ``SQLUpdateBuilder``.
+    public func update(_ table: any SQLExpression) -> SQLUpdateBuilder {
+        .init(.init(table: table), on: self)
     }
 }

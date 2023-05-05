@@ -1,13 +1,14 @@
 ///// `JOIN` clause.
 public struct SQLJoin: SQLExpression {
-    public var method: SQLExpression
+    public var method: any SQLExpression
 
-    public var table: SQLExpression
+    public var table: any SQLExpression
     
-    public var expression: SQLExpression
+    public var expression: any SQLExpression
 
     /// Creates a new `SQLJoin`.
-    public init(method: SQLExpression, table: SQLExpression, expression: SQLExpression) {
+    @inlinable
+    public init(method: any SQLExpression, table: any SQLExpression, expression: any SQLExpression) {
         self.method = method
         self.table = table
         self.expression = expression

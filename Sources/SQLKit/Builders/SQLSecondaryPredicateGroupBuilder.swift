@@ -1,41 +1,28 @@
-/// Nested `SQLSecondaryPredicateBuilder` for building expression groups.
-///
-/// ```swift
-/// builder.having("type", .equal, .smallRocky).having {
-///     $0.having("name", .equal, "Earth")
-///       .orHaving("name", .equal, "Mars")
-/// }
-/// ```
+/// Nested ``SQLSecondaryPredicateBuilder`` for building expression groups.
 public final class SQLSecondaryPredicateGroupBuilder: SQLSecondaryPredicateBuilder {
-    // See `SQLSecondaryPredicateBuilder.secondaryPredicate`.
-    public var secondaryPredicate: SQLExpression?
+    /// See ``SQLSecondaryPredicateBuilder/secondaryPredicate``.
+    public var secondaryPredicate: (any SQLExpression)?
     
-    /// Creates a new `SQLSecondaryPredicateGroupBuilder`.
-    internal init() { }
+    /// Create a new ``SQLSecondaryPredicateGroupBuilder``.
+    @usableFromInline
+    init() {}
 }
 
 extension SQLSecondaryPredicateBuilder {
-    /// Builds a grouped `HAVING` expression by conjunction ('AND').
+    /// Builds a grouped `HAVING` expression by conjunction (`AND`).
     ///
-    /// The following expression:
+    ///     builder.having("type", .equal, .smallRocky).having {
+    ///         $0.having("name", .equal, "Earth").orHaving("name", .equal, "Mars")
+    ///     }
     ///
-    /// ```swift
-    /// builder.having("type", .equal, .smallRocky).having {
-    ///     $0.having("name", .equal, "Earth")
-    ///       .orHaving("name", .equal, "Mars")
-    /// }
-    /// ```
+    /// The above code would result in the following SQL.
     ///
-    /// ... will result in SQL similar to:
-    ///
-    /// ```sql
-    /// HAVING "type" = 'smallRocky' AND
-    ///     ("name" = 'Earth' OR "name" = 'Mars')
-    /// ```
+    ///     HAVING "type" = "smallRocky" AND ("name" = "Earth" OR "name" = "Mars")
+    @inlinable
     @discardableResult
-    public func having(group: (SQLSecondaryPredicateGroupBuilder) -> (SQLSecondaryPredicateGroupBuilder)) -> Self {
+    public func having(group: (SQLSecondaryPredicateGroupBuilder) throws -> (SQLSecondaryPredicateGroupBuilder)) rethrows -> Self {
         let builder = SQLSecondaryPredicateGroupBuilder()
-        _ = group(builder)
+        _ = try group(builder)
         if let sub = builder.secondaryPredicate {
             return self.having(SQLGroupExpression(sub))
         } else {
@@ -45,25 +32,18 @@ extension SQLSecondaryPredicateBuilder {
     
     /// Builds a grouped `HAVING` expression by disjunction ('OR').
     ///
-    /// The following expression:
+    ///     builder.having("name", .equal, "Jupiter").orHaving {
+    ///         $0.having("name", .equal, "Earth").having("type", .equal, PlanetType.smallRocky)
+    ///     }
     ///
-    /// ```swift
-    /// builder.having("name", .equal, "Jupiter").orHaving {
-    ///     $0.having("name", .equal, "Earth")
-    ///       .having("type", .equal, .smallRocky)
-    /// }
-    /// ```
+    /// The above code would result in the following SQL.
     ///
-    /// ... will result in SQL similar to:
-    ///
-    /// ```sql
-    /// HAVING "name" = 'Jupiter' OR
-    ///     ("name" = 'Earth' AND "type" = 'smallRocky')
-    /// ```
+    ///     HAVING "name" = "Jupiter" OR ("name" = "Earth" AND "type" = "smallRocky")
+    @inlinable
     @discardableResult
-    public func orHaving(group: (SQLSecondaryPredicateGroupBuilder) -> (SQLSecondaryPredicateGroupBuilder)) -> Self {
+    public func orHaving(group: (SQLSecondaryPredicateGroupBuilder) throws -> (SQLSecondaryPredicateGroupBuilder)) rethrows -> Self {
         let builder = SQLSecondaryPredicateGroupBuilder()
-        _ = group(builder)
+        _ = try group(builder)
         if let sub = builder.secondaryPredicate {
             return self.orHaving(SQLGroupExpression(sub))
         } else {

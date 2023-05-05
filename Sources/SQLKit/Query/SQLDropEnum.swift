@@ -1,9 +1,9 @@
 /// `DROP TYPE` query.
 ///
-/// See `SQLDropEnumBuilder`.
+/// See ``SQLDropEnumBuilder``.
 public struct SQLDropEnum: SQLExpression {
     /// Type to drop.
-    public let name: SQLExpression
+    public let name: any SQLExpression
 
     /// The optional `IF EXISTS` clause suppresses the error that would normally
     /// result if the type does not exist.
@@ -15,13 +15,15 @@ public struct SQLDropEnum: SQLExpression {
     public var cascade: Bool
 
     /// Creates a new `SQLDropEnum`.
-    public init(name: SQLExpression) {
+    @inlinable
+    public init(name: any SQLExpression) {
         self.name = name
         self.ifExists = false
         self.cascade = false
     }
 
     /// See `SQLExpression`.
+    @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {
             $0.append("DROP TYPE")

@@ -1,9 +1,9 @@
 /// The `CREATE TABLE` command is used to create a new table in a database.
 ///
-/// See `SQLCreateTableBuilder`.
+/// See ``SQLCreateTableBuilder``.
 public struct SQLCreateTable: SQLExpression {
     /// Name of table to create.
-    public var table: SQLExpression
+    public var table: any SQLExpression
     
     /// If the "TEMP" or "TEMPORARY" keyword occurs between the "CREATE" and "TABLE" then the new table is created in the temp database.
     public var temporary: Bool
@@ -16,16 +16,17 @@ public struct SQLCreateTable: SQLExpression {
     public var ifNotExists: Bool
     
     /// Columns to create.
-    public var columns: [SQLExpression]
+    public var columns: [any SQLExpression]
     
     /// Table constraints, such as `FOREIGN KEY`, to add.
-    public var tableConstraints: [SQLExpression]
+    public var tableConstraints: [any SQLExpression]
     
     /// A subquery which, when present, is used to fill in the contents of the new table.
-    public var asQuery: SQLExpression?
+    public var asQuery: (any SQLExpression)?
     
     /// Creates a new `SQLCreateTable` query.
-    public init(name: SQLExpression) {
+    @inlinable
+    public init(name: any SQLExpression) {
         self.table = name
         self.temporary = false
         self.ifNotExists = false

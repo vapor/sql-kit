@@ -3,7 +3,7 @@ public struct SQLUnion: SQLExpression {
     public var unions: [(SQLUnionJoiner, SQLSelect)]
     
     /// Zero or more `ORDER BY` clauses.
-    public var orderBys: [SQLExpression]
+    public var orderBys: [any SQLExpression]
     
     /// If set, limits the maximum number of results.
     public var limit: Int?
@@ -11,6 +11,7 @@ public struct SQLUnion: SQLExpression {
     /// If set, offsets the results.
     public var offset: Int?
 
+    @inlinable
     public init(initialQuery: SQLSelect, unions: [(SQLUnionJoiner, SQLSelect)] = []) {
         self.initialQuery = initialQuery
         self.unions = unions
@@ -19,10 +20,12 @@ public struct SQLUnion: SQLExpression {
         self.orderBys = []
     }
 
+    @inlinable
     public mutating func add(_ query: SQLSelect, all: Bool) {
         self.add(query, joiner: .init(type: all ? .unionAll : .union))
     }
     
+    @inlinable
     public mutating func add(_ query: SQLSelect, joiner: SQLUnionJoiner) {
         self.unions.append((joiner, query))
     }
@@ -75,6 +78,7 @@ public struct SQLUnionJoiner: SQLExpression {
     public var type: `Type`
 
     @available(*, deprecated, message: "Use .type` instead.")
+    @inlinable
     public var all: Bool {
         get { [.unionAll, .intersectAll, .exceptAll].contains(self.type) }
         set { switch (self.type, newValue) {
@@ -89,10 +93,12 @@ public struct SQLUnionJoiner: SQLExpression {
     }
     
     @available(*, deprecated, message: "Use .init(type:)` instead.")
+    @inlinable
     public init(all: Bool) {
         self.init(type: all ? .unionAll : .union)
     }
     
+    @inlinable
     public init(type: `Type`) {
         self.type = type
     }

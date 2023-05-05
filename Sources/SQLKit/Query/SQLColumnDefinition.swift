@@ -1,15 +1,16 @@
-/// Table column definition. DDL. Used by `SQLCreateTable` and `SQLAlterTable`.
+/// Table column definition. DDL. Used by ``SQLCreateTable`` and ``SQLAlterTable``.
 ///
-/// See `SQLCreateTableBuilder` and `SQLAlterTableBuilder`.
+/// See ``SQLCreateTableBuilder`` and ``SQLAlterTableBuilder``.
 public struct SQLColumnDefinition: SQLExpression {
-    public var column: SQLExpression
+    public var column: any SQLExpression
     
-    public var dataType: SQLExpression
+    public var dataType: any SQLExpression
     
-    public var constraints: [SQLExpression]
+    public var constraints: [any SQLExpression]
     
-    /// Creates a new `SQLColumnDefinition` from column identifier, data type, and zero or more constraints.
-    public init(column: SQLExpression, dataType: SQLExpression, constraints: [SQLExpression] = []) {
+    /// Creates a new ``SQLColumnDefinition`` from column identifier, data type, and zero or more constraints.
+    @inlinable
+    public init(column: any SQLExpression, dataType: any SQLExpression, constraints: [any SQLExpression] = []) {
         self.column = column
         self.dataType = dataType
         self.constraints = constraints
@@ -30,16 +31,17 @@ extension SQLColumnDefinition {
     /// Create a new column definition from a string, data type, and array of constraints.
     ///
     /// Turns this:
-    /// ```swift
-    /// SQLColumnDefinition(
-    ///     column: SQLIdentifier("id"),
-    ///     dataType: SQLDataType.bigInt,
-    ///     constraints: [SQLColumnConstraintAlgorithm.primaryKey, SQLColumnConstraintAlgorithm.notNull]
-    /// )
-    /// ```
+    ///
+    ///     SQLColumnDefinition(
+    ///         column: SQLIdentifier("id"),
+    ///         dataType: SQLDataType.bigInt,
+    ///         constraints: [SQLColumnConstraintAlgorithm.primaryKey, SQLColumnConstraintAlgorithm.notNull]
+    ///     )
+    ///
     /// into this:
     ///
-    /// `SQLColumnDefinition("id", dataType: .bigint, constraints: [.primaryKey, .notNull]`
+    ///     SQLColumnDefinition("id", dataType: .bigint, constraints: [.primaryKey, .notNull])
+    @inlinable
     public init(_ name: String, dataType: SQLDataType, constraints: [SQLColumnConstraintAlgorithm] = []) {
         self.init(column: SQLIdentifier(name), dataType: dataType, constraints: constraints)
     }

@@ -1,32 +1,28 @@
-/// Nested `SQLPredicateBuilder` for building expression groups.
-///
-///     builder.where(\Planet.type == .smallRocky).where {
-///         $0.where(\Planet.name == "Earth").orWhere(\Planet.name == "Mars")
-///     }
-///
+/// Nested ``SQLPredicateBuilder`` for building expression groups.
 public final class SQLPredicateGroupBuilder: SQLPredicateBuilder {
-    /// See `SQLPredicateBuilder`.
-    public var predicate: SQLExpression?
+    /// See ``SQLPredicateBuilder/predicate``.
+    public var predicate: (any SQLExpression)?
     
-    /// Creates a new `SQLPredicateGroupBuilder`.
-    internal init() { }
+    /// Create a new ``SQLPredicateGroupBuilder``.
+    @usableFromInline
+    init() {}
 }
 
 extension SQLPredicateBuilder {
-    /// Builds a grouped `WHERE` expression.
+    /// Builds a grouped `WHERE` expression by conjunction (`AND`).
     ///
-    ///     builder.where(\Planet.type == .smallRocky).where {
-    ///         $0.where(\Planet.name == "Earth").orWhere(\Planet.name == "Mars")
+    ///     builder.where("type", .equal, PlanetType.smallRocky).where {
+    ///         $0.where("name", .equal, "Earth").orWhere("name", .equal, "Mars")
     ///     }
     ///
     /// The above code would result in the following SQL.
     ///
     ///     WHERE "type" = "smallRocky" AND ("name" = "Earth" OR "name" = "Mars")
-    ///
+    @inlinable
     @discardableResult
-    public func `where`(group: (SQLPredicateGroupBuilder) -> (SQLPredicateGroupBuilder)) -> Self {
+    public func `where`(group: (SQLPredicateGroupBuilder) throws -> (SQLPredicateGroupBuilder)) rethrows -> Self {
         let builder = SQLPredicateGroupBuilder()
-        _ = group(builder)
+        _ = try group(builder)
         if let sub = builder.predicate {
             return self.where(SQLGroupExpression(sub))
         } else {
@@ -34,20 +30,20 @@ extension SQLPredicateBuilder {
         }
     }
     
-    /// Builds a grouped `WHERE` expression.
+    /// Builds a grouped `WHERE` expression by disjunction (`OR`).
     ///
-    ///     builder.where(\Planet.name == "Jupiter").orWhere {
-    ///         $0.where(\Planet.name == "Earth").where(\Planet.type == .smallRocky)
+    ///     builder.where("name", .equal, "Jupiter").orWhere {
+    ///         $0.where("name", .equal, "Earth").where("type", .equal, PlanetType.smallRocky)
     ///     }
     ///
     /// The above code would result in the following SQL.
     ///
     ///     WHERE "name" = "Jupiter" OR ("name" = "Earth" AND "type" = "smallRocky")
-    ///
+    @inlinable
     @discardableResult
-    public func orWhere(group: (SQLPredicateGroupBuilder) -> (SQLPredicateGroupBuilder)) -> Self {
+    public func orWhere(group: (SQLPredicateGroupBuilder) throws -> (SQLPredicateGroupBuilder)) rethrows -> Self {
         let builder = SQLPredicateGroupBuilder()
-        _ = group(builder)
+        _ = try group(builder)
         if let sub = builder.predicate {
             return self.orWhere(SQLGroupExpression(sub))
         } else {

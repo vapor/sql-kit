@@ -26,16 +26,16 @@ extension SQLBenchmarker {
         .init("number_of_silly_pointless_fields_in_this_table", dataType: .bigint, constraints: [.default(Int64.max), .notNull]),
     ] }
     // list of column identifiers for the test table
-    fileprivate static var testCols: [SQLExpression] { self.testColDefs.map(\.column) }
+    fileprivate static var testCols: [any SQLExpression] { self.testColDefs.map(\.column) }
     // generate a row of values for the test table suitable for passing to SQLInsertBuilder
-    fileprivate static func testVals(id: Int? = nil, planet: Int, poi: String, setting: Double? = nil, start: Date = Date(), finish: Date? = nil, update: Date? = nil) -> [SQLExpression] { [
+    fileprivate static func testVals(id: Int? = nil, planet: Int, poi: String, setting: Double? = nil, start: Date = Date(), finish: Date? = nil, update: Date? = nil) -> [any SQLExpression] { [
             id.map { SQLBind($0) } ?? SQLLiteral.default, SQLBind(planet), SQLBind(poi), SQLBind(setting),
             SQLBind(start.timeIntervalSince1970), SQLBind(finish?.timeIntervalSince1970), SQLBind(update?.timeIntervalSince1970),
             SQLBind(Int64.random(in: .min ... .max)) // SQLite makes specifying "use the default" hard for no reason
     ] }
     // do an insert of the given rows allowing extra config of the insert, if ok is false then assert that the insert
     // errors out otherwise assert that it does not
-    fileprivate func testInsert(ok: Bool, _ vals: [SQLExpression], on database: SQLDatabase, file: StaticString = #file, line: UInt = #line, _ moreConfig: (SQLInsertBuilder) -> SQLInsertBuilder = { $0 }) {
+    fileprivate func testInsert(ok: Bool, _ vals: [any SQLExpression], on database: any SQLDatabase, file: StaticString = #filePath, line: UInt = #line, _ moreConfig: (SQLInsertBuilder) -> SQLInsertBuilder = { $0 }) {
         if !ok {
             XCTAssertThrowsError(
                 try moreConfig(database.insert(into: Self.testSchema).columns(Self.testCols).values(vals)).run().wait(), "",
@@ -49,7 +49,7 @@ extension SQLBenchmarker {
         }
     }
     // retrieve a count of all rows matching the criteria by the predicate, with the caller configuring the predicate
-    fileprivate func testCount(on database: SQLDatabase, _ predicate: (SQLSelectBuilder) -> SQLSelectBuilder) throws -> Int {
+    fileprivate func testCount(on database: any SQLDatabase, _ predicate: (SQLSelectBuilder) -> SQLSelectBuilder) throws -> Int {
         try predicate(database.select().column(SQLFunction("COUNT", args: SQLLiteral.all)).from(Self.testSchema))
             .all().flatMapThrowing { try $0[0].decode(column: $0[0].allColumns[0], as: Int.self) }.wait()
     }
@@ -73,7 +73,7 @@ extension SQLBenchmarker {
     
     /// Tests the "ignore conflicts" functionality. (Technically part of upserts.)
     public func testUpserts_ignoreAction() throws {
-        try self.runTest {
+        self.runTest {
             testInsert(ok: true,  Self.testVals(id: 1, planet: 5, poi: "0"), on: $0) { $0.ignoringConflicts(with: ["id"]) }
             
             guard $0.dialect.upsertSyntax != .mysqlLike else { return }

@@ -1,18 +1,4 @@
 public struct SQLQueryEncoder {
-    public var prefix: String? = nil
-    public var keyEncodingStrategy: KeyEncodingStrategy = .useDefaultKeys
-    public var nilEncodingStrategy: NilEncodingStrategy = .default
-
-    public init() { }
-
-    public func encode<E>(_ encodable: E) throws -> [(String, SQLExpression)]
-        where E: Encodable
-    {
-        let encoder = _Encoder(options: options)
-        try encodable.encode(to: encoder)
-        return encoder.row
-    }
-
     public enum NilEncodingStrategy {
         /// Skips nilable columns with nil values during encoding.
         case `default`
@@ -25,7 +11,27 @@ public struct SQLQueryEncoder {
         case useDefaultKeys
         /// A key encoding strategy that converts camel-case keys to snake-case keys.
         case convertToSnakeCase
-        case custom(([CodingKey]) -> CodingKey)
+        case custom(([any CodingKey]) -> any CodingKey)
+    }
+
+    public var prefix: String? = nil
+    public var keyEncodingStrategy: KeyEncodingStrategy = .useDefaultKeys
+    public var nilEncodingStrategy: NilEncodingStrategy = .default
+
+    public init() {
+        self.init(prefix: nil, keyEncodingStrategy: .useDefaultKeys, nilEncodingStrategy: .default)
+    }
+    
+    init(prefix: String?, keyEncodingStrategy: KeyEncodingStrategy, nilEncodingStrategy: NilEncodingStrategy) {
+        self.prefix = prefix
+        self.keyEncodingStrategy = keyEncodingStrategy
+        self.nilEncodingStrategy = nilEncodingStrategy
+    }
+
+    public func encode<E: Encodable>(_ encodable: E) throws -> [(String, any SQLExpression)] {
+        let encoder = _Encoder(options: options)
+        try encodable.encode(to: encoder)
+        return encoder.row
     }
 
     fileprivate struct _Options {
@@ -37,89 +43,49 @@ public struct SQLQueryEncoder {
     /// The options set on the top-level decoder.
     fileprivate var options: _Options {
         _Options(
-            prefix: prefix,
-            keyEncodingStrategy: keyEncodingStrategy,
-            nilEncodingStrategy: nilEncodingStrategy)
+            prefix: self.prefix,
+            keyEncodingStrategy: self.keyEncodingStrategy,
+            nilEncodingStrategy: self.nilEncodingStrategy)
     }
 }
 
 private final class _Encoder: Encoder {
     fileprivate let options: SQLQueryEncoder._Options
+    var row: [(String, any SQLExpression)] = []
+    var codingPath: [any CodingKey] { [] }
+    var userInfo: [CodingUserInfoKey: Any] { [:] }
 
-    var codingPath: [CodingKey] {
-        return []
-    }
+    init(options: SQLQueryEncoder._Options) { self.options = options }
 
-    var userInfo: [CodingUserInfoKey : Any] {
-        return [:]
-    }
-
-    var row: [(String, SQLExpression)]
-
-    init(options: SQLQueryEncoder._Options) {
-        self.row = []
-        self.options = options
-    }
-
-    func container<Key>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> where Key : CodingKey {
+    func container<Key: CodingKey>(keyedBy: Key.Type) -> KeyedEncodingContainer<Key> {
         switch options.nilEncodingStrategy {
-        case .asNil:
-            return KeyedEncodingContainer(_NilColumnKeyedEncoder(self))
-        case .default:
-            return KeyedEncodingContainer(_KeyedEncoder(self))
+        case .asNil: return KeyedEncodingContainer(_NilColumnKeyedEncoder(encoder: self))
+        case .default: return KeyedEncodingContainer(_KeyedEncoder(encoder: self))
         }
     }
+    func unkeyedContainer() -> any UnkeyedEncodingContainer { fatalError() }
+    func singleValueContainer() -> any SingleValueEncodingContainer { fatalError() }
 
-    struct _NilColumnKeyedEncoder<Key>: KeyedEncodingContainerProtocol
-        where Key: CodingKey
-    {
-        var codingPath: [CodingKey] {
-            return []
-        }
+    struct _NilColumnKeyedEncoder<Key: CodingKey>: KeyedEncodingContainerProtocol {
+        var codingPath: [any CodingKey] { self.encoder.codingPath }
         let encoder: _Encoder
-        init(_ encoder: _Encoder) {
-            self.encoder = encoder
-        }
-
         func column(for key: Key) -> String {
             var encodedKey = key.stringValue
             switch self.encoder.options.keyEncodingStrategy {
-            case .useDefaultKeys:
-                break
-            case .convertToSnakeCase:
-                encodedKey = _convertToSnakeCase(encodedKey)
-            case .custom(let customKeyEncodingFunc):
-                encodedKey = customKeyEncodingFunc([key]).stringValue
+            case .useDefaultKeys: break
+            case .convertToSnakeCase: encodedKey = _convertToSnakeCase(encodedKey)
+            case .custom(let customKeyEncodingFunc): encodedKey = customKeyEncodingFunc([key]).stringValue
             }
-
-            if let prefix = self.encoder.options.prefix {
-                return prefix + encodedKey
-            } else {
-                return encodedKey
-            }
+            if let prefix = self.encoder.options.prefix { return prefix + encodedKey } else { return encodedKey }
         }
-
-        mutating func encodeNil(forKey key: Key) throws {
-            self.encoder.row.append((self.column(for: key), SQLLiteral.null))
+        mutating func encodeNil(forKey key: Key) throws { self.encoder.row.append((self.column(for: key), SQLLiteral.null)) }
+        mutating func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
+            self.encoder.row.append((self.column(for: key), (value as? SQLExpression) ?? SQLBind(value)))
         }
-
-        mutating func encode<T>(_ value: T, forKey key: Key) throws where T : Encodable {
-            if let value = value as? SQLExpression {
-                self.encoder.row.append((self.column(for: key), value))
-            } else {
-                self.encoder.row.append((self.column(for: key), SQLBind(value)))
-            }
+        mutating func _encodeIfPresent<T: Encodable>(_ value: T?, forKey key: Key) throws {
+            if let value = value { try encode(value, forKey: key) } else { try encodeNil(forKey: key) }
         }
-
-        mutating func _encodeIfPresent<T>(_ value: T?, forKey key: Key) throws where T : Encodable {
-            if let value = value {
-                try encode(value, forKey: key)
-            } else {
-                try encodeNil(forKey: key)
-            }
-        }
-
-        mutating func encodeIfPresent<T>(_ value: T?, forKey key: Key) throws where T : Encodable { try _encodeIfPresent(value, forKey: key)}
+        mutating func encodeIfPresent<T: Encodable>(_ value: T?, forKey key: Key) throws { try _encodeIfPresent(value, forKey: key)}
         mutating func encodeIfPresent(_ value: Int?, forKey key: Key) throws { try _encodeIfPresent(value, forKey: key) }
         mutating func encodeIfPresent(_ value: Int8?, forKey key: Key) throws { try _encodeIfPresent(value, forKey: key) }
         mutating func encodeIfPresent(_ value: Int16?, forKey key: Key) throws { try _encodeIfPresent(value, forKey: key) }
@@ -133,96 +99,31 @@ private final class _Encoder: Encoder {
         mutating func encodeIfPresent(_ value: Float?, forKey key: Key) throws { try _encodeIfPresent(value, forKey: key) }
         mutating func encodeIfPresent(_ value: String?, forKey key: Key) throws { try _encodeIfPresent(value, forKey: key) }
         mutating func encodeIfPresent(_ value: Bool?, forKey key: Key) throws { try _encodeIfPresent(value, forKey: key) }
-
-        mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> where NestedKey : CodingKey {
-            fatalError()
-        }
-
-        mutating func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
-            fatalError()
-        }
-
-        mutating func superEncoder() -> Encoder {
-            return self.encoder
-        }
-
-        mutating func superEncoder(forKey key: Key) -> Encoder {
-            return self.encoder
-        }
+        mutating func nestedContainer<N: CodingKey>(keyedBy: N.Type, forKey: Key) -> KeyedEncodingContainer<N> { fatalError() }
+        mutating func nestedUnkeyedContainer(forKey: Key) -> any UnkeyedEncodingContainer { fatalError() }
+        mutating func superEncoder() -> any Encoder { self.encoder }
+        mutating func superEncoder(forKey key: Key) -> any Encoder { self.encoder }
     }
-
-    func unkeyedContainer() -> UnkeyedEncodingContainer {
-        fatalError()
-    }
-
-    func singleValueContainer() -> SingleValueEncodingContainer {
-        fatalError()
-    }
-
-    struct _KeyedEncoder<Key>: KeyedEncodingContainerProtocol
-        where Key: CodingKey
-    {
-        var codingPath: [CodingKey] {
-            return []
-        }
+    struct _KeyedEncoder<Key: CodingKey>: KeyedEncodingContainerProtocol {
+        var codingPath: [CodingKey] { self.encoder.codingPath }
         let encoder: _Encoder
-        init(_ encoder: _Encoder) {
-            self.encoder = encoder
-        }
-
         func column(for key: Key) -> String {
             var encodedKey = key.stringValue
             switch self.encoder.options.keyEncodingStrategy {
-            case .useDefaultKeys:
-                break
-            case .convertToSnakeCase:
-                encodedKey = _convertToSnakeCase(encodedKey)
-            case .custom(let customKeyEncodingFunc):
-                encodedKey = customKeyEncodingFunc([key]).stringValue
+            case .useDefaultKeys: break
+            case .convertToSnakeCase: encodedKey = _convertToSnakeCase(encodedKey)
+            case .custom(let customKeyEncodingFunc): encodedKey = customKeyEncodingFunc([key]).stringValue
             }
-
-            if let prefix = self.encoder.options.prefix {
-                return prefix + encodedKey
-            } else {
-                return encodedKey
-            }
+            if let prefix = self.encoder.options.prefix { return prefix + encodedKey } else { return encodedKey }
         }
-
-        mutating func encodeNil(forKey key: Key) throws {
-            self.encoder.row.append((self.column(for: key), SQLLiteral.null))
+        mutating func encodeNil(forKey key: Key) throws { self.encoder.row.append((self.column(for: key), SQLLiteral.null)) }
+        mutating func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
+            self.encoder.row.append((self.column(for: key), (value as? SQLExpression) ?? SQLBind(value)))
         }
-
-        mutating func encode<T>(_ value: T, forKey key: Key) throws where T : Encodable {
-            if let value = value as? SQLExpression {
-                self.encoder.row.append((self.column(for: key), value))
-            } else {
-                self.encoder.row.append((self.column(for: key), SQLBind(value)))
-            }
-        }
-
-        mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> where NestedKey : CodingKey {
-            fatalError()
-        }
-
-        mutating func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
-            fatalError()
-        }
-
-        mutating func superEncoder() -> Encoder {
-            return self.encoder
-        }
-
-        mutating func superEncoder(forKey key: Key) -> Encoder {
-            return self.encoder
-        }
-
-        func unkeyedContainer() -> UnkeyedEncodingContainer {
-            fatalError()
-        }
-
-        func singleValueContainer() -> SingleValueEncodingContainer {
-            fatalError()
-        }
+        mutating func nestedContainer<N: CodingKey>(keyedBy: N.Type, forKey: Key) -> KeyedEncodingContainer<N> { fatalError() }
+        mutating func nestedUnkeyedContainer(forKey: Key) -> any UnkeyedEncodingContainer { fatalError() }
+        mutating func superEncoder() -> any Encoder { self.encoder }
+        mutating func superEncoder(forKey: Key) -> any Encoder { self.encoder }
     }
 }
 
@@ -234,32 +135,16 @@ private extension _Encoder {
     /// If the result of the conversion is a duplicate key, then only one value will be present in the result.
     static func _convertToSnakeCase(_ stringKey: String) -> String {
         guard !stringKey.isEmpty else { return stringKey }
-
-        enum Status {
-            case uppercase
-            case lowercase
-            case number
-        }
-
-        var status = Status.lowercase
-        var snakeCasedString = ""
-        var i = stringKey.startIndex
+        enum Status { case uppercase, lowercase }
+        var status = Status.lowercase, snakeCasedString = "", i = stringKey.startIndex
         while i < stringKey.endIndex {
-            let nextIndex = stringKey.index(i, offsetBy: 1)
-
+            let nextIndex = stringKey.index(after: i)
             if stringKey[i].isUppercase {
                 switch status {
-                case .uppercase:
-                    if nextIndex < stringKey.endIndex {
-                        if stringKey[nextIndex].isLowercase {
-                            snakeCasedString.append("_")
-                        }
-                    }
-                case .lowercase,
-                     .number:
-                    if i != stringKey.startIndex {
-                        snakeCasedString.append("_")
-                    }
+                case .uppercase where nextIndex < stringKey.endIndex && stringKey[nextIndex].isLowercase,
+                     .lowercase where i != stringKey.startIndex:
+                    snakeCasedString.append("_")
+                default: break
                 }
                 status = .uppercase
                 snakeCasedString.append(stringKey[i].lowercased())
@@ -267,10 +152,8 @@ private extension _Encoder {
                 status = .lowercase
                 snakeCasedString.append(stringKey[i])
             }
-
             i = nextIndex
         }
-
         return snakeCasedString
     }
 }

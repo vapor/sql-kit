@@ -1,39 +1,31 @@
-import NIO
+import NIOCore
 
-/// A `SQLQueryBuilder` that supports decoding results.
-///
-///     builder.all(decoding: Planet.self)
-///
-public protocol SQLQueryFetcher: SQLQueryBuilder { }
+/// Common definitions for ``SQLQueryBuilder``s which support decoding results.
+public protocol SQLQueryFetcher: SQLQueryBuilder {}
 
 extension SQLQueryFetcher {
     // MARK: First
 
-    public func first<D>(decoding: D.Type) -> EventLoopFuture<D?>
-        where D: Decodable
-    {
+    /// Returns the first output row, if any, decoded as a given type.
+    public func first<D: Decodable>(decoding: D.Type) -> EventLoopFuture<D?> {
         self.first().flatMapThrowing {
-            guard let row = $0 else {
-                return nil
-            }
-            return try row.decode(model: D.self)
+            try $0?.decode(model: D.self)
         }
     }
     
-    /// Collects the first raw output and returns it.
-    ///
-    ///     builder.first()
-    ///
-    public func first() -> EventLoopFuture<SQLRow?> {
-        return self.all().map { $0.first }
+    /// Returns the first output row, if any.
+    public func first() -> EventLoopFuture<(any SQLRow)?> {
+        if let partialBuilder = self as? (any SQLPartialResultBuilder & SQLQueryFetcher) {
+            return partialBuilder.limit(1).all().map(\.first)
+        } else {
+            return self.all().map(\.first)
+        }
     }
     
     // MARK: All
 
-
-    public func all<D>(decoding: D.Type) -> EventLoopFuture<[D]>
-        where D: Decodable
-    {
+    /// Returns all output rows, if any, decoded as a given type.
+    public func all<D: Decodable>(decoding: D.Type) -> EventLoopFuture<[D]> {
         self.all().flatMapThrowing {
             try $0.map {
                 try $0.decode(model: D.self)
@@ -42,11 +34,8 @@ extension SQLQueryFetcher {
     }
     
     /// Collects all raw output into an array and returns it.
-    ///
-    ///     builder.all()
-    ///
-    public func all() -> EventLoopFuture<[SQLRow]> {
-        var all: [SQLRow] = []
+    public func all() -> EventLoopFuture<[any SQLRow]> {
+        var all: [any SQLRow] = []
         return self.run { row in
             all.append(row)
         }.map { all }
@@ -54,28 +43,14 @@ extension SQLQueryFetcher {
     
     // MARK: Run
 
-
-    public func run<D>(decoding: D.Type, _ handler: @escaping (Result<D, Error>) -> ()) -> EventLoopFuture<Void>
-        where D: Decodable
-    {
-        self.run {
-            do {
-                try handler(.success($0.decode(model: D.self)))
-            } catch {
-                handler(.failure(error))
-            }
-        }
+    /// Executes the query, decoding each output row as a given type and calling a provided handler with the result.
+    public func run<D: Decodable>(decoding: D.Type, _ handler: @escaping (Result<D, Error>) -> ()) -> EventLoopFuture<Void> {
+        self.run { row in handler(Result { try row.decode(model: D.self) }) }
     }
     
-    
     /// Runs the query, passing output to the supplied closure as it is recieved.
-    ///
-    ///     builder.run { print($0) }
-    ///
-    /// The returned future will signal completion of the query.
-    public func run(_ handler: @escaping (SQLRow) -> ()) -> EventLoopFuture<Void> {
-        return self.database.execute(sql: self.query) { row in
-            handler(row)
-        }
+    /// The returned future signals completion of the query.
+    public func run(_ handler: @escaping (any SQLRow) -> ()) -> EventLoopFuture<Void> {
+        self.database.execute(sql: self.query, handler)
     }
 }

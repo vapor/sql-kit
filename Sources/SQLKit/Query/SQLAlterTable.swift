@@ -1,28 +1,25 @@
 /// `ALTER TABLE` query.
 ///
-///     db.alter(table: Planet.self)
-///         .column(for: \.name)
-///         .run()
-///
-/// See `SQLAlterTableBuilder` for more information.
+/// See ``SQLAlterTableBuilder``.
 public struct SQLAlterTable: SQLExpression {
-    public var name: SQLExpression
+    public var name: any SQLExpression
     
     /// New name
-    public var renameTo: SQLExpression?
+    public var renameTo: (any SQLExpression)?
     /// Columns to add.
-    public var addColumns: [SQLExpression]
+    public var addColumns: [any SQLExpression]
     /// Columns to update.
-    public var modifyColumns: [SQLExpression]
+    public var modifyColumns: [any SQLExpression]
     /// Columns to delete.
-    public var dropColumns: [SQLExpression]
+    public var dropColumns: [any SQLExpression]
     /// Table constraints, such as `FOREIGN KEY`, to add.
-    public var addTableConstraints: [SQLExpression]
+    public var addTableConstraints: [any SQLExpression]
     /// Table constraints, such as `FOREIGN KEY`, to delete.
-    public var dropTableConstraints: [SQLExpression]
+    public var dropTableConstraints: [any SQLExpression]
     
-    /// Creates a new `SQLAlterTable`. See `SQLAlterTableBuilder`.
-    public init(name: SQLExpression) {
+    /// Creates a new ``SQLAlterTable``. See ``SQLAlterTableBuilder``.
+    @inlinable
+    public init(name: any SQLExpression) {
         self.name = name
         self.renameTo = nil
         self.addColumns = []

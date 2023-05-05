@@ -1,101 +1,87 @@
-/// Builds `SQLCreateTable` queries.
+/// Builds ``SQLCreateTable`` queries.
 ///
-///    db.create(table: Planet.self).ifNotExists()
-///        .column(for: \Planet.id, .primaryKey)
-///        .column(for: \Planet.galaxyID, .references(\Galaxy.id))
+///     db.create(table: Planet.self).ifNotExists()
+///        .column("id", type: .int, .primaryKey)
+///        .column("galaxy_id", type: .int, .references(Galaxy.schema, "id"))
 ///        .run()
 ///
 /// See `SQLColumnBuilder` and `SQLQueryBuilder` for more information.
 public final class SQLCreateTableBuilder: SQLQueryBuilder {
-    /// `CreateTable` query being built.
+    /// ``SQLCreateTable`` query being built.
     public var createTable: SQLCreateTable
     
-    public var database: SQLDatabase
+    /// See ``SQLQueryBuilder/database``.
+    public var database: any SQLDatabase
 
-    public var query: SQLExpression {
-        return self.createTable
+    /// See ``SQLQueryBuilder/query``.
+    @inlinable
+    public var query: any SQLExpression {
+        self.createTable
     }
 
-    public var columns: [SQLExpression] {
-        get { return createTable.columns }
-        set { createTable.columns = newValue }
+    /// The set of column definitions.
+    @inlinable
+    public var columns: [any SQLExpression] {
+        get { self.createTable.columns }
+        set { self.createTable.columns = newValue }
     }
     
-    /// Creates a new `SQLCreateTableBuilder`.
-    public init(_ createTable: SQLCreateTable, on database: SQLDatabase) {
+    /// Create a new ``SQLCreateTableBuilder``.
+    @inlinable
+    public init(_ createTable: SQLCreateTable, on database: any SQLDatabase) {
         self.createTable = createTable
         self.database = database
     }
     
+    /// Add a new column by name, type, and constraints.
+    @inlinable
     @discardableResult
-    public func column(
-        _ column: String,
-        type dataType: SQLDataType,
-        _ constraints: SQLColumnConstraintAlgorithm...
-    ) -> Self {
-        return self.column(SQLColumnDefinition(
-            column: SQLIdentifier(column),
-            dataType: dataType,
-            constraints: constraints
-        ))
+    public func column(_ column: String, type dataType: SQLDataType, _ constraints: SQLColumnConstraintAlgorithm...) -> Self {
+        self.column(column, type: dataType, constraints)
     }
     
+    /// Add a new column by name, type, and constraints.
+    @inlinable
     @discardableResult
-    public func column(
-        _ column: String,
-        type dataType: SQLDataType,
-        _ constraints: [SQLColumnConstraintAlgorithm]
-    ) -> Self {
-        return self.column(SQLColumnDefinition(
-            column: SQLIdentifier(column),
-            dataType: dataType,
-            constraints: constraints
-        ))
+    public func column(_ column: String, type dataType: SQLDataType, _ constraints: [SQLColumnConstraintAlgorithm]) -> Self {
+        self.column(SQLIdentifier(column), type: dataType, constraints)
     }
     
+    /// Add a new column by name, type, and constraints.
+    @inlinable
     @discardableResult
-    public func column(
-        _ column: SQLExpression,
-        type dataType: SQLExpression,
-        _ constraints: SQLExpression...
-    ) -> Self {
-        return self.column(SQLColumnDefinition(
-            column: column,
-            dataType: dataType,
-            constraints: constraints
-        ))
+    public func column(_ column: any SQLExpression, type dataType: any SQLExpression, _ constraints: any SQLExpression...) -> Self {
+        self.column(column, type: dataType, constraints)
     }
     
+    /// Add a new column by name, type, and constraints.
+    @inlinable
     @discardableResult
-    public func column(
-        _ column: SQLExpression,
-        type dataType: SQLExpression,
-        _ constraints: [SQLExpression]
-    ) -> Self {
-        return self.column(SQLColumnDefinition(
-            column: column,
-            dataType: dataType,
-            constraints: constraints
-        ))
+    public func column(_ column: any SQLExpression, type dataType: any SQLExpression, _ constraints: [any SQLExpression]) -> Self {
+        self.column(SQLColumnDefinition(column: column, dataType: dataType, constraints: constraints))
     }
     
+    /// Add a new column definition.
+    @inlinable
     @discardableResult
-    public func column(_ columnDefinition: SQLExpression) -> Self {
+    public func column(_ columnDefinition: any SQLExpression) -> Self {
         self.columns.append(columnDefinition)
         return self
     }
     
-    /// Sugar for `definitions.forEach { builder.column($0) }`
+    /// Add multiple column definitions.
+    @inlinable
     @discardableResult
     public func column(definitions: [SQLColumnDefinition]) -> SQLCreateTableBuilder {
         self.columns.append(contentsOf: definitions)
         return self
     }
 
-    /// If the "TEMP" or "TEMPORARY" keyword occurs between the "CREATE" and "TABLE" then the new table is created in the temp database.
+    /// Mark the new table as temporary.
+    @inlinable
     @discardableResult
     public func temporary() -> Self {
-        createTable.temporary = true
+        self.createTable.temporary = true
         return self
     }
     
@@ -104,20 +90,22 @@ public final class SQLCreateTableBuilder: SQLQueryBuilder {
     /// of the same name already exists, the CREATE TABLE command simply has no effect (and no error message is returned). An
     /// error is still returned if the table cannot be created because of an existing index, even if the "IF NOT EXISTS" clause is
     /// specified.
+    @inlinable
     @discardableResult
     public func ifNotExists() -> Self {
-        createTable.ifNotExists = true
+        self.createTable.ifNotExists = true
         return self
     }
     
     /// Specify a `SELECT` query to be used to populate the new table.
     ///
     /// If called more than once, each subsequent invocation overwrites the query from the one before.
+    @inlinable
     @discardableResult
     public func select(_ closure: (SQLCreateTableAsSubqueryBuilder) -> SQLCreateTableAsSubqueryBuilder) -> Self {
         let builder = SQLCreateTableAsSubqueryBuilder()
         _ = closure(builder)
-        createTable.asQuery = builder.select
+        self.createTable.asQuery = builder.select
         return self
     }
 }
@@ -125,122 +113,116 @@ public final class SQLCreateTableBuilder: SQLQueryBuilder {
 // MARK: Constraints
 
 extension SQLCreateTableBuilder {
-    /// Adds a new `PRIMARY KEY` constraint to the table being built
+    /// Add a `PRIMARY KEY` constraint to the table.
     ///
-    /// - parameters:
-    ///     - columns: One or more  columns of the table currently being built to make into a Primary Key.
-    ///     - constraintName: An optional name to give the constraint.
+    /// - Parameters:
+    ///   - columns: One or more columns to include in the primary key.
+    ///   - constraintName: An optional name to give the constraint.
+    @inlinable
     @discardableResult
     public func primaryKey(_ columns: String..., named constraintName: String? = nil) -> Self {
-        return primaryKey(columns, named: constraintName)
+        self.primaryKey(columns, named: constraintName)
     }
 
-    /// Adds a new `PRIMARY KEY` constraint to the table being built
+    /// Add a `PRIMARY KEY` constraint to the table.
     ///
-    /// - parameters:
-    ///     - columns: One or more  columns of the table currently being built to make into a Primary Key.
-    ///     - constraintName: An optional name to give the constraint.
+    /// - Parameters:
+    ///   - columns: One or more columns to include in the primary key.
+    ///   - constraintName: An optional name to give the constraint.
+    @inlinable
     @discardableResult
     public func primaryKey(_ columns: [String], named constraintName: String? = nil) -> Self {
-        return primaryKey(
-            columns.map(SQLIdentifier.init(_:)),
-            named: constraintName.map(SQLIdentifier.init(_:))
-        )
+        self.primaryKey(columns.map(SQLIdentifier.init(_:)), named: constraintName.map(SQLIdentifier.init(_:)))
     }
 
-    /// Adds a new `PRIMARY KEY` constraint to the table being built
+    /// Add a `PRIMARY KEY` constraint to the table.
     ///
     /// - parameters:
-    ///     - columns: One or more  columns of the table currently being built to make into a Primary Key.
-    ///     - constraintName: An optional name to give the constraint.
+    ///   - columns: One or more columns to include in the primary key.
+    ///   - constraintName: An optional name to give the constraint.
+    @inlinable
     @discardableResult
-    public func primaryKey(_ columns: [SQLExpression], named constraintName: SQLExpression? = nil) -> Self {
-        createTable.tableConstraints.append(
-            SQLConstraint(
-                algorithm: SQLTableConstraintAlgorithm.primaryKey(columns: columns),
-                name: constraintName
-            )
-        )
+    public func primaryKey(_ columns: [any SQLExpression], named constraintName: (any SQLExpression)? = nil) -> Self {
+        self.createTable.tableConstraints.append(SQLConstraint(
+            algorithm: SQLTableConstraintAlgorithm.primaryKey(columns: columns),
+            name: constraintName
+        ))
         return self
     }
 
-    /// Adds a new `UNIQUE` constraint to the table being built
+    /// Add a `UNIQUE` constraint to the table.
     ///
-    /// - parameters:
-    ///     - columns: One or more  columns of the table currently being built to make into a UNIQUE constraint.
-    ///     - constraintName: An optional name to give the constraint.
+    /// - Parameters:
+    ///   - columns: One or more columns to include in the unique constraint.
+    ///   - constraintName: An optional name to give the constraint.
+    @inlinable
     @discardableResult
     public func unique(_ columns: String..., named constraintName: String? = nil) -> Self {
-        return unique(columns, named: constraintName)
+        self.unique(columns, named: constraintName)
     }
 
-    /// Adds a new `UNIQUE` constraint to the table being built
+    /// Add a `UNIQUE` constraint to the table.
     ///
-    /// - parameters:
-    ///     - columns: One or more  columns of the table currently being built to make into a UNIQUE constraint.
-    ///     - constraintName: An optional name to give the constraint.
+    /// - Parameters:
+    ///   - columns: One or more columns to include in the unique constraint.
+    ///   - constraintName: An optional name to give the constraint.
+    @inlinable
     @discardableResult
     public func unique(_ columns: [String], named constraintName: String? = nil) -> Self {
-        return unique(
-            columns.map(SQLIdentifier.init(_:)),
-            named: constraintName.map(SQLIdentifier.init(_:))
-        )
+        self.unique(columns.map(SQLIdentifier.init(_:)), named: constraintName.map(SQLIdentifier.init(_:)))
     }
 
-    /// Adds a new `UNIQUE` constraint to the table being built
+    /// Add a `UNIQUE` constraint to the table.
     ///
-    /// - parameters:
-    ///     - columns: One or more  columns of the table currently being built to make into a UNIQUE constraint.
-    ///     - constraintName: An optional name to give the constraint.
+    /// - Parameters:
+    ///   - columns: One or more columns to include in the unique constraint.
+    ///   - constraintName: An optional name to give the constraint.
+    @inlinable
     @discardableResult
-    public func unique(_ columns: [SQLExpression], named constraintName: SQLExpression? = nil) -> Self {
-        createTable.tableConstraints.append(
-            SQLConstraint(
-                algorithm: SQLTableConstraintAlgorithm.unique(columns: columns),
-                name: constraintName
-            )
-        )
+    public func unique(_ columns: [any SQLExpression], named constraintName: (any SQLExpression)? = nil) -> Self {
+        self.createTable.tableConstraints.append(SQLConstraint(
+            algorithm: SQLTableConstraintAlgorithm.unique(columns: columns),
+            name: constraintName
+        ))
         return self
     }
 
-    /// Adds a new `CHECK` constraint to the table being built
+    /// Add a `CHECK` constraint to the table.
     ///
-    /// - parameters:
-    ///     - expression: A check constraint expression.
-    ///     - constraintName: An optional name to give the constraint.
+    /// - Parameters:
+    ///   - expression: A check constraint expression.
+    ///   - constraintName: An optional name to give the constraint.
+    @inlinable
     @discardableResult
-    public func check(_ expression: SQLExpression, named constraintName: String? = nil) -> Self {
-        return self.check(
-            expression,
-            named: constraintName.map(SQLIdentifier.init(_:))
-        )
+    public func check(_ expression: any SQLExpression, named constraintName: String? = nil) -> Self {
+        self.check(expression, named: constraintName.map(SQLIdentifier.init(_:)))
     }
 
-    /// Adds a new `CHECK` constraint to the table being built
+    /// Add a `CHECK` constraint to the table.
     ///
-    /// - parameters:
-    ///     - expression: A check constraint expression.
-    ///     - constraintName: An optional name to give the constraint.
+    /// - Parameters:
+    ///   - expression: A check constraint expression.
+    ///   - constraintName: An optional name to give the constraint.
+    @inlinable
     @discardableResult
-    public func check(_ expression: SQLExpression, named constraintName: SQLExpression? = nil) -> Self {
-        createTable.tableConstraints.append(
-            SQLConstraint(
-                algorithm: SQLTableConstraintAlgorithm.check(expression),
-                name: constraintName
-            )
-        )
+    public func check(_ expression: any SQLExpression, named constraintName: (any SQLExpression)? = nil) -> Self {
+        self.createTable.tableConstraints.append(SQLConstraint(
+            algorithm: SQLTableConstraintAlgorithm.check(expression),
+            name: constraintName
+        ))
         return self
     }
 
-    /// Adds a new `FOREIGN KEY` constraint to the table being built
+    /// Add a `FOREIGN KEY` constraint to the table.
     ///
-    /// - parameters:
-    ///     - columns: One or more columns of the table currently being built to constrain.
-    ///     - foreignTable: A table containing a foreign key to be constrained to.
-    ///     - foreignColumns: One or more columns of the foreign table to be constrained to.
-    ///     - onDelete: Optional foreign key action to perform on delete.
-    ///     - onUpdate: Optional foreign key action to perform on update.
-    ///     - constraintName: An optional name to give the constraint.
+    /// - Parameters:
+    ///   - columns: One or more columns to include in the constraint.
+    ///   - foreignTable: The table referenced by the constraint.
+    ///   - foreignColumns: The foreign table columns corresponding to the constrained columns.
+    ///   - onDelete: Optional foreign key action to perform on delete.
+    ///   - onUpdate: Optional foreign key action to perform on update.
+    ///   - constraintName: An optional name to give the constraint.
+    @inlinable
     @discardableResult
     public func foreignKey(
         _ columns: [String],
@@ -250,48 +232,40 @@ extension SQLCreateTableBuilder {
         onUpdate: SQLForeignKeyAction? = nil,
         named constraintName: String? = nil
     ) -> Self {
-        return self.foreignKey(
+        self.foreignKey(
             columns.map(SQLIdentifier.init(_:)),
-            references: SQLIdentifier(foreignTable),
-            foreignColumns.map(SQLIdentifier.init(_:)),
-            onDelete: onDelete,
-            onUpdate: onUpdate,
+            references: SQLIdentifier(foreignTable), foreignColumns.map(SQLIdentifier.init(_:)),
+            onDelete: onDelete, onUpdate: onUpdate,
             named: constraintName.map(SQLIdentifier.init(_:))
         )
     }
 
-    /// Adds a new `FOREIGN KEY` constraint to the table being built
+    /// Add a `FOREIGN KEY` constraint to the table.
     ///
-    /// - parameters:
-    ///     - columns: One or more columns of the table currently being built to constrain.
-    ///     - foreignTable: A table containing a foreign key to be constrained to.
-    ///     - foreignColumns: One or more columns of the foreign table to be constrained to.
-    ///     - onDelete: Optional foreign key action to perform on delete.
-    ///     - onUpdate: Optional foreign key action to perform on update.
-    ///     - constraintName: An optional name to give the constraint.
+    /// - Parameters:
+    ///   - columns: One or more columns to include in the constraint.
+    ///   - foreignTable: The table referenced by the constraint.
+    ///   - foreignColumns: The foreign table columns corresponding to the constrained columns.
+    ///   - onDelete: Optional foreign key action to perform on delete.
+    ///   - onUpdate: Optional foreign key action to perform on update.
+    ///   - constraintName: An optional name to give the constraint.
+    @inlinable
     @discardableResult
     public func foreignKey(
-        _ columns: [SQLExpression],
-        references foreignTable: SQLExpression,
-        _ foreignColumns: [SQLExpression],
-        onDelete: SQLExpression? = nil,
-        onUpdate: SQLExpression? = nil,
-        named constraintName: SQLExpression? = nil
+        _ columns: [any SQLExpression],
+        references foreignTable: any SQLExpression,
+        _ foreignColumns: [any SQLExpression],
+        onDelete: (any SQLExpression)? = nil,
+        onUpdate: (any SQLExpression)? = nil,
+        named constraintName: (any SQLExpression)? = nil
     ) -> Self {
-        createTable.tableConstraints.append(
-            SQLConstraint(
-                algorithm: SQLTableConstraintAlgorithm.foreignKey(
-                    columns: columns,
-                    references: SQLForeignKey(
-                        table: foreignTable,
-                        columns: foreignColumns,
-                        onDelete: onDelete,
-                        onUpdate: onUpdate
-                    )
-                ),
-                name: constraintName
-            )
-        )
+        self.createTable.tableConstraints.append(SQLConstraint(
+            algorithm: SQLTableConstraintAlgorithm.foreignKey(
+                columns: columns,
+                references: SQLForeignKey(table: foreignTable, columns: foreignColumns, onDelete: onDelete, onUpdate: onUpdate)
+            ),
+            name: constraintName
+        ))
         return self
     }
 }
@@ -299,25 +273,14 @@ extension SQLCreateTableBuilder {
 // MARK: Connection
 
 extension SQLDatabase {
-    /// Creates a new `SQLCreateTableBuilder`.
-    ///
-    ///     db.create(table: "planets")...
-    ///
-    /// - parameters:
-    ///     - table: Table to create.
-    /// - returns: `CreateTableBuilder`.
+    /// Create a new ``SQLCreateTableBuilder``.
+    @inlinable
     public func create(table: String) -> SQLCreateTableBuilder {
-        return self.create(table: SQLIdentifier(table))
+        self.create(table: SQLIdentifier(table))
     }
     
-    /// Creates a new `SQLCreateTableBuilder`.
-    ///
-    ///     db.create(table: SQLIdentifier("planets"))...
-    ///
-    /// - parameters:
-    ///     - table: Table to create.
-    /// - returns: `CreateTableBuilder`.
-    public func create(table: SQLExpression) -> SQLCreateTableBuilder {
-        return .init(.init(name: table), on: self)
+    /// Create a new ``SQLCreateTableBuilder``.
+    public func create(table: any SQLExpression) -> SQLCreateTableBuilder {
+        .init(.init(name: table), on: self)
     }
 }

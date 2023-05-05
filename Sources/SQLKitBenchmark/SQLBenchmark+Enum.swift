@@ -62,7 +62,7 @@ extension SQLBenchmarker {
             // delete all gas giants
             try $0
                 .delete(from: "planets")
-                .where("type", .equal, PlanetType.gasGiant as SQLExpression)
+                .where("type", .equal, PlanetType.gasGiant as any SQLExpression)
                 .run().wait()
 
             // drop gas giant enum value

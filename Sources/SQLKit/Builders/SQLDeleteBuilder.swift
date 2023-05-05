@@ -1,56 +1,54 @@
-/// Builds `SQLDelete` queries.
+/// Builds ``SQLDelete`` queries.
 ///
 ///     db.delete(from: Planet.self)
-///         .where(\.name != "Earth").run()
+///         .where("name", .notEqual, "Earth")
+///         .run()
 ///
-/// See `SQLQueryBuilder` and `SQLPredicateBuilder` for more information.
+/// See ``SQLPredicateBuilder`` for additional information.
 public final class SQLDeleteBuilder: SQLQueryBuilder, SQLPredicateBuilder, SQLReturningBuilder {
-    /// `Delete` query being built.
+    /// ``SQLDelete`` query being built.
     public var delete: SQLDelete
 
-    public var database: SQLDatabase
+    /// See ``SQLQueryBuilder/database``.
+    public var database: any SQLDatabase
 
-    public var query: SQLExpression {
-        return self.delete
+    /// See ``SQLQueryBuilder/query``.
+    @inlinable
+    public var query: any SQLExpression {
+        self.delete
     }
 
-    public var predicate: SQLExpression? {
-        get { return self.delete.predicate }
+    /// See ``SQLPredicateBuilder/predicate``.
+    @inlinable
+    public var predicate: (any SQLExpression)? {
+        get { self.delete.predicate }
         set { self.delete.predicate = newValue }
     }
 
+    /// See ``SQLReturningBuilder/returning``.
+    @inlinable
     public var returning: SQLReturning? {
-        get { return self.delete.returning }
+        get { self.delete.returning }
         set { self.delete.returning = newValue }
     }
     
-    /// Creates a new `SQLDeleteBuilder`.
-    public init(_ delete: SQLDelete, on database: SQLDatabase) {
+    /// Create a new ``SQLDeleteBuilder``.
+    @inlinable
+    public init(_ delete: SQLDelete, on database: any SQLDatabase) {
         self.delete = delete
         self.database = database
     }
 }
 
-// MARK: Connection
-
 extension SQLDatabase {
-    /// Creates a new `SQLDeleteBuilder`.
-    ///
-    ///     db.delete(from: "planets")...
-    ///
-    /// - parameters:
-    ///     - table: Table to delete from.
-    /// - returns: Newly created `SQLDeleteBuilder`.
+    /// Create a new ``SQLDeleteBuilder``.
+    @inlinable
     public func delete(from table: String) -> SQLDeleteBuilder {
-        return self.delete(from: SQLIdentifier(table))
+        self.delete(from: SQLIdentifier(table))
     }
     
-    /// Creates a new `SQLDeleteBuilder`.
-    ///
-    /// - parameters:
-    ///     - table: Table to delete from.
-    /// - returns: Newly created `SQLDeleteBuilder`.
-    public func delete(from table: SQLExpression) -> SQLDeleteBuilder {
-        return .init(.init(table: table), on: self)
+    /// Create a new ``SQLDeleteBuilder``.
+    public func delete(from table: any SQLExpression) -> SQLDeleteBuilder {
+        .init(.init(table: table), on: self)
     }
 }
