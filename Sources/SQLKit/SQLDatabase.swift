@@ -62,6 +62,21 @@ public protocol SQLDatabase {
     /// connections to the same database to have different dialects, though it's unclear how this would
     /// be useful in practice.
     var dialect: SQLDialect { get }
+    
+    /// The logging level used for reporting queries run on the given database to the database's logger.
+    /// Defaults to ``Logging/Logger/Level/debug``.
+    ///
+    /// This log level applies _only_ to logging the serialized SQL text and bound parameter values (if
+    /// any) of queries; it does not affect any logging performed by the underlying driver or any other
+    /// subsystem. If the value is `nil`, query logging is disabled.
+    ///
+    /// - Important: Conforming drivers must provide a means to configure this value and to use the default
+    ///   ``Logging/Logger/Level/debug`` level if no explicit value is provided. It is also the responsibility
+    ///   of the driver to actually perform the query logging, including respecting the logging level.
+    ///
+    ///   The lack of enforcement of these requirements is obviously less than ideal, but unavoidable due to
+    ///   the lack of direct entry points to SQLKit not provided by driver implementations.
+    var queryLogLevel: Logger.Level? { get }
 
     /// Requests that the given generic SQL query be serialized and executed on the database, and that
     /// the ``onRow`` closure be invoked once for each result row the query returns (if any).
@@ -80,6 +95,11 @@ extension SQLDatabase {
     /// updated don't lose source compatibility. Conveniently, a value of `nil` represents "database
     /// version is unknown", an obvious choice for this scenario.
     public var version: SQLDatabaseReportedVersion? { nil }
+    
+    /// Drivers which do not provide the ``queryLogLevel-991s4`` property must be given the automatic default
+    /// of ``Logging/Logger/Level/debug``. It would be preferable not to provide a default conformance,
+    /// but this is unfortunately impractical, as the property was another late addition to the protocol.
+    public var queryLogLevel: Logger.Level? { .debug }
 }
 
 extension SQLDatabase {
@@ -116,4 +136,5 @@ private struct CustomLoggerSQLDatabase: SQLDatabase {
     var version: SQLDatabaseReportedVersion? { self.database.version }
     var dialect: SQLDialect { self.database.dialect }
     func execute(sql query: SQLExpression, _ onRow: @escaping (SQLRow) -> ()) -> EventLoopFuture<Void> { self.database.execute(sql: query, onRow) }
+    var queryLogLevel: Logger.Level? { self.database.queryLogLevel }
 }
