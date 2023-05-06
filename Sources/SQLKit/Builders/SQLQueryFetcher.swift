@@ -9,14 +9,14 @@ public protocol SQLQueryFetcher: SQLQueryBuilder { }
 extension SQLQueryFetcher {
     // MARK: First
 
-    public func first<D>(decoding: D.Type) -> EventLoopFuture<D?>
+    public func first<D>(decoding: D.Type, keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys) -> EventLoopFuture<D?>
         where D: Decodable
     {
         self.first().flatMapThrowing {
             guard let row = $0 else {
                 return nil
             }
-            return try row.decode(model: D.self)
+            return try row.decode(model: D.self, keyDecodingStrategy: keyDecodingStrategy)
         }
     }
     
@@ -31,12 +31,12 @@ extension SQLQueryFetcher {
     // MARK: All
 
 
-    public func all<D>(decoding: D.Type) -> EventLoopFuture<[D]>
+    public func all<D>(decoding: D.Type, keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys) -> EventLoopFuture<[D]>
         where D: Decodable
     {
         self.all().flatMapThrowing {
             try $0.map {
-                try $0.decode(model: D.self)
+                try $0.decode(model: D.self, keyDecodingStrategy: keyDecodingStrategy)
             }
         }
     }
