@@ -166,7 +166,7 @@ extension SQLSubqueryClauseBuilder {
     @inlinable
     @discardableResult
     public func columns(_ columns: [String]) -> Self {
-        self.columns(columns.map { SQLColumn($0) })
+        self.columns(columns.map { $0 == "*" ? SQLLiteral.all as any SQLExpression : SQLColumn($0) })
     }
     
     /// Specify a list of arbitrary expressions as columns to be part of the result set of the query.
