@@ -37,7 +37,7 @@ SQLKit 3.x requires [SwiftNIO](https://github.com/apple/swift-nio) 2.x or later.
 
 SQLKit supports the following platforms:
 
-- Ubuntu 18.04+
+- Ubuntu 20.04+
 - macOS 10.15+
 - iOS 13+
 - tvOS 13+ and watchOS 7+ (experimental)
