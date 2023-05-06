@@ -17,25 +17,11 @@ public extension SQLQueryFetcher {
         try await self.all().get()
     }
     
-    #if swift(>=5.7)
-    @preconcurrency
     func run<D>(decoding: D.Type, _ handler: @escaping @Sendable (Result<D, Error>) -> ()) async throws -> Void where D: Decodable {
         try await self.run(decoding: D.self, handler).get()
     }
-    #else
-    func run<D>(decoding: D.Type, _ handler: @escaping (Result<D, Error>) -> ()) async throws -> Void where D: Decodable {
-        try await self.run(decoding: D.self, handler).get()
-    }
-    #endif
     
-    #if swift(>=5.7)
-    @preconcurrency
     func run(_ handler: @escaping @Sendable (any SQLRow) -> ()) async throws -> Void {
         try await self.run(handler).get()
     }
-    #else
-    func run(_ handler: @escaping (any SQLRow) -> ()) async throws -> Void {
-        try await self.run(handler).get()
-    }
-    #endif
 }
