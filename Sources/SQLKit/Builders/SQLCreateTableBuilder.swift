@@ -102,9 +102,9 @@ public final class SQLCreateTableBuilder: SQLQueryBuilder {
     /// If called more than once, each subsequent invocation overwrites the query from the one before.
     @inlinable
     @discardableResult
-    public func select(_ closure: (SQLCreateTableAsSubqueryBuilder) -> SQLCreateTableAsSubqueryBuilder) -> Self {
+    public func select(_ closure: (SQLCreateTableAsSubqueryBuilder) throws -> SQLCreateTableAsSubqueryBuilder) rethrows -> Self {
         let builder = SQLCreateTableAsSubqueryBuilder()
-        _ = closure(builder)
+        _ = try closure(builder)
         self.createTable.asQuery = builder.select
         return self
     }
