@@ -12,6 +12,7 @@ public enum SQLLockingClause: SQLExpression {
     case share
     
     /// See ``SQLExpression/serialize(to:)``.
+    @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {
             switch self {

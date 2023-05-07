@@ -1,16 +1,16 @@
-/// Table constraint algorithms used by `SQLConstraint`
+/// Table constraint algorithms used by ``SQLCreateTable``.
 public enum SQLTableConstraintAlgorithm: SQLExpression {
     /// `PRIMARY KEY` table constraint.
-    case primaryKey(columns: [SQLExpression])
+    case primaryKey(columns: [any SQLExpression])
 
     /// `UNIQUE` table constraint.
-    case unique(columns: [SQLExpression])
+    case unique(columns: [any SQLExpression])
 
     /// `CHECK` table constraint.
-    case check(SQLExpression)
+    case check(any SQLExpression)
 
     /// `FOREIGN KEY` table constraint.
-    case foreignKey(columns: [SQLExpression], references: SQLExpression)
+    case foreignKey(columns: [any SQLExpression], references: any SQLExpression)
 
     public func serialize(to serializer: inout SQLSerializer) {
         switch self {

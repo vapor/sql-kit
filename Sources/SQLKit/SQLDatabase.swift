@@ -42,7 +42,7 @@ public protocol SQLDatabase {
     /// pool which assigns loops to connections at point of use, or because the underlying implementation
     /// is based on Swift Concurrency or some other asynchronous execution technology), it is recommended
     /// to return an event loop from ``NIOCore/EventLoopGroup/any()``.
-    var eventLoop: EventLoop { get }
+    var eventLoop: any EventLoop { get }
     
     /// The version number the connection reports for itself, provided as a type conforming to the
     /// ``SQLDatabaseReportedVersion`` protocol. If the version number is not applicable (such as for
@@ -56,12 +56,12 @@ public protocol SQLDatabase {
     ///   `libsqlite3` library). A significant part of the motivation to finally add this property comes
     ///   from a larger desire to enable customizing a given ``SQLDialect``'s configuration based on the
     ///   actual feature set available at runtime instead of having to hardcode a "safe" baseline.
-    var version: SQLDatabaseReportedVersion? { get }
+    var version: (any SQLDatabaseReportedVersion)? { get }
 
     /// The descriptor for the SQL dialect supported by the given database. It is permitted for different
     /// connections to the same database to have different dialects, though it's unclear how this would
     /// be useful in practice.
-    var dialect: SQLDialect { get }
+    var dialect: any SQLDialect { get }
     
     /// The logging level used for reporting queries run on the given database to the database's logger.
     /// Defaults to ``Logging/Logger/Level/debug``.
@@ -80,11 +80,9 @@ public protocol SQLDatabase {
 
     /// Requests that the given generic SQL query be serialized and executed on the database, and that
     /// the ``onRow`` closure be invoked once for each result row the query returns (if any).
-    ///
-    /// - Note: See also ``SQLDatabase/execute(sql:_:)-2gf3v``.
     func execute(
-        sql query: SQLExpression,
-        _ onRow: @escaping (SQLRow) -> ()
+        sql query: any SQLExpression,
+        _ onRow: @escaping (any SQLRow) -> ()
     ) -> EventLoopFuture<Void>
 }
 
@@ -109,7 +107,7 @@ extension SQLDatabase {
     ///
     /// 1. A corresponding string of raw SQL in the database's dialect, and,
     /// 2. An array of inputs to use as the values of any bound parameters of the query.
-    public func serialize(_ expression: SQLExpression) -> (sql: String, binds: [Encodable]) {
+    public func serialize(_ expression: any SQLExpression) -> (sql: String, binds: [any Encodable]) {
         var serializer = SQLSerializer(database: self)
         expression.serialize(to: &serializer)
         return (serializer.sql, serializer.binds)
@@ -119,7 +117,7 @@ extension SQLDatabase {
 extension SQLDatabase {
     /// Returns a ``SQLDatabase`` which is exactly the same database as the original, except that
     /// all logging done to the new ``SQLDatabase`` will go to the specified ``Logger`` instead.
-    public func logging(to logger: Logger) -> SQLDatabase {
+    public func logging(to logger: Logger) -> any SQLDatabase {
         CustomLoggerSQLDatabase(database: self, logger: logger)
     }
 }
@@ -129,12 +127,14 @@ extension SQLDatabase {
 ///
 /// - Note: Since ``SQLDatabase/logging(to:)`` returns a generic ``SQLDatabase``, this type's
 ///   actual implementation need not be part of the public API.
-private struct CustomLoggerSQLDatabase: SQLDatabase {
-    let database: SQLDatabase
+private struct CustomLoggerSQLDatabase<D: SQLDatabase>: SQLDatabase {
+    let database: D
     let logger: Logger
-    var eventLoop: EventLoop { self.database.eventLoop }
-    var version: SQLDatabaseReportedVersion? { self.database.version }
-    var dialect: SQLDialect { self.database.dialect }
-    func execute(sql query: SQLExpression, _ onRow: @escaping (SQLRow) -> ()) -> EventLoopFuture<Void> { self.database.execute(sql: query, onRow) }
+    var eventLoop: any EventLoop { self.database.eventLoop }
+    var version: (any SQLDatabaseReportedVersion)? { self.database.version }
+    var dialect: any SQLDialect { self.database.dialect }
+    func execute(sql query: any SQLExpression, _ onRow: @escaping (any SQLRow) -> ()) -> EventLoopFuture<Void> {
+        self.database.execute(sql: query, onRow)
+    }
     var queryLogLevel: Logger.Level? { self.database.queryLogLevel }
 }

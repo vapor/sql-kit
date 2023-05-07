@@ -22,14 +22,14 @@ public protocol SQLDialect {
     /// immediately preceding and following each identifier.
     ///
     /// No default is provided.
-    var identifierQuote: SQLExpression { get }
+    var identifierQuote: any SQLExpression { get }
     
     /// An expression (usually an `SQLRaw`) giving the character(s) used to quote literal
     /// string values which appear in a query, such as enumerator names. The literal quote
     /// is placed immediately preceding and following each string literal.
     ///
     /// Defaults to an apostrophe (`'`).
-    var literalStringQuote: SQLExpression { get }
+    var literalStringQuote: any SQLExpression { get }
     
     /// `true` if the dialect supports auto-increment for primary key values when inserting
     /// new rows, `false` if not. See also ``autoIncrementClause`` and ``autoIncrementFunction``.
@@ -45,7 +45,7 @@ public protocol SQLDialect {
     /// ``autoIncrementFunction`` is _not_ `nil`.
     ///
     /// No default is provided.
-    var autoIncrementClause: SQLExpression { get }
+    var autoIncrementClause: any SQLExpression { get }
     
     /// An expression inserted in a column definition when a `.primaryKey(autoincrement: true)`
     /// constraint is specified for the column. The expression will be immediately preceded by
@@ -59,7 +59,7 @@ public protocol SQLDialect {
     ///
     /// - Note: The design of this and the other autoincrement-released properties is less than
     ///   ideal, but it's public API and we're stuck with it for now.
-    var autoIncrementFunction: SQLExpression? { get }
+    var autoIncrementFunction: (any SQLExpression)? { get }
 
     /// A function which returns an expression to be used as the placeholder for the `position`th
     /// bound parameter in a query. The function can ignore the value of `position` if the syntax
@@ -69,20 +69,20 @@ public protocol SQLDialect {
     ///   the first parameter has position `1`. This value is guaranteed to be greater than zero.
     ///
     /// No default is provided.
-    func bindPlaceholder(at position: Int) -> SQLExpression
+    func bindPlaceholder(at position: Int) -> any SQLExpression
     
     /// A function which returns an SQL expression (usually an `SQLRaw`) representing the given
     /// literal boolean value.
     ///
     /// No default is provided.
-    func literalBoolean(_ value: Bool) -> SQLExpression
+    func literalBoolean(_ value: Bool) -> any SQLExpression
     
     /// An expression (usually an `SQLRaw`) giving the syntax used to express both "use this as
     /// the default value" in a column definition and "use the default value for this column" in
     /// a value list. ``SQLLiteral.literal`` always serializes to this expression.
     ///
     /// Defaults to `SQLRaw("DEFAULT")`.
-    var literalDefault: SQLExpression { get }
+    var literalDefault: any SQLExpression { get }
     
     /// `true` if the dialect supports the `IF EXISTS` modifier for all types of `DROP` queries
     /// (such as `SQLDropEnum`, `SQLDropIndex`, `SQLDropTable`, and `SQLDropTrigger`) and the
@@ -129,7 +129,7 @@ public protocol SQLDialect {
     /// types and their default definitions.
     ///
     /// Defaults to returning `nil` for all inputs.
-    func customDataType(for dataType: SQLDataType) -> SQLExpression?
+    func customDataType(for dataType: SQLDataType) -> (any SQLExpression)?
     
     /// A function which is consulted whenever a constraint name will be serialized into a
     /// query. The dialect must return an expression for an identifer which is unique to the
@@ -142,7 +142,7 @@ public protocol SQLDialect {
     /// a sufficiently large output size, such as SHA-256, is one possible correct implementation.
     ///
     /// Defaults to returning the input identifier unchanged.
-    func normalizeSQLConstraint(identifier: SQLExpression) -> SQLExpression
+    func normalizeSQLConstraint(identifier: any SQLExpression) -> any SQLExpression
     
     /// The type of `UPSERT` syntax supported by the dialect. See ``SQLUpsertSyntax`` for possible
     /// values and more information.
@@ -159,12 +159,12 @@ public protocol SQLDialect {
     /// A serialization for ``SQLLockingClause/share``, representing a request for a shared "reader"
     /// lock on rows retrieved by a `SELECT` query. A `nil` value means the database doesn't
     /// support shared locking requests, which causes the locking clause to be silently ignored.
-    var sharedSelectLockExpression: SQLExpression? { get }
+    var sharedSelectLockExpression: (any SQLExpression)? { get }
     
     /// A serialization for ``SQLLockingClause/update``, representing a request for an exclusive
     /// "writer" lock on rows retrieved by a `SELECT` query. A `nil` value means the database doesn't
     /// support exclusive locking requests, which causes the locking clause to be silently ignored.
-    var exclusiveSelectLockExpression: SQLExpression? { get }
+    var exclusiveSelectLockExpression: (any SQLExpression)? { get }
     
 }
 
@@ -175,22 +175,23 @@ public struct SQLAlterTableSyntax {
     ///     ALTER TABLE table [alterColumnDefinitionClause] column column_definition
     ///
     /// `nil` indicates lack of support for altering existing column definitions.
-    public var alterColumnDefinitionClause: SQLExpression?
+    public var alterColumnDefinitionClause: (any SQLExpression)?
 
     /// Expression for altering a column definition's type.
     ///
     ///     ALTER TABLE table [alterColumnDefinitionClause] column [alterColumnDefinitionTypeClause] dataType
     ///
     /// `nil` indicates that no extra keyword is required.
-    public var alterColumnDefinitionTypeKeyword: SQLExpression?
+    public var alterColumnDefinitionTypeKeyword: (any SQLExpression)?
 
     /// If true, the dialect supports chaining multiple modifications together. If false,
     /// the dialect requires separate statements for each change.
     public var allowsBatch: Bool
 
+    @inlinable
     public init(
-        alterColumnDefinitionClause: SQLExpression? = nil,
-        alterColumnDefinitionTypeKeyword: SQLExpression? = nil,
+        alterColumnDefinitionClause: (any SQLExpression)? = nil,
+        alterColumnDefinitionTypeKeyword: (any SQLExpression)? = nil,
         allowsBatch: Bool = true
     ) {
         self.alterColumnDefinitionClause = alterColumnDefinitionClause
@@ -308,18 +309,18 @@ public struct SQLUnionFeatures: OptionSet {
 /// so as to avoid breaking all existing dialects every time a new requirement is added to the
 /// protocol and allow gradual adoption of new capabilities.
 extension SQLDialect {
-    public var literalDefault: SQLExpression { SQLRaw("DEFAULT") }
-    public var literalStringQuote: SQLExpression { SQLRaw("'") }
+    public var literalDefault: any SQLExpression { SQLRaw("DEFAULT") }
+    public var literalStringQuote: any SQLExpression { SQLRaw("'") }
     public var supportsIfExists: Bool { true }
-    public var autoIncrementFunction: SQLExpression? { nil }
+    public var autoIncrementFunction: (any SQLExpression)? { nil }
     public var supportsDropBehavior: Bool { false }
     public var supportsReturning: Bool { false }
     public var alterTableSyntax: SQLAlterTableSyntax { .init() }
     public var triggerSyntax: SQLTriggerSyntax { .init() }
-    public func customDataType(for dataType: SQLDataType) -> SQLExpression? { nil }
-    public func normalizeSQLConstraint(identifier: SQLExpression) -> SQLExpression { identifier }
+    public func customDataType(for dataType: SQLDataType) -> (any SQLExpression)? { nil }
+    public func normalizeSQLConstraint(identifier: any SQLExpression) -> any SQLExpression { identifier }
     public var upsertSyntax: SQLUpsertSyntax { .unsupported }
     public var unionFeatures: SQLUnionFeatures { [.union, .unionAll] }
-    public var sharedSelectLockExpression: SQLExpression? { nil }
-    public var exclusiveSelectLockExpression: SQLExpression? { nil }
+    public var sharedSelectLockExpression: (any SQLExpression)? { nil }
+    public var exclusiveSelectLockExpression: (any SQLExpression)? { nil }
 }

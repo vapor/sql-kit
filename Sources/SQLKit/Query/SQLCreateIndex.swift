@@ -1,19 +1,20 @@
 /// `CREATE INDEX` query.
 ///
-/// See `SQLCreateIndexBuilder`.
+/// See ``SQLCreateIndexBuilder``.
 public struct SQLCreateIndex: SQLExpression {
-    public var name: SQLExpression
+    public var name: any SQLExpression
     
-    public var table: SQLExpression?
+    public var table: (any SQLExpression)?
     
     /// Type of index to create, see `SQLIndexModifier`.
-    public var modifier: SQLExpression?
+    public var modifier: (any SQLExpression)?
     
     /// Columns to index.
-    public var columns: [SQLExpression]
+    public var columns: [any SQLExpression]
     
     /// Creates a new `SQLCreateIndex.
-    public init(name: SQLExpression) {
+    @inlinable
+    public init(name: any SQLExpression) {
         self.name = name
         self.table = nil
         self.modifier = nil

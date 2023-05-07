@@ -1,21 +1,24 @@
 public struct SQLFunction: SQLExpression {
     public let name: String
-    public let args: [SQLExpression]
+    public let args: [any SQLExpression]
     
-    
+    @inlinable
     public init(_ name: String, args: String...) {
         self.init(name, args: args.map { SQLIdentifier($0) })
     }
     
+    @inlinable
     public init(_ name: String, args: [String]) {
         self.init(name, args: args.map { SQLIdentifier($0) })
     }
     
-    public init(_ name: String, args: SQLExpression...) {
+    @inlinable
+    public init(_ name: String, args: any SQLExpression...) {
         self.init(name, args: args)
     }
     
-    public init(_ name: String, args: [SQLExpression] = []) {
+    @inlinable
+    public init(_ name: String, args: [any SQLExpression] = []) {
         self.name = name
         self.args = args
     }
@@ -27,12 +30,14 @@ public struct SQLFunction: SQLExpression {
 }
 
 extension SQLFunction {
-    public static func coalesce(_ expressions: [SQLExpression]) -> SQLFunction {
-        return .init("COALESCE", args: expressions)
+    @inlinable
+    public static func coalesce(_ expressions: [any SQLExpression]) -> SQLFunction {
+        .init("COALESCE", args: expressions)
     }
 
     /// Convenience for creating a `COALESCE(foo)` function call (returns the first non-null expression).
-    public static func coalesce(_ exprs: SQLExpression...) -> SQLFunction {
-        return self.coalesce(exprs)
+    @inlinable
+    public static func coalesce(_ exprs: any SQLExpression...) -> SQLFunction {
+        self.coalesce(exprs)
     }
 }

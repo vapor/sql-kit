@@ -1,79 +1,60 @@
-/// Builds `SQLCreateIndex` queries.
+/// Builds ``SQLCreateIndex`` queries.
 ///
 ///     db.create(index: "planet_name_unique").on("planet").column("name").unique().run()
-///
-/// See `SQLCreateIndex`.
 public final class SQLCreateIndexBuilder: SQLQueryBuilder {
-    /// `AlterTable` query being built.
+    /// ``SQLCreateIndex`` query being built.
     public var createIndex: SQLCreateIndex
     
-    /// See `SQLQueryBuilder`.
-    public var database: SQLDatabase
+    /// See ``SQLQueryBuilder/database``.
+    public var database: any SQLDatabase
     
-    /// See `SQLQueryBuilder`.
-    public var query: SQLExpression {
-        return self.createIndex
+    /// See ``SQLQueryBuilder/query``.
+    @inlinable
+    public var query: any SQLExpression {
+        self.createIndex
     }
     
     /// Adds `UNIQUE` modifier to the index being created.
+    @inlinable
     @discardableResult
     public func unique() -> Self {
         self.createIndex.modifier = SQLColumnConstraintAlgorithm.unique
         return self
     }
     
-    /// Creates a new `SQLCreateIndexBuilder`.
-    ///
-    ///     db.create(index: "foo").on("planets")...
-    ///
-    /// - parameters:
-    ///     - table: Table to create index on.
-    /// - returns: `SQLCreateIndexBuilder`.
+    /// Specify a table to operate on.
+    @inlinable
     @discardableResult
     public func on(_ table: String) -> Self {
-        return self.on(SQLIdentifier(table))
+        self.on(SQLIdentifier(table))
     }
     
-    /// Creates a new `SQLCreateIndexBuilder`.
-    ///
-    ///     db.create(index: "foo").on("planets")...
-    ///
-    /// - parameters:
-    ///     - table: Table to create index on.
-    /// - returns: `SQLCreateIndexBuilder`.
+    /// Specify a table to operate on.
+    @inlinable
     @discardableResult
-    public func on(_ column: SQLExpression) -> Self {
-        self.createIndex.table = column
+    public func on(_ table: any SQLExpression) -> Self {
+        self.createIndex.table = table
         return self
     }
     
-    /// Creates a new `SQLCreateIndexBuilder`.
-    ///
-    ///     db.create(index: "foo").column("name")...
-    ///
-    /// - parameters:
-    ///     - column: Column to create index on.
-    /// - returns: `SQLCreateIndexBuilder`.
+    /// Specify a column to include in the created index.
+    @inlinable
     @discardableResult
     public func column(_ column: String) -> Self {
-        return self.column(SQLIdentifier(column))
+        self.column(SQLIdentifier(column))
     }
     
-    /// Creates a new `SQLCreateIndexBuilder`.
-    ///
-    ///     db.create(index: "foo").column("name")...
-    ///
-    /// - parameters:
-    ///     - column: Column to create index on.
-    /// - returns: `SQLCreateIndexBuilder`.
+    /// Specify a column to include in the created index.
+    @inlinable
     @discardableResult
-    public func column(_ column: SQLExpression) -> Self {
+    public func column(_ column: any SQLExpression) -> Self {
         self.createIndex.columns.append(column)
         return self
     }
     
-    /// Creates a new `SQLCreateIndexBuilder`.
-    public init(_ createIndex: SQLCreateIndex, on database: SQLDatabase) {
+    /// Create a new `SQLCreateIndexBuilder`.
+    @inlinable
+    public init(_ createIndex: SQLCreateIndex, on database: any SQLDatabase) {
         self.createIndex = createIndex
         self.database = database
     }
@@ -86,25 +67,21 @@ extension SQLDatabase {
     ///
     ///     db.create(index: "foo")...
     ///
-    /// - parameters:
-    ///     - name: Name for this index.
-    /// - returns: `SQLCreateIndexBuilder`.
-    public func create(
-        index name: String
-    ) -> SQLCreateIndexBuilder {
-        return self.create(index: SQLIdentifier(name))
+    /// - Parameters:
+    ///   - name: Name for this index.
+    @inlinable
+    public func create(index name: String) -> SQLCreateIndexBuilder {
+        self.create(index: SQLIdentifier(name))
     }
     
     /// Creates a new `SQLCreateIndexBuilder`.
     ///
     ///     db.create(index: "foo")...
     ///
-    /// - parameters:
-    ///     - name: Name for this index.
-    /// - returns: `SQLCreateIndexBuilder`.
-    public func create(
-        index name: SQLExpression
-    ) -> SQLCreateIndexBuilder {
-        return .init(.init(name: name), on: self)
+    /// - Parameters:
+    ///   - name: Name for this index.
+    @inlinable
+    public func create(index name: any SQLExpression) -> SQLCreateIndexBuilder {
+        .init(.init(name: name), on: self)
     }
 }

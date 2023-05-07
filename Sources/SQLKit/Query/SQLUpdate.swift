@@ -1,21 +1,22 @@
 /// `UPDATE` statement.
 ///
-/// See `SQLUpdateBuilder`.
+/// See ``SQLUpdateBuilder``.
 public struct SQLUpdate: SQLExpression {
     /// Table to update.
-    public var table: SQLExpression
+    public var table: any SQLExpression
     
     /// Zero or more identifier: expression pairs to update.
-    public var values: [SQLExpression]
+    public var values: [any SQLExpression]
     
     /// Optional predicate to limit updated rows.
-    public var predicate: SQLExpression?
+    public var predicate: (any SQLExpression)?
 
     /// Optionally append a `RETURNING` clause that, where supported, returns the supplied supplied columns.
     public var returning: SQLReturning?
     
-    /// Creates a new `SQLUpdate`.
-    public init(table: SQLExpression) {
+    /// Creates a new ``SQLUpdate``.
+    @inlinable
+    public init(table: any SQLExpression) {
         self.table = table
         self.values = []
         self.predicate = nil

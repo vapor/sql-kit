@@ -9,43 +9,50 @@
 ///
 /// - Note: The primary motivation for the existence of this protocol is to make it easier
 ///   to construct `SELECT` queries without specifying a database or providing the
-///   `SQLQueryBuilder` and `SQLQueryFetcher` methods in inappropriate contexts.
+///   ``SQLQueryBuilder`` and ``SQLQueryFetcher`` methods in inappropriate contexts.
 public protocol SQLSubqueryClauseBuilder: SQLJoinBuilder, SQLPredicateBuilder, SQLSecondaryPredicateBuilder, SQLPartialResultBuilder {
+    /// The ``SQLSelect`` query being built.
     var select: SQLSelect { get set }
 }
 
 extension SQLSubqueryClauseBuilder {
-    public var joins: [SQLExpression] {
+    /// See ``SQLJoinBuilder/joins``.
+    public var joins: [any SQLExpression] {
         get { self.select.joins }
         set { self.select.joins = newValue }
     }
 }
 
 extension SQLSubqueryClauseBuilder {
-    public var predicate: SQLExpression? {
+    /// See ``SQLPredicateBuilder/predicate``.
+    public var predicate: (any SQLExpression)? {
         get { return self.select.predicate }
         set { self.select.predicate = newValue }
     }
 }
 
 extension SQLSubqueryClauseBuilder {
-    public var secondaryPredicate: SQLExpression? {
+    /// See ``SQLSecondaryPredicateBuilder/secondaryPredicate``.
+    public var secondaryPredicate: (any SQLExpression)? {
         get { return self.select.having }
         set { self.select.having = newValue }
     }
 }
 
 extension SQLSubqueryClauseBuilder {
-    public var orderBys: [SQLExpression] {
+    /// See ``SQLPartialResultBuilder/orderBys``.
+    public var orderBys: [any SQLExpression] {
         get { self.select.orderBy }
         set { self.select.orderBy = newValue }
     }
     
+    /// See ``SQLPartialResultBuilder/limit``.
     public var limit: Int? {
         get { self.select.limit }
         set { self.select.limit = newValue }
     }
     
+    /// See ``SQLPartialResultBuilder/offset``.
     public var offset: Int? {
         get { self.select.offset }
         set { self.select.offset = newValue }
@@ -56,11 +63,42 @@ extension SQLSubqueryClauseBuilder {
 
 extension SQLSubqueryClauseBuilder {
     /// Adds a `DISTINCT` clause to the query.
-    ///
-    /// - Returns: `self` for chaining.
+    @inlinable
     @discardableResult
     public func distinct() -> Self {
         self.select.isDistinct = true
+        return self
+    }
+
+    /// Adds a `DISTINCT` clause to the select statement and explicitly specifies columns to select,
+    /// overwriting any previously specified columns.
+    ///
+    /// - Warning: This does _NOT_ invoke PostgreSQL's `DISTINCT ON (...)` syntax!
+    @inlinable
+    @discardableResult
+    public func distinct(on column: String, _ columns: String...) -> Self {
+        self.distinct(on: ([column] + columns).map(SQLIdentifier.init(_:)))
+    }
+    
+    /// Adds a `DISTINCT` clause to the select statement and explicitly specifies columns to select,
+    /// overwriting any previously specified columns.
+    ///
+    /// - Warning: This does _NOT_ invoke PostgreSQL's `DISTINCT ON (...)` syntax!
+    @inlinable
+    @discardableResult
+    public func distinct(on column: any SQLExpression, _ columns: any SQLExpression...) -> Self {
+        self.distinct(on: [column] + columns)
+    }
+    
+    /// Adds a `DISTINCT` clause to the select statement and explicitly specifies columns to select,
+    /// overwriting any previously specified columns.
+    ///
+    /// - Warning: This does _NOT_ invoke PostgreSQL's `DISTINCT ON (...)` syntax!
+    @inlinable
+    @discardableResult
+    public func distinct(on columns: [any SQLExpression]) -> Self {
+        self.select.isDistinct = true
+        self.select.columns = columns
         return self
     }
 }
@@ -68,122 +106,82 @@ extension SQLSubqueryClauseBuilder {
 // MARK: - Columns
 
 extension SQLSubqueryClauseBuilder {
-    /// Specify a column to be part of the result set of the query. The column is a string
-    /// assumed to be a valid SQL identifier and is not qualified.
+    /// Specify a column to be part of the result set of the query.
     ///
-    /// The string `*` (a single asterisk) is recognized and replaced with `SQLLiteral.all`.
-    ///
-    /// - Parameter column: The name of the column to return, or `*` for all.
-    /// - Returns: `self` for chaining.
+    /// The string `*` (a single asterisk) is replaced with ``SQLLiteral/all``.
+    @inlinable
     @discardableResult
     public func column(_ column: String) -> Self {
-        if column == "*" {
-            return self.column(SQLLiteral.all)
-        } else {
-            return self.column(SQLColumn(SQLIdentifier(column)))
-        }
+        self.column(column == "*" ? SQLLiteral.all : SQLColumn(column))
     }
     
-    /// Specify a column to be part of the result set of the query. The column is a string
-    /// assumed to be a valid SQL identifier, qualified by a table name, also a string assumed
-    /// to be a valid SQL identifier.
+    /// Specify a column qualified with a table name to be part of the result set of the query.
     ///
-    /// The string `*` (a single asterisk) is recognized and replaced with `SQLLiteral.all`.
-    ///
-    /// - Parameters:
-    ///   - table: The name of a table to qualify the column name.
-    ///   - column: The name of the column to return, or `*` for all.
-    /// - Returns: `self` for chaining.
+    /// The string `*` (a single asterisk) is replaced with ``SQLLiteral/all``.
+    @inlinable
     @discardableResult
     public func column(table: String, column: String) -> Self {
-        if column == "*" {
-            return self.column(SQLColumn(SQLLiteral.all, table: SQLIdentifier(table)))
-        } else {
-            return self.column(SQLColumn(SQLIdentifier(column), table: SQLIdentifier(table)))
-        }
+        self.column(SQLColumn(column == "*" ? SQLLiteral.all : SQLIdentifier(column), table: SQLIdentifier(table)))
     }
 
-    /// Specify a column to retrieve as a `String`, and an alias for it with another `String`.
-    ///
-    /// - Parameters:
-    ///   - column: The name of the column to return.
-    ///   - alias: The label to give the returned column.
-    /// - Returns: `self` for chaining.
+    /// Specify a column to retrieve with an aliased name.
+    @inlinable
     @discardableResult
     public func column(_ column: String, as alias: String) -> Self {
-        return self.column(SQLIdentifier(column), as: SQLIdentifier(alias))
+        return self.column(SQLColumn(column), as: SQLIdentifier(alias))
     }
 
-    /// Specify a column to retrieve as an `SQLExpression`, and an alias for it with a `String`.
-    ///
-    /// - Parameters:
-    ///   - column: An expression identifying the desired data to return.
-    ///   - alias: A string specifying the desired label of the identified data.
-    /// - Returns: `self` for chaining.
+    /// Specify a column to retrieve with an aliased name.
+    @inlinable
     @discardableResult
-    public func column(_ column: SQLExpression, as alias: String) -> Self {
-        return self.column(column, as: SQLIdentifier(alias))
+    public func column(_ column: any SQLExpression, as alias: String) -> Self {
+        self.column(column, as: SQLIdentifier(alias))
     }
 
-    /// Specify a column to retrieve as an `SQLExpression`, and an alias for it with another `SQLExpression`.
-    ///
-    /// - Parameters:
-    ///   - column: An expression identifying the desired data to return.
-    ///   - alias: An expression specifying the desired label of the identified data.
-    /// - Returns: `self` for chaining.
+    /// Specify a column to retrieve with an aliased name.
+    @inlinable
     @discardableResult
-    public func column(_ column: SQLExpression, as alias: SQLExpression) -> Self {
-        return self.column(SQLAlias(column, as: alias))
+    public func column(_ column: any SQLExpression, as alias: any SQLExpression) -> Self {
+        self.column(SQLAlias(column, as: alias))
     }
 
     /// Specify an arbitrary expression as a column to be part of the result set of the query.
-    ///
-    /// - Parameter expr: An expression identifying the desired data to return.
-    /// - Returns: `self` for chaining.
+    @inlinable
     @discardableResult
-    public func column(_ expr: SQLExpression) -> Self {
+    public func column(_ expr: any SQLExpression) -> Self {
         self.select.columns.append(expr)
         return self
     }
     
-    /// Specify a list of columns to be part of the result set of the query. Each provided name
-    /// is a string assumed to be a valid SQL identifier and is not qualified. The string `*` is
-    /// recognized and replaced with `SQLLiteral.all`.
-    ///
-    /// - Parameter columns: The names of the columns to return.
-    /// - Returns: `self` for chaining.
+    /// Specify a list of columns to be part of the result set of the query. The string `*` is
+    /// replaced with ``SQLLiteral/all``.
+    @inlinable
     @discardableResult
     public func columns(_ columns: String...) -> Self {
-        return self.columns(columns)
+        self.columns(columns)
     }
     
-    /// Specify a list of columns to be part of the result set of the query. Each provided name
-    /// is a string assumed to be a valid SQL identifier and is not qualified. The string `*` is
-    /// recognized and replaced with `SQLLiteral.all`.
-    ///
-    /// - Parameter columns: The names of the columns to return.
-    /// - Returns: `self` for chaining.
+    /// Specify a list of columns to be part of the result set of the query. The string `*` is
+    /// replaced with ``SQLLiteral/all``.
+    @inlinable
     @discardableResult
     public func columns(_ columns: [String]) -> Self {
-        return columns.reduce(self) { $0.column($1) }
+        self.columns(columns.map { $0 == "*" ? SQLLiteral.all as any SQLExpression : SQLColumn($0) })
     }
     
     /// Specify a list of arbitrary expressions as columns to be part of the result set of the query.
-    ///
-    /// - Parameter columns: A list of expressions identifying the desired data to return.
-    /// - Returns: `self` for chaining.
+    @inlinable
     @discardableResult
-    public func columns(_ columns: SQLExpression...) -> Self {
-        return self.columns(columns)
+    public func columns(_ columns: any SQLExpression...) -> Self {
+        self.columns(columns)
     }
     
     /// Specify a list of arbitrary expressions as columns to be part of the result set of the query.
-    ///
-    /// - Parameter columns: A list of expressions identifying the desired data to return.
-    /// - Returns: `self` for chaining.
+    @inlinable
     @discardableResult
-    public func columns(_ columns: [SQLExpression]) -> Self {
-        return columns.reduce(self) { $0.column($1) }
+    public func columns(_ columns: [any SQLExpression]) -> Self {
+        self.select.columns.append(contentsOf: columns)
+        return self
     }
 }
 
@@ -191,49 +189,42 @@ extension SQLSubqueryClauseBuilder {
 
 extension SQLSubqueryClauseBuilder {
     /// Include the given table in the list of those used by the query, without performing an
-    /// explicit join. The table specifier is a string assumed to be a valid SQL identifier.
+    /// explicit join.
     ///
     /// - Parameter table: The name of the table to use.
     /// - Returns: `self` for chaining.
+    @inlinable
     @discardableResult
     public func from(_ table: String) -> Self {
-        return self.from(SQLIdentifier(table))
+        self.from(SQLIdentifier(table))
     }
     
     /// Include the given table in the list of those used by the query, without performing an
-    /// explicit join. The table specifier may be any expression.
+    /// explicit join.
     ///
     /// - Parameter table: An expression identifying the table to use.
     /// - Returns: `self` for chaining.
+    @inlinable
     @discardableResult
-    public func from(_ table: SQLExpression) -> Self {
+    public func from(_ table: any SQLExpression) -> Self {
         self.select.tables.append(table)
         return self
     }
     
-    /// Include the given table in the list of those used by the query, without performing an
-    /// explicit join. An alias for the table may be provided. The table and alias specifiers
-    /// are strings assumed to be valid SQL identifiers.
-    ///
-    /// - Parameters:
-    ///   - table: The name of the table to use.
-    ///   - alias: The alias to use for the table.
-    /// - Returns: `self` for chaining.
+    /// Include the given table and an alias for it in the list of those used by the query, without
+    /// performing an explicit join.
+    @inlinable
     @discardableResult
     public func from(_ table: String, as alias: String) -> Self {
-        return self.from(SQLIdentifier(table), as: SQLIdentifier(alias))
+        self.from(SQLIdentifier(table), as: SQLIdentifier(alias))
     }
     
-    /// Include the given table in the list of those used by the query, without performing an
-    /// explicit join. The table and alias specifiers may be arbitrary expressions.
-    ///
-    /// - Parameters:
-    ///   - table: An expression identifying the table to use.
-    ///   - alias: An expression providing the alias to use for the table.
-    /// - Returns: `self` for chaining.
+    /// Include the given table and an alias for it in the list of those used by the query, without
+    /// performing an explicit join.
+    @inlinable
     @discardableResult
-    public func from(_ table: SQLExpression, as alias: SQLExpression) -> Self {
-        return self.from(SQLAlias(table, as: alias))
+    public func from(_ table: any SQLExpression, as alias: any SQLExpression) -> Self {
+        self.from(SQLAlias(table, as: alias))
     }
 }
 
@@ -241,20 +232,16 @@ extension SQLSubqueryClauseBuilder {
 
 extension SQLSubqueryClauseBuilder {
     /// Adds a `GROUP BY` clause to the query with the specified column.
-    ///
-    /// - Parameter column: Name of column to group results by. Appended to any previously added grouping expressions.
-    /// - Returns: `self` for chaining.
+    @inlinable
     @discardableResult
     public func groupBy(_ column: String) -> Self {
-        return self.groupBy(SQLColumn(column))
+        self.groupBy(SQLColumn(column))
     }
 
     /// Adds a `GROUP BY` clause to the query with the specified expression.
-    ///
-    /// - Parameter expression: Expression to group results by. Appended to any previously added grouping expressions.
-    /// - Returns: `self` for chaining.
+    @inlinable
     @discardableResult
-    public func groupBy(_ expression: SQLExpression) -> Self {
+    public func groupBy(_ expression: any SQLExpression) -> Self {
         self.select.groupBy.append(expression)
         return self
     }
@@ -277,16 +264,13 @@ extension SQLSubqueryClauseBuilder {
     ///
     /// - Warning: If the database in use does not support locking reads, the locking clause
     ///   will be silently ignored regardless of its value.
-    ///
-    /// - Parameter lockingClause: The type of lock to obtain. See ``SQLLockingClause``.
-    /// - Returns: `self` for chaining.
+    @inlinable
     @discardableResult
     public func `for`(_ lockingClause: SQLLockingClause) -> Self {
-        return self.lockingClause(lockingClause)
+        self.lockingClause(lockingClause as any SQLExpression)
     }
 
-    /// Adds a locking clause to this query as specified by an arbitrary ``SQLExpression``.
-    /// If called more than once, the last call wins.
+    /// Adds a locking clause to this query. If called more than once, the last call wins.
     ///
     /// ```swift
     /// db.select()...lockingClause(...)
@@ -298,11 +282,12 @@ extension SQLSubqueryClauseBuilder {
     /// this construct.
     ///
     /// - Note: This method allows providing an arbitrary SQL expression as the locking clause.
-    ///
-    /// - Parameter lockingClause: The locking clause as an SQL expression.
-    /// - Returns: `self` for chaining.
+    /// 
+    /// - Warning: If the database in use does not support locking reads, the locking clause
+    ///   will be silently ignored regardless of its value.
+    @inlinable
     @discardableResult
-    public func lockingClause(_ lockingClause: SQLExpression) -> Self {
+    public func lockingClause(_ lockingClause: any SQLExpression) -> Self {
         self.select.lockingClause = lockingClause
         return self
     }

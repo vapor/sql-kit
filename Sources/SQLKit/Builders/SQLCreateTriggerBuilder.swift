@@ -1,190 +1,188 @@
-import NIOCore
-
-extension SQLDatabase {
-    public func create(trigger: String, table: String, when: SQLTriggerWhen, event: SQLTriggerEvent) -> SQLCreateTriggerBuilder {
-        self.create(trigger: SQLIdentifier(trigger), table: SQLIdentifier(table), when: when, event: event)
-    }
-
-    public func create(trigger: SQLExpression, table: SQLExpression, when: SQLExpression, event: SQLExpression) -> SQLCreateTriggerBuilder {
-        .init(trigger: trigger, table: table, when: when, event: event, on: self)
-    }
-}
-
+/// Builds ``SQLCreateTrigger`` queries.
 public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
+    /// ``SQLCreateTrigger`` query being built.
     public var createTrigger: SQLCreateTrigger
 
-    public var database: SQLDatabase
+    /// See ``SQLQueryBuilder/database``.
+    public var database: any SQLDatabase
 
-    public var query: SQLExpression {
-        return self.createTrigger
+    /// See ``SQLQueryBuilder/query``.
+    @inlinable
+    public var query: any SQLExpression {
+        self.createTrigger
     }
 
-    init(trigger: SQLExpression, table: SQLExpression, when: SQLExpression, event: SQLExpression, on database: SQLDatabase) {
-        createTrigger = .init(trigger: trigger, table: table, when: when, event: event)
+    /// Create a new ``SQLCreateTriggerBuilder``.
+    @usableFromInline
+    init(trigger: any SQLExpression, table: any SQLExpression, when: any SQLExpression, event: any SQLExpression, on database: any SQLDatabase) {
+        self.createTrigger = .init(trigger: trigger, table: table, when: when, event: event)
         self.database = database
     }
 
     /// Identifies whether the trigger applies to each row or each statement.
-    /// - Parameter value: The option to use.
+    @inlinable
     @discardableResult
-    public func each(_ value: SQLTriggerEach) -> SQLCreateTriggerBuilder {
-        createTrigger.each = value
+    public func each(_ value: SQLTriggerEach) -> Self {
+        self.createTrigger.each = value
         return self
     }
 
     /// Identifies whether the trigger applies to each row or each statement.
-    /// - Parameter value: The appropriate row or statement value for the language.
+    @inlinable
     @discardableResult
-    public func each(_ value: SQLExpression) -> SQLCreateTriggerBuilder {
-        createTrigger.each = value
+    public func each(_ value: any SQLExpression) -> Self {
+        self.createTrigger.each = value
         return self
     }
 
     /// Specifies this is a constraint trigger.
+    @inlinable
     @discardableResult
-    public func isConstraint() -> SQLCreateTriggerBuilder {
-        createTrigger.isConstraint = true
+    public func isConstraint() -> Self {
+        self.createTrigger.isConstraint = true
         return self
     }
 
-    /// The columns which the trigger applies to.
-    /// - Parameter columns: The names of the columns.
+    /// Specify the columns to which the trigger applies.
+    @inlinable
     @discardableResult
-    public func columns(_ columns: [String]) -> SQLCreateTriggerBuilder {
-        createTrigger.columns = columns.map { SQLRaw($0) }
+    public func columns(_ columns: [String]) -> Self {
+        self.columns(columns.map(SQLIdentifier.init(_:)))
+    }
+
+    /// Specify the columns to which the trigger applies.
+    @inlinable
+    @discardableResult
+    public func columns(_ columns: [any SQLExpression]) -> Self {
+        self.createTrigger.columns = columns
         return self
     }
 
-    /// The columns which the trigger applies to.
-    /// - Parameter columns: The names of the columns.
+    /// Specify the trigger's timing.
+    ///
+    /// - Note: Only applies to constraint triggers.
+    @inlinable
     @discardableResult
-    public func columns(_ columns: [SQLExpression]) -> SQLCreateTriggerBuilder {
-        createTrigger.columns = columns
+    public func timing(_ value: SQLTriggerTiming) -> Self {
+        self.createTrigger.timing = value
         return self
     }
 
-    /// The timing of the trigger.
-    /// - Parameter value: When the trigger applies.
-    /// ### Note ###
-    /// Only applicable to constraint triggers.
+    /// Specify the trigger's timing.
+    ///
+    /// - Note: Only applies to constraint triggers.
+    @inlinable
     @discardableResult
-    public func timing(_ value: SQLTriggerTiming) -> SQLCreateTriggerBuilder {
-        createTrigger.timing = value
+    public func timing(_ value: any SQLExpression) -> Self {
+        self.createTrigger.timing = value
         return self
     }
 
-    /// The timing of the trigger.
-    /// - Parameter value: The appropriate option.
-    /// ### Note ###
-    /// Only applicable to constraint triggers.
+    /// Specify a conditional expression which determines whether the trigger is actually executed.
+    @available(*, deprecated, message: "Specifying conditions as raw strings is unsafe. Use `SQLBinaryExpression` etc. instead.")
+    @inlinable
     @discardableResult
-    public func timing(_ value: SQLExpression) -> SQLCreateTriggerBuilder {
-        createTrigger.timing = value
+    public func condition(_ value: String) -> Self {
+        self.condition(SQLRaw(value))
+    }
+
+    /// Specify a conditional expression which determines whether the trigger is actually executed.
+    @inlinable
+    @discardableResult
+    public func condition(_ value: any SQLExpression) -> Self {
+        self.createTrigger.condition = value
         return self
     }
 
-    /// A Boolean expression that determines whether the trigger function will actually be executed
-    /// - Parameter value: The condition
+    /// Specify the name of another table referenced by the constraint.
+    ///
+    /// To specify a schema-qualified table, use ``SQLQualifiedTable``.
+    ///
+    /// - Note: This option is used for foreign key constraints and is not recommended for general use. Only applies to constraint triggers.
+    @inlinable
     @discardableResult
-    public func condition(_ value: String) -> SQLCreateTriggerBuilder {
-        createTrigger.condition = SQLRaw(value)
+    public func referencedTable(_ value: String) -> Self {
+        self.referencedTable(SQLIdentifier(value))
+    }
+
+    /// Specify the name of another table referenced by the constraint.
+    ///
+    /// To specify a schema-qualified table, use ``SQLQualifiedTable``.
+    ///
+    /// - Note: This option is used for foreign key constraints and is not recommended for general use. Only applies to constraint triggers.
+    @inlinable
+    @discardableResult
+    public func referencedTable(_ value: any SQLExpression) -> Self {
+        self.createTrigger.referencedTable = value
         return self
     }
 
-    /// A Boolean expression that determines whether the trigger function will actually be executed
-    /// - Parameter value: The condition
+    /// Specify a body for the trigger.
+    @available(*, deprecated, message: "Specifying SQL statements as raw strings is unsafe. Use `SQLQueryString` or `SQLRaw` explicitly.")
+    @inlinable
     @discardableResult
-    public func condition(_ value: SQLExpression) -> SQLCreateTriggerBuilder {
-        createTrigger.condition = value
+    public func body(_ statements: [String]) -> Self {
+        self.body(statements.map { SQLRaw($0) })
+    }
+
+    /// Specify a body for the trigger.
+    @inlinable
+    @discardableResult
+    public func body(_ statements: [any SQLExpression]) -> Self {
+        self.createTrigger.body = statements
         return self
     }
 
-    /// The (possibly schema-qualified) name of another table referenced by the constraint
-    /// - Parameter value: The name of the table.
-    /// ### Note ###
-    /// This option is used for foreign-key constraints and is not recommended for general use. This can only be specified for constraint triggers.
+    /// Specify a procedure name for the trigger to execute.
+    @inlinable
     @discardableResult
-    public func referencedTable(_ value: String) -> SQLCreateTriggerBuilder {
-        createTrigger.referencedTable = SQLIdentifier(value)
+    public func procedure(_ name: String) -> Self {
+        self.procedure(SQLIdentifier(name))
+    }
+
+    /// Specify a procedure name for the trigger to execute.
+    @inlinable
+    @discardableResult
+    public func procedure(_ name: any SQLExpression) -> Self {
+        self.createTrigger.procedure = name
         return self
     }
 
-    /// The (possibly schema-qualified) name of another table referenced by the constraint
-    /// - Parameter value: The name of the table.
-    /// ### Note ###
-    /// This option is used for foreign-key constraints and is not recommended for general use. This can only be specified for constraint triggers.
+    /// Specify whether this trigger precedes or follows a referenced trigger.
+    @inlinable
     @discardableResult
-    public func referencedTable(_ value: SQLExpression) -> SQLCreateTriggerBuilder {
-        createTrigger.referencedTable = value
-        return self
+    public func order(precedence: SQLTriggerOrder, otherTriggerName: String) -> Self {
+        self.order(precedence: precedence, otherTriggerName: SQLIdentifier(otherTriggerName))
     }
 
-    /// The body of the trigger for those dialects that include the body in the trigger itself.
-    /// - Parameter statements: The statements for the body of the trigger.
+    /// Specify whether this trigger precedes or follows a referenced trigger.
+    @inlinable
     @discardableResult
-    public func body(_ statements: [String]) -> SQLCreateTriggerBuilder {
-        createTrigger.body = statements.map { SQLRaw($0) }
-        return self
+    public func order(precedence: SQLTriggerOrder, otherTriggerName: any SQLExpression) -> Self {
+        self.order(precedence: precedence as any SQLExpression, otherTriggerName: otherTriggerName)
     }
 
-    /// The body of the trigger for those dialects that include the body in the trigger itself.
-    /// - Parameter statements: The statements for the body of the trigger.
+    /// Specify whether this trigger precedes or follows a referenced trigger.
+    @inlinable
     @discardableResult
-    public func body(_ statements: [SQLExpression]) -> SQLCreateTriggerBuilder {
-        createTrigger.body = statements
+    public func order(precedence: any SQLExpression, otherTriggerName: any SQLExpression) -> Self {
+        self.createTrigger.order = precedence
+        self.createTrigger.orderTriggerName = otherTriggerName
         return self
-    }
-
-    /// The name of the procedure the trigger will execute for dialects that don't include the body in the trigger itself.
-    /// - Parameter name: The name of the procedure.
-    @discardableResult
-    public func procedure(_ name: String) -> SQLCreateTriggerBuilder {
-        createTrigger.procedure = SQLIdentifier(name)
-        return self
-    }
-
-    /// The name of the procedure the trigger will execute for dialects that don't include the body in the trigger itself.
-    /// - Parameter name: The name of the procedure.
-    @discardableResult
-    public func procedure(_ name: SQLExpression) -> SQLCreateTriggerBuilder {
-        createTrigger.procedure = name
-        return self
-    }
-
-    /// Identifies whether this trigger follows or precedes the referenced trigger.
-    /// - Parameters:
-    ///   - precedence: The precedence of this trigger in relation to `otherTriggerName`
-    ///   - otherTriggerName: The name of the other trigger.
-    @discardableResult
-    public func order(precedence: SQLTriggerOrder, otherTriggerName: String) -> SQLCreateTriggerBuilder {
-        createTrigger.order = precedence
-        createTrigger.orderTriggerName = SQLIdentifier(otherTriggerName)
-        return self
-    }
-
-    /// Identifies whether this trigger follows or precedes the referenced trigger.
-    /// - Parameters:
-    ///   - precedence: The precedence of this trigger in relation to `otherTriggerName`
-    ///   - otherTriggerName: The name of the other trigger.
-    @discardableResult
-    public func order(precedence: SQLTriggerOrder, otherTriggerName: SQLExpression) -> SQLCreateTriggerBuilder {
-        createTrigger.order = otherTriggerName
-        createTrigger.orderTriggerName = otherTriggerName
-        return self
-    }
-
-    /// Identifies whether this trigger follows or precedes the referenced trigger.
-    /// - Parameters:
-    ///   - precedence: The precedence of this trigger in relation to `otherTriggerName`
-    ///   - otherTriggerName: The name of the other trigger.
-    @discardableResult
-    public func order(precedence: SQLExpression, otherTriggerName: SQLExpression) -> SQLCreateTriggerBuilder {
-        createTrigger.order = precedence
-        createTrigger.orderTriggerName = otherTriggerName
-        return self
-    }
-
-    public func run() -> EventLoopFuture<Void> {
-        database.execute(sql: self.query) { _ in }
     }
 }
+
+extension SQLDatabase {
+    /// Create a new ``SQLCreateTriggerBuilder``.
+    @inlinable
+    public func create(trigger: String, table: String, when: SQLTriggerWhen, event: SQLTriggerEvent) -> SQLCreateTriggerBuilder {
+        self.create(trigger: SQLIdentifier(trigger), table: SQLIdentifier(table), when: when, event: event)
+    }
+
+    /// Create a new ``SQLCreateTriggerBuilder``.
+    @inlinable
+    public func create(trigger: any SQLExpression, table: any SQLExpression, when: any SQLExpression, event: any SQLExpression) -> SQLCreateTriggerBuilder {
+        .init(trigger: trigger, table: table, when: when, event: event, on: self)
+    }
+}
+

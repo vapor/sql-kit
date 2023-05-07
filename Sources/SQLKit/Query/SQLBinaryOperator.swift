@@ -60,6 +60,7 @@ public enum SQLBinaryOperator: SQLExpression {
     /// `IS NOT`
     case isNot
     
+    @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         switch self {
         case .equal: serializer.write("=")
@@ -88,10 +89,6 @@ public enum SQLBinaryOperator: SQLExpression {
                 || is not implemented because MySQL doesn't always support it, even though everyone else does.
                 Use `SQLFunction("CONCAT", args...)` for MySQL or `SQLRaw("||")` with Postgres and SQLite.
                 """)
-        
-        // "warning: Default will never be executed".
-        //default:
-        //    fatalError("\(self) operator is not implemented, probably because it needs extra work across SQL dialects.")
         }
     }
 }

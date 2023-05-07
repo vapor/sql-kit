@@ -1,9 +1,9 @@
 /// `DROP TABLE` query.
 ///
-/// See `SQLDropTableBuilder`.
+/// See ``SQLDropTableBuilder``.
 public struct SQLDropTable: SQLExpression {
     /// Table to drop.
-    public let table: SQLExpression
+    public let table: any SQLExpression
     
     /// The optional `IF EXISTS` clause suppresses the error that would normally
     /// result if the table does not exist.
@@ -12,21 +12,22 @@ public struct SQLDropTable: SQLExpression {
     /// The optional drop behavior clause specifies if objects that depend on the
     /// table should also be dropped or not, for databases that support this
     /// (either `CASCADE` or `RESTRICT`).
-    public var behavior: SQLExpression?
+    public var behavior: (any SQLExpression)?
 
     /// If the "TEMPORARY" keyword occurs between "DROP" and "TABLE" then only temporary tables are dropped,
     /// and the drop does not cause an implicit transaction commit.
     public var temporary: Bool
 
-    /// Creates a new `SQLDropTable`.
-    public init(table: SQLExpression) {
+    /// Creates a new ``SQLDropTable``.
+    @inlinable
+    public init(table: any SQLExpression) {
         self.table = table
         self.ifExists = false
         self.behavior = nil
         self.temporary = false
     }
     
-    /// See `SQLExpression`.
+    /// See ``SQLExpression/serialize(to:)``.
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {
             $0.append("DROP")
@@ -43,7 +44,7 @@ public struct SQLDropTable: SQLExpression {
             }
             $0.append(self.table)
             if $0.dialect.supportsDropBehavior {
-                $0.append(self.behavior ?? (SQLDropBehavior.restrict as SQLExpression))
+                $0.append(self.behavior ?? (SQLDropBehavior.restrict as any SQLExpression))
             }
         }
     }

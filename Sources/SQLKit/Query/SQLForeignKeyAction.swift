@@ -1,4 +1,4 @@
-/// RESTRICT | CASCADE | SET NULL | NO ACTION | SET DEFAULT
+/// `RESTRICT | CASCADE | SET NULL | NO ACTION | SET DEFAULT`
 public enum SQLForeignKeyAction: SQLExpression {
     /// Produce an error indicating that the deletion or update would create a foreign key constraint violation.
     /// If the constraint is deferred, this error will be produced at constraint check time if there still exist any referencing rows.
@@ -18,6 +18,7 @@ public enum SQLForeignKeyAction: SQLExpression {
     /// (There must be a row in the referenced table matching the default values, if they are not null, or the operation will fail.)
     case setDefault
     
+    @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         switch self {
         case .noAction: serializer.write("NO ACTION")

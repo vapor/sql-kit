@@ -1,12 +1,15 @@
 extension SQLDataType {
+    @inlinable
     public static func `enum`(_ cases: String...) -> Self {
         self.enum(cases)
     }
 
+    @inlinable
     public static func `enum`(_ cases: [String]) -> Self {
         self.enum(cases.map { SQLLiteral.string($0) })
     }
-    public static func `enum`(_ cases: [SQLExpression]) -> Self {
+    @inlinable
+    public static func `enum`(_ cases: [any SQLExpression]) -> Self {
         self.custom(SQLEnumDataType(cases: cases))
     }
 }
@@ -14,14 +17,17 @@ extension SQLDataType {
 public struct SQLEnumDataType: SQLExpression {
     /// The possible values of the enum type.
     ///
-    /// Commonly implemented as a `SQLGroupExpression`
-    var cases: [SQLExpression]
+    /// Commonly implemented as a ``SQLGroupExpression``.
+    @usableFromInline
+    var cases: [any SQLExpression]
 
+    @inlinable
     public init(cases: [String]) {
-        self.cases = cases.map { SQLLiteral.string($0) }
+        self.init(cases: cases.map { SQLLiteral.string($0) })
     }
 
-    public init(cases: [SQLExpression]) {
+    @inlinable
+    public init(cases: [any SQLExpression]) {
         self.cases = cases
     }
 

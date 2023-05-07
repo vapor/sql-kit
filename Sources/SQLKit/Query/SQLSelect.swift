@@ -1,23 +1,23 @@
 /// `SELECT` statement.
 ///
-/// See `SQLSelectBuilder` for building this query.
+/// See ``SQLSelectBuilder``.
 public struct SQLSelect: SQLExpression {
-    public var columns: [SQLExpression]
-    public var tables: [SQLExpression]
+    public var columns: [any SQLExpression]
+    public var tables: [any SQLExpression]
     
     public var isDistinct: Bool
     
-    public var joins: [SQLExpression]
+    public var joins: [any SQLExpression]
     
-    public var predicate: SQLExpression?
+    public var predicate: (any SQLExpression)?
     
     /// Zero or more `GROUP BY` clauses.
-    public var groupBy: [SQLExpression]
+    public var groupBy: [any SQLExpression]
 
-    public var having: SQLExpression?
+    public var having: (any SQLExpression)?
 
     /// Zero or more `ORDER BY` clauses.
-    public var orderBy: [SQLExpression]
+    public var orderBy: [any SQLExpression]
     
     /// If set, limits the maximum number of results.
     public var limit: Int?
@@ -29,10 +29,11 @@ public struct SQLSelect: SQLExpression {
     ///
     ///     SELECT ... FOR UPDATE
     ///
-    /// See `SQLSelectBuilder.for` and `SQLLockingClause`.
-    public var lockingClause: SQLExpression?
+    /// See ``SQLSelectBuilder/for(_:)`` and ``SQLLockingClause``.
+    public var lockingClause: (any SQLExpression)?
     
-    /// Creates a new `SQLSelect`.
+    /// Creates a new ``SQLSelect``.
+    @inlinable
     public init() {
         self.columns = []
         self.tables = []

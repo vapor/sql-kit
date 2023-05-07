@@ -297,10 +297,10 @@ final class AsyncSQLKitTests: XCTestCase {
     func testSimpleJoin() async throws {
         try await db.select().column("*")
             .from("planets")
-            .join("moons", on: "moons.planet_id=planets.id")
+            .join("moons", on: "\(ident: "moons").\(ident: "planet_id")=\(ident: "planets").\(ident: "id")" as SQLQueryString)
             .run()
         
-        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` INNER JOIN `moons` ON moons.planet_id=planets.id")
+        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` INNER JOIN `moons` ON `moons`.`planet_id`=`planets`.`id`")
     }
     
     func testMessyJoin() async throws {

@@ -1,17 +1,19 @@
 /// The `CREATE TYPE` command is used to create a new types in a database.
 ///
-/// See `SQLCreateEnumBuilder`.
+/// See ``SQLCreateEnumBuilder``.
 public struct SQLCreateEnum: SQLExpression {
     /// Name of type to create.
-    public var name: SQLExpression
+    public var name: any SQLExpression
 
-    public var values: [SQLExpression]
+    public var values: [any SQLExpression]
 
-    public init(name: SQLExpression, values: [SQLExpression]) {
+    @inlinable
+    public init(name: any SQLExpression, values: [any SQLExpression]) {
         self.name = name
         self.values = values
     }
 
+    @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {
             $0.append("CREATE TYPE")

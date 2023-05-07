@@ -6,23 +6,26 @@
 ///   to nothing at all.
 ///
 /// - Warning: At the time of this writing, MySQL 8.0's recommended "table alias" syntax for
-///   excluded columns is not implemented, due to there currently being no way for a `SQLDialect`
+///   excluded columns is not implemented, due to there currently being no way for a ``SQLDialect``
 ///   to vary its contents based on the database server version (for that matter, we don't even
 ///   have support for retrieving the version from `MySQLNIO`). For now, the deprecared `VALUES()`
 ///   function is used unconditionally, which will throw warnings starting from MySQL 8.0.20.
 ///   If this affects your usage, use a raw query or manually construct the necessary expressions
 ///   to specify and use the alias for now.
 public struct SQLExcludedColumn: SQLExpression {
-    public var name: SQLExpression
+    public var name: any SQLExpression
     
+    @inlinable
     public init(_ name: String) {
         self.init(SQLColumn(name))
     }
     
-    public init(_ name: SQLExpression) {
+    @inlinable
+    public init(_ name: any SQLExpression) {
         self.name = name
     }
     
+    @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         switch serializer.dialect.upsertSyntax {
             case .standard:

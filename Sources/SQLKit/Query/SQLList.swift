@@ -1,8 +1,9 @@
 public struct SQLList: SQLExpression {
-    public var expressions: [SQLExpression]
-    public var separator: SQLExpression
+    public var expressions: [any SQLExpression]
+    public var separator: any SQLExpression
 
-    public init(_ expressions: [SQLExpression], separator: SQLExpression = SQLRaw(", ")) {
+    @inlinable
+    public init(_ expressions: [any SQLExpression], separator: any SQLExpression = SQLRaw(", ")) {
         self.expressions = expressions
         self.separator = separator
     }

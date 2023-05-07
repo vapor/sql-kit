@@ -1,61 +1,69 @@
-/// Builds `SQLDropTrigger` query
-///
-///   db.drop()
-///
-/// See `SQLQueryBuilder` for more information.
-extension SQLDatabase {
-    public func drop(trigger: String) -> SQLDropTriggerBuilder {
-        return self.drop(trigger: SQLIdentifier(trigger))
-    }
-
-    public func drop(trigger: SQLExpression) -> SQLDropTriggerBuilder {
-        return .init(.init(name: trigger), on: self)
-    }
-}
-
+/// Builds ``SQLDropTrigger`` queries.
 public final class SQLDropTriggerBuilder: SQLQueryBuilder {
-    /// `SQLDropTrigger` query being built.
+    /// ``SQLDropTrigger`` query being built.
     public var dropTrigger: SQLDropTrigger
 
-    /// See `SQLQueryBuilder`.
-    public var database: SQLDatabase
+    /// See ``SQLQueryBuilder/database``.
+    public var database: any SQLDatabase
 
-    /// See `SQLQueryBuilder`.
-    public var query: SQLExpression {
-        return self.dropTrigger
+    /// See ``SQLQueryBuilder/query``.
+    @inlinable
+    public var query: any SQLExpression {
+        self.dropTrigger
     }
 
-    public init(_ dropTrigger: SQLDropTrigger, on database: SQLDatabase) {
+    /// Create a new ``SQLDropTableBuilder``.
+    @inlinable
+    public init(_ dropTrigger: SQLDropTrigger, on database: any SQLDatabase) {
         self.dropTrigger = dropTrigger
         self.database = database
     }
 
     /// The optional `IF EXISTS` clause suppresses the error that would normally
     /// result if the table does not exist.
+    @inlinable
     @discardableResult
     public func ifExists() -> Self {
-        dropTrigger.ifExists = true
+        self.dropTrigger.ifExists = true
         return self 
     }
 
     /// The optional `CASCADE` clause drops other objects that depend on this type
     /// (such as table columns, functions, and operators), and in turn all objects
     /// that depend on those objects.
+    @inlinable
     @discardableResult
     public func cascade() -> Self {
-        dropTrigger.cascade = true
+        self.dropTrigger.cascade = true
         return self
     }
     
+    /// Specify an associated table that owns the trigger to drop, for dialects that require it.
+    @inlinable
     @discardableResult
     public func table(_ name: String) -> Self {
-        dropTrigger.table = SQLIdentifier(name)
-        return self
+        self.table(SQLIdentifier(name))
     }
     
+    /// Specify an associated table that owns the trigger to drop, for dialects that require it.
+    @inlinable
     @discardableResult
-    public func table(_ name: SQLExpression) -> Self {
-        dropTrigger.table = name
+    public func table(_ name: any SQLExpression) -> Self {
+        self.dropTrigger.table = name
         return self
+    }
+}
+
+extension SQLDatabase {
+    /// Create a new ``SQLDropTableBuilder``.
+    @inlinable
+    public func drop(trigger: String) -> SQLDropTriggerBuilder {
+        self.drop(trigger: SQLIdentifier(trigger))
+    }
+
+    /// Create a new ``SQLDropTableBuilder``.
+    @inlinable
+    public func drop(trigger: any SQLExpression) -> SQLDropTriggerBuilder {
+        .init(.init(name: trigger), on: self)
     }
 }

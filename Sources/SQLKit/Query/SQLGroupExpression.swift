@@ -1,11 +1,13 @@
 public struct SQLGroupExpression: SQLExpression {
-    public let expressions: [SQLExpression]
+    public let expressions: [any SQLExpression]
     
-    public init(_ expression: SQLExpression) {
+    @inlinable
+    public init(_ expression: any SQLExpression) {
         self.expressions = [expression]
     }
     
-    public init(_ expressions: [SQLExpression]) {
+    @inlinable
+    public init(_ expressions: [any SQLExpression]) {
         self.expressions = expressions
     }
     

@@ -317,10 +317,10 @@ final class SQLKitTests: XCTestCase {
     func testSimpleJoin() throws {
         try db.select().column("*")
             .from("planets")
-            .join("moons", on: "moons.planet_id=planets.id")
+            .join("moons", on: "\(ident: "moons").\(ident: "planet_id")=\(ident: "planets").\(ident: "id")" as SQLQueryString)
             .run().wait()
         
-        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` INNER JOIN `moons` ON moons.planet_id=planets.id")
+        XCTAssertEqual(db.results[0], "SELECT * FROM `planets` INNER JOIN `moons` ON `moons`.`planet_id`=`planets`.`id`")
     }
     
     func testMessyJoin() throws {

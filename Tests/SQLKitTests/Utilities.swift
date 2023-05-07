@@ -5,12 +5,10 @@ import Logging
 
 final class TestDatabase: SQLDatabase {
     let logger: Logger
-    let eventLoop: EventLoop
+    let eventLoop: any EventLoop
     var results: [String]
-    var bindResults: [[Encodable]]
-    var dialect: SQLDialect {
-        self._dialect
-    }
+    var bindResults: [[any Encodable]]
+    var dialect: any SQLDialect { self._dialect }
     var _dialect: GenericDialect
     
     init() {
@@ -21,7 +19,7 @@ final class TestDatabase: SQLDatabase {
         self._dialect = GenericDialect()
     }
     
-    func execute(sql query: SQLExpression, _ onRow: @escaping (SQLRow) -> ()) -> EventLoopFuture<Void> {
+    func execute(sql query: any SQLExpression, _ onRow: @escaping (any SQLRow) -> ()) -> EventLoopFuture<Void> {
         var serializer = SQLSerializer(database: self)
         query.serialize(to: &serializer)
         results.append(serializer.sql)
@@ -32,7 +30,7 @@ final class TestDatabase: SQLDatabase {
 
 struct TestRow: SQLRow {
     enum Datum { // yes, this is just Optional by another name
-        case some(Encodable)
+        case some(any Encodable)
         case none
     }
     
@@ -72,23 +70,23 @@ struct TestRow: SQLRow {
 struct GenericDialect: SQLDialect {
     var name: String { "generic" }
 
-    func bindPlaceholder(at position: Int) -> SQLExpression { SQLRaw("?") }
-    func literalBoolean(_ value: Bool) -> SQLExpression { SQLRaw("\(value)") }
+    func bindPlaceholder(at position: Int) -> any SQLExpression { SQLRaw("?") }
+    func literalBoolean(_ value: Bool) -> any SQLExpression { SQLRaw("\(value)") }
     var supportsAutoIncrement: Bool = true
     var supportsIfExists: Bool = true
     var supportsReturning: Bool = true
-    var identifierQuote: SQLExpression = SQLRaw("`")
-    var literalStringQuote: SQLExpression = SQLRaw("'")
+    var identifierQuote: any SQLExpression = SQLRaw("`")
+    var literalStringQuote: any SQLExpression = SQLRaw("'")
     var enumSyntax: SQLEnumSyntax = .inline
-    var autoIncrementClause: SQLExpression = SQLRaw("AUTOINCREMENT")
-    var autoIncrementFunction: SQLExpression? = nil
+    var autoIncrementClause: any SQLExpression = SQLRaw("AUTOINCREMENT")
+    var autoIncrementFunction: (any SQLExpression)? = nil
     var supportsDropBehavior: Bool = false
     var triggerSyntax = SQLTriggerSyntax(create: [], drop: [])
     var alterTableSyntax = SQLAlterTableSyntax(alterColumnDefinitionClause: SQLRaw("MODIFY"), alterColumnDefinitionTypeKeyword: nil)
     var upsertSyntax: SQLUpsertSyntax = .standard
     var unionFeatures: SQLUnionFeatures = []
-    var sharedSelectLockExpression: SQLExpression? { SQLRaw("FOR SHARE") }
-    var exclusiveSelectLockExpression: SQLExpression? { SQLRaw("FOR UPDATE") }
+    var sharedSelectLockExpression: (any SQLExpression)? { SQLRaw("FOR SHARE") }
+    var exclusiveSelectLockExpression: (any SQLExpression)? { SQLRaw("FOR UPDATE") }
 
     mutating func setTriggerSyntax(create: SQLTriggerSyntax.Create = [], drop: SQLTriggerSyntax.Drop = []) {
         self.triggerSyntax.create = create

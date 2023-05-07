@@ -1,15 +1,16 @@
 /// `RETURNING ...` statement.
-///
 public struct SQLReturning: SQLExpression {
-    public var columns: [SQLExpression]
+    public var columns: [any SQLExpression]
 
     /// Creates a new `SQLReturning`.
+    @inlinable
     public init(_ column: SQLColumn) {
-        self.columns = [column]
+        self.init([column])
     }
 
     /// Creates a new `SQLReturning`.
-    public init(_ columns: [SQLExpression]) {
+    @inlinable
+    public init(_ columns: [any SQLExpression]) {
         self.columns = columns
     }
 

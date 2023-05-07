@@ -46,6 +46,7 @@ extension SQLDatabaseReportedVersion {
     /// - Parameters:
     ///   - otherVersion: The version to compare against. `type(of: self)` must be the same as `type(of: otherVersion)`.
     /// - Returns: `true` if `otherVersion` is greater than `self`, otherwise `false`.
+    @inlinable
     public func isNotNewer(than otherVersion: SQLDatabaseReportedVersion) -> Bool {
         self.isEqual(to: otherVersion) || self.isOlder(than: otherVersion)
     }
@@ -57,6 +58,7 @@ extension SQLDatabaseReportedVersion {
     /// - Parameters:
     ///   - otherVersion: The version to compare against. `type(of: self)` must be the same as `type(of: otherVersion)`.
     /// - Returns: `true` if `otherVersion` is equal to or less than `self`, otherwise `false`.
+    @inlinable
     public func isNewer(than otherVersion: SQLDatabaseReportedVersion) -> Bool {
         !self.isNotNewer(than: otherVersion)
     }
@@ -68,6 +70,7 @@ extension SQLDatabaseReportedVersion {
     /// - Parameters:
     ///   - otherVersion: The version to compare against. `type(of: self)` must be the same as `type(of: otherVersion)`.
     /// - Returns: `true` if `otherVersion` is less than `self`, otherwise `false`.
+    @inlinable
     public func isNotOlder(than otherVersion: SQLDatabaseReportedVersion) -> Bool {
         !self.isOlder(than: otherVersion)
     }

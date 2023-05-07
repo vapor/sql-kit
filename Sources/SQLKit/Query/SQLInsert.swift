@@ -1,17 +1,17 @@
 /// `INSERT INTO ...` statement.
 ///
-/// See `SQLInsertBuilder`.
+/// See ``SQLInsertBuilder``.
 public struct SQLInsert: SQLExpression {
-    public var table: SQLExpression
+    public var table: any SQLExpression
     
     /// Array of column identifiers to insert values for.
-    public var columns: [SQLExpression]
+    public var columns: [any SQLExpression]
     
     /// Two-dimensional array of values to insert. The count of each nested array _must_
     /// be equal to the count of `columns`.
     ///
     /// Use the `DEFAULT` literal to omit a value and that is specified as a column.
-    public var values: [[SQLExpression]]
+    public var values: [[any SQLExpression]]
 
     /// A unique key conflict resolution strategy.
     public var conflictStrategy: SQLConflictResolutionStrategy?
@@ -20,7 +20,8 @@ public struct SQLInsert: SQLExpression {
     public var returning: SQLReturning?
     
     /// Creates a new `SQLInsert`.
-    public init(table: SQLExpression) {
+    @inlinable
+    public init(table: any SQLExpression) {
         self.table = table
         self.columns = []
         self.values = []

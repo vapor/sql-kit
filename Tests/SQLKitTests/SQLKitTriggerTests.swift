@@ -55,7 +55,7 @@ final class SQLKitTriggerTests: XCTestCase {
         db._dialect = dialect
 
         try db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
-            .body(body)
+            .body(self.body.map { SQLRaw($0) })
             .order(precedence: .precedes, otherTriggerName: "other")
             .run().wait()
         XCTAssertEqual(db.results.popLast(), "CREATE TRIGGER `foo` BEFORE INSERT ON `planet` FOR EACH ROW PRECEDES `other` BEGIN \(bodyText()) END;")
@@ -67,10 +67,10 @@ final class SQLKitTriggerTests: XCTestCase {
         db._dialect = dialect
 
         try db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
-            .body(body)
-            .condition("foo = bar")
+            .body(self.body.map { SQLRaw($0) })
+            .condition("\(ident: "foo") = \(ident: "bar")" as SQLQueryString)
             .run().wait()
-        XCTAssertEqual(db.results.popLast(), "CREATE TRIGGER `foo` BEFORE INSERT ON `planet` WHEN foo = bar BEGIN \(bodyText()) END;")
+        XCTAssertEqual(db.results.popLast(), "CREATE TRIGGER `foo` BEFORE INSERT ON `planet` WHEN `foo` = `bar` BEGIN \(bodyText()) END;")
     }
 
     func testPostgreSqlTriggerCreates() throws {
@@ -83,11 +83,11 @@ final class SQLKitTriggerTests: XCTestCase {
             .each(.row)
             .isConstraint()
             .timing(.initiallyDeferred)
-            .condition("foo = bar")
+            .condition("\(ident: "foo") = \(ident: "bar")" as SQLQueryString)
             .procedure("qwer")
             .referencedTable(SQLIdentifier("galaxies"))
             .run().wait()
 
-        XCTAssertEqual(db.results.popLast(), "CREATE CONSTRAINT TRIGGER `foo` AFTER INSERT ON `planet` FROM `galaxies` INITIALLY DEFERRED FOR EACH ROW WHEN (foo = bar) EXECUTE PROCEDURE `qwer`")
+        XCTAssertEqual(db.results.popLast(), "CREATE CONSTRAINT TRIGGER `foo` AFTER INSERT ON `planet` FROM `galaxies` INITIALLY DEFERRED FOR EACH ROW WHEN (`foo` = `bar`) EXECUTE PROCEDURE `qwer`")
     }
 }

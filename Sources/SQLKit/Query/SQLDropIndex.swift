@@ -1,9 +1,9 @@
 /// `DROP INDEX` query.
 ///
-/// See `SQLDropIndexBuilder`.
+/// See ``SQLDropIndexBuilder``.
 public struct SQLDropIndex: SQLExpression {
     /// Index to drop.
-    public var name: SQLExpression
+    public var name: any SQLExpression
     
     /// The optional `IF EXISTS` clause suppresses the error that would normally
     /// result if the index does not exist.
@@ -11,15 +11,16 @@ public struct SQLDropIndex: SQLExpression {
     
     /// The object (usually a table) on which the index exists. Not all databases support specifying
     /// this, while others require it.
-    public var owningObject: SQLExpression?
+    public var owningObject: (any SQLExpression)?
 
     /// The optional drop behavior clause specifies if objects that depend on the
     /// index should also be dropped or not, for databases that support this
     /// (either `CASCADE` or `RESTRICT`).
-    public var behavior: SQLExpression?
+    public var behavior: (any SQLExpression)?
 
     /// Creates a new `SQLDropIndex`.
-    public init(name: SQLExpression) {
+    @inlinable
+    public init(name: any SQLExpression) {
         self.name = name
         self.ifExists = false
     }
@@ -33,8 +34,7 @@ public struct SQLDropIndex: SQLExpression {
             }
             $0.append(self.name)
             if let owningObject = self.owningObject {
-                $0.append("ON")
-                $0.append(owningObject)
+                $0.append("ON", owningObject)
             }
             if $0.dialect.supportsDropBehavior {
                 $0.append(self.behavior ?? SQLDropBehavior.restrict)

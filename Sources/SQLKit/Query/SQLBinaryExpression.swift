@@ -1,25 +1,28 @@
 public struct SQLBinaryExpression: SQLExpression {
-    public let left: SQLExpression
-    public let op: SQLExpression
-    public let right: SQLExpression
+    public let left: any SQLExpression
+    public let op: any SQLExpression
+    public let right: any SQLExpression
     
-    public init(left: SQLExpression, op: SQLExpression, right: SQLExpression) {
+    @inlinable
+    public init(left: any SQLExpression, op: any SQLExpression, right: any SQLExpression) {
         self.left = left
         self.op = op
         self.right = right
     }
     
+    @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
-        self.left.serialize(to: &serializer)
-        serializer.write(" ")
-        self.op.serialize(to: &serializer)
-        serializer.write(" ")
-        self.right.serialize(to: &serializer)
+        serializer.statement {
+            $0.append(self.left)
+            $0.append(self.op)
+            $0.append(self.right)
+        }
     }
 }
 
 extension SQLBinaryExpression {
-    public init(_ left: SQLExpression, _ op: SQLBinaryOperator, _ right: SQLExpression) {
+    @inlinable
+    public init(_ left: any SQLExpression, _ op: SQLBinaryOperator, _ right: any SQLExpression) {
         self.init(left: left, op: op, right: right)
     }
 }

@@ -2,9 +2,9 @@ import SQLKit
 import XCTest
 
 public final class SQLBenchmarker {
-    internal let database: SQLDatabase
+    internal let database: any SQLDatabase
     
-    public init(on database: SQLDatabase) {
+    public init(on database: any SQLDatabase) {
         self.database = database
     }
     
@@ -24,8 +24,8 @@ public final class SQLBenchmarker {
 
     internal func runTest(
         _ name: String = #function,
-        _ test: (SQLDatabase) throws -> ()
-    ) throws {
+        _ test: (any SQLDatabase) throws -> ()
+    ) rethrows {
         self.database.logger.notice("[SQLBenchmark] Running \(name)...")
         try test(self.database)
     }

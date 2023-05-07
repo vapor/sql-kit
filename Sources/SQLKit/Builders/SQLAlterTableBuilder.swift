@@ -1,290 +1,158 @@
+/// Builds ``SQLAlterTable`` queries.
 public final class SQLAlterTableBuilder: SQLQueryBuilder {
-    /// `SQLAlterTable` query being built.
+    /// ``SQLAlterTable`` query being built.
     public var alterTable: SQLAlterTable
 
-    public var database: SQLDatabase
+    /// See ``SQLQueryBuilder/database``.
+    public var database: any SQLDatabase
 
-    public var query: SQLExpression {
-        return self.alterTable
+    /// See ``SQLQueryBuilder/query``.
+    @inlinable
+    public var query: any SQLExpression {
+        self.alterTable
     }
 
-    public var columns: [SQLExpression] {
-        get { return alterTable.addColumns }
-        set { alterTable.addColumns = newValue }
+    /// The set of column alteration expressions.
+    @inlinable
+    public var columns: [any SQLExpression] {
+        get { self.alterTable.addColumns }
+        set { self.alterTable.addColumns = newValue }
     }
 
-    /// Creates a new `SQLAlterTableBuilder`.
-    public init(_ alterTable: SQLAlterTable, on database: SQLDatabase) {
+    /// Create a new ``SQLAlterTableBuilder``.
+    @inlinable
+    public init(_ alterTable: SQLAlterTable, on database: any SQLDatabase) {
         self.alterTable = alterTable
         self.database = database
     }
     
-    @discardableResult
     /// Rename the table.
-    /// - Parameter newName: The new name to apply to the table
-    /// - Returns: `self` for chaining.
-    public func rename(
-        to newName: String
-    ) -> Self {
-        return self.rename(to: SQLIdentifier(newName))
+    @inlinable
+    @discardableResult
+    public func rename(to newName: String) -> Self {
+        self.rename(to: SQLIdentifier(newName))
     }
     
-    @discardableResult
     /// Rename the table.
-    /// - Parameter newName: The new name to apply to the table
-    /// - Returns: `self` for chaining.
-    public func rename(
-        to newName: SQLExpression
-    ) -> Self {
+    @inlinable
+    @discardableResult
+    public func rename(to newName: any SQLExpression) -> Self {
         self.alterTable.renameTo = newName
         return self
     }
     
+    /// Add a new column to the table.
+    @inlinable
     @discardableResult
-    /// Add a column to the table.
-    /// - Parameters:
-    ///   - column: The name of the new column
-    ///   - dataType: The new datatype of the new column
-    ///   - constraints: Constraints for the new column
-    /// - Returns: `self` for chaining.
-    public func column(
-        _ column: String,
-        type dataType: SQLDataType,
-        _ constraints: SQLColumnConstraintAlgorithm...
-    ) -> Self {
-        return self.addColumn(SQLColumnDefinition(
-            column: SQLIdentifier(column),
-            dataType: dataType,
-            constraints: constraints
-        ))
+    public func column(_ column: String, type dataType: SQLDataType, _ constraints: SQLColumnConstraintAlgorithm...) -> Self {
+        self.column(column, type: dataType, constraints)
     }
     
+    /// Add a new column to the table.
+    @inlinable
     @discardableResult
-    /// Add a column to the table.
-    /// - Parameters:
-    ///   - column: The name of the new column
-    ///   - dataType: The new datatype of the new column
-    ///   - constraints: Constraints for the new column
-    /// - Returns: `self` for chaining.
-    public func column(
-        _ column: String,
-        type dataType: SQLDataType,
-        _ constraints: [SQLColumnConstraintAlgorithm]
-    ) -> Self {
-        return self.addColumn(SQLColumnDefinition(
-            column: SQLIdentifier(column),
-            dataType: dataType,
-            constraints: constraints
-        ))
+    public func column(_ column: String, type dataType: SQLDataType, _ constraints: [SQLColumnConstraintAlgorithm]) -> Self {
+        self.column(SQLIdentifier(column), type: dataType, constraints)
     }
     
+    /// Add a new column to the table.
+    @inlinable
     @discardableResult
-    /// Add a column to the table.
-    /// - Parameters:
-    ///   - column: The name of the new column
-    ///   - dataType: The new datatype of the new column
-    ///   - constraints: Constraints for the new column
-    /// - Returns: `self` for chaining.
-    public func column(
-        _ column: SQLExpression,
-        type dataType: SQLExpression,
-        _ constraints: SQLExpression...
-    ) -> Self {
-        return self.addColumn(SQLColumnDefinition(
-            column: column,
-            dataType: dataType,
-            constraints: constraints
-        ))
+    public func column(_ column: any SQLExpression, type dataType: any SQLExpression, _ constraints: any SQLExpression...) -> Self {
+        self.column(column, type: dataType, constraints)
     }
     
+    /// Add a new column to the table.
+    @inlinable
     @discardableResult
-    /// Add a column to the table.
-    /// - Parameters:
-    ///   - column: The name of the new column
-    ///   - dataType: The new datatype of the new column
-    ///   - constraints: Constraints for the new column
-    /// - Returns: `self` for chaining.
-    public func column(
-        _ column: SQLExpression,
-        type dataType: SQLExpression,
-        _ constraints: [SQLExpression]
-    ) -> Self {
-        return self.addColumn(SQLColumnDefinition(
-            column: column,
-            dataType: dataType,
-            constraints: constraints
-        ))
+    public func column(_ column: any SQLExpression, type dataType: any SQLExpression, _ constraints: [any SQLExpression]) -> Self {
+        self.addColumn(SQLColumnDefinition(column: column, dataType: dataType, constraints: constraints))
     }
     
+    /// Add a new column to the table.
+    @inlinable
     @discardableResult
-    /// Add a column to the table.
-    /// - Parameter columnDefinition: Expression defining the column
-    /// - Returns: `self` for chaining.
-    public func addColumn(_ columnDefinition: SQLExpression) -> Self {
+    public func addColumn(_ columnDefinition: any SQLExpression) -> Self {
         self.alterTable.addColumns.append(columnDefinition)
         return self
     }
     
+    /// Change an existing column's type and constraints.
+    @inlinable
     @discardableResult
-    /// Alter a column in the table.
-    /// - Parameters:
-    ///   - column: The name of the column to alter
-    ///   - dataType: The datatype to change the column to
-    ///   - constraints: Constraints to apply to the altered column
-    /// - Returns: `self` for chaining.
-    public func modifyColumn(
-        _ column: String,
-        type dataType: SQLDataType,
-        _ constraints: SQLColumnConstraintAlgorithm...
-    ) -> Self {
-        return self.modifyColumn(SQLColumnDefinition(
-            column: SQLIdentifier(column),
-            dataType: dataType,
-            constraints: constraints
-        ))
+    public func modifyColumn(_ column: String, type dataType: SQLDataType, _ constraints: SQLColumnConstraintAlgorithm...) -> Self {
+        self.modifyColumn(column, type: dataType, constraints)
     }
     
+    /// Change an existing column's type and constraints.
+    @inlinable
     @discardableResult
-    /// Alter a column in the table.
-    /// - Parameters:
-    ///   - column: The name of the column to alter
-    ///   - dataType: The datatype to change the column to
-    ///   - constraints: Constraints to apply to the altered column
-    /// - Returns: `self` for chaining.
-    public func modifyColumn(
-        _ column: String,
-        type dataType: SQLDataType,
-        _ constraints: [SQLColumnConstraintAlgorithm]
-    ) -> Self {
-        return self.modifyColumn(SQLColumnDefinition(
-            column: SQLIdentifier(column),
-            dataType: dataType,
-            constraints: constraints
-        ))
+    public func modifyColumn(_ column: String, type dataType: SQLDataType, _ constraints: [SQLColumnConstraintAlgorithm]) -> Self {
+        self.modifyColumn(SQLIdentifier(column), type: dataType, constraints)
     }
     
+    /// Change an existing column's type and constraints.
+    @inlinable
     @discardableResult
-    /// Alter a column in the table.
-    /// - Parameters:
-    ///   - column: The name of the column to alter
-    ///   - dataType: The datatype to change the column to
-    ///   - constraints: Constraints to apply to the altered column
-    /// - Returns: `self` for chaining.
-    public func modifyColumn(
-        _ column: SQLExpression,
-        type dataType: SQLExpression,
-        _ constraints: SQLExpression...
-    ) -> Self {
-        return self.modifyColumn(SQLColumnDefinition(
-            column: column,
-            dataType: dataType,
-            constraints: constraints
-        ))
+    public func modifyColumn(_ column: any SQLExpression, type dataType: any SQLExpression, _ constraints: any SQLExpression...) -> Self {
+        self.modifyColumn(column, type: dataType, constraints)
     }
     
+    /// Change an existing column's type and constraints.
+    @inlinable
     @discardableResult
-    /// Alter a column in the table.
-    /// - Parameters:
-    ///   - column: The name of the column to alter
-    ///   - dataType: The datatype to change the column to
-    ///   - constraints: Constraints to apply to the altered column
-    /// - Returns: `self` for chaining.
-    public func modifyColumn(
-        _ column: SQLExpression,
-        type dataType: SQLExpression,
-        _ constraints: [SQLExpression]
-    ) -> Self {
-        return self.modifyColumn(SQLColumnDefinition(
-            column: column,
-            dataType: dataType,
-            constraints: constraints
-        ))
+    public func modifyColumn(_ column: any SQLExpression, type dataType: any SQLExpression, _ constraints: [any SQLExpression]) -> Self {
+        self.modifyColumn(SQLColumnDefinition(column: column, dataType: dataType, constraints: constraints))
     }
     
+    /// Change an existing column's type.
+    @inlinable
     @discardableResult
-    /// Alter a column in the table.
-    /// - Parameters:
-    ///   - column: The name of the column to alter
-    ///   - dataType: The datatype to change the column to
-    /// - Returns: `self` for chaining.
-    public func update(
-        column: String,
-        type dataType: SQLDataType
-    ) -> Self {
-        self.modifyColumn(SQLAlterColumnDefinitionType(
-            column: SQLIdentifier(column),
-            dataType: dataType
-        ))
+    public func update(column: String, type dataType: SQLDataType) -> Self {
+        self.update(column: SQLIdentifier(column), type: dataType)
     }
     
+    /// Change an existing column's type.
+    @inlinable
     @discardableResult
-    /// Alter a column in the table.
-    /// - Parameters:
-    ///   - column: The name of the column to alter
-    ///   - dataType: The datatype to change the column to
-    /// - Returns: `self` for chaining.
-    public func update(
-        column: SQLExpression,
-        type dataType: SQLExpression
-    ) -> Self {
-        self.modifyColumn(SQLAlterColumnDefinitionType(
-            column: column,
-            dataType: dataType
-        ))
+    public func update(column: any SQLExpression, type dataType: any SQLExpression) -> Self {
+        self.modifyColumn(SQLAlterColumnDefinitionType(column: column, dataType: dataType))
     }
     
+    /// Alter an existing column.
+    @inlinable
     @discardableResult
-    /// Alter a column in the table.
-    /// - Parameter columnDefinition: Expression defining the column changes
-    /// - Returns: `self` for chaining.
-    public func modifyColumn(_ columnDefinition: SQLExpression) -> Self {
+    public func modifyColumn(_ columnDefinition: any SQLExpression) -> Self {
         self.alterTable.modifyColumns.append(columnDefinition)
         return self
     }
     
+    /// Drop an existing column from the table
+    @inlinable
     @discardableResult
-    /// Drop the column from the table
-    /// - Parameter column: The name of the column to drop
-    /// - Returns: `self` for chaining.
-    public func dropColumn(
-        _ column: String
-    ) -> Self {
-        return self.dropColumn(SQLIdentifier(column))
+    public func dropColumn(_ column: String) -> Self {
+        self.dropColumn(SQLIdentifier(column))
     }
     
+    /// Drop an existing column from the table
+    @inlinable
     @discardableResult
-    /// Drop the column from the table
-    /// - Parameter column: The name of the column to drop
-    /// - Returns: `self` for chaining.
-    public func dropColumn(
-        _ column: SQLExpression
-    ) -> Self {
+    public func dropColumn(_ column: any SQLExpression) -> Self {
         self.alterTable.dropColumns.append(column)
         return self
     }
-
 }
 
-// MARK: Connection
-
 extension SQLDatabase {
-    /// Creates a new `SQLAlterTableBuilder`.
-    ///
-    ///     db.alter(table: "planets")...
-    ///
-    /// - parameters:
-    ///     - table: Table to alter.
-    /// - returns: `AlterTableBuilder`.
+    /// Create a new ``SQLAlterTableBuilder``.
+    @inlinable
     public func alter(table: String) -> SQLAlterTableBuilder {
-        return self.alter(table: SQLIdentifier(table))
+        self.alter(table: SQLIdentifier(table))
     }
     
-    /// Creates a new `SQLAlterTableBuilder`.
-    ///
-    /// - parameters:
-    ///     - table: Table to alter.
-    /// - returns: `AlterTableBuilder`.
+    /// Create a new ``SQLAlterTableBuilder``.
+    @inlinable
     public func alter(table: SQLIdentifier) -> SQLAlterTableBuilder {
-        return .init(.init(name: table), on: self)
+         .init(.init(name: table), on: self)
     }
 }

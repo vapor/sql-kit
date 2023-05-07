@@ -1,18 +1,19 @@
 /// `FOREIGN KEY` clause.
 public struct SQLForeignKey: SQLExpression {
-    public let table: SQLExpression
+    public let table: any SQLExpression
     
-    public let columns: [SQLExpression]
+    public let columns: [any SQLExpression]
     
-    public let onDelete: SQLExpression?
+    public let onDelete: (any SQLExpression)?
     
-    public let onUpdate: SQLExpression?
+    public let onUpdate: (any SQLExpression)?
     
+    @inlinable
     public init(
-        table: SQLExpression,
-        columns: [SQLExpression],
-        onDelete: SQLExpression?,
-        onUpdate: SQLExpression?
+        table: any SQLExpression,
+        columns: [any SQLExpression],
+        onDelete: (any SQLExpression)?,
+        onUpdate: (any SQLExpression)?
     ) {
         self.table = table
         self.columns = columns
