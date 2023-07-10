@@ -8,7 +8,7 @@ extension SQLBenchmarker {
                 .ifExists()
                 .run().wait()
             try $0.create(table: "planet_metadata")
-                .column("id", type: .bigint, .primaryKey(autoIncrement: true))
+                .column("id", type: .bigint, .primaryKey(autoIncrement: $0.dialect.supportsAutoIncrement))
                 .column("metadata", type: .json)
                 .run().wait()
 
