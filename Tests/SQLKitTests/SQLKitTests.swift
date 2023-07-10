@@ -966,4 +966,15 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
             .wait()
         XCTAssertEqual(db.results[20], "(SELECT * FROM `t1`) UNION (SELECT * FROM `t2`) ORDER BY `id` ASC, `name` DESC")
     }
+    
+    func testJSONPaths() throws {
+        try db.select()
+            .column(SQLNestedSubpathExpression(column: "json", path: ["a"]))
+            .column(SQLNestedSubpathExpression(column: "json", path: ["a", "b"]))
+            .column(SQLNestedSubpathExpression(column: "json", path: ["a", "b", "c"]))
+            .column(SQLNestedSubpathExpression(column: SQLColumn("json", table: "table"), path: ["a", "b"]))
+            .run()
+            .wait()
+        XCTAssertEqual(db.results[0], "SELECT (`json`->>'a'), (`json`->'a'->>'b'), (`json`->'a'->'b'->>'c'), (`table`.`json`->'a'->>'b')")
+    }
 }
