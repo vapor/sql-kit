@@ -6,6 +6,7 @@ public enum SQLDataType: SQLExpression {
     case text
     case real
     case blob
+    case json
     case custom(any SQLExpression)
 
     @available(*, deprecated, message: "This is a test utility method that was incorrectly made public. Use `.custom()` directly instead.")
@@ -27,6 +28,7 @@ public enum SQLDataType: SQLExpression {
             case .text:            sql = SQLRaw("TEXT")
             case .real:            sql = SQLRaw("REAL")
             case .blob:            sql = SQLRaw("BLOB")
+            case .json:            sql = SQLRaw("JSON")
             case .custom(let exp): sql = exp
             }
         }
