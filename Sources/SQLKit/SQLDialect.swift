@@ -166,6 +166,13 @@ public protocol SQLDialect {
     /// support exclusive locking requests, which causes the locking clause to be silently ignored.
     var exclusiveSelectLockExpression: (any SQLExpression)? { get }
     
+    /// Given a column name and a path consisting of one or more elements, assume the column is of
+    /// JSON type and return an appropriate expression for accessing the value at the given JSON
+    /// path, according to the semantics of the dialect. Return `nil` if JSON subpath expressions
+    /// are not supported or the given path is not valid in the dialect.
+    ///
+    /// Defaults to returning `nil`.
+    func nestedSubpathExpression(in column: any SQLExpression, for path: [String]) -> (any SQLExpression)?
 }
 
 /// Controls `ALTER TABLE` syntax.
@@ -323,4 +330,5 @@ extension SQLDialect {
     public var unionFeatures: SQLUnionFeatures { [.union, .unionAll] }
     public var sharedSelectLockExpression: (any SQLExpression)? { nil }
     public var exclusiveSelectLockExpression: (any SQLExpression)? { nil }
+    public func nestedSubpathExpression(in column: any SQLExpression, for path: [String]) -> (any SQLExpression)? { nil }
 }

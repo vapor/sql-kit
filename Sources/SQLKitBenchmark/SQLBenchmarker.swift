@@ -15,6 +15,7 @@ public final class SQLBenchmarker {
         if self.database.dialect.name != "generic" {
             try self.testUpserts()
             try self.testUnions()
+            try self.testJSONPaths()
         }
     }
     
