@@ -17,7 +17,6 @@ public struct SQLRowDecoder {
 
     public enum KeyDecodingStrategy {
         case useDefaultKeys
-        // converts rows in snake_case to from coding keys in camelCase to 
         case convertFromSnakeCase
         case custom(([CodingKey]) -> CodingKey)
     }
