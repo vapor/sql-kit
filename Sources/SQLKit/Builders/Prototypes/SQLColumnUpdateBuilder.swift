@@ -7,7 +7,7 @@ public protocol SQLColumnUpdateBuilder: AnyObject {
 }
 
 extension SQLColumnUpdateBuilder {
-    /// Encodes the given ``Encodable`` value to a sequence of key-value pairs and adds an assignment
+    /// Encodes the given `Encodable` value to a sequence of key-value pairs and adds an assignment
     /// for each pair.
     @inlinable
     @discardableResult

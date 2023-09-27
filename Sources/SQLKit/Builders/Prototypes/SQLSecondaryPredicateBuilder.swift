@@ -62,7 +62,7 @@ extension SQLSecondaryPredicateBuilder {
     ///     SELECT * FROM "planets" HAVING "name" = $0 ["Earth"]
     @inlinable
     @discardableResult
-    public func having<E: Encodable>(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: E) -> Self {
+    public func having(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: some Encodable) -> Self {
         self.having(SQLColumn(lhs), op, SQLBind(rhs))
     }
 
@@ -75,7 +75,7 @@ extension SQLSecondaryPredicateBuilder {
     ///     SELECT * FROM "planets" HAVING "name" IN ($0, $1) ["Earth", "Mars"]
     @inlinable
     @discardableResult
-    public func having<E: Encodable>(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: [E]) -> Self {
+    public func having(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: [some Encodable]) -> Self {
         self.having(SQLColumn(lhs), op, SQLBind.group(rhs))
     }
 
@@ -153,14 +153,14 @@ extension SQLSecondaryPredicateBuilder {
     /// Adds a column to encodable comparison to this builder's `HAVING` clause by `OR`ing.
     @inlinable
     @discardableResult
-    public func orHaving<E: Encodable>(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: E) -> Self {
+    public func orHaving(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: some Encodable) -> Self {
         self.orHaving(SQLColumn(lhs), op, SQLBind(rhs))
     }
 
     /// Adds a column to encodable array comparison to this builder's `HAVING` clause by `OR`ing.
     @inlinable
     @discardableResult
-    public func orHaving<E: Encodable>(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: [E]) -> Self {
+    public func orHaving(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: [some Encodable]) -> Self {
         self.orHaving(SQLColumn(lhs), op, SQLBind.group(rhs))
     }
 

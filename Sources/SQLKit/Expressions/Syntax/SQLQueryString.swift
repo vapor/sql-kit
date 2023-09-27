@@ -54,13 +54,13 @@ extension SQLQueryString: StringInterpolationProtocol {
         self.fragments.append(SQLRaw(value.description))
     }
     
-    /// Embed an ``Encodable`` value as a binding in the SQL query.
+    /// Embed an `Encodable` value as a binding in the SQL query.
     @inlinable
     public mutating func appendInterpolation(bind value: any Encodable) {
         self.fragments.append(SQLBind(value))
     }
 
-    /// Embed multiple ``Encodable`` values as bindings in the SQL query, separating the bind placeholders with commas.
+    /// Embed multiple `Encodable` values as bindings in the SQL query, separating the bind placeholders with commas.
     /// Most commonly useful when working with the `IN` operator.
     @inlinable
     public mutating func appendInterpolation(binds values: [any Encodable]) {

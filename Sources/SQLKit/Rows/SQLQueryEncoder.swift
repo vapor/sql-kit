@@ -80,7 +80,7 @@ private final class _Encoder: Encoder {
         }
         mutating func encodeNil(forKey key: Key) throws { self.encoder.row.append((self.column(for: key), SQLLiteral.null)) }
         mutating func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
-            self.encoder.row.append((self.column(for: key), (value as? SQLExpression) ?? SQLBind(value)))
+            self.encoder.row.append((self.column(for: key), (value as? any SQLExpression) ?? SQLBind(value)))
         }
         mutating func _encodeIfPresent<T: Encodable>(_ value: T?, forKey key: Key) throws {
             if let value = value { try encode(value, forKey: key) } else { try encodeNil(forKey: key) }
@@ -105,7 +105,7 @@ private final class _Encoder: Encoder {
         mutating func superEncoder(forKey key: Key) -> any Encoder { self.encoder }
     }
     struct _KeyedEncoder<Key: CodingKey>: KeyedEncodingContainerProtocol {
-        var codingPath: [CodingKey] { self.encoder.codingPath }
+        var codingPath: [any CodingKey] { self.encoder.codingPath }
         let encoder: _Encoder
         func column(for key: Key) -> String {
             var encodedKey = key.stringValue
@@ -118,7 +118,7 @@ private final class _Encoder: Encoder {
         }
         mutating func encodeNil(forKey key: Key) throws { self.encoder.row.append((self.column(for: key), SQLLiteral.null)) }
         mutating func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
-            self.encoder.row.append((self.column(for: key), (value as? SQLExpression) ?? SQLBind(value)))
+            self.encoder.row.append((self.column(for: key), (value as? any SQLExpression) ?? SQLBind(value)))
         }
         mutating func nestedContainer<N: CodingKey>(keyedBy: N.Type, forKey: Key) -> KeyedEncodingContainer<N> { fatalError() }
         mutating func nestedUnkeyedContainer(forKey: Key) -> any UnkeyedEncodingContainer { fatalError() }

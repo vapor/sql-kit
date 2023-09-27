@@ -1,3 +1,4 @@
+import Foundation
 import SQLKit
 import NIOCore
 import NIOEmbedded
@@ -87,7 +88,7 @@ struct GenericDialect: SQLDialect {
     var unionFeatures: SQLUnionFeatures = []
     var sharedSelectLockExpression: (any SQLExpression)? { SQLRaw("FOR SHARE") }
     var exclusiveSelectLockExpression: (any SQLExpression)? { SQLRaw("FOR UPDATE") }
-    func nestedSubpathExpression(in column: SQLExpression, for path: [String]) -> (SQLExpression)? {
+    func nestedSubpathExpression(in column: any SQLExpression, for path: [String]) -> (any SQLExpression)? {
         precondition(!path.isEmpty)
         let descender = SQLList([column] + path.dropLast().map(SQLLiteral.string(_:)), separator: SQLRaw("->"))
         return SQLGroupExpression(SQLList([descender, SQLLiteral.string(path.last!)], separator: SQLRaw("->>")))
@@ -98,3 +99,12 @@ struct GenericDialect: SQLDialect {
         self.triggerSyntax.drop = drop
     }
 }
+
+let isLoggingConfigured: Bool = {
+    LoggingSystem.bootstrap { label in
+        var handler = StreamLogHandler.standardOutput(label: label)
+        handler.logLevel = ProcessInfo.processInfo.environment["LOG_LEVEL"].flatMap { Logger.Level(rawValue: $0) } ?? .info
+        return handler
+    }
+    return true
+}()

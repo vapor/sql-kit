@@ -9,7 +9,7 @@ public protocol SQLRow {
     /// Must return `true` if the given column name is missing from the row **or** if it exists but has a
     /// value equivalent to an SQL `NULL`, or `false` if the column name exists with a non-`NULL` value.
     ///
-    /// - Note: This deliberately matches the semantics of ``Swift/KeyedDecodingContainer/decodeNil(forKey:)``
+    /// - Note: This deliberately matches the semantics of `KeyedDecodingContainer.decodeNil(forKey:)`
     ///   as regards the treatment of "missing" keys.
     func decodeNil(column: String) throws -> Bool
     
@@ -25,17 +25,14 @@ extension SQLRow {
     public func decode<D>(model type: D.Type, prefix: String? = nil, keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys) throws -> D
         where D: Decodable
     {
-        var rowDecoder = SQLRowDecoder()
-        rowDecoder.prefix = prefix
-        rowDecoder.keyDecodingStrategy = keyDecodingStrategy
-        return try rowDecoder.decode(D.self, from: self)
+        try SQLRowDecoder(prefix: prefix, keyDecodingStrategy: keyDecodingStrategy).decode(D.self, from: self)
     }
     
     /// Decode an entire `Decodable` type at once using an explicit `SQLRowDecoder`.
     public func decode<D>(model type: D.Type, with rowDecoder: SQLRowDecoder) throws -> D
         where D: Decodable
     {
-        return try rowDecoder.decode(D.self, from: self)
+        try rowDecoder.decode(D.self, from: self)
     }
     
     /// This method exists to enable the compiler to perform type inference on
@@ -61,6 +58,6 @@ extension SQLRow {
     /// - Todo: Find a way to accomplish this result without polluting the
     ///         method namespace.
     public func decode<D>(column: String, inferringAs type: D.Type = D.self) throws -> D where D: Decodable {
-        return try self.decode(column: column, as: D.self)
+        try self.decode(column: column, as: D.self)
     }
 }

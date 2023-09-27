@@ -46,7 +46,7 @@ extension SQLPredicateBuilder {
     ///     SELECT * FROM "planets" WHERE "name" = $0 ["Earth"]
     @inlinable
     @discardableResult
-    public func `where`<E: Encodable>(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: E) -> Self { // TODO: Use `some Encodable` when possible.
+    public func `where`(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: some Encodable) -> Self {
         self.where(SQLColumn(lhs), op, SQLBind(rhs))
     }
 
@@ -59,7 +59,7 @@ extension SQLPredicateBuilder {
     ///     SELECT * FROM "planets" WHERE "name" IN ($0, $1) ["Earth", "Mars"]
     @inlinable
     @discardableResult
-    public func `where`<E: Encodable>(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: [E]) -> Self { // TODO: Use `some Encodable` when possible.
+    public func `where`(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: [some Encodable]) -> Self {
         self.where(SQLColumn(lhs), op, SQLBind.group(rhs))
     }
 
@@ -129,14 +129,14 @@ extension SQLPredicateBuilder {
     /// Adds a column to encodable comparison to this builder's `WHERE` clause by `OR`ing.
     @inlinable
     @discardableResult
-    public func orWhere<E: Encodable>(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: E) -> Self {
+    public func orWhere(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: some Encodable) -> Self {
         self.orWhere(SQLColumn(lhs), op, SQLBind(rhs))
     }
 
     /// Adds a column to encodable array comparison to this builder's `WHERE` clause by `OR`ing.
     @inlinable
     @discardableResult
-    public func orWhere<E: Encodable>(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: [E]) -> Self {
+    public func orWhere(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: [some Encodable]) -> Self {
         self.orWhere(SQLColumn(lhs), op, SQLBind.group(rhs))
     }
 

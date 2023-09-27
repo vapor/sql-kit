@@ -5,6 +5,10 @@ import XCTest
 final class SQLKitTests: XCTestCase {
     var db: TestDatabase!
 
+    override class func setUp() {
+        XCTAssert(isLoggingConfigured)
+    }
+    
     override func setUpWithError() throws {
         try super.setUpWithError()
         self.db = TestDatabase()
@@ -400,7 +404,7 @@ final class SQLKitTests: XCTestCase {
         db._dialect.upsertSyntax = .mysqlLike
         
         let cols = ["id", "serial_number", "star_id", "last_known_status"]
-        let vals = { (s: String) -> [SQLExpression] in [SQLLiteral.default, SQLBind(UUID()), SQLBind(1), SQLBind(s)] }
+        let vals = { (s: String) -> [any SQLExpression] in [SQLLiteral.default, SQLBind(UUID()), SQLBind(1), SQLBind(s)] }
         
         try db.insert(into: "jumpgates").columns(cols).values(vals("calibration"))
             .run().wait()
@@ -508,7 +512,7 @@ final class SQLKitTests: XCTestCase {
     func testRawCustomStringConvertible() throws {
         let field = "name"
         let db = TestDatabase()
-        _ = try db.raw("SELECT \(raw: field) FROM users").all().wait()
+        _ = try db.raw("SELECT \(unsafeRaw: field) FROM users").all().wait()
         XCTAssertEqual(db.results[0], "SELECT name FROM users")
     }
 
@@ -843,7 +847,7 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
                 }
             }
 
-            func decodeIdToID(_ keys: [CodingKey]) -> CodingKey {
+            func decodeIdToID(_ keys: [any CodingKey]) -> any CodingKey {
                 let keyString = keys.last!.stringValue
 
                 if let range = keyString.range(of: "Id", options: [.anchored, .backwards]) {

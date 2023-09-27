@@ -15,7 +15,7 @@ public struct SQLBind: SQLExpression {
 
 extension SQLBind {
     @inlinable
-    public static func group(_ items: [any Encodable]) -> any SQLExpression {
+    public static func group(_ items: some Collection<any Encodable>) -> any SQLExpression {
         SQLGroupExpression(items.map(SQLBind.init))
     }
 }

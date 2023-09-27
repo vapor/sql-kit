@@ -7,7 +7,7 @@ import NIOCore
 ///
 /// Conformances to ``SQLDatabase`` are typically provided by an external database-specific driver
 /// package, alongside a few utility wrapper types for handling deferred and pooled connection
-/// logic and for substituting ``Logger``s. A driver package must also provide concrete
+/// logic and for substituting `Logger`s. A driver package must also provide concrete
 /// implementations of ``SQLDialect`` and ``SQLRow`` (both of which are hooked up via ``SQLDatabase``).
 ///
 /// - Note: Most of ``SQLDatabase``'s functionality is relatively low-level. Clients of SQLKit
@@ -34,14 +34,14 @@ import NIOCore
 /// It should almost never be necessary for a client to call ``SQLDatabase/execute(sql:_:)-90wi9``
 /// directly; such a need usually indicates a design flaw or functionality gap in SQLKit itself.
 public protocol SQLDatabase {
-    /// The ``Logger`` to be used for logging all SQLKit operations relating to a given database.
+    /// The `Logger` to be used for logging all SQLKit operations relating to a given database.
     var logger: Logger { get }
     
-    /// The ``NIOCore/EventLoop`` used for asynchronous operations on a given database. If there is no
-    /// specific ``NIOCore/EventLoop`` which handles the database (such as because it is a connection
-    /// pool which assigns loops to connections at point of use, or because the underlying implementation
-    /// is based on Swift Concurrency or some other asynchronous execution technology), it is recommended
-    /// to return an event loop from ``NIOCore/EventLoopGroup/any()``.
+    /// The `EventLoop` used for asynchronous operations on a given database. If there is no specific
+    /// `EventLoop` which handles the database (such as because it is a connection pool which assigns
+    /// loops to connections at point of use, or because the underlying implementation is based on Swift
+    /// Concurrency or some other asynchronous execution technology), it is recommended to return an
+    /// event loop from `EventLoopGroup.any()`.
     var eventLoop: any EventLoop { get }
     
     /// The version number the connection reports for itself, provided as a type conforming to the
@@ -64,22 +64,22 @@ public protocol SQLDatabase {
     var dialect: any SQLDialect { get }
     
     /// The logging level used for reporting queries run on the given database to the database's logger.
-    /// Defaults to ``Logging/Logger/Level/debug``.
+    /// Defaults to `.debug`.
     ///
     /// This log level applies _only_ to logging the serialized SQL text and bound parameter values (if
     /// any) of queries; it does not affect any logging performed by the underlying driver or any other
     /// subsystem. If the value is `nil`, query logging is disabled.
     ///
     /// - Important: Conforming drivers must provide a means to configure this value and to use the default
-    ///   ``Logging/Logger/Level/debug`` level if no explicit value is provided. It is also the responsibility
-    ///   of the driver to actually perform the query logging, including respecting the logging level.
+    ///   `.debug` level if no explicit value is provided. It is also the responsibility of the driver to
+    ///   actually perform the query logging, including respecting the logging level.
     ///
     ///   The lack of enforcement of these requirements is obviously less than ideal, but unavoidable due to
     ///   the lack of direct entry points to SQLKit not provided by driver implementations.
     var queryLogLevel: Logger.Level? { get }
 
     /// Requests that the given generic SQL query be serialized and executed on the database, and that
-    /// the ``onRow`` closure be invoked once for each result row the query returns (if any).
+    /// the `onRow` closure be invoked once for each result row the query returns (if any).
     func execute(
         sql query: any SQLExpression,
         _ onRow: @escaping (any SQLRow) -> ()
@@ -92,11 +92,11 @@ extension SQLDatabase {
     /// original release. As such, we must provide a default value so that drivers which haven't been
     /// updated don't lose source compatibility. Conveniently, a value of `nil` represents "database
     /// version is unknown", an obvious choice for this scenario.
-    public var version: SQLDatabaseReportedVersion? { nil }
+    public var version: (any SQLDatabaseReportedVersion)? { nil }
     
     /// Drivers which do not provide the ``queryLogLevel-991s4`` property must be given the automatic default
-    /// of ``Logging/Logger/Level/debug``. It would be preferable not to provide a default conformance,
-    /// but this is unfortunately impractical, as the property was another late addition to the protocol.
+    /// of `.debug`. It would be preferable not to provide a default conformance, but this is unfortunately
+    /// impractical, as the property was another late addition to the protocol.
     public var queryLogLevel: Logger.Level? { .debug }
 }
 
@@ -116,7 +116,7 @@ extension SQLDatabase {
 
 extension SQLDatabase {
     /// Returns a ``SQLDatabase`` which is exactly the same database as the original, except that
-    /// all logging done to the new ``SQLDatabase`` will go to the specified ``Logger`` instead.
+    /// all logging done to the new ``SQLDatabase`` will go to the specified `Logger` instead.
     public func logging(to logger: Logger) -> any SQLDatabase {
         CustomLoggerSQLDatabase(database: self, logger: logger)
     }

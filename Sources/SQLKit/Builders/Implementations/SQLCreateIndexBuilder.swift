@@ -63,23 +63,13 @@ public final class SQLCreateIndexBuilder: SQLQueryBuilder {
 // MARK: Connection
 
 extension SQLDatabase {
-    /// Creates a new `SQLCreateIndexBuilder`.
-    ///
-    ///     db.create(index: "foo")...
-    ///
-    /// - Parameters:
-    ///   - name: Name for this index.
+    /// Creates a new ``SQLCreateIndexBuilder``.
     @inlinable
     public func create(index name: String) -> SQLCreateIndexBuilder {
         self.create(index: SQLIdentifier(name))
     }
     
-    /// Creates a new `SQLCreateIndexBuilder`.
-    ///
-    ///     db.create(index: "foo")...
-    ///
-    /// - Parameters:
-    ///   - name: Name for this index.
+    /// Creates a new ``SQLCreateIndexBuilder``.
     @inlinable
     public func create(index name: any SQLExpression) -> SQLCreateIndexBuilder {
         .init(.init(name: name), on: self)

@@ -17,14 +17,14 @@ public protocol SQLDialect {
     /// No default is provided.
     var name: String { get }
     
-    /// An expression (usually an `SQLRaw`) giving the character(s) used to quote SQL
+    /// An expression (usually an ``SQLRaw``) giving the character(s) used to quote SQL
     /// identifiers, such as table and column names. The identifier quote is placed
     /// immediately preceding and following each identifier.
     ///
     /// No default is provided.
     var identifierQuote: any SQLExpression { get }
     
-    /// An expression (usually an `SQLRaw`) giving the character(s) used to quote literal
+    /// An expression (usually an ``SQLRaw``) giving the character(s) used to quote literal
     /// string values which appear in a query, such as enumerator names. The literal quote
     /// is placed immediately preceding and following each string literal.
     ///
@@ -71,22 +71,22 @@ public protocol SQLDialect {
     /// No default is provided.
     func bindPlaceholder(at position: Int) -> any SQLExpression
     
-    /// A function which returns an SQL expression (usually an `SQLRaw`) representing the given
+    /// A function which returns an SQL expression (usually an ``SQLRaw``) representing the given
     /// literal boolean value.
     ///
     /// No default is provided.
     func literalBoolean(_ value: Bool) -> any SQLExpression
     
-    /// An expression (usually an `SQLRaw`) giving the syntax used to express both "use this as
+    /// An expression (usually an ``SQLRaw``) giving the syntax used to express both "use this as
     /// the default value" in a column definition and "use the default value for this column" in
-    /// a value list. ``SQLLiteral.literal`` always serializes to this expression.
+    /// a value list. ``SQLLiteral/default`` always serializes to this expression.
     ///
     /// Defaults to `SQLRaw("DEFAULT")`.
     var literalDefault: any SQLExpression { get }
     
     /// `true` if the dialect supports the `IF EXISTS` modifier for all types of `DROP` queries
-    /// (such as `SQLDropEnum`, `SQLDropIndex`, `SQLDropTable`, and `SQLDropTrigger`) and the
-    /// `IF NOT EXISTS` modifier for `SQLCreateTable` queries. It is not possible to indicate
+    /// (such as ``SQLDropEnum``, ``SQLDropIndex``, ``SQLDropTable``, and ``SQLDropTrigger``) and the
+    /// `IF NOT EXISTS` modifier for ``SQLCreateTable`` queries. It is not possible to indicate
     /// partial support at this time.
     ///
     /// Defaults to `true`.
@@ -95,7 +95,7 @@ public protocol SQLDialect {
     /// The syntax the dialect supports for strongly-typed enumerations. See ``SQLEnumSyntax``
     /// for possible values.
     ///
-    /// No default is provided. // TODO: Why not?
+    /// No default is provided.
     var enumSyntax: SQLEnumSyntax { get }
     
     /// `true` if the dialect supports the ``SQLDropBehavior`` modifiers for `DROP` queries,
@@ -147,7 +147,7 @@ public protocol SQLDialect {
     /// The type of `UPSERT` syntax supported by the dialect. See ``SQLUpsertSyntax`` for possible
     /// values and more information.
     ///
-    /// Defaults to `.unsupported`.
+    /// Defaults to ``SQLUpsertSyntax/unsupported``.
     var upsertSyntax: SQLUpsertSyntax { get }
     
     /// A set of feature flags describing the dialect's support for various forms of `UNION` with
@@ -311,7 +311,7 @@ public struct SQLUnionFeatures: OptionSet {
     
 }
 
-/// Provides defaults for many of the `SQLDialect` properties. The defaults are chosen to reflect
+/// Provides defaults for many of the ``SQLDialect`` properties. The defaults are chosen to reflect
 /// a baseline set of syntax and features which are correct for as many dialects as possible,
 /// so as to avoid breaking all existing dialects every time a new requirement is added to the
 /// protocol and allow gradual adoption of new capabilities.

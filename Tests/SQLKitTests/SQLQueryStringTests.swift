@@ -5,6 +5,10 @@ import XCTest
 final class SQLQueryStringTests: XCTestCase {
     var db: TestDatabase!
 
+    override class func setUp() {
+        XCTAssert(isLoggingConfigured)
+    }
+    
     override func setUp() {
         super.setUp()
         self.db = TestDatabase()
@@ -12,11 +16,11 @@ final class SQLQueryStringTests: XCTestCase {
 
     func testRawQueryStringInterpolation() throws {
         let (table, planet) = ("planets", "Earth")
-        let builder = db.raw("SELECT * FROM \(raw: table) WHERE name = \(bind: planet)")
+        let builder = db.raw("SELECT * FROM \(ident: table) WHERE name = \(bind: planet)")
         var serializer = SQLSerializer(database: db)
         builder.query.serialize(to: &serializer)
 
-        XCTAssertEqual(serializer.sql, "SELECT * FROM planets WHERE name = ?")
+        XCTAssertEqual(serializer.sql, "SELECT * FROM `planets` WHERE name = ?")
         XCTAssertEqual(serializer.binds.first! as! String, planet)
     }
     
@@ -48,7 +52,7 @@ final class SQLQueryStringTests: XCTestCase {
         var serializer = SQLSerializer(database: db)
         let builder = db.raw("""
             Query string embeds:
-                \(raw: "plain string embed")
+                \(unsafeRaw: "plain string embed")
                 \(bind: "single bind embed")
                 \(binds: ["multi-bind embed one", "multi-bind embed two"])
                 numeric literal embed \(literal: 1)

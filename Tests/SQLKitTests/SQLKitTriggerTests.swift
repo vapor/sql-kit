@@ -11,6 +11,10 @@ final class SQLKitTriggerTests: XCTestCase {
 
     private var db: TestDatabase!
 
+    override class func setUp() {
+        XCTAssert(isLoggingConfigured)
+    }
+    
     override func setUp() {
         super.setUp()
         self.db = TestDatabase()

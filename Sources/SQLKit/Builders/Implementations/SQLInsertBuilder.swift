@@ -33,7 +33,7 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder {
     /// - Note: The term "model" here does _not_ refer to Fluent's `Model` type.
     ///
     /// - Parameters:
-    ///   - model: ``Encodable`` model to insert. This can be any encodable type.
+    ///   - model: `Encodable` model to insert. This can be any encodable type.
     ///   - prefix: An optional prefix to apply to the value's derived column names.
     ///   - keyEncodingStrategy: See ``SQLQueryEncoder/KeyEncodingStrategy-swift.enum``.
     ///   - nilEncodingStrategy: See ``SQLQueryEncoder/NilEncodingStrategy-swift.enum``.
@@ -55,7 +55,7 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder {
     /// - Note: The term "model" here does _not_ refer to Fluent's `Model` type.
     ///
     /// - Parameters:
-    ///   - models: ``Encodable`` models to insert.
+    ///   - models: `Encodable` models to insert.
     ///   - prefix: An optional prefix to apply to the values' derived column names.
     ///   - keyEncodingStrategy: See ``SQLQueryEncoder/KeyEncodingStrategy-swift.enum``.
     ///   - nilEncodingStrategy: See ``SQLQueryEncoder/NilEncodingStrategy-swift.enum``.

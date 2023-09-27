@@ -1,9 +1,9 @@
 public struct SQLRaw: SQLExpression {
     public var sql: String
-    public var binds: [Encodable]
+    public var binds: [any Encodable]
     
     @inlinable
-    public init(_ sql: String, _ binds: [Encodable] = []) {
+    public init(_ sql: String, _ binds: [any Encodable] = []) {
         self.sql = sql
         self.binds = binds
     }

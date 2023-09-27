@@ -1,4 +1,4 @@
-import NIOCore
+import class NIOCore.EventLoopFuture
 
 /// Base definitions for builders which set up queries and executes them on a connection.
 public protocol SQLQueryBuilder: AnyObject {
@@ -9,6 +9,9 @@ public protocol SQLQueryBuilder: AnyObject {
     var database: any SQLDatabase { get }
 
     /// Execute the query on the connection, ignoring any results.
+    ///
+    /// > Note: This method should not be a protocol requirement of ``SQLQueryBuilder``; it should be
+    ///   present only as an extension method. It remains in place due to source compatibility concerns.
     func run() -> EventLoopFuture<Void>
 }
 
