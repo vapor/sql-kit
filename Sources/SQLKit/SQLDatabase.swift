@@ -80,9 +80,10 @@ public protocol SQLDatabase {
 
     /// Requests that the given generic SQL query be serialized and executed on the database, and that
     /// the `onRow` closure be invoked once for each result row the query returns (if any).
+    @preconcurrency
     func execute(
         sql query: any SQLExpression,
-        _ onRow: @escaping (any SQLRow) -> ()
+        _ onRow: @escaping @Sendable (any SQLRow) -> ()
     ) -> EventLoopFuture<Void>
 }
 
@@ -133,7 +134,7 @@ private struct CustomLoggerSQLDatabase<D: SQLDatabase>: SQLDatabase {
     var eventLoop: any EventLoop { self.database.eventLoop }
     var version: (any SQLDatabaseReportedVersion)? { self.database.version }
     var dialect: any SQLDialect { self.database.dialect }
-    func execute(sql query: any SQLExpression, _ onRow: @escaping (any SQLRow) -> ()) -> EventLoopFuture<Void> {
+    func execute(sql query: any SQLExpression, _ onRow: @escaping @Sendable (any SQLRow) -> ()) -> EventLoopFuture<Void> {
         self.database.execute(sql: query, onRow)
     }
     var queryLogLevel: Logger.Level? { self.database.queryLogLevel }

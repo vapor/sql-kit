@@ -35,22 +35,38 @@ extension SQLQueryFetcher {
     
     /// Collects all raw output into an array and returns it.
     public func all() -> EventLoopFuture<[any SQLRow]> {
-        var all: [any SQLRow] = []
+        let rows = RowsBox()
+        
         return self.run { row in
-            all.append(row)
-        }.map { all }
+            rows.all.append(row)
+        }.map { rows.all }
     }
     
     // MARK: Run
 
     /// Executes the query, decoding each output row as a given type and calling a provided handler with the result.
-    public func run<D: Decodable>(decoding: D.Type, _ handler: @escaping (Result<D, any Error>) -> ()) -> EventLoopFuture<Void> {
-        self.run { row in handler(Result { try row.decode(model: D.self) }) }
+    @preconcurrency
+    public func run<D: Decodable>(decoding: D.Type, _ handler: @escaping @Sendable (Result<D, any Error>) -> ()) -> EventLoopFuture<Void> {
+        self.run { row in
+            handler(Result {
+                try row.decode(model: D.self)
+            })
+        }
     }
     
     /// Runs the query, passing output to the supplied closure as it is recieved.
     /// The returned future signals completion of the query.
-    public func run(_ handler: @escaping (any SQLRow) -> ()) -> EventLoopFuture<Void> {
+    @preconcurrency
+    public func run(_ handler: @escaping @Sendable (any SQLRow) -> ()) -> EventLoopFuture<Void> {
         self.database.execute(sql: self.query, handler)
     }
+}
+
+@usableFromInline
+internal final class RowsBox: @unchecked Sendable {
+    @usableFromInline
+    var all: [any SQLRow] = []
+    
+    @usableFromInline
+    init() {}
 }

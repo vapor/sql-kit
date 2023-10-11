@@ -39,7 +39,7 @@ struct TestRow: SQLRow {
 
     enum _Error: Error {
         case missingColumn(String)
-        case typeMismatch(Any, Any.Type)
+        case typeMismatch(Any.Type)
     }
 
     var allColumns: [String] {
@@ -55,14 +55,12 @@ struct TestRow: SQLRow {
         return false
     }
 
-    func decode<D>(column: String, as type: D.Type) throws -> D
-        where D : Decodable
-    {
+    func decode<D: Decodable & Sendable>(column: String, as: D.Type) throws -> D {
         guard case let .some(.some(value)) = self.data[column] else {
             throw _Error.missingColumn(column)
         }
         guard let cast = value as? D else {
-            throw _Error.typeMismatch(value, D.self)
+            throw _Error.typeMismatch(D.self)
         }
         return cast
     }
