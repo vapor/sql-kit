@@ -1,9 +1,17 @@
 public struct SQLRaw: SQLExpression {
     public var sql: String
-    public var binds: [any Encodable]
+
+    @available(*, deprecated, message: "Binds set in an `SQLRaw` are ignored. Use `SQLBind`instead.")
+    public var binds: [any Encodable] = []
     
     @inlinable
-    public init(_ sql: String, _ binds: [any Encodable] = []) {
+    public init(_ sql: String) {
+        self.sql = sql
+    }
+
+    @available(*, deprecated, message: "Binds set in an `SQLRaw` are ignored. Use `SQLBind`instead.")
+    @inlinable
+    public init(_ sql: String, _ binds: [any Encodable]) {
         self.sql = sql
         self.binds = binds
     }
@@ -11,6 +19,5 @@ public struct SQLRaw: SQLExpression {
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.write(self.sql)
-        serializer.binds += self.binds
     }
 }
