@@ -1,205 +1,195 @@
-import Foundation
-
 public struct SQLRowDecoder {
-    public var prefix: String?
-    public var keyDecodingStrategy: KeyDecodingStrategy
-
-    public init(prefix: String? = nil, keyDecodingStrategy: KeyDecodingStrategy = .useDefaultKeys) {
-        self.prefix = prefix
-        self.keyDecodingStrategy = keyDecodingStrategy
-    }
-
-    func decode<T>(_ type: T.Type, from row: any SQLRow) throws -> T
-        where T: Decodable
-    {
-        return try T.init(from: _Decoder(row: row, options: options))
-    }
-
-    public enum KeyDecodingStrategy {
+    /// The strategy to use for automatically changing the value of keys before decoding.
+    public enum KeyDecodingStrategy: Sendable {
+        /// Use the keys specified by each type. This is the default strategy.
         case useDefaultKeys
+
+        /// Convert from `snake_case_keys` to `camelCaseKeys` before attempting to match a key with
+        /// the one specified by each type.
+        ///
+        /// Converting from snake case to camel case:
+        ///
+        /// 1. Capitalizes the word starting after each `_` chartacter.
+        /// 2. Removes all `_` characters (except as specified below).
+        /// 3. Preserves starting and ending `_` (as these are often used to indicate private variables
+        ///    or other metadata).
+        /// For example, `one_two_three` becomes `oneTwoThree`. `_one_two_three_` becomes `_oneTwoThree_`.
+        ///
+        /// > Note: Using a key decoding strategy has a nominal performance cost, as each string key has
+        ///   to be inspected for the `_` character.
         case convertFromSnakeCase
-        case custom(([any CodingKey]) -> any CodingKey)
+
+        /// Provide a custom conversion from the key in the encoded row to the keys specified by the
+        /// decoded types.
+        ///
+        /// The full path to the current decoding position is provided for context (in case you need to
+        /// locate this key within the payload). The returned key is used in place of the last component
+        /// in the coding path before decoding.
+        ///
+        /// If the result of the conversion is a duplicate key, then only one value will be present in the
+        /// container for the type to decode from.
+        @preconcurrency
+        case custom(@Sendable ([any CodingKey]) -> any CodingKey)
     }
 
-    fileprivate struct _Options {
-        let prefix: String?
-        let keyDecodingStrategy: KeyDecodingStrategy
+    /// A prefix to be discarded on column names before interpreting them as coding keys.
+    @inlinable
+    public var prefix: String? {
+        get { self.configuration.prefix }
+        set { self.configuration.prefix = newValue }
+    }
+    
+    /// The key decoding strategy to use.
+    @inlinable
+    public var keyDecodingStrategy: KeyDecodingStrategy {
+        get { self.configuration.keyDecodingStrategy }
+        set { self.configuration.keyDecodingStrategy = newValue }
+    }
+    
+    /// User info to provide to the underlying `Decoder`.
+    @inlinable
+    public var userInfo: [CodingUserInfoKey: Any] {
+        get { self.configuration.userInfo }
+        set { self.configuration.userInfo = newValue }
     }
 
-    /// The options set on the top-level decoder.
-    fileprivate var options: _Options {
-        return _Options(prefix: prefix, keyDecodingStrategy: keyDecodingStrategy)
+    /// Create an ``SQLRowDecoder``.
+    public init(
+        prefix: String? = nil,
+        keyDecodingStrategy: KeyDecodingStrategy = .useDefaultKeys,
+        userInfo: [CodingUserInfoKey: Any] = [:]
+    ) {
+        self.configuration = .init(prefix: prefix, keyDecodingStrategy: keyDecodingStrategy, userInfo: userInfo)
     }
 
-    enum _Error: Error {
-        case nesting
-        case unkeyedContainer
-        case singleValueContainer
+    /// Decode a value of type `T` from the given ``SQLRow``.
+    func decode<T: Decodable>(_: T.Type, from row: some SQLRow) throws -> T {
+        try T.init(from: SQLRowDecoderImpl(
+            row: row,
+            configuration: self.configuration
+        ))
     }
 
-    struct _Decoder: Decoder {
-        fileprivate let options: SQLRowDecoder._Options
-        let row: any SQLRow
-        var codingPath: [any CodingKey] = []
-        var userInfo: [CodingUserInfoKey : Any] {
-            [:]
+    /// Encapsulates the configuration of an ``SQLRowDecoder``.
+    @usableFromInline
+    struct Configuration {
+        @usableFromInline var prefix: String? = nil
+        @usableFromInline var keyDecodingStrategy: KeyDecodingStrategy = .useDefaultKeys
+        @usableFromInline var userInfo: [CodingUserInfoKey: Any] = [:]
+        @inlinable init() {}
+        @inlinable init(
+            prefix: String?,
+            keyDecodingStrategy: KeyDecodingStrategy,
+            userInfo: [CodingUserInfoKey : Any]
+        ) {
+            self.prefix = prefix
+            self.keyDecodingStrategy = keyDecodingStrategy
+            self.userInfo = userInfo
         }
+    }
+    
+    @usableFromInline
+    internal var configuration: Configuration = .init()
 
-        fileprivate init(row: any SQLRow, codingPath: [any CodingKey] = [], options: _Options) {
-            self.options = options
+    /// Underlying implementation.
+    fileprivate final class SQLRowDecoderImpl<Row: SQLRow>: Decoder {
+        let configuration: Configuration
+        let row: Row
+        var codingPath: [any CodingKey] = []
+        var userInfo: [CodingUserInfoKey: Any] { self.configuration.userInfo }
+
+        init(
+            row: Row,
+            codingPath: [any CodingKey] = [],
+            configuration: Configuration
+        ) {
             self.row = row
             self.codingPath = codingPath
+            self.configuration = configuration
         }
 
-        func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key>
-            where Key: CodingKey
-        {
-            .init(_KeyedDecoder(referencing: self, row: self.row, codingPath: self.codingPath))
-        }
+        func container<Key: CodingKey>(keyedBy: Key.Type) throws -> KeyedDecodingContainer<Key> { .init(KeyedContainer(self)) }
+        
+        func unkeyedContainer() throws -> any UnkeyedDecodingContainer { throw .invalid(in: self) }
+        
+        func singleValueContainer() throws -> any SingleValueDecodingContainer { throw .invalid(in: self) }
 
-        func unkeyedContainer() throws -> any UnkeyedDecodingContainer {
-            throw _Error.unkeyedContainer
-        }
+        private struct KeyedContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
+            var codingPath: [any CodingKey] { self.decoder.codingPath }
+            let decoder: SQLRowDecoderImpl
+            let codingKeyToColumnNameMap: [String: String]
 
-        func singleValueContainer() throws -> any SingleValueDecodingContainer {
-            throw _Error.singleValueContainer
-        }
-    }
-
-    struct _KeyedDecoder<Key>: KeyedDecodingContainerProtocol
-        where Key: CodingKey
-    {
-        /// A reference to the decoder we're reading from.
-        private let decoder: _Decoder
-        let row: any SQLRow
-        var codingPath: [any CodingKey] = []
-        var allKeys: [Key] {
-            self.row.allColumns.compactMap {
-                Key.init(stringValue: $0)
-            }
-        }
-
-        fileprivate init(referencing decoder: _Decoder, row: any SQLRow, codingPath: [any CodingKey] = []) {
-            self.decoder = decoder
-            self.row = row
-        }
-
-        func column(for key: Key) -> String {
-            var decodedKey = key.stringValue
-            switch self.decoder.options.keyDecodingStrategy {
-            case .useDefaultKeys:
-                break
-            case .convertFromSnakeCase:
-                decodedKey = _convertFromSnakeCase(decodedKey)
-            case .custom(let customKeyDecodingFunc):
-                decodedKey = customKeyDecodingFunc([key]).stringValue
+            init(_ decoder: SQLRowDecoderImpl) {
+                self.decoder = decoder
+                self.codingKeyToColumnNameMap = .init(uniqueKeysWithValues: decoder.row
+                    .allColumns
+                    .map {
+                        ($0, String($0.drop(prefix: decoder.configuration.prefix)))
+                    }.map {
+                        switch decoder.configuration.keyDecodingStrategy {
+                        case .useDefaultKeys:       return ($1, $0)
+                        case .convertFromSnakeCase: return ($1.convertedFromSnakeCase, $0)
+                        case .custom(let custom):   return (custom(decoder.codingPath + [$1.codingKeyValue]).stringValue, $0)
+                        }
+                    }
+                )
             }
 
-            if let prefix = self.decoder.options.prefix {
-                return prefix + decodedKey
-            } else {
-                return decodedKey
-            }
-        }
-
-        func contains(_ key: Key) -> Bool {
-            self.row.contains(column: self.column(for: key))
-        }
-
-        func decodeNil(forKey key: Key) throws -> Bool {
-            try self.row.decodeNil(column: self.column(for: key))
-        }
-
-        func decode<T>(_ type: T.Type, forKey key: Key) throws -> T
-            where T : Decodable
-        {
-            try self.row.decode(column: self.column(for: key), as: T.self)
-        }
-
-        func nestedContainer<NestedKey>(
-            keyedBy type: NestedKey.Type,
-            forKey key: Key
-        ) throws -> KeyedDecodingContainer<NestedKey>
-            where NestedKey : CodingKey
-        {
-            throw _Error.nesting
-        }
-
-        func nestedUnkeyedContainer(forKey key: Key) throws -> any UnkeyedDecodingContainer {
-            throw _Error.nesting
-        }
-
-        func superDecoder() throws -> any Decoder {
-            _Decoder(row: self.row, codingPath: self.codingPath, options: self.decoder.options)
-        }
-
-        func superDecoder(forKey key: Key) throws -> any Decoder {
-            throw _Error.nesting
-        }
-    }
-}
-
-fileprivate extension SQLRowDecoder {
-    /// This is an implementation is taken from from Swift's JSON KeyDecodingStrategy
-    /// https://github.com/apple/swift/blob/master/stdlib/public/Darwin/Foundation/JSONEncoder.swift
-
-    // Convert from "snake_case_keys" to "camelCaseKeys" before attempting to match a key with the one specified by each type.
-    ///
-    /// The conversion to upper case uses `Locale.system`, also known as the ICU "root" locale. This means the result is consistent regardless of the current user's locale and language preferences.
-    ///
-    /// Converting from snake case to camel case:
-    /// 1. Capitalizes the word starting after each `_`
-    /// 2. Removes all `_`
-    /// 3. Preserves starting and ending `_` (as these are often used to indicate private variables or other metadata).
-    /// For example, `one_two_three` becomes `oneTwoThree`. `_one_two_three_` becomes `_oneTwoThree_`.
-    ///
-    /// - Note: Using a key decoding strategy has a nominal performance cost, as each string key has to be inspected for the `_` character.
-    static func _convertFromSnakeCase(_ stringKey: String) -> String {
-        guard !stringKey.isEmpty else { return stringKey }
-
-        var words : [Range<String.Index>] = []
-        // The general idea of this algorithm is to split words on transition from lower to upper case, then on transition of >1 upper case characters to lowercase
-        //
-        // myProperty -> my_property
-        // myURLProperty -> my_url_property
-        //
-        // We assume, per Swift naming conventions, that the first character of the key is lowercase.
-        var wordStart = stringKey.startIndex
-        var searchRange = stringKey.index(after: wordStart)..<stringKey.endIndex
-
-        // Find next uppercase character
-        while let upperCaseRange = stringKey.rangeOfCharacter(from: CharacterSet.uppercaseLetters, options: [], range: searchRange) {
-            let untilUpperCase = wordStart..<upperCaseRange.lowerBound
-            words.append(untilUpperCase)
-
-            // Find next lowercase character
-            searchRange = upperCaseRange.lowerBound..<searchRange.upperBound
-            guard let lowerCaseRange = stringKey.rangeOfCharacter(from: CharacterSet.lowercaseLetters, options: [], range: searchRange) else {
-                // There are no more lower case letters. Just end here.
-                wordStart = searchRange.lowerBound
-                break
+            private func withColumn<R>(for key: Key, _ closure: (String) throws -> R) throws -> R {
+                guard let name = self.codingKeyToColumnNameMap[key.stringValue] else {
+                    throw DecodingError.keyNotFound(key, .init(
+                        codingPath: self.codingPath,
+                        debugDescription: "No value associated with key \(key) (\"\(key.stringValue)\")."
+                    ))
+                }
+                
+                self.decoder.codingPath.append(key)
+                defer { self.decoder.codingPath.removeLast() }
+                
+                do { return try closure(name) }
+                catch DecodingError.valueNotFound(let type, let context) { throw DecodingError.valueNotFound(type, context.with(prefix: self.codingPath)) }
+                catch DecodingError.dataCorrupted(let context)           { throw DecodingError.dataCorrupted(context.with(prefix: self.codingPath)) }
+                catch DecodingError.typeMismatch(let type, let context)  { throw DecodingError.typeMismatch(type, context.with(prefix: self.codingPath)) }
+                catch DecodingError.keyNotFound(let ekey, let context)   { throw DecodingError.keyNotFound(ekey, context.with(prefix: self.codingPath)) }
             }
 
-            // Is the next lowercase letter more than 1 after the uppercase? If so, we encountered a group of uppercase letters that we should treat as its own word
-            let nextCharacterAfterCapital = stringKey.index(after: upperCaseRange.lowerBound)
-            if lowerCaseRange.lowerBound == nextCharacterAfterCapital {
-                // The next character after capital is a lower case character and therefore not a word boundary.
-                // Continue searching for the next upper case for the boundary.
-                wordStart = upperCaseRange.lowerBound
-            } else {
-                // There was a range of >1 capital letters. Turn those into a word, stopping at the capital before the lower case character.
-                let beforeLowerIndex = stringKey.index(before: lowerCaseRange.lowerBound)
-                words.append(upperCaseRange.lowerBound..<beforeLowerIndex)
-
-                // Next word starts at the capital before the lowercase we just found
-                wordStart = beforeLowerIndex
+            var allKeys: [Key] {
+                self.codingKeyToColumnNameMap.keys.compactMap(Key.init(stringValue:))
             }
-            searchRange = lowerCaseRange.upperBound..<searchRange.upperBound
+            
+            func contains(_ key: Key) -> Bool {
+                self.codingKeyToColumnNameMap[key.stringValue].map { self.decoder.row.contains(column: $0) } ?? false
+            }
+            
+            func decodeNil(forKey key: Key) throws -> Bool                { try self.withColumn(for: key) { try self.decoder.row.decodeNil(column: $0) } }
+            func decode(_: Bool.Type,   forKey key: Key) throws -> Bool   { try self.withColumn(for: key) { try self.decoder.row.decode(column: $0)    } }
+            func decode(_: String.Type, forKey key: Key) throws -> String { try self.withColumn(for: key) { try self.decoder.row.decode(column: $0)    } }
+            func decode(_: Double.Type, forKey key: Key) throws -> Double { try self.withColumn(for: key) { try self.decoder.row.decode(column: $0)    } }
+            func decode(_: Float.Type,  forKey key: Key) throws -> Float  { try self.withColumn(for: key) { try self.decoder.row.decode(column: $0)    } }
+            func decode(_: Int.Type,    forKey key: Key) throws -> Int    { try self.withColumn(for: key) { try self.decoder.row.decode(column: $0)    } }
+            func decode(_: Int8.Type,   forKey key: Key) throws -> Int8   { try self.withColumn(for: key) { try self.decoder.row.decode(column: $0)    } }
+            func decode(_: Int16.Type,  forKey key: Key) throws -> Int16  { try self.withColumn(for: key) { try self.decoder.row.decode(column: $0)    } }
+            func decode(_: Int32.Type,  forKey key: Key) throws -> Int32  { try self.withColumn(for: key) { try self.decoder.row.decode(column: $0)    } }
+            func decode(_: Int64.Type,  forKey key: Key) throws -> Int64  { try self.withColumn(for: key) { try self.decoder.row.decode(column: $0)    } }
+            func decode(_: UInt.Type,   forKey key: Key) throws -> UInt   { try self.withColumn(for: key) { try self.decoder.row.decode(column: $0)    } }
+            func decode(_: UInt8.Type,  forKey key: Key) throws -> UInt8  { try self.withColumn(for: key) { try self.decoder.row.decode(column: $0)    } }
+            func decode(_: UInt16.Type, forKey key: Key) throws -> UInt16 { try self.withColumn(for: key) { try self.decoder.row.decode(column: $0)    } }
+            func decode(_: UInt32.Type, forKey key: Key) throws -> UInt32 { try self.withColumn(for: key) { try self.decoder.row.decode(column: $0)    } }
+            func decode(_: UInt64.Type, forKey key: Key) throws -> UInt64 { try self.withColumn(for: key) { try self.decoder.row.decode(column: $0)    } }
+            func decode<T: Decodable>(_: T.Type, forKey key: Key) throws -> T { try self.withColumn(for: key) { try self.decoder.row.decode(column: $0) } }
+
+            func nestedContainer<N: CodingKey>(keyedBy: N.Type, forKey key: Key) throws -> KeyedDecodingContainer<N> {
+                throw .invalid(in: self, key: key)
+            }
+            func nestedUnkeyedContainer(forKey key: Key) throws -> any UnkeyedDecodingContainer {
+                throw .invalid(in: self, key: key)
+            }
+            func superDecoder() throws -> any Decoder {
+                throw .invalid(in: self.decoder)
+            }
+            func superDecoder(forKey key: Key) throws -> any Decoder {
+                throw .invalid(in: self, key: key)
+            }
         }
-        words.append(wordStart..<searchRange.upperBound)
-        let result = words.map({ (range) in
-            return stringKey[range].lowercased()
-        }).joined(separator: "_")
-        return result
     }
 }
