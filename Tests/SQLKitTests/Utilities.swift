@@ -2,64 +2,54 @@ import SQLKit
 import NIOCore
 @_implementationOnly import NIOEmbedded
 import Logging
+import XCTest
+
+struct Serialized {
+    let sql: String
+    let binds: [any Encodable]
+}
+    
+extension SQLQueryBuilder {
+    func simpleSerialize() throws -> String { self.database.serialize(self.query).sql }
+    
+    func advancedSerialize() throws -> Serialized {
+        let result = self.database.serialize(self.query)
+        return .init(sql: result.sql, binds: result.binds)
+    }
+}
 
 final class TestDatabase: SQLDatabase {
-    let logger: Logger
-    let eventLoop: any EventLoop
-    var results: [String]
-    var bindResults: [[any Encodable]]
+    let logger: Logger = .init(label: "codes.vapor.sql.test")
+    let eventLoop: any EventLoop = EmbeddedEventLoop()
+    var results: [String] = []
+    var bindResults: [[any Encodable]] = []
     var dialect: any SQLDialect { self._dialect }
-    var _dialect: GenericDialect
-    
-    init() {
-        self.logger = .init(label: "codes.vapor.sql.test")
-        self.eventLoop = EmbeddedEventLoop()
-        self.results = []
-        self.bindResults = []
-        self._dialect = GenericDialect()
-    }
+    var _dialect: GenericDialect = .init()
     
     func execute(sql query: any SQLExpression, _ onRow: @escaping (any SQLRow) -> ()) -> EventLoopFuture<Void> {
-        var serializer = SQLSerializer(database: self)
-        query.serialize(to: &serializer)
-        results.append(serializer.sql)
-        bindResults.append(serializer.binds)
+        let (sql, binds) = self.serialize(query)
+        results.append(sql)
+        bindResults.append(binds)
         return self.eventLoop.makeSucceededFuture(())
     }
 }
 
 struct TestRow: SQLRow {
-    enum Datum { // yes, this is just Optional by another name
-        case some(any Encodable)
-        case none
-    }
-    
-    var data: [String: Datum]
+    var data: [String: (any Encodable)?]
 
-    enum _Error: Error {
-        case missingColumn(String)
-        case typeMismatch(Any.Type)
-    }
-
-    var allColumns: [String] {
-        .init(self.data.keys)
-    }
-
-    func contains(column: String) -> Bool {
-        self.data.keys.contains(column)
-    }
-
-    func decodeNil(column: String) throws -> Bool {
-        if case .some(.none) = self.data[column] { return true }
-        return false
-    }
-
+    var allColumns: [String] { .init(self.data.keys) }
+    func contains(column: String) -> Bool { self.data.keys.contains(column) }
+    func decodeNil(column: String) throws -> Bool { if case .some(.some(_)) = self.data[column] { return false } else { return true } }
     func decode<D: Decodable & Sendable>(column: String, as: D.Type) throws -> D {
+        let key = SomeCodingKey(stringValue: column)
+        guard self.contains(column: column) else {
+            throw DecodingError.keyNotFound(key, .init(codingPath: [], debugDescription: "No value associated with key '\(column)'."))
+        }
         guard case let .some(.some(value)) = self.data[column] else {
-            throw _Error.missingColumn(column)
+            throw DecodingError.valueNotFound(D.self, .init(codingPath: [key], debugDescription: "No value of type \(D.self) associated with key '\(column)'."))
         }
         guard let cast = value as? D else {
-            throw _Error.typeMismatch(D.self)
+            throw DecodingError.typeMismatch(D.self, .init(codingPath: [key], debugDescription: "Expected to decode \(D.self) but found \(type(of: value)) instead."))
         }
         return cast
     }
@@ -95,6 +85,16 @@ struct GenericDialect: SQLDialect {
         self.triggerSyntax.create = create
         self.triggerSyntax.drop = drop
     }
+}
+
+func XCTAssertNoThrowWithResult<T>(
+    _ expression: @autoclosure () throws -> T,
+    _ message: @autoclosure () -> String = "",
+    file: StaticString = #filePath, line: UInt = #line
+) -> T? {
+    var result: T?
+    XCTAssertNoThrow(result = try expression(), message(), file: file, line: line)
+    return result
 }
 
 let isLoggingConfigured: Bool = {
