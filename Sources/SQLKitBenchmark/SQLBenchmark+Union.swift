@@ -19,9 +19,10 @@ extension SQLBenchmarker {
     }
     
     private func testUnions_Setup() throws {
-        try self.database.drop(table: "union_test").ifExists().run().wait()
+        try self.database.drop(table: "union_test").ifExists()
+            .run().wait()
         try self.database.create(table: "union_test")
-            .column("id", type: .int, .primaryKey(autoIncrement: false), .notNull)
+            .column("id",     type: .int,  .primaryKey(autoIncrement: false), .notNull)
             .column("field1", type: .text, .notNull)
             .column("field2", type: .text)
             .run().wait()
@@ -34,7 +35,8 @@ extension SQLBenchmarker {
     }
     
     private func testUnions_Teardown() throws {
-        try self.database.drop(table: "union_test").ifExists().run().wait()
+        try self.database.drop(table: "union_test").ifExists()
+            .run().wait()
     }
     
     private func testUnions_union() throws {
