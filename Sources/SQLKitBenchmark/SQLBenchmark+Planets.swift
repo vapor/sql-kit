@@ -10,23 +10,20 @@ extension SQLBenchmarker {
     
     private func testPlanets_createSchema() throws {
         try self.runTest {
-            try $0.drop(table: "planets")
-                .ifExists()
+            try $0.drop(table: "planets").ifExists()
                 .run().wait()
-            try $0.drop(table: "galaxies")
-                .ifExists()
+            try $0.drop(table: "galaxies").ifExists()
                 .run().wait()
             try $0.create(table: "galaxies")
-                .column("id", type: .bigint, .primaryKey)
-                .column("name", type: .text)
+                .column("id",       type: .bigint, .primaryKey)
+                .column("name",     type: .text)
                 .run().wait()
-            try $0.create(table: "planets")
-                .ifNotExists()
-                .column("id", type: .bigint, .primaryKey)
+            try $0.create(table: "planets").ifNotExists()
+                .column("id",       type: .bigint, .primaryKey)
                 .column("galaxyID", type: .bigint, .references("galaxies", "id"))
                 .run().wait()
             try $0.alter(table: "planets")
-                .column("name", type: .text, .default(SQLLiteral.string("Unamed Planet")))
+                .column("name",     type: .text,   .default(SQLLiteral.string("Unamed Planet")))
                 .run().wait()
             try $0.create(index: "test_index")
                 .on("planets")
@@ -50,9 +47,9 @@ extension SQLBenchmarker {
                 .column("*")
                 .from("galaxies")
                 .where("name", .notEqual, SQLLiteral.null)
-                .where {
-                    $0.where("name", .equal, SQLBind("Milky Way"))
-                        .orWhere("name", .equal, SQLBind("Andromeda"))
+                .where { $0
+                    .where("name", .equal, SQLBind("Milky Way"))
+                    .orWhere("name", .equal, SQLBind("Andromeda"))
                 }
                 .all().wait()
 
@@ -101,7 +98,7 @@ extension SQLBenchmarker {
 
             if $0.dialect.alterTableSyntax.allowsBatch {
                 try $0.alter(table: "planets")
-                    .column("very_extra", type: .bigint)
+                    .column("very_extra",  type: .bigint)
                     .column("extra_extra", type: .text)
                     .run().wait()
 
