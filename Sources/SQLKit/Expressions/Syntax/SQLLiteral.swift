@@ -25,6 +25,23 @@ public enum SQLLiteral: SQLExpression {
             serializer.write("*")
             
         case .string(let string):
+            #if DEBUG
+            if let rawQuote = (serializer.dialect.literalStringQuote as? SQLRaw)?.sql {
+                let containsQuote: Bool
+                if #available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
+                    containsQuote = string.contains(rawQuote)
+                } else {
+                    containsQuote = string.indices.first(where: {
+                        string[$0..<(string.index($0, offsetBy: rawQuote.count + 1, limitedBy: string.endIndex) ?? string.endIndex)]
+                            .prefix(rawQuote.count) == rawQuote
+                    }) != nil
+                }
+                if containsQuote {
+                    serializer.database.logger.debug("WARNING: Literal string used in SQL expression contains one or more literal string delimiters; this is extremely unsafe and can lead to trivial SQL injection.")
+                }
+            }
+            #endif
+        
             serializer.dialect.literalStringQuote.serialize(to: &serializer)
             serializer.write(string)
             serializer.dialect.literalStringQuote.serialize(to: &serializer)
