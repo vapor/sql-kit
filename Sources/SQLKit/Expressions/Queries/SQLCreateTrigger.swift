@@ -59,13 +59,13 @@ public struct SQLCreateTrigger: SQLExpression {
     }
 
     @inlinable
-    public init(trigger: String, table: String, when: SQLTriggerWhen, event: SQLTriggerEvent) {
+    public init(trigger: String, table: String, when: WhenSpecifier, event: EventSpecifier) {
         self.init(trigger: SQLIdentifier(trigger), table: SQLIdentifier(table), when: when, event: event)
     }
 
     public func serialize(to serializer: inout SQLSerializer) {
         let syntax = serializer.dialect.triggerSyntax.create
-        let when = self.when as? SQLTriggerWhen, event = self.event as? SQLTriggerEvent, each = self.each as? SQLTriggerEach
+        let when = self.when as? WhenSpecifier, event = self.event as? EventSpecifier, each = self.each as? EachSpecifier
         
         if syntax.contains(.postgreSQLChecks) {
             assert(when != .instead || event != .update || self.columns == nil, "INSTEAD OF UPDATE events do not support lists of columns")
@@ -78,6 +78,7 @@ public struct SQLCreateTrigger: SQLExpression {
                 assert(self.isConstraint || self.timing == nil, "May only specify SQLTriggerTiming on CONSTRAINT triggers.")
             }
         }
+        assert(syntax.contains(.supportsDefiner) || self.definer == nil, "Must not specify a definer when dialect does not support it.")
         assert(!syntax.contains(.supportsBody) || self.body != nil, "Must define a trigger body.")
         assert(syntax.contains(.supportsBody) || self.procedure != nil, "Must define a trigger procedure.")
 
@@ -85,6 +86,9 @@ public struct SQLCreateTrigger: SQLExpression {
             $0.append("CREATE")
             if syntax.contains(.supportsConstraints), self.isConstraint { $0.append("CONSTRAINT") }
             $0.append("TRIGGER", self.name)
+            if let definer = self.definer, syntax.contains(.supportsDefiner) {
+                $0.append("DEFINER = ", definer)
+            }
             $0.append(self.when)
             $0.append(self.event)
             if let columns = self.columns, !columns.isEmpty, syntax.contains(.supportsUpdateColumns) { $0.append("OF", SQLList(columns)) }
@@ -92,7 +96,7 @@ public struct SQLCreateTrigger: SQLExpression {
             if let referencedTable = self.referencedTable, syntax.contains(.supportsConstraints) { $0.append("FROM", referencedTable) }
             if let timing = self.timing, syntax.contains(.supportsConstraints) { $0.append(timing) }
             if syntax.contains(.requiresForEachRow) || (syntax.isSuperset(of: [.supportsForEach, .supportsConstraints]) && self.isConstraint) {
-                $0.append(SQLTriggerEach.row)
+                $0.append(EachSpecifier.row)
             } else if syntax.contains(.supportsForEach), let each = self.each {
                 $0.append(each)
             }
@@ -112,79 +116,74 @@ public struct SQLCreateTrigger: SQLExpression {
             }
         }
     }
-}
 
-public enum SQLTriggerWhen: SQLExpression {
-    case before
-    case after
-    case instead
+    /// A trivial syntactical expression used in constructing `CREATE TRIGGER` queries.
+    public enum WhenSpecifier: String, SQLExpression {
+        case before = "BEFORE"
+        case after = "AFTER"
+        case instead = "INSTEAD OF"
 
-    @inlinable
-    public func serialize(to serializer: inout SQLSerializer) {
-        switch self {
-        case .before:  serializer.write("BEFORE")
-        case .after:   serializer.write("AFTER")
-        case .instead: serializer.write("INSTEAD OF")
-        }
+        @inlinable
+        public func serialize(to serializer: inout SQLSerializer) { serializer.write(self.rawValue) }
+    }
+
+    /// A trivial syntactical expression used in constructing `CREATE TRIGGER` queries.
+    public enum EventSpecifier: String, SQLExpression {
+        case insert = "INSERT"
+        case update = "UPDATE"
+        case delete = "DELETE"
+        case truncate = "TRUNCATE"
+
+        @inlinable
+        public func serialize(to serializer: inout SQLSerializer) { serializer.write(self.rawValue) }
+    }
+
+    /// A trivial syntactical expression used in constructing `CREATE TRIGGER` queries.
+    public enum TimingSpecifier: String, SQLExpression {
+        case deferrable = "DEFERRABLE"
+        case notDeferrable = "NOT DEFERRABLE"
+        case initiallyImmediate = "INITIALLY IMMEDIATE"
+        case initiallyDeferred = "INITIALLY DEFERRED"
+
+        @inlinable
+        public func serialize(to serializer: inout SQLSerializer) { serializer.write(self.rawValue) }
+    }
+
+    /// A trivial syntactical expression used in constructing `CREATE TRIGGER` queries.
+    public enum EachSpecifier: String, SQLExpression {
+        case row = "FOR EACH ROW"
+        case statement = "FOR EACH STATEMENT"
+
+        @inlinable
+        public func serialize(to serializer: inout SQLSerializer) { serializer.write(self.rawValue) }
+    }
+
+    /// A trivial syntactical expression used in constructing `CREATE TRIGGER` queries.
+    public enum OrderSpecifier: String, SQLExpression {
+        case follows = "FOLLOWS"
+        case precedes = "PRECEDES"
+
+        @inlinable
+        public func serialize(to serializer: inout SQLSerializer) { serializer.write(self.rawValue) }
     }
 }
 
-public enum SQLTriggerEvent: SQLExpression {
-    case insert
-    case update
-    case delete
-    case truncate
+/// Old name for ``SQLCreateTrigger/WhenSpecifier``.
+@available(*, deprecated, renamed: "SQLCreateTrigger.WhenSpecifier")
+public typealias SQLTriggerWhen = SQLCreateTrigger.WhenSpecifier
 
-    @inlinable
-    public func serialize(to serializer: inout SQLSerializer) {
-        switch self {
-        case .insert:   serializer.write("INSERT")
-        case .update:   serializer.write("UPDATE")
-        case .delete:   serializer.write("DELETE")
-        case .truncate: serializer.write("TRUNCATE")
-        }
-    }
-}
+/// Old name for ``SQLCreateTrigger/EventSpecifier``.
+@available(*, deprecated, renamed: "SQLCreateTrigger.EventSpecifier")
+public typealias SQLTriggerEvent = SQLCreateTrigger.EventSpecifier
 
-public enum SQLTriggerTiming: SQLExpression {
-    case deferrable
-    case notDeferrable
-    case initiallyImmediate
-    case initiallyDeferred
+/// Old name for ``SQLCreateTrigger/TimingSpecifier``.
+@available(*, deprecated, renamed: "SQLCreateTrigger.TimingSpecifier")
+public typealias SQLTriggerTiming = SQLCreateTrigger.TimingSpecifier
 
-    @inlinable
-    public func serialize(to serializer: inout SQLSerializer) {
-        switch self {
-        case .deferrable:         serializer.write("DEFERRABLE")
-        case .notDeferrable:      serializer.write("NOT DEFERRABLE")
-        case .initiallyImmediate: serializer.write("INITIALLY IMMEDIATE")
-        case .initiallyDeferred:  serializer.write("INITIALLY DEFERRED")
-        }
-    }
-}
+/// Old name for ``SQLCreateTrigger/EachSpecifier``.
+@available(*, deprecated, renamed: "SQLCreateTrigger.EachSpecifier")
+public typealias SQLTriggerEach = SQLCreateTrigger.EachSpecifier
 
-public enum SQLTriggerEach: SQLExpression {
-    case row
-    case statement
-
-    @inlinable
-    public func serialize(to serializer: inout SQLSerializer) {
-        switch self {
-        case .row:       serializer.write("FOR EACH ROW")
-        case .statement: serializer.write("FOR EACH STATEMENT")
-        }
-    }
-}
-
-public enum SQLTriggerOrder: SQLExpression {
-    case follows
-    case precedes
-
-    @inlinable
-    public func serialize(to serializer: inout SQLSerializer) {
-        switch self {
-        case .follows:  serializer.write("FOLLOWS")
-        case .precedes: serializer.write("PRECEDES")
-        }
-    }
-}
+/// Old name for ``SQLCreateTrigger/OrderSpecifier``.
+@available(*, deprecated, renamed: "SQLCreateTrigger.OrderSpecifier")
+public typealias SQLTriggerOrder = SQLCreateTrigger.OrderSpecifier

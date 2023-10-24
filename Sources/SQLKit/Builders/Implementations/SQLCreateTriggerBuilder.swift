@@ -22,7 +22,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     /// Identifies whether the trigger applies to each row or each statement.
     @inlinable
     @discardableResult
-    public func each(_ value: SQLTriggerEach) -> Self {
+    public func each(_ value: SQLCreateTrigger.EachSpecifier) -> Self {
         self.createTrigger.each = value
         return self
     }
@@ -63,7 +63,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     /// - Note: Only applies to constraint triggers.
     @inlinable
     @discardableResult
-    public func timing(_ value: SQLTriggerTiming) -> Self {
+    public func timing(_ value: SQLCreateTrigger.TimingSpecifier) -> Self {
         self.createTrigger.timing = value
         return self
     }
@@ -151,14 +151,14 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     /// Specify whether this trigger precedes or follows a referenced trigger.
     @inlinable
     @discardableResult
-    public func order(precedence: SQLTriggerOrder, otherTriggerName: String) -> Self {
+    public func order(precedence: SQLCreateTrigger.OrderSpecifier, otherTriggerName: String) -> Self {
         self.order(precedence: precedence, otherTriggerName: SQLIdentifier(otherTriggerName))
     }
 
     /// Specify whether this trigger precedes or follows a referenced trigger.
     @inlinable
     @discardableResult
-    public func order(precedence: SQLTriggerOrder, otherTriggerName: any SQLExpression) -> Self {
+    public func order(precedence: SQLCreateTrigger.OrderSpecifier, otherTriggerName: any SQLExpression) -> Self {
         self.order(precedence: precedence as any SQLExpression, otherTriggerName: otherTriggerName)
     }
 
@@ -175,7 +175,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
 extension SQLDatabase {
     /// Create a new ``SQLCreateTriggerBuilder``.
     @inlinable
-    public func create(trigger: String, table: String, when: SQLTriggerWhen, event: SQLTriggerEvent) -> SQLCreateTriggerBuilder {
+    public func create(trigger: String, table: String, when: SQLCreateTrigger.WhenSpecifier, event: SQLCreateTrigger.EventSpecifier) -> SQLCreateTriggerBuilder {
         self.create(trigger: SQLIdentifier(trigger), table: SQLIdentifier(table), when: when, event: event)
     }
 
