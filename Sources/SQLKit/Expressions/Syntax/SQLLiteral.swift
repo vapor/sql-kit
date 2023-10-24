@@ -23,16 +23,21 @@ public enum SQLLiteral: SQLExpression {
         switch self {
         case .all:
             serializer.write("*")
+            
         case .string(let string):
             serializer.dialect.literalStringQuote.serialize(to: &serializer)
             serializer.write(string)
             serializer.dialect.literalStringQuote.serialize(to: &serializer)
+        
         case .numeric(let numeric):
             serializer.write(numeric)
+        
         case .null:
             serializer.write("NULL")
+        
         case .default:
             serializer.dialect.literalDefault.serialize(to: &serializer)
+        
         case .boolean(let bool):
             serializer.dialect.literalBoolean(bool).serialize(to: &serializer)
         }

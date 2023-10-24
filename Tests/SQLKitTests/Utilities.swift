@@ -1,7 +1,6 @@
-import Foundation
 import SQLKit
 import NIOCore
-import NIOEmbedded
+@_implementationOnly import NIOEmbedded
 import Logging
 import XCTest
 

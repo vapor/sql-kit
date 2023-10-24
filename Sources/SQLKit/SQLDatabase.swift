@@ -10,7 +10,7 @@ import NIOCore
 /// logic and for substituting `Logger`s. A driver package must also provide concrete
 /// implementations of ``SQLDialect`` and ``SQLRow`` (both of which are hooked up via ``SQLDatabase``).
 ///
-/// - Note: Most of ``SQLDatabase``'s functionality is relatively low-level. Clients of SQLKit
+/// > Note: Most of ``SQLDatabase``'s functionality is relatively low-level. Clients of SQLKit
 ///   who want to query a database should use the higher-level API rooted at ``SQLQueryBuilder``.
 ///
 /// Example of manually constructing and executing a query from expressions without a query builder:
@@ -34,14 +34,14 @@ import NIOCore
 /// It should almost never be necessary for a client to call ``SQLDatabase/execute(sql:_:)-90wi9``
 /// directly; such a need usually indicates a design flaw or functionality gap in SQLKit itself.
 public protocol SQLDatabase {
-    /// The `Logger` to be used for logging all SQLKit operations relating to a given database.
+    /// The `Logger` to be used for logging all operations relating to a given database.
     var logger: Logger { get }
     
     /// The `EventLoop` used for asynchronous operations on a given database. If there is no specific
     /// `EventLoop` which handles the database (such as because it is a connection pool which assigns
     /// loops to connections at point of use, or because the underlying implementation is based on Swift
-    /// Concurrency or some other asynchronous execution technology), it is recommended to return an
-    /// event loop from `EventLoopGroup.any()`.
+    /// Concurrency or some other asynchronous execution technology), a single consistent `EventLoop`
+    /// must be chosen for the database and returned for this property nonetheless.
     var eventLoop: any EventLoop { get }
     
     /// The version number the connection reports for itself, provided as a type conforming to the
@@ -50,12 +50,12 @@ public protocol SQLDatabase {
     /// may also change at runtime (for example, if a connection is auto-reconnected after a remote
     /// update), or even become unknown again after being known.
     ///
-    /// - Warning: This version number has nothing to do with ``SQLKit`` or (usually) of the driver
+    /// > Note: This version number has nothing to do with ``SQLKit`` or (usually) of the driver
     ///   implementation for the database, nor does it represent any data stored within the database;
     ///   it is the version of the database implementation _itself_ (such as of a MySQL server or
-    ///   `libsqlite3` library). A significant part of the motivation to finally add this property comes
-    ///   from a larger desire to enable customizing a given ``SQLDialect``'s configuration based on the
-    ///   actual feature set available at runtime instead of having to hardcode a "safe" baseline.
+    ///   `libsqlite3` library). The primary motivation for finally adding this property stemmed from
+    ///   the desire to enable customizing ``SQLDialect`` configurations based on the actual feature set
+    ///   available at runtime, rather than the old solution of hardcoding a "safe" baseline.
     var version: (any SQLDatabaseReportedVersion)? { get }
 
     /// The descriptor for the SQL dialect supported by the given database. It is permitted for different
@@ -70,12 +70,12 @@ public protocol SQLDatabase {
     /// any) of queries; it does not affect any logging performed by the underlying driver or any other
     /// subsystem. If the value is `nil`, query logging is disabled.
     ///
-    /// - Important: Conforming drivers must provide a means to configure this value and to use the default
-    ///   `.debug` level if no explicit value is provided. It is also the responsibility of the driver to
-    ///   actually perform the query logging, including respecting the logging level.
-    ///
-    ///   The lack of enforcement of these requirements is obviously less than ideal, but unavoidable due to
-    ///   the lack of direct entry points to SQLKit not provided by driver implementations.
+    /// > Important: Conforming drivers must provide a means to configure this value and to use the default
+    /// > `.debug` level if no explicit value is provided. It is also the responsibility of the driver to
+    /// > actually perform the query logging, including respecting the logging level.
+    /// >
+    /// > The lack of enforcement of these requirements is obviously less than ideal, but for the moment
+    /// > it's unavoidable, as there are no direct entry points to SQLKit without a driver.
     var queryLogLevel: Logger.Level? { get }
 
     /// Requests that the given generic SQL query be serialized and executed on the database, and that
@@ -123,10 +123,10 @@ extension SQLDatabase {
     }
 }
 
-/// An ``SQLDatabase`` which trivially wraps another ``SQLDatabase`` in order to substitute the
-/// original's ``Logger`` with another.
+/// An ``SQLDatabase`` which replaces an existing database's `Logger` but forwards all other operations
+/// on to the original.
 ///
-/// - Note: Since ``SQLDatabase/logging(to:)`` returns a generic ``SQLDatabase``, this type's
+/// > Note: Since ``SQLDatabase/logging(to:)`` returns a generic ``SQLDatabase``, this type's
 ///   actual implementation need not be part of the public API.
 private struct CustomLoggerSQLDatabase<D: SQLDatabase>: SQLDatabase {
     let database: D
