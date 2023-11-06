@@ -11,4 +11,4 @@ jobs:
      with:
        package_name: sql-kit
        modules: SQLKit
-       pathsToInvalidate: /sqlkit
+       pathsToInvalidate: /sqlkit/*
