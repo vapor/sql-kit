@@ -12,7 +12,7 @@
         <img src="http://img.shields.io/badge/license-MIT-brightgreen.svg" alt="MIT License">
     </a>
     <a href="https://github.com/vapor/sql-kit/actions/workflows/test.yml">
-        <img src="https://github.com/vapor/sql-kit/actions/workflows/test.yml/badge.svg?event=push" alt="Continuous Integration">
+        <img src="https://img.shields.io/github/actions/workflow/status/vapor/sql-kit/test.yml?event=push&&logo=github&label=tests&logoColor=%23ccc" alt="Continuous Integration">
     </a>
     <a href="https://swift.org">
         <img src="http://img.shields.io/badge/swift-5.6-brightgreen.svg" alt="Swift 5.6">
