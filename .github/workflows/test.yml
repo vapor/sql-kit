@@ -8,19 +8,6 @@ on:
 env:
   LOG_LEVEL: info
   SWIFT_DETERMINISTIC_HASHING: 1
-  MYSQL_PARAMS: |
-    { "image": "mysql:8", "env": {
-        "MYSQL_USER": "test_username",
-        "MYSQL_PASSWORD": "test_password",
-        "MYSQL_DATABASE":"test_database",
-        "MYSQL_ALLOW_EMPTY_PASSWORD": true
-    } }
-  POSTGRES_PARAMS: |
-    { "image": "postgres:16", "env": {
-        "POSTGRES_USER": "test_username",
-        "POSTGRES_PASSWORD": "test_password",
-        "POSTGRES_DB": "test_database"
-    } }
 
 jobs:
   unit-tests:
@@ -29,10 +16,18 @@ jobs:
   integration-tests:
     if: ${{ !(github.event.pull_request.draft || false) }}
     services:
-      mysql-a: ${{ fromJSON(env.MYSQL_PARAMS) }}
-      mysql-b: ${{ fromJSON(env.MYSQL_PARAMS) }}
-      psql-a: ${{ fromJSON(env.POSTGRES_PARAMS) }}
-      psql-b: ${{ fromJSON(env.POSTGRES_PARAMS) }}
+      mysql-a:
+        image: mysql:8
+        env: { MYSQL_USER: test_username, MYSQL_PASSWORD: test_password, MYSQL_DATABASE: test_database, MYSQL_ALLOW_EMPTY_PASSWORD: true }
+      mysql-b:
+        image: mysql:8
+        env: { MYSQL_USER: test_username, MYSQL_PASSWORD: test_password, MYSQL_DATABASE: test_database, MYSQL_ALLOW_EMPTY_PASSWORD: true }
+      psql-a:
+        image: postgres:16
+        env: { POSTGRES_USER: test_username, POSTGRES_PASSWORD: test_password, POSTGRES_DB: test_database }
+      psql-b:
+        image: postgres:16
+        env: { POSTGRES_USER: test_username, POSTGRES_PASSWORD: test_password, POSTGRES_DB: test_database }
     strategy:
       fail-fast: false
       matrix:
