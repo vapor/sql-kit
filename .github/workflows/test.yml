@@ -3,116 +3,74 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 on:
-  pull_request: { branches: ['*'] }
-  push: { branches: ['main'] }
+  pull_request: { types: [opened, reopened, synchronize, ready_for_review] }
+  push: { branches: [ main ] }
 env:
   LOG_LEVEL: info
   SWIFT_DETERMINISTIC_HASHING: 1
+  MYSQL_PARAMS: |
+    { "image": "mysql:8", "env": {
+        "MYSQL_USER": "test_username",
+        "MYSQL_PASSWORD": "test_password",
+        "MYSQL_DATABASE":"test_database",
+        "MYSQL_ALLOW_EMPTY_PASSWORD": true
+    } }
+  POSTGRES_PARAMS: |
+    { "image": "postgres:16", "env": {
+        "POSTGRES_USER": "test_username",
+        "POSTGRES_PASSWORD": "test_password",
+        "POSTGRES_DB": "test_database"
+    } }
 
 jobs:
   unit-tests:
-    uses: vapor/ci/.github/workflows/run-unit-tests.yml@reusable-workflows
-    with:
-      with_coverage: true
-      with_tsan: true
+    uses: vapor/ci/.github/workflows/run-unit-tests.yml@main
 
-  # Test integration with dependent package on Linux
   integration-tests:
+    if: ${{ !(github.event.pull_request.draft || false) }}
     services:
-      mysql-a:
-        image: mysql:8
-        env: { MYSQL_ALLOW_EMPTY_PASSWORD: "true", MYSQL_USER: test_username, MYSQL_PASSWORD: test_password, MYSQL_DATABASE: test_database }
-      mysql-b:
-        image: mysql:8
-        env: { MYSQL_ALLOW_EMPTY_PASSWORD: "true", MYSQL_USER: test_username, MYSQL_PASSWORD: test_password, MYSQL_DATABASE: test_database }
-      postgres-a:
-        image: postgres:15
-        env: { POSTGRES_USER: test_username, POSTGRES_PASSWORD: test_password, POSTGRES_DB: test_database }
-      postgres-b:
-        image: postgres:15
-        env: { POSTGRES_USER: test_username, POSTGRES_PASSWORD: test_password, POSTGRES_DB: test_database }
+      mysql-a: ${{ fromJSON(env.MYSQL_PARAMS) }}
+      mysql-b: ${{ fromJSON(env.MYSQL_PARAMS) }}
+      psql-a: ${{ fromJSON(env.POSTGRES_PARAMS) }}
+      psql-b: ${{ fromJSON(env.POSTGRES_PARAMS) }}
     strategy:
       fail-fast: false
       matrix:
-        swiftver:
-          - swift:5.6-focal
-          - swift:5.7-jammy
-          - swift:5.8-jammy
-          - swiftlang/swift:nightly-5.9-jammy
-          - swiftlang/swift:nightly-main-jammy
+        swift-image: ['swift:5.9-jammy']
+        driver:
+          - { sqlkit: 'sqlite-kit',   fluent: 'fluent-sqlite-driver' }
+          - { sqlkit: 'mysql-kit',    fluent: 'fluent-mysql-driver' }
+          - { sqlkit: 'postgres-kit', fluent: 'fluent-postgres-driver' }
     runs-on: ubuntu-latest
-    container: ${{ matrix.swiftver }}
+    container: ${{ matrix.swift-image }}
     env:
-      POSTGRES_HOSTNAME: postgres-a
-      POSTGRES_HOSTNAME_A: postgres-a
-      POSTGRES_HOSTNAME_B: postgres-b
-      POSTGRES_DB: test_database
-      POSTGRES_DB_A: test_database
-      POSTGRES_DB_B: test_database
-      POSTGRES_USER: test_username
-      POSTGRES_USER_A: test_username
-      POSTGRES_USER_B: test_username
-      POSTGRES_PASSWORD: test_password
-      POSTGRES_PASSWORD_A: test_password
-      POSTGRES_PASSWORD_B: test_password
-      MYSQL_DATABASE: test_database
-      MYSQL_DATABASE_A: test_database
-      MYSQL_DATABASE_B: test_database
-      MYSQL_USERNAME: test_username
-      MYSQL_USERNAME_A: test_username
-      MYSQL_USERNAME_B: test_username
-      MYSQL_PASSWORD: test_password
-      MYSQL_PASSWORD_A: test_password
-      MYSQL_PASSWORD_B: test_password
+      SQLKIT_DRIVER: ${{ matrix.driver.sqlkit }}
+      FLUENT_DRIVER: ${{ matrix.driver.fluent }}
+      POSTGRES_HOSTNAME: psql-a
+      POSTGRES_HOSTNAME_A: psql-a
+      POSTGRES_HOSTNAME_B: psql-b
       MYSQL_HOSTNAME: mysql-a
       MYSQL_HOSTNAME_A: mysql-a
       MYSQL_HOSTNAME_B: mysql-b
     steps:
       - name: Check out sql-kit
-        uses: actions/checkout@v3
-        with: { path: sql-kit }
-      - name: Check out sqlite-kit
-        uses: actions/checkout@v3
-        with: { repository: 'vapor/sqlite-kit', path: sqlite-kit }
-      - name: Check out postgres-kit
-        uses: actions/checkout@v3
-        with: { repository: 'vapor/postgres-kit', path: postgres-kit }
-      - name: Check out mysql-kit
-        uses: actions/checkout@v3
-        with: { repository: 'vapor/mysql-kit', path: mysql-kit }
-      - name: Check out fluent-sqlite-driver
-        uses: actions/checkout@v3
-        with: { repository: 'vapor/fluent-sqlite-driver', path: fluent-sqlite-driver }
-      - name: Check out fluent-postgres-driver
-        uses: actions/checkout@v3
-        with: { repository: 'vapor/fluent-postgres-driver', path: fluent-postgres-driver }
-      - name: Check out fluent-mysql-driver
-        uses: actions/checkout@v3
-        with: { repository: 'vapor/fluent-mysql-driver', path: fluent-mysql-driver }
-
-      - name: Use sql-kit in sqlite-kit
-        run: swift package --package-path sqlite-kit edit sql-kit --path sql-kit
-      - name: Use sql-kit in postgres-kit
-        run: swift package --package-path postgres-kit edit sql-kit --path sql-kit
-      - name: Use sql-kit in mysql-kit
-        run: swift package --package-path mysql-kit edit sql-kit --path sql-kit
-      - name: Use sql-kit in fluent-sqlite-driver
-        run: swift package --package-path fluent-sqlite-driver edit sql-kit --path sql-kit
-      - name: Use sql-kit in fluent-postgres-driver
-        run: swift package --package-path fluent-postgres-driver edit sql-kit --path sql-kit
-      - name: Use sql-kit in fluent-mysql-driver
-        run: swift package --package-path fluent-mysql-driver edit sql-kit --path sql-kit
-        
-      - name: Run sqlite-kit tests with Thread Sanitizer
-        run: swift test --package-path sqlite-kit --sanitize=thread
-      - name: Run postgres-kit tests with Thread Sanitizer
-        run: swift test --package-path postgres-kit --sanitize=thread
-      - name: Run mysql-kit tests with Thread Sanitizer
-        run: swift test --package-path mysql-kit --sanitize=thread
-
-      - name: Run fluent-sqlite-driver tests with Thread Sanitizer
-        run: swift test --package-path fluent-sqlite-driver --sanitize=thread
-      - name: Run fluent-postgres-driver tests with Thread Sanitizer
-        run: swift test --package-path fluent-postgres-driver --sanitize=thread
-      - name: Run fluent-mysql-driver tests with Thread Sanitizer
-        run: swift test --package-path fluent-mysql-driver --sanitize=thread
+        uses: actions/checkout@v4
+        with: { path: sql-kit, repository: vapor/sql-kit }
+      - name: Check out SQLKit driver
+        uses: actions/checkout@v4
+        with:
+          path: ${{ matrix.driver.sqlkit }}
+          repository: vapor/${{ matrix.driver.sqlkit }}
+      - name: Check out Fluent driver
+        uses: actions/checkout@v4
+        with:
+          path: ${{ matrix.driver.fluent }}
+          repository: vapor/${{ matrix.driver.fluent }}
+      - name: Set up and run ${{ matrix.driver.sqlkit }} tests
+        run: |
+          swift package --package-path "${SQLKIT_DRIVER}" edit --path sql-kit sql-kit
+          swift test --package-path "${SQLKIT_DRIVER}" --sanitize=thread
+      - name: Set up and run ${{ matrix.driver.fluent }} tests
+        run: |
+          swift package --package-path "${FLUENT_DRIVER}" edit --path sql-kit sql-kit
+          swift test --package-path "${FLUENT_DRIVER}" --sanitize=thread
