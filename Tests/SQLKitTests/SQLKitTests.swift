@@ -358,6 +358,8 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[0], "UPDATE `planets` SET `moons` = `moons` + 1 WHERE `best_at_space` >= ?")
     }
     
+    // MARK: Insert
+    
     func testInsertWithArrayOfEncodable() throws {
         func weird<S: Sequence>(_ builder: SQLInsertBuilder, values: S) -> SQLInsertBuilder where S.Element: Encodable {
             builder.values(Array(values))
@@ -369,6 +371,92 @@ final class SQLKitTests: XCTestCase {
         ).run().wait()
         XCTAssertEqual(db.results[0], "INSERT INTO `planets` (`name`) VALUES (?)")
         XCTAssertEqual(db.bindResults[0] as? [String], ["Jupiter"]) // instead of [["Jupiter"]]
+    }
+    
+    func testInsertValuesEncodable() throws {
+        // Test variadic values method
+        try db.insert(into: "planets")
+            .columns(["name", "color"])
+            .values("Jupiter", "orange")
+            .run().wait()
+        XCTAssertEqual(db.results[0], "INSERT INTO `planets` (`name`, `color`) VALUES (?, ?)")
+        XCTAssertEqual(db.bindResults[0] as? [String], ["Jupiter", "orange"])
+        
+        // Test array values method
+        try db.insert(into: "planets")
+            .columns(["name", "color"])
+            .values(["Jupiter", "orange"])
+            .run().wait()
+        XCTAssertEqual(db.results[1], "INSERT INTO `planets` (`name`, `color`) VALUES (?, ?)")
+        XCTAssertEqual(db.bindResults[1] as? [String], ["Jupiter", "orange"])
+        
+        // Test nested array values method
+        try db.insert(into: "planets")
+            .columns(["name", "color"])
+            .values([["Jupiter", "orange"],["Mars", "red"]])
+            .run().wait()
+        XCTAssertEqual(db.results[2], "INSERT INTO `planets` (`name`, `color`) VALUES (?, ?)")
+        XCTAssertEqual(db.bindResults[2] as? [[String]], [["Jupiter", "orange"], ["Mars", "red"]])
+        
+        // Test multiple values calls make multiple rows
+        try db.insert(into: "planets")
+            .columns(["name", "color"])
+            .values(["Jupiter", "orange"])
+            .values(["Mars", "red"])
+            .run().wait()
+        XCTAssertEqual(db.results[3], "INSERT INTO `planets` (`name`, `color`) VALUES (?, ?), (?, ?)")
+        XCTAssertEqual(db.bindResults[3] as? [String], ["Jupiter", "orange", "Mars", "red"])
+        
+        // Test single-value input method
+        try db.insert(into: "planets")
+            .columns(["name"])
+            .values(["Jupiter"])
+            .run().wait()
+        XCTAssertEqual(db.results[4], "INSERT INTO `planets` (`name`) VALUES (?)")
+        XCTAssertEqual(db.bindResults[4] as? [String], ["Jupiter"])
+    }
+    
+    func testInsertValuesExpression() throws {
+        // Test variadic values method
+        try db.insert(into: "planets")
+            .columns(["name", "color"])
+            .values(SQLBind("Jupiter"), SQLBind("orange"))
+            .run().wait()
+        XCTAssertEqual(db.results[0], "INSERT INTO `planets` (`name`, `color`) VALUES (?, ?)")
+        XCTAssertEqual(db.bindResults[0] as? [String], ["Jupiter", "orange"])
+
+        // Test array values method
+        try db.insert(into: "planets")
+            .columns(["name", "color"])
+            .values([SQLBind("Jupiter"), SQLBind("orange")])
+            .run().wait()
+        XCTAssertEqual(db.results[1], "INSERT INTO `planets` (`name`, `color`) VALUES (?, ?)")
+        XCTAssertEqual(db.bindResults[1] as? [String], ["Jupiter", "orange"])
+
+        // Test nested array values method
+        try db.insert(into: "planets")
+            .columns(["name", "color"])
+            .rows([[SQLBind("Jupiter"), SQLBind("orange")],[SQLBind("Mars"), SQLBind("red")]])
+            .run().wait()
+        XCTAssertEqual(db.results[2], "INSERT INTO `planets` (`name`, `color`) VALUES (?, ?), (?, ?)")
+        XCTAssertEqual(db.bindResults[2] as? [String], ["Jupiter", "orange", "Mars", "red"])
+
+        // Test multiple values calls make multiple rows
+        try db.insert(into: "planets")
+            .columns(["name", "color"])
+            .values(["Jupiter", "orange"])
+            .values([SQLBind("Mars"), SQLBind("red")])
+            .run().wait()
+        XCTAssertEqual(db.results[3], "INSERT INTO `planets` (`name`, `color`) VALUES (?, ?), (?, ?)")
+        XCTAssertEqual(db.bindResults[3] as? [String], ["Jupiter", "orange", "Mars", "red"])
+
+        // Test single-value input method
+        try db.insert(into: "planets")
+            .columns(["name"])
+            .values([SQLBind("Jupiter")])
+            .run().wait()
+        XCTAssertEqual(db.results[4], "INSERT INTO `planets` (`name`) VALUES (?)")
+        XCTAssertEqual(db.bindResults[4] as? [String], ["Jupiter"])
     }
 
     // MARK: Returning
