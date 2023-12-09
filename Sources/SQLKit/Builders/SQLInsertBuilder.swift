@@ -224,4 +224,12 @@ extension SQLDatabase {
     public func insert(into table: any SQLExpression) -> SQLInsertBuilder {
         .init(.init(table: table), on: self)
     }
+
+    /// Create a new ``SQLInsertBuilder`` for ``Modelable``.
+    @inlinable
+    public func insert<Model: Modelable>(_ model: Model) -> SQLInsertBuilder {
+        self.insert(into: Model.scheme)
+            .columns(model.fields.map(\.name))
+            .values(model.fields.map(\.value))
+    }
 }

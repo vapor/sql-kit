@@ -370,6 +370,23 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(db.results[0], "INSERT INTO `planets` (`name`) VALUES (?)")
         XCTAssertEqual(db.bindResults[0] as? [String], ["Jupiter"]) // instead of [["Jupiter"]]
     }
+  
+    func testInsertModel() async throws {
+      let person = Person(
+        id: UUID(),
+        fisrtName: "fisrt",
+        lastName: "last",
+        age: 20
+      )
+      
+      try await db.insert(person).run()
+      
+      XCTAssertEqual(db.results[0], "INSERT INTO `Person` (`id`, `fisrtName`, `lastName`, `age`) VALUES (?, ?, ?, ?)")
+      XCTAssertEqual(db.bindResults[0][0] as? UUID, person.id)
+      XCTAssertEqual(db.bindResults[0][1] as? String, person.fisrtName)
+      XCTAssertEqual(db.bindResults[0][2] as? String, person.lastName)
+      XCTAssertEqual(db.bindResults[0][3] as? Int, person.age)
+    }
 
     // MARK: Returning
 
@@ -978,3 +995,20 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
         XCTAssertEqual(db.results[0], "SELECT (`json`->>'a'), (`json`->'a'->>'b'), (`json`->'a'->'b'->>'c'), (`table`.`json`->'a'->>'b')")
     }
 }
+
+
+private struct Person {
+  var id: UUID
+  var fisrtName: String
+  var lastName: String
+  var age: Int
+  
+  
+  public var fields: [(name: String, value: any Encodable)] {
+    [("id", self.id), ("fisrtName", self.fisrtName), ("lastName", self.lastName), ("age", self.age)]
+  }
+}
+
+extension Person : Modelable {
+}
+
