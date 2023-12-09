@@ -44,7 +44,6 @@ let package = Package(
             name: "SQLModelMacroTests",
             dependencies: [
                 .product(name: "MacroTesting", package: "swift-macro-testing"),
-                .target(name: "SQLKit"),
             ]
         )
     ]
