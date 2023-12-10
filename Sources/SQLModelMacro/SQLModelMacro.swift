@@ -18,16 +18,12 @@ extension SQLModelMacro: ExtensionMacro {
             declaration.as(ActorDeclSyntax.self)?.name else {
       throw Diagnostics.appliedTypeFail
     }
-    if let inheritanceClause = declaration.inheritanceClause,
-       inheritanceClause.inheritedTypes.contains(where: { $0.type.as(IdentifierTypeSyntax.self)?.name.text == "Modelable"})        {
-      return []
-    }
+
     return [
       ExtensionDeclSyntax(
         extendedType: IdentifierTypeSyntax(name: attachedTypeNameSyntax),
         inheritanceClause: InheritanceClauseSyntax(inheritedTypes: InheritedTypeListSyntax {
           InheritedTypeSyntax(type: IdentifierTypeSyntax(name: .identifier("Modelable")))
-          InheritedTypeSyntax(type: IdentifierTypeSyntax(name: .identifier("Decodable")))
         }),
         memberBlockBuilder: {}
       )

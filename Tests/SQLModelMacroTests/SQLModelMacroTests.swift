@@ -1,6 +1,7 @@
 import XCTest
 import MacroTesting
 import SQLModelMacro
+import SwiftData
 
 final class SQLKitTests: XCTestCase {
   func testSingleProperty() {
@@ -23,12 +24,12 @@ final class SQLKitTests: XCTestCase {
         }
       }
       
-      extension User : Modelable, Decodable {
+      extension User : Modelable {
       }
       """
     }
   }
-  
+
   func testIgnoreModelable() {
     assertMacro(["Model": SQLModelMacro.self]) {
       """
@@ -51,12 +52,12 @@ final class SQLKitTests: XCTestCase {
         }
       }
       
-      extension User : Modelable, Decodable {
+      extension User : Modelable {
       }
       """
     }
   }
-  
+
   func testIComputerProperty() {
     assertMacro(["Model": SQLModelMacro.self]) {
       """
@@ -81,12 +82,12 @@ final class SQLKitTests: XCTestCase {
         }
       }
       
-      extension User : Modelable, Decodable {
+      extension User : Modelable {
       }
       """
     }
   }
-  
+
   func testSQLMacro() {
     assertMacro(["Model": SQLModelMacro.self]) {
       """
@@ -123,7 +124,7 @@ final class SQLKitTests: XCTestCase {
         }
       }
       
-      extension User : Modelable, Decodable {
+      extension User : Modelable {
       }
       """
     }
