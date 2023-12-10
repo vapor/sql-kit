@@ -7,21 +7,25 @@ final class SQLKitTests: XCTestCase {
     assertMacro(["Model": SQLModelMacro.self]) {
       """
       @Model
-      struct Person {
+      struct User {
         var name: String
       }
       """
     } expansion: {
       """
-      struct Person {
+      struct User {
         var name: String
 
-        public var fields: [(name: String, value: any Encodable)] {
-          [("name", self.name)]
+        static public var columnNames: [String] {
+          ["name"]
+        }
+
+        public var values: [any Encodable] {
+          [self.name]
         }
       }
       
-      extension Person : Modelable {
+      extension User : Modelable {
       }
       """
     }
@@ -31,23 +35,27 @@ final class SQLKitTests: XCTestCase {
     assertMacro(["Model": SQLModelMacro.self]) {
       """
       @Model
-      struct Person {
+      struct User {
         @ModelableIgnored
         var name: String
       }
       """
     } expansion: {
       """
-      struct Person {
+      struct User {
         @ModelableIgnored
         var name: String
 
-        public var fields: [(name: String, value: any Encodable)] {
+        static public var columnNames: [String] {
+          []
+        }
+
+        public var values: [any Encodable] {
           []
         }
       }
       
-      extension Person : Modelable {
+      extension User : Modelable {
       }
       """
     }
@@ -57,7 +65,7 @@ final class SQLKitTests: XCTestCase {
     assertMacro(["Model": SQLModelMacro.self]) {
       """
       @Model
-      struct Person {
+      struct User {
         var name: String {
           "SQL"
         }
@@ -65,17 +73,21 @@ final class SQLKitTests: XCTestCase {
       """
     } expansion: {
       """
-      struct Person {
+      struct User {
         var name: String {
           "SQL"
         }
 
-        public var fields: [(name: String, value: any Encodable)] {
+        static public var columnNames: [String] {
+          []
+        }
+
+        public var values: [any Encodable] {
           []
         }
       }
       
-      extension Person : Modelable {
+      extension User : Modelable {
       }
       """
     }
@@ -85,7 +97,7 @@ final class SQLKitTests: XCTestCase {
     assertMacro(["Model": SQLModelMacro.self]) {
       """
       @Model
-      struct Person {
+      struct User {
         var firstName: String
         var lastName: String
       
@@ -99,7 +111,7 @@ final class SQLKitTests: XCTestCase {
       """
     } expansion: {
       """
-      struct Person {
+      struct User {
         var firstName: String
         var lastName: String
       
@@ -110,12 +122,16 @@ final class SQLKitTests: XCTestCase {
         @ModelableIgnored
         var other: String
 
-        public var fields: [(name: String, value: any Encodable)] {
-          [("firstName", self.firstName), ("lastName", self.lastName), ("age", self.age)]
+        static public var columnNames: [String] {
+          ["firstName", "lastName", "age"]
+        }
+
+        public var values: [any Encodable] {
+          [self.firstName, self.lastName, self.age]
         }
       }
       
-      extension Person : Modelable {
+      extension User : Modelable {
       }
       """
     }

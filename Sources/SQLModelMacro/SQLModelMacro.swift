@@ -48,32 +48,48 @@ extension SQLModelMacro: MemberMacro {
 
     let variableDeclarations = declaration.memberBlock.members.compactMap { $0.decl.as(VariableDeclSyntax.self) }
 
-    let syntax = VariableDeclSyntax(
+    let columnNamesSyntax = VariableDeclSyntax(
+      modifiers: DeclModifierListSyntax {
+        DeclModifierSyntax(name: .keyword(.static))
+        DeclModifierSyntax(name: .keyword(.public))
+      },
+      bindingSpecifier: .keyword(.var)
+    ) {
+      PatternBindingSyntax(
+        pattern: PatternSyntax("columnNames"),
+        typeAnnotation: TypeAnnotationSyntax(
+          type: ArrayTypeSyntax(
+            element: IdentifierTypeSyntax(name: .identifier("String"))
+          )
+        ),
+        accessorBlock: AccessorBlockSyntax(
+          accessors: .getter(CodeBlockItemListSyntax {
+            ArrayExprSyntax(elements: ArrayElementListSyntax{
+              for propertyName in variableDeclarations
+                .filter({ Self.validStoredPeoperty(member: $0 )})
+                .flatMap(\.bindings)
+                .map({ $0.pattern.as(IdentifierPatternSyntax.self)!.identifier.text }) {
+                ArrayElementSyntax(expression: StringLiteralExprSyntax(content: propertyName))
+              }
+            })
+          })
+        )
+      )
+    }
+    
+    let valuesSyntax = VariableDeclSyntax(
       modifiers: DeclModifierListSyntax {
         DeclModifierSyntax(name: .keyword(.public))
       },
       bindingSpecifier: .keyword(.var)
     ) {
       PatternBindingSyntax(
-        pattern: PatternSyntax("fields"),
+        pattern: PatternSyntax("values"),
         typeAnnotation: TypeAnnotationSyntax(
           type: ArrayTypeSyntax(
-            element: TupleTypeSyntax(
-              elements: TupleTypeElementListSyntax {
-                TupleTypeElementSyntax(
-                  firstName: .identifier("name"),
-                  colon: .colonToken(),
-                  type: IdentifierTypeSyntax(name: .identifier("String"))
-                )
-                TupleTypeElementSyntax(
-                  firstName: .identifier("value"),
-                  colon: .colonToken(),
-                  type: SomeOrAnyTypeSyntax(
-                    someOrAnySpecifier: .keyword(.any),
-                    constraint: IdentifierTypeSyntax(name: .identifier("Encodable"))
-                  )
-                )
-              }
+            element: SomeOrAnyTypeSyntax(
+              someOrAnySpecifier: .keyword(.any),
+              constraint: IdentifierTypeSyntax(name: .identifier("Encodable"))
             )
           )
         ),
@@ -84,13 +100,10 @@ extension SQLModelMacro: MemberMacro {
                 .filter({ Self.validStoredPeoperty(member: $0 )})
                 .flatMap(\.bindings)
                 .map({ $0.pattern.as(IdentifierPatternSyntax.self)!.identifier.text }) {
-                ArrayElementSyntax(expression: TupleExprSyntax(elements: LabeledExprListSyntax {
-                  LabeledExprSyntax(expression: StringLiteralExprSyntax(content: propertyName))
-                  LabeledExprSyntax(expression: MemberAccessExprSyntax(
-                    base: DeclReferenceExprSyntax(baseName: .keyword(.self)),
-                    declName: DeclReferenceExprSyntax(baseName: .identifier(propertyName))
-                  ))
-                }))
+                ArrayElementSyntax(expression: MemberAccessExprSyntax(
+                  base: DeclReferenceExprSyntax(baseName: .keyword(.self)),
+                  declName: DeclReferenceExprSyntax(baseName: .identifier(propertyName))
+                ))
               }
             })
           })
@@ -99,7 +112,8 @@ extension SQLModelMacro: MemberMacro {
     }
     
     return [
-      DeclSyntax(syntax),
+      DeclSyntax(columnNamesSyntax),
+      DeclSyntax(valuesSyntax),
     ]
   }
 }

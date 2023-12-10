@@ -1,6 +1,7 @@
 public protocol Modelable {
   static var scheme: String { get }
-  var fields: [(name: String, value: any Encodable)] { get }
+  static var columnNames: [String] { get }
+  var values: [any Encodable] { get }
 }
 
 public extension Modelable {
