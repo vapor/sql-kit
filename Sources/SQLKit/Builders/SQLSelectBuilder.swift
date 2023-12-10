@@ -30,5 +30,13 @@ extension SQLDatabase {
     public func select() -> SQLSelectBuilder {
         .init(on: self)
     }
+
+    /// Create a new ``SQLSelectBuilder``.
+    @inlinable
+    public func select<Model: Modelable>(_ type: Model.Type) -> SQLSelectBuilder {
+        .init(on: self)
+        .columns(Model.columnNames)
+        .from(Model.scheme)
+    }
 }
 

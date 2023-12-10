@@ -85,6 +85,12 @@ final class SQLKitTests: XCTestCase {
             .wait()
         XCTAssertEqual(db.results[0], "SELECT * FROM `planets` ORDER BY `name` ASC LIMIT 3 OFFSET 5")
     }
+  
+    func testSelect_Modelable() throws {
+        try db.select(User.self).run().wait()
+        print(db.results[0])
+        XCTAssertEqual(db.results[0], "SELECT `id`, `fisrtName`, `lastName`, `age` FROM `User`")
+    }
     
     func testUpdate() throws {
         try db.update("planets")
@@ -371,21 +377,21 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(db.bindResults[0] as? [String], ["Jupiter"]) // instead of [["Jupiter"]]
     }
   
-    func testInsertModel() async throws {
-      let person = Person(
-        id: UUID(),
-        fisrtName: "fisrt",
-        lastName: "last",
-        age: 20
-      )
-      
-      try await db.insert(person).run()
-      
-      XCTAssertEqual(db.results[0], "INSERT INTO `Person` (`id`, `fisrtName`, `lastName`, `age`) VALUES (?, ?, ?, ?)")
-      XCTAssertEqual(db.bindResults[0][0] as? UUID, person.id)
-      XCTAssertEqual(db.bindResults[0][1] as? String, person.fisrtName)
-      XCTAssertEqual(db.bindResults[0][2] as? String, person.lastName)
-      XCTAssertEqual(db.bindResults[0][3] as? Int, person.age)
+    func testInsertModel() throws {
+        let user = User(
+          id: UUID(),
+          fisrtName: "fisrt",
+          lastName: "last",
+          age: 20
+        )
+        
+        try db.insert(user).run().wait()
+        
+        XCTAssertEqual(db.results[0], "INSERT INTO `User` (`id`, `fisrtName`, `lastName`, `age`) VALUES (?, ?, ?, ?)")
+        XCTAssertEqual(db.bindResults[0][0] as? UUID, user.id)
+        XCTAssertEqual(db.bindResults[0][1] as? String, user.fisrtName)
+        XCTAssertEqual(db.bindResults[0][2] as? String, user.lastName)
+        XCTAssertEqual(db.bindResults[0][3] as? Int, user.age)
     }
 
     // MARK: Returning
@@ -997,18 +1003,10 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
 }
 
 
-private struct Person {
+@Model
+private struct User {
   var id: UUID
   var fisrtName: String
   var lastName: String
   var age: Int
-  
-  
-  public var fields: [(name: String, value: any Encodable)] {
-    [("id", self.id), ("fisrtName", self.fisrtName), ("lastName", self.lastName), ("age", self.age)]
-  }
 }
-
-extension Person : Modelable {
-}
-

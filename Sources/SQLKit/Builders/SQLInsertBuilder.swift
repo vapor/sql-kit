@@ -229,7 +229,7 @@ extension SQLDatabase {
     @inlinable
     public func insert<Model: Modelable>(_ model: Model) -> SQLInsertBuilder {
         self.insert(into: Model.scheme)
-            .columns(model.fields.map(\.name))
-            .values(model.fields.map(\.value))
+            .columns(Model.columnNames)
+            .values(model.values)
     }
 }
