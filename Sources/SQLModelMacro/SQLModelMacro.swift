@@ -54,7 +54,7 @@ extension SQLModelMacro: MemberMacro {
         DeclModifierSyntax(name: .keyword(.static))
         DeclModifierSyntax(name: .keyword(.public))
       },
-      bindingSpecifier: .keyword(.var)
+      bindingSpecifier: .keyword(.let)
     ) {
       PatternBindingSyntax(
         pattern: PatternSyntax("columnNames"),
@@ -63,18 +63,14 @@ extension SQLModelMacro: MemberMacro {
             element: IdentifierTypeSyntax(name: .identifier("String"))
           )
         ),
-        accessorBlock: AccessorBlockSyntax(
-          accessors: .getter(CodeBlockItemListSyntax {
-            ArrayExprSyntax(elements: ArrayElementListSyntax{
-              for propertyName in variableDeclarations
-                .filter({ Self.validStoredPeoperty(member: $0 )})
-                .flatMap(\.bindings)
-                .map({ $0.pattern.as(IdentifierPatternSyntax.self)!.identifier.text }) {
-                ArrayElementSyntax(expression: StringLiteralExprSyntax(content: propertyName))
-              }
-            })
-          })
-        )
+        initializer: InitializerClauseSyntax(value: ArrayExprSyntax(elements: ArrayElementListSyntax{
+          for propertyName in variableDeclarations
+            .filter({ Self.validStoredPeoperty(member: $0 )})
+            .flatMap(\.bindings)
+            .map({ $0.pattern.as(IdentifierPatternSyntax.self)!.identifier.text }) {
+            ArrayElementSyntax(expression: StringLiteralExprSyntax(content: propertyName))
+          }
+        }))
       )
     }
     

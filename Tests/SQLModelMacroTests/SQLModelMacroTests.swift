@@ -16,16 +16,14 @@ final class SQLKitTests: XCTestCase {
       struct User {
         var name: String
 
-        static public var columnNames: [String] {
-          ["name"]
-        }
+        static public let columnNames: [String] = ["name"]
 
         public var values: [any Encodable] {
           [self.name]
         }
       }
       
-      extension User : Modelable {
+      extension User : Modelable, Decodable {
       }
       """
     }
@@ -46,16 +44,14 @@ final class SQLKitTests: XCTestCase {
         @ModelableIgnored
         var name: String
 
-        static public var columnNames: [String] {
-          []
-        }
+        static public let columnNames: [String] = []
 
         public var values: [any Encodable] {
           []
         }
       }
       
-      extension User : Modelable {
+      extension User : Modelable, Decodable {
       }
       """
     }
@@ -78,16 +74,14 @@ final class SQLKitTests: XCTestCase {
           "SQL"
         }
 
-        static public var columnNames: [String] {
-          []
-        }
+        static public let columnNames: [String] = []
 
         public var values: [any Encodable] {
           []
         }
       }
       
-      extension User : Modelable {
+      extension User : Modelable, Decodable {
       }
       """
     }
@@ -122,16 +116,14 @@ final class SQLKitTests: XCTestCase {
         @ModelableIgnored
         var other: String
 
-        static public var columnNames: [String] {
-          ["firstName", "lastName", "age"]
-        }
+        static public let columnNames: [String] = ["firstName", "lastName", "age"]
 
         public var values: [any Encodable] {
           [self.firstName, self.lastName, self.age]
         }
       }
       
-      extension User : Modelable {
+      extension User : Modelable, Decodable {
       }
       """
     }
