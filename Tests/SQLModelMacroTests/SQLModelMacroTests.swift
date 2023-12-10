@@ -24,7 +24,7 @@ final class SQLKitTests: XCTestCase {
         }
       }
       
-      extension User : Modelable {
+      extension User : SQLKit.Modelable {
       }
       """
     }
@@ -52,7 +52,7 @@ final class SQLKitTests: XCTestCase {
         }
       }
       
-      extension User : Modelable {
+      extension User : SQLKit.Modelable {
       }
       """
     }
@@ -82,7 +82,7 @@ final class SQLKitTests: XCTestCase {
         }
       }
       
-      extension User : Modelable {
+      extension User : SQLKit.Modelable {
       }
       """
     }
@@ -124,7 +124,7 @@ final class SQLKitTests: XCTestCase {
         }
       }
       
-      extension User : Modelable {
+      extension User : SQLKit.Modelable {
       }
       """
     }

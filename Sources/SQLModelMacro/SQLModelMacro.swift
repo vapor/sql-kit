@@ -23,7 +23,12 @@ extension SQLModelMacro: ExtensionMacro {
       ExtensionDeclSyntax(
         extendedType: IdentifierTypeSyntax(name: attachedTypeNameSyntax),
         inheritanceClause: InheritanceClauseSyntax(inheritedTypes: InheritedTypeListSyntax {
-          InheritedTypeSyntax(type: IdentifierTypeSyntax(name: .identifier("Modelable")))
+          InheritedTypeSyntax(
+            type: MemberTypeSyntax(
+              baseType: IdentifierTypeSyntax(name: .identifier("SQLKit")),
+              name: .identifier("Modelable")
+            )
+          )
         }),
         memberBlockBuilder: {}
       )
