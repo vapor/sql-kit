@@ -220,6 +220,7 @@ extension SQLDatabase {
     }
     
     /// Create a new ``SQLInsertBuilder``.
+    @_disfavoredOverload
     @inlinable
     public func insert(into table: any SQLExpression) -> SQLInsertBuilder {
         .init(.init(table: table), on: self)
