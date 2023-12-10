@@ -78,4 +78,10 @@ extension SQLDatabase {
     public func drop(table: any SQLExpression) -> SQLDropTableBuilder {
         .init(.init(table: table), on: self)
     }
+
+    /// Create a new ``SQLDropTableBuilder``.
+    @inlinable
+    public func drop<Model: Modelable>(_ type: Model.Type) -> SQLDropTableBuilder {
+        self.drop(table: Model.scheme)
+    }
 }

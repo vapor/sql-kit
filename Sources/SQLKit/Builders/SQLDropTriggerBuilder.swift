@@ -52,6 +52,12 @@ public final class SQLDropTriggerBuilder: SQLQueryBuilder {
         self.dropTrigger.table = name
         return self
     }
+
+    /// Specify an associated table that owns the trigger to drop, for dialects that require it.
+    @inlinable
+    public func table<Model: Modelable>(_ type: Model.Type) -> Self {
+      self.table(SQLIdentifier(Model.scheme))
+    }
 }
 
 extension SQLDatabase {
