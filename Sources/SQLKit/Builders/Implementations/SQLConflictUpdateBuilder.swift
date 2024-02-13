@@ -36,7 +36,7 @@ public final class SQLConflictUpdateBuilder: SQLColumnUpdateBuilder, SQLPredicat
     /// `VALUES` list. See ``SQLExcludedColumn``.
     @inlinable
     @discardableResult
-    public func set<E>(excludedContentOf model: E) throws -> Self where E: Encodable {
+    public func set(excludedContentOf model: some Encodable & Sendable) throws -> Self {
         try SQLQueryEncoder().encode(model).reduce(self) { $0.set(excludedValueOf: $1.0) }
     }
 }

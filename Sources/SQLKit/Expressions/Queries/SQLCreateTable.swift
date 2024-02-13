@@ -54,8 +54,7 @@ public struct SQLCreateTable: SQLExpression {
             // having it is the established behavior, which the tests check for.
             $0.append(SQLList([self.table, SQLGroupExpression(self.columns + self.tableConstraints)], separator: SQLRaw("")))
             if let asQuery = self.asQuery {
-                $0.append("AS")
-                $0.append(asQuery)
+                $0.append("AS", asQuery)
             }
         }
     }
