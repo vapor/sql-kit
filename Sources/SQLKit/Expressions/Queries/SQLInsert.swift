@@ -6,48 +6,47 @@ public struct SQLInsert: SQLExpression {
     public var table: any SQLExpression
     
     /// Array of column identifiers to insert values for.
-    public var columns: [any SQLExpression]
+    public var columns: [any SQLExpression] = []
     
     /// Two-dimensional array of values to insert. The count of each nested array _must_
     /// be equal to the count of ``columns``.
     ///
     /// Use the `DEFAULT` literal to omit a value and that is specified as a column.
-    public var values: [[any SQLExpression]]
+    ///
+    /// If both ``values`` and ``valueQuery`` are specified, the only ``values`` is used.
+    public var values: [[any SQLExpression]] = []
+    
+    /// An ``SQLSubquery`` specifying a `SELECT` statement used to generate values to insert.
+    ///
+    /// If both ``values`` and ``valueQuery`` are specified, the only ``values`` is used.
+    public var valueQuery: (any SQLExpression)? = nil
 
     /// A unique key conflict resolution strategy.
-    public var conflictStrategy: SQLConflictResolutionStrategy?
+    public var conflictStrategy: SQLConflictResolutionStrategy? = nil
 
     /// Optionally append a `RETURNING` clause that, where supported, returns the supplied supplied columns.
-    public var returning: SQLReturning?
+    public var returning: SQLReturning? = nil
     
     /// Creates a new ``SQLInsert``.
     @inlinable
     public init(table: any SQLExpression) {
         self.table = table
-        self.columns = []
-        self.values = []
-        self.conflictStrategy = nil
-        self.returning = nil
     }
     
     // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
-        let modifier = self.conflictStrategy?.queryModifier(for: serializer)
-        
         serializer.statement {
             $0.append("INSERT")
-            if let modifier = modifier {
-                $0.append(modifier)
-            }
+            $0.append(self.conflictStrategy?.queryModifier(for: $0))
             $0.append("INTO", self.table)
             $0.append(SQLGroupExpression(self.columns))
-            $0.append("VALUES", SQLList(self.values.map(SQLGroupExpression.init)))
-            if let conflictStrategy = self.conflictStrategy, modifier == nil {
-                $0.append(conflictStrategy)
+            if !self.values.isEmpty {
+                $0.append("VALUES", SQLList(self.values.map(SQLGroupExpression.init)))
+            } else if let subquery = self.valueQuery {
+                $0.append(subquery)
             }
-            if let returning = self.returning {
-                $0.append(returning)
-            }
+            $0.append(self.conflictStrategy)
+            $0.append(self.returning)
         }
     }
 }
