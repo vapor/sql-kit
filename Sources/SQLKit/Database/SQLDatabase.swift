@@ -33,7 +33,7 @@ import NIOCore
 ///
 /// It should almost never be necessary for a client to call ``SQLDatabase/execute(sql:_:)-90wi9``
 /// directly; such a need usually indicates a design flaw or functionality gap in SQLKit itself.
-public protocol SQLDatabase {
+public protocol SQLDatabase: Sendable {
     /// The `Logger` to be used for logging all operations relating to a given database.
     var logger: Logger { get }
     
@@ -108,12 +108,12 @@ extension SQLDatabase {
     ///
     /// 1. A corresponding string of raw SQL in the database's dialect, and,
     /// 2. An array of inputs to use as the values of any bound parameters of the query.
-    public func serialize(_ expression: any SQLExpression) -> (sql: String, binds: [any Encodable]) {
+    public func serialize(_ expression: any SQLExpression) -> (sql: String, binds: [any Encodable & Sendable]) {
         var serializer = SQLSerializer(database: self)
         expression.serialize(to: &serializer)
         return (serializer.sql, serializer.binds)
     }
- }
+}
 
 extension SQLDatabase {
     /// Returns a ``SQLDatabase`` which is exactly the same database as the original, except that

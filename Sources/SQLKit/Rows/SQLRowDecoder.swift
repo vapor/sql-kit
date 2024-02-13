@@ -48,7 +48,7 @@ public struct SQLRowDecoder {
     
     /// User info to provide to the underlying `Decoder`.
     @inlinable
-    public var userInfo: [CodingUserInfoKey: Any] {
+    public var userInfo: [CodingUserInfoKey: any Sendable] {
         get { self.configuration.userInfo }
         set { self.configuration.userInfo = newValue }
     }
@@ -57,7 +57,6 @@ public struct SQLRowDecoder {
     public init(
         prefix: String? = nil,
         keyDecodingStrategy: KeyDecodingStrategy = .useDefaultKeys,
-        userInfo: [CodingUserInfoKey: Any] = [:]
     ) {
         self.configuration = .init(prefix: prefix, keyDecodingStrategy: keyDecodingStrategy, userInfo: userInfo)
     }
@@ -75,12 +74,12 @@ public struct SQLRowDecoder {
     struct Configuration {
         @usableFromInline var prefix: String? = nil
         @usableFromInline var keyDecodingStrategy: KeyDecodingStrategy = .useDefaultKeys
-        @usableFromInline var userInfo: [CodingUserInfoKey: Any] = [:]
+        @usableFromInline var userInfo: [CodingUserInfoKey: any Sendable] = [:]
         @inlinable init() {}
         @inlinable init(
             prefix: String?,
             keyDecodingStrategy: KeyDecodingStrategy,
-            userInfo: [CodingUserInfoKey : Any]
+            userInfo: [CodingUserInfoKey: any Sendable]
         ) {
             self.prefix = prefix
             self.keyDecodingStrategy = keyDecodingStrategy

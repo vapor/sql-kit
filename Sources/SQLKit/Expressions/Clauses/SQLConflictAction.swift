@@ -10,7 +10,7 @@
 ///   this has to live in ``SQLInsert``, and it is not possible to serialize a conflict action
 ///   to SQL in isolation (but again, _only_ because MySQL couldn't be bothered), and this
 ///   enum can not conform to ``SQLExpression``.
-public enum SQLConflictAction {
+public enum SQLConflictAction: Sendable {
     /// Specifies that conflicts this action is applied to should be ignored, allowing the query to complete
     /// successfully without inserting any new rows or changing any existing rows.
     case noAction

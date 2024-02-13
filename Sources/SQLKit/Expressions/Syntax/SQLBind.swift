@@ -1,9 +1,9 @@
 /// A parameterizied value bound to the SQL query.
 public struct SQLBind: SQLExpression {
-    public let encodable: any Encodable
+    public let encodable: any Encodable & Sendable
     
     @inlinable
-    public init(_ encodable: any Encodable) {
+    public init(_ encodable: some Encodable & Sendable) {
         self.encodable = encodable
     }
     
@@ -15,7 +15,7 @@ public struct SQLBind: SQLExpression {
 
 extension SQLBind {
     @inlinable
-    public static func group(_ items: some Collection<any Encodable>) -> any SQLExpression {
+    public static func group(_ items: some Collection<some Encodable & Sendable>) -> any SQLExpression {
         SQLGroupExpression(items.map(SQLBind.init))
     }
 }

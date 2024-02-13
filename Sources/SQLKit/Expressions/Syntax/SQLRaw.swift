@@ -2,7 +2,7 @@ public struct SQLRaw: SQLExpression {
     public var sql: String
 
     @available(*, deprecated, message: "Binds set in an `SQLRaw` are ignored. Use `SQLBind`instead.")
-    public var binds: [any Encodable] = []
+    public var binds: [any Encodable & Sendable] = []
     
     @inlinable
     public init(_ sql: String) {
@@ -11,7 +11,7 @@ public struct SQLRaw: SQLExpression {
 
     @available(*, deprecated, message: "Binds set in an `SQLRaw` are ignored. Use `SQLBind`instead.")
     @inlinable
-    public init(_ sql: String, _ binds: [any Encodable]) {
+    public init(_ sql: String, _ binds: [any Encodable & Sendable]) {
         self.sql = sql
         self.binds = binds
     }

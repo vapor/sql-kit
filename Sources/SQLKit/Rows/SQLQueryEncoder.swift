@@ -1,6 +1,6 @@
 public struct SQLQueryEncoder {
     /// The strategy to use for handling `nil` input values.
-    public enum NilEncodingStrategy {
+    public enum NilEncodingStrategy: Sendable {
         /// Encode nothing at all for columns with `nil` values.
         case `default`
 
@@ -12,7 +12,7 @@ public struct SQLQueryEncoder {
     }
 
     /// The strategy to use for automatically changing the value of keys before encoding.
-    public enum KeyEncodingStrategy {
+    public enum KeyEncodingStrategy: Sendable {
         /// Use the keys specified by each type. This is the default strategy.
         case useDefaultKeys
 
@@ -68,7 +68,7 @@ public struct SQLQueryEncoder {
     
     /// User info to provide to the underlying `Encoder`.
     @inlinable
-    public var userInfo: [CodingUserInfoKey: Any] {
+    public var userInfo: [CodingUserInfoKey: any Sendable] {
         get { self.configuration.userInfo }
         set { self.configuration.userInfo = newValue }
     }
@@ -83,7 +83,7 @@ public struct SQLQueryEncoder {
         prefix: String? = nil,
         keyEncodingStrategy: KeyEncodingStrategy = .useDefaultKeys,
         nilEncodingStrategy: NilEncodingStrategy = .default,
-        userInfo: [CodingUserInfoKey: Any] = [:]
+        userInfo: [CodingUserInfoKey: any Sendable] = [:]
     ) {
         self.configuration = .init(
             prefix: prefix,
@@ -107,13 +107,13 @@ public struct SQLQueryEncoder {
         @usableFromInline var prefix: String? = nil
         @usableFromInline var keyEncodingStrategy: KeyEncodingStrategy = .useDefaultKeys
         @usableFromInline var nilEncodingStrategy: NilEncodingStrategy = .default
-        @usableFromInline var userInfo: [CodingUserInfoKey: Any] = [:]
+        @usableFromInline var userInfo: [CodingUserInfoKey: any Sendable] = [:]
         @inlinable init() {}
         @inlinable init(
             prefix: String?,
             keyEncodingStrategy: KeyEncodingStrategy,
             nilEncodingStrategy: NilEncodingStrategy,
-            userInfo: [CodingUserInfoKey : Any]
+            userInfo: [CodingUserInfoKey: any Sendable]
         ) {
             self.prefix = prefix
             self.keyEncodingStrategy = keyEncodingStrategy
@@ -164,6 +164,11 @@ public struct SQLQueryEncoder {
             closure("\(self.configuration.prefix ?? "")\(encodedKey)", &self.row)
         }
         
+         private struct CodableCanNotExpressSendableBypass<E: Encodable>: Encodable, @unchecked Sendable {
+            let value: E
+            func encode(to encoder: any Encoder) throws { try self.value.encode(to: encoder) }
+        }
+
         private struct KeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
             var codingPath: [any CodingKey] { self.encoder.codingPath }
             let encoder: SQLQueryEncoderImpl
@@ -185,7 +190,7 @@ public struct SQLQueryEncoder {
             mutating func encode(_ value: UInt64, forKey key: Key) throws { self.encoder.withColumnName(for: key) { $1.append(($0, SQLBind(value))) } }
             mutating func encode(_ value: some Encodable, forKey key: Key) throws {
                 self.encoder.withColumnName(for: key) {
-                    $1.append(($0, (value as? any SQLExpression) ?? SQLBind(value)))
+                    $1.append(($0, (value as? any SQLExpression) ?? SQLBind(CodableCanNotExpressSendableBypass(value: value))))
                 }
             }
             mutating func encodeIfPresent(_ v: Bool?,   forKey k: Key) throws { if let v { try self.encode(v, forKey: k) } else if self.nils { try self.encodeNil(forKey: k) } }

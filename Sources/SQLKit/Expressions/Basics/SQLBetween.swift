@@ -14,7 +14,7 @@ public struct SQLBetween<T: SQLExpression, U: SQLExpression, V: SQLExpression>: 
 
     /// Create a ``SQLBetween`` expression from three bindable values.
     @inlinable
-    public init(_ operand: some Encodable, _ lowerBound: some Encodable, and upperBound: some Encodable)
+    public init(_ operand: some Encodable & Sendable, _ lowerBound: some Encodable & Sendable, and upperBound: some Encodable & Sendable)
         where T == SQLBind, U == SQLBind, V == SQLBind
     {
         self.init(operand: SQLBind(operand), lowerBound: SQLBind(lowerBound), upperBound: SQLBind(upperBound))
@@ -34,49 +34,49 @@ extension SQLPredicateBuilder {
     /// Shorthand for `where(SQLBetween(operand, lower, upper))`.
     @discardableResult
     @inlinable
-    public func `where`(_ operand: some Encodable, between lower: some Encodable, and upper: some Encodable) -> Self {
+    public func `where`(_ operand: some Encodable & Sendable, between lower: some Encodable & Sendable, and upper: some Encodable & Sendable) -> Self {
         self.where(SQLBetween(operand: SQLBind(operand), lowerBound: SQLBind(lower), upperBound: SQLBind(upper)))
     }
 
     /// Shorthand for `where(SQLBetween(operand: operand, lowerBound: SQLBind(lower), upperBound: SQLBind(upper)))`.
     @discardableResult
     @inlinable
-    public func `where`(_ operand: some SQLExpression, between lower: some Encodable, and upper: some Encodable) -> Self {
+    public func `where`(_ operand: some SQLExpression, between lower: some Encodable & Sendable, and upper: some Encodable & Sendable) -> Self {
         self.where(SQLBetween(operand: operand, lowerBound: SQLBind(lower), upperBound: SQLBind(upper)))
     }
 
     /// Shorthand for `where(SQLBetween(operand: SQLBind(operand), lowerBound: lower, upperBound: SQLBind(upper)))`.
     @discardableResult
     @inlinable
-    public func `where`(_ operand: some Encodable, between lower: some SQLExpression, and upper: some Encodable) -> Self {
+    public func `where`(_ operand: some Encodable & Sendable, between lower: some SQLExpression, and upper: some Encodable & Sendable) -> Self {
         self.where(SQLBetween(operand: SQLBind(operand), lowerBound: lower, upperBound: SQLBind(upper)))
     }
 
     /// Shorthand for `where(SQLBetween(operand: SQLBind(operand), lowerBound: SQLBind(lower), upperBound: upper))`.
     @discardableResult
     @inlinable
-    public func `where`(_ operand: some Encodable, between lower: some Encodable, and upper: some SQLExpression) -> Self {
+    public func `where`(_ operand: some Encodable & Sendable, between lower: some Encodable & Sendable, and upper: some SQLExpression) -> Self {
         self.where(SQLBetween(operand: SQLBind(operand), lowerBound: SQLBind(lower), upperBound: upper))
     }
 
     /// Shorthand for `where(SQLBetween(operand: operand, lowerBound: lower, upperBound: SQLBind(upper)))`.
     @discardableResult
     @inlinable
-    public func `where`(_ operand: some SQLExpression, between lower: some SQLExpression, and upper: some Encodable) -> Self {
+    public func `where`(_ operand: some SQLExpression, between lower: some SQLExpression, and upper: some Encodable & Sendable) -> Self {
         self.where(SQLBetween(operand: operand, lowerBound: lower, upperBound: SQLBind(upper)))
     }
 
     /// Shorthand for `where(SQLBetween(operand: operand, lowerBound: SQLBind(lower), upperBound: upper))`.
     @discardableResult
     @inlinable
-    public func `where`(_ operand: some SQLExpression, between lower: some Encodable, and upper: some SQLExpression) -> Self {
+    public func `where`(_ operand: some SQLExpression, between lower: some Encodable & Sendable, and upper: some SQLExpression) -> Self {
         self.where(SQLBetween(operand: operand, lowerBound: SQLBind(lower), upperBound: upper))
     }
 
     /// Shorthand for `where(SQLBetween(operand: SQLBind(operand), lowerBound: lower, upperBound: upper))`.
     @discardableResult
     @inlinable
-    public func `where`(_ operand: some Encodable, between lower: some SQLExpression, and upper: some SQLExpression) -> Self {
+    public func `where`(_ operand: some Encodable & Sendable, between lower: some SQLExpression, and upper: some SQLExpression) -> Self {
         self.where(SQLBetween(operand: SQLBind(operand), lowerBound: lower, upperBound: upper))
     }
 

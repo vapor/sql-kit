@@ -1,5 +1,5 @@
 /// Represents a single row in a result set returned from an executed SQL query.
-public protocol SQLRow {
+public protocol SQLRow: Sendable {
     /// The list of all column names available in the row. Not guaranteed to be in any particular order.
     var allColumns: [String] { get }
     

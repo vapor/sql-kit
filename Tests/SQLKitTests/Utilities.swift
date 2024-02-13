@@ -6,7 +6,7 @@ import XCTest
 
 struct Serialized {
     let sql: String
-    let binds: [any Encodable]
+    let binds: [any Encodable & Sendable]
 }
     
 extension SQLQueryBuilder {
@@ -18,11 +18,11 @@ extension SQLQueryBuilder {
     }
 }
 
-final class TestDatabase: SQLDatabase {
+final class TestDatabase: SQLDatabase, @unchecked Sendable {
     let logger: Logger = .init(label: "codes.vapor.sql.test")
     let eventLoop: any EventLoop = EmbeddedEventLoop()
     var results: [String] = []
-    var bindResults: [[any Encodable]] = []
+    var bindResults: [[any Encodable & Sendable]] = []
     var dialect: any SQLDialect { self._dialect }
     var _dialect: GenericDialect = .init()
     
@@ -35,7 +35,7 @@ final class TestDatabase: SQLDatabase {
 }
 
 struct TestRow: SQLRow {
-    var data: [String: (any Encodable)?]
+    var data: [String: (any Encodable & Sendable)?]
 
     var allColumns: [String] { .init(self.data.keys) }
     func contains(column: String) -> Bool { self.data.keys.contains(column) }
