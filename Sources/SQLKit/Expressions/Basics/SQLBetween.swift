@@ -1,10 +1,25 @@
 /// An ``SQLExpression`` which constructs SQL of the form `<operand> BETWEEN <lowerBound> AND <upperBound>`.
+///
+/// This syntax is a more readable way of expressing the usually identical SQL construct
+/// `((operand >= lowerBound) AND (operand <= upperBound))`. However, it is functionally distinct from the
+/// dual-condition syntax in the case that the `operand` is a nondeterministic expression whose results
+/// can or may change per-evaluation (such as `RANDOM()`), in which case `BETWEEN` will evaluate it exactly
+/// once rather than twice.
+///
+/// > Note: While it would be possible to use conditional conformance to `Strideable` to enable translating
+/// > Swift `RangeExpression`s into ``SQLBetween`` expressions, this is considered slightly above the intended
+/// > level of SQLKit's API.
 public struct SQLBetween<T: SQLExpression, U: SQLExpression, V: SQLExpression>: SQLExpression {
     public let operand: T
     public let lowerBound: U
     public let upperBound: V
 
     /// Create a ``SQLBetween`` expression from three ``SQLExpression``s.
+    /// 
+    /// - Parameters:
+    ///   - operand: The value to evaluate the range against.
+    ///   - lowerBound: The lower bound of the range.
+    ///   - upperBound: The upper bound of the range.
     @inlinable
     public init(operand: T, lowerBound: U, upperBound: V) {
         self.operand = operand

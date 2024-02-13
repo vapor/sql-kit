@@ -147,6 +147,24 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder {
         return self
     }
     
+    /// Specify a `SELECT` query to generate rows to insert.
+    ///
+    /// Example usage:
+    ///
+    /// ```swift
+    /// try await database.insert(into: "table")
+    ///     .columns("id", "foo", "bar")
+    ///     .select { $0
+    ///         .column(SQLLiteral.default, as: "id")
+    ///         .column("foo", table: "other")
+    ///         .column("bar", table: "other")
+    ///         .from("other")
+    ///         .where(SQLColumn("created_at", table: "other"), .greaterThan, SQLBind(someDate))
+    ///     }
+    ///     .run()
+    /// ```
+    ///
+    /// - Parameter closure: A closure which builds a `SELECT` subquery using the provided builder.
     @inlinable
     @discardableResult
     public func select(_ closure: (SQLSubqueryBuilder) throws -> SQLSubqueryBuilder) rethrows -> Self {
