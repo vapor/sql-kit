@@ -1,8 +1,17 @@
 import SQLKit
 import NIOCore
-@_implementationOnly import NIOEmbedded
 import Logging
 import XCTest
+
+final class FakeEventLoop: EventLoop {
+    func shutdownGracefully(queue: DispatchQueue, _: @escaping @Sendable ((any Error)?) -> Void) {}
+    var inEventLoop: Bool { false }
+    func execute(_: @escaping @Sendable () -> Void) {}
+    @discardableResult
+    func scheduleTask<T>(deadline: NIODeadline, _: @escaping @Sendable () throws -> T) -> Scheduled<T> { fatalError() }
+    @discardableResult
+    func scheduleTask<T>(in: TimeAmount, _: @escaping @Sendable () throws -> T) -> Scheduled<T> { fatalError() }
+}
 
 struct Serialized {
     let sql: String
@@ -14,13 +23,14 @@ extension SQLQueryBuilder {
     
     func advancedSerialize() throws -> Serialized {
         let result = self.database.serialize(self.query)
+        
         return .init(sql: result.sql, binds: result.binds)
     }
 }
 
 final class TestDatabase: SQLDatabase, @unchecked Sendable {
     let logger: Logger = .init(label: "codes.vapor.sql.test")
-    let eventLoop: any EventLoop = EmbeddedEventLoop()
+    let eventLoop: any EventLoop = FakeEventLoop()
     var results: [String] = []
     var bindResults: [[any Encodable & Sendable]] = []
     var dialect: any SQLDialect { self._dialect }
@@ -37,11 +47,22 @@ final class TestDatabase: SQLDatabase, @unchecked Sendable {
 struct TestRow: SQLRow {
     var data: [String: (any Encodable & Sendable)?]
 
-    var allColumns: [String] { .init(self.data.keys) }
-    func contains(column: String) -> Bool { self.data.keys.contains(column) }
-    func decodeNil(column: String) throws -> Bool { if case .some(.some(_)) = self.data[column] { return false } else { return true } }
+    var allColumns: [String] {
+        .init(self.data.keys)
+    }
+    
+    func contains(column: String) -> Bool {
+        self.data.keys.contains(column)
+    }
+    
+    func decodeNil(column: String) throws -> Bool {
+        if case .some(.some(_)) = self.data[column] { return false }
+        else { return true }
+    }
+    
     func decode<D: Decodable & Sendable>(column: String, as: D.Type) throws -> D {
         let key = SomeCodingKey(stringValue: column)
+        
         guard self.contains(column: column) else {
             throw DecodingError.keyNotFound(key, .init(codingPath: [], debugDescription: "No value associated with key '\(column)'."))
         }
@@ -60,19 +81,19 @@ struct GenericDialect: SQLDialect {
 
     func bindPlaceholder(at position: Int) -> any SQLExpression { SQLRaw("?") }
     func literalBoolean(_ value: Bool) -> any SQLExpression { SQLRaw("\(value)") }
-    var supportsAutoIncrement: Bool = true
-    var supportsIfExists: Bool = true
-    var supportsReturning: Bool = true
+    var supportsAutoIncrement = true
+    var supportsIfExists = true
+    var supportsReturning = true
     var identifierQuote: any SQLExpression = SQLRaw("`")
     var literalStringQuote: any SQLExpression = SQLRaw("'")
-    var enumSyntax: SQLEnumSyntax = .inline
+    var enumSyntax = SQLEnumSyntax.inline
     var autoIncrementClause: any SQLExpression = SQLRaw("AUTOINCREMENT")
     var autoIncrementFunction: (any SQLExpression)? = nil
-    var supportsDropBehavior: Bool = false
+    var supportsDropBehavior = false
     var triggerSyntax = SQLTriggerSyntax(create: [], drop: [])
     var alterTableSyntax = SQLAlterTableSyntax(alterColumnDefinitionClause: SQLRaw("MODIFY"), alterColumnDefinitionTypeKeyword: nil)
-    var upsertSyntax: SQLUpsertSyntax = .standard
-    var unionFeatures: SQLUnionFeatures = []
+    var upsertSyntax = SQLUpsertSyntax.standard
+    var unionFeatures = SQLUnionFeatures()
     var sharedSelectLockExpression: (any SQLExpression)? { SQLRaw("FOR SHARE") }
     var exclusiveSelectLockExpression: (any SQLExpression)? { SQLRaw("FOR UPDATE") }
     func nestedSubpathExpression(in column: any SQLExpression, for path: [String]) -> (any SQLExpression)? {
@@ -100,7 +121,8 @@ func XCTAssertNoThrowWithResult<T>(
 let isLoggingConfigured: Bool = {
     LoggingSystem.bootstrap { label in
         var handler = StreamLogHandler.standardOutput(label: label)
-        handler.logLevel = ProcessInfo.processInfo.environment["LOG_LEVEL"].flatMap { Logger.Level(rawValue: $0) } ?? .info
+        
+        handler.logLevel = ProcessInfo.processInfo.environment["LOG_LEVEL"].flatMap(Logger.Level.init(rawValue:)) ?? .info
         return handler
     }
     return true

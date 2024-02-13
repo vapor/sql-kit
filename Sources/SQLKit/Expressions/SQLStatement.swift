@@ -1,3 +1,5 @@
+import Algorithms
+
 extension SQLSerializer {
     @inlinable
     public mutating func statement(_ closure: (inout SQLStatement) -> ()) {
@@ -59,11 +61,6 @@ public struct SQLStatement: SQLExpression {
     // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
-        for i in self.parts.indices {
-            if i > self.parts.startIndex {
-                serializer.write(" ")
-            }
-            self.parts[i].serialize(to: &serializer)
-        }
+        self.parts.interspersed(with: SQLRaw(" ")).forEach { $0.serialize(to: &serializer) }
     }
 }

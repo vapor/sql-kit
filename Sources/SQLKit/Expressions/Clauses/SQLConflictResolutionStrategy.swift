@@ -52,6 +52,16 @@ public struct SQLConflictResolutionStrategy: SQLExpression {
         return nil
     }
 
+    /// An expression to be embedded into the same `INSERT` query as the strategy expression to
+    /// work around MySQL's desire to make life difficult.
+    @inlinable
+    public func queryModifier(for statement: SQLStatement) -> (any SQLExpression)? {
+        if statement.dialect.upsertSyntax == .mysqlLike, case .noAction = self.action {
+            return SQLInsertModifier()
+        }
+        return nil
+    }
+
     // See `SQLSerializer.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {

@@ -21,9 +21,10 @@ public struct SQLAlias: SQLExpression {
     // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
-        self.expression.serialize(to: &serializer)
-        serializer.write(" AS ")
-        self.alias.serialize(to: &serializer)
+        serializer.statement {
+            $0.append(self.expression)
+            $0.append("AS", self.alias)
+        }
     }
 }
 
