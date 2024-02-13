@@ -46,6 +46,15 @@ public struct SQLStatement: SQLExpression {
         self.append(part)
     }
 
+    /// Add an ``SQLExpression`` followed by raw text to tbe output.
+    ///
+    /// > Note: "Expr + text" pairs appear quite often when building statments.
+    @inlinable
+    public mutating func append(_ part: any SQLExpression, _ raw: String) {
+        self.append(part)
+        self.append(raw)
+    }
+
     /// Add an ``SQLExpression`` of any kind to the output.
     @inlinable
     public mutating func append(_ part: any SQLExpression) {
