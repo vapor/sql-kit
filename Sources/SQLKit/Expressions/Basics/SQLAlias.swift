@@ -7,7 +7,7 @@ public struct SQLAlias: SQLExpression {
     /// The alias itself.
     public var alias: any SQLExpression
     
-    /// Create an ``SQLAlias`` from an expression and an alias expression.
+    /// Create an alias expression from an expression and an alias expression.
     ///
     /// - Parameters:
     ///   - expression: The expression to alias.
@@ -18,7 +18,7 @@ public struct SQLAlias: SQLExpression {
         self.alias = alias
     }
     
-    /// Create an ``SQLAlias`` from an expression and an alias name.
+    /// Create an alias expression from an expression and an alias name.
     ///
     /// - Parameters:
     ///   - expression: The expression to alias.
@@ -26,6 +26,16 @@ public struct SQLAlias: SQLExpression {
     @inlinable
     public init(_ expression: any SQLExpression, as alias: String) {
         self.init(expression, as: SQLIdentifier(alias))
+    }
+
+    /// Create an alias expression from a name and an alias name.
+    ///
+    /// - Parameters:
+    ///   - name: The name to alias.
+    ///   - alias: The aliased name.
+    @inlinable
+    public init(_ name: String, as alias: String) {
+        self.init(SQLIdentifier(name), as: SQLIdentifier(alias))
     }
 
     // See `SQLExpression.serialize(to:)`.
