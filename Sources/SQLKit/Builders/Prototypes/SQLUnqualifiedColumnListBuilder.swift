@@ -13,14 +13,14 @@ extension SQLUnqualifiedColumnListBuilder {
     /// Specify a single column to be included in the list of columns for the query.
     @inlinable
     @discardableResult
-    public func column(_ column: some StringProtocol) -> Self {
+    public func column(_ column: String) -> Self {
         self.column(SQLColumn(column))
     }
     
     /// Specify a single column to be included in the list of columns for the query.
     @inlinable
     @discardableResult
-    public func column(_ column: some SQLExpression) -> Self {
+    public func column(_ column: any SQLExpression) -> Self {
         self.columnList.append(column)
         return self
     }

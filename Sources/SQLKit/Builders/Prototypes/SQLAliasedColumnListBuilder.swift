@@ -16,28 +16,28 @@ extension SQLAliasedColumnListBuilder {
     @inlinable
     @discardableResult
     @available(*, deprecated, renamed: "SQLColumn.init(_:table:)", message: "Use ``SQLColumn.init(_:table:)`` instead.")
-    public func column(table: some StringProtocol, column: some StringProtocol) -> Self {
-        self.column(SQLColumn(.init(column), table: .init(table)))
+    public func column(table: String, column: String) -> Self {
+        self.column(SQLColumn(column, table: table))
     }
 
     /// Specify a column to retrieve with an aliased name.
     @inlinable
     @discardableResult
-    public func column(_ column: some StringProtocol, as alias: some StringProtocol) -> Self {
-        return self.column(SQLColumn(.init(column)), as: SQLIdentifier(.init(alias)))
+    public func column(_ column: String, as alias: String) -> Self {
+        return self.column(SQLColumn(column), as: SQLIdentifier(alias))
     }
 
     /// Specify a column to retrieve with an aliased name.
     @inlinable
     @discardableResult
-    public func column(_ column: some SQLExpression, as alias: some StringProtocol) -> Self {
-        self.column(column, as: SQLIdentifier(.init(alias)))
+    public func column(_ column: any SQLExpression, as alias: String) -> Self {
+        self.column(column, as: SQLIdentifier(alias))
     }
 
     /// Specify a column to retrieve with an aliased name.
     @inlinable
     @discardableResult
-    public func column(_ column: some SQLExpression, as alias: some SQLExpression) -> Self {
+    public func column(_ column: any SQLExpression, as alias: any SQLExpression) -> Self {
         self.column(SQLAlias(column, as: alias))
     }
 }
