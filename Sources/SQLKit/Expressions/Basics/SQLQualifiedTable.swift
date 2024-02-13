@@ -7,16 +7,17 @@ public struct SQLQualifiedTable: SQLExpression {
     /// The table name, usually an ``SQLIdentifier``.
     public var table: any SQLExpression
     
-    /// If specified, the second-level namespace to which the table belongs. Usually an ``SQLIdentifier`` if not `nil`.
+    /// If specified, the second-level namespace to which the table belongs.
+    /// Usually an ``SQLIdentifier`` if not `nil`.
     public var space: (any SQLExpression)?
     
     /// Create an ``SQLQualifiedTable`` from a name and optional second-level namespace.
-    public init(_ table: some StringProtocol, space: (some StringProtocol)? = String?.none) {
-        self.init(SQLIdentifier(.init(table)), space: space.flatMap { SQLIdentifier(.init($0)) })
+    public init(_ table: String, space: String? = nil) {
+        self.init(SQLIdentifier(table), space: space.flatMap(SQLIdentifier.init(_:)))
     }
     
     /// Create an ``SQLQualifiedTable`` from an identifier and optional second-level identifier.
-    public init(_ table: some SQLExpression, space: (some SQLExpression)? = SQLRaw?.none) {
+    public init(_ table: any SQLExpression, space: (any SQLExpression)? = nil) {
         self.table = table
         self.space = space
     }
