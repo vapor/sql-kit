@@ -21,25 +21,19 @@ public enum SQLLiteral: SQLExpression {
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         switch self {
-        case .all:
-            serializer.write("*")
-            
+        case .all:                  serializer.write("*")
+        case .default:              serializer.dialect.literalDefault.serialize(to: &serializer)
+        case .null:                 serializer.write("NULL")
+        case .boolean(let bool):    serializer.dialect.literalBoolean(bool).serialize(to: &serializer)
+        case .numeric(let numeric): serializer.write(numeric)
         case .string(let string):
-            serializer.dialect.literalStringQuote.serialize(to: &serializer)
-            serializer.write(string)
-            serializer.dialect.literalStringQuote.serialize(to: &serializer)
-        
-        case .numeric(let numeric):
-            serializer.write(numeric)
-        
-        case .null:
-            serializer.write("NULL")
-        
-        case .default:
-            serializer.dialect.literalDefault.serialize(to: &serializer)
-        
-        case .boolean(let bool):
-            serializer.dialect.literalBoolean(bool).serialize(to: &serializer)
+            if let rawQuote = (serializer.dialect.literalStringQuote as? SQLRaw)?.sql {
+                serializer.write("\(rawQuote)\(string.sqlkit_replacing(rawQuote, with: "\(rawQuote)\(rawQuote)"))\(rawQuote)")
+            } else {
+                serializer.dialect.literalStringQuote.serialize(to: &serializer)
+                serializer.write(string)
+                serializer.dialect.literalStringQuote.serialize(to: &serializer)
+            }
         }
     }
 }
