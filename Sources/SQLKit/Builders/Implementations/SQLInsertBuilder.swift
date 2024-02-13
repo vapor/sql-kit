@@ -146,6 +146,15 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder {
         self.insert.values.append(values)
         return self
     }
+    
+    @inlinable
+    @discardableResult
+    public func select(_ closure: (SQLSubqueryBuilder) throws -> SQLSubqueryBuilder) rethrows -> Self {
+        let builder = SQLSubqueryBuilder()
+        _ = try closure(builder)
+        self.insert.valueQuery = builder.select
+        return self
+    }
 
     /// Specify that constraint violations for the key over the given column should cause the conflicting
     /// row(s) to be ignored.
