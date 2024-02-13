@@ -1,22 +1,17 @@
 <p align="center">
-    <img src="https://user-images.githubusercontent.com/1342803/58835528-3523e400-8624-11e9-8128-4925c7c9cf08.png" height="64" alt="SQLKit">
-    <br>
-    <br>
-    <a href="https://docs.vapor.codes/4.0/">
-        <img src="http://img.shields.io/badge/read_the-docs-2196f3.svg" alt="Documentation">
-    </a>
-    <a href="https://discord.gg/vapor">
-        <img src="https://img.shields.io/discord/431917998102675485.svg" alt="Team Chat">
-    </a>
-    <a href="LICENSE">
-        <img src="http://img.shields.io/badge/license-MIT-brightgreen.svg" alt="MIT License">
-    </a>
-    <a href="https://github.com/vapor/sql-kit/actions/workflows/test.yml">
-        <img src="https://img.shields.io/github/actions/workflow/status/vapor/sql-kit/test.yml?event=push&&logo=github&label=tests&logoColor=%23ccc" alt="Continuous Integration">
-    </a>
-    <a href="https://swift.org">
-        <img src="http://img.shields.io/badge/swift-5.6-brightgreen.svg" alt="Swift 5.6">
-    </a>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/vapor/sql-kit/assets/1130717/f1b62cf3-759f-41a9-bf3e-9492b347e4a0">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/vapor/sql-kit/assets/1130717/940cbed4-e31d-4c6e-a03d-c44190aaef39">
+  <img src="https://github.com/vapor/sql-kit/assets/1130717/940cbed4-e31d-4c6e-a03d-c44190aaef39" height="96" alt="SQLKit">
+</picture> 
+<br>
+<br>
+<a href="https://docs.vapor.codes/4.0/"><img src="https://img.shields.io/badge/read_the-docs-2196f3.svg?style=plastic&labelColor=gray&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB2aWV3Qm94PSIwIDAgMTYgMTYiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI%2BPHBhdGggc3R5bGU9ImZpbGw6ICMyMTk2ZjM7IiBkPSJNMCwxLjc1YzAsLTAuNCAwLjM1LC0wLjg1IDAuNzUsLTAuODVjMi43LDAgNS4yNSwtMC42IDcuMjUsMS40YzIsLTIgNC4yNSwtMS40IDcuMjUsLTEuNGMwLjQsMCAwLjc1LDAuNCAwLjc1LDAuODV2MTAuNWMwLDAuNCAtMC4zNSwwLjc1IC0wLjc1LDAuNzVjLTIuNSwwIC00LjgsLTAuNiAtNi43NSwxLjNjLTAuMjUsMC4yNSAtMC43NSwwLjI1IC0xLDBjLTEuNzUsLTEuNyAtNC40NSwtMS4zIC02Ljc1LC0xLjNjLTAuNCwwIC0wLjc1LC0wLjM1IC0wLjc1LC0wLjc1em03LjI1LDEwLjI1di03LjI1Yy0wLjA4LC0yLjk1IC0zLjYsLTIuMjUgLTUuNzUsLTIuMjV2OWMxLjk1LDAgMy45NSwtMC4zIDUuNzUsMC41em0xLjUsLTcuMjV2Ny4yNWMxLjc1LC0wLjg1IDMuODUsLTAuNSA1Ljc1LC0wLjV2LTljLTIuMjUsMCAtNS43NSwtMC43IC01Ljc1LDIuMjV6Ii8%2BPC9zdmc%2B" alt="Documentation"></a>
+<a href="https://discord.gg/vapor"><img src="https://img.shields.io/discord/431917998102675485?style=plastic&color=%238f8fff&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyBmaWxsPSJ0cmFuc3BhcmVudCIgc3Ryb2tlPSIjOGY4ZmZmIiBzdHJva2Utd2lkdGg9IjIiIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMjAuMzE3IDQuMzY5OGExOS43OTEzIDE5Ljc5MTMgMCAwMC00Ljg4NTEtMS41MTUyLjA3NDEuMDc0MSAwIDAwLS4wNzg1LjAzNzFjLS4yMTEuMzc1My0uNDQ0Ny44NjQ4LS42MDgzIDEuMjQ5NS0xLjg0NDctLjI3NjItMy42OC0uMjc2Mi01LjQ4NjggMC0uMTYzNi0uMzkzMy0uNDA1OC0uODc0Mi0uNjE3Ny0xLjI0OTVhLjA3Ny4wNzcgMCAwMC0uMDc4NS0uMDM3IDE5LjczNjMgMTkuNzM2MyAwIDAwLTQuODg1MiAxLjUxNS4wNjk5LjA2OTkgMCAwMC0uMDMyMS4wMjc3Qy41MzM0IDkuMDQ1OC0uMzE5IDEzLjU3OTkuMDk5MiAxOC4wNTc4YS4wODI0LjA4MjQgMCAwMC4wMzEyLjA1NjFjMi4wNTI4IDEuNTA3NiA0LjA0MTMgMi40MjI4IDUuOTkyOSAzLjAyOTRhLjA3NzcuMDc3NyAwIDAwLjA4NDItLjAyNzZjLjQ2MTYtLjYzMDQuODczMS0xLjI5NTIgMS4yMjYtMS45OTQyYS4wNzYuMDc2IDAgMDAtLjA0MTYtLjEwNTdjLS42NTI4LS4yNDc2LTEuMjc0My0uNTQ5NS0xLjg3MjItLjg5MjNhLjA3Ny4wNzcgMCAwMS0uMDA3Ni0uMTI3N2MuMTI1OC0uMDk0My4yNTE3LS4xOTIzLjM3MTgtLjI5MTRhLjA3NDMuMDc0MyAwIDAxLjA3NzYtLjAxMDVjMy45Mjc4IDEuNzkzMyA4LjE4IDEuNzkzMyAxMi4wNjE0IDBhLjA3MzkuMDczOSAwIDAxLjA3ODUuMDA5NWMuMTIwMi4wOTkuMjQ2LjE5ODEuMzcyOC4yOTI0YS4wNzcuMDc3IDAgMDEtLjAwNjYuMTI3NiAxMi4yOTg2IDEyLjI5ODYgMCAwMS0xLjg3My44OTE0LjA3NjYuMDc2NiAwIDAwLS4wNDA3LjEwNjdjLjM2MDQuNjk4Ljc3MTkgMS4zNjI4IDEuMjI1IDEuOTkzMmEuMDc2LjA3NiAwIDAwLjA4NDIuMDI4NmMxLjk2MS0uNjA2NyAzLjk0OTUtMS41MjE5IDYuMDAyMy0zLjAyOTRhLjA3Ny4wNzcgMCAwMC4wMzEzLS4wNTUyYy41MDA0LTUuMTc3LS44MzgyLTkuNjczOS0zLjU0ODUtMTMuNjYwNGEuMDYxLjA2MSAwIDAwLS4wMzEyLS4wMjg2ek04LjAyIDE1LjMzMTJjLTEuMTgyNSAwLTIuMTU2OS0xLjA4NTctMi4xNTY5LTIuNDE5IDAtMS4zMzMyLjk1NTUtMi40MTg5IDIuMTU3LTIuNDE4OSAxLjIxMDggMCAyLjE3NTcgMS4wOTUyIDIuMTU2OCAyLjQxOSAwIDEuMzMzMi0uOTU1NSAyLjQxODktMi4xNTY5IDIuNDE4OXptNy45NzQ4IDBjLTEuMTgyNSAwLTIuMTU2OS0xLjA4NTctMi4xNTY5LTIuNDE5IDAtMS4zMzMyLjk1NTQtMi40MTg5IDIuMTU2OS0yLjQxODkgMS4yMTA4IDAgMi4xNzU3IDEuMDk1MiAyLjE1NjggMi40MTkgMCAxLjMzMzItLjk0NiAyLjQxODktMi4xNTY4IDIuNDE4OVoiLz48L3N2Zz4%3D" alt="Team Chat"></a>
+<a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-skyblue?style=plastic&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBmaWxsPSJza3libHVlIiBkPSJNNzAuNTQsMTEuNTJjLS4xLTMuODktMTEuOS0zLjg5LTEyLDB2MTBjLTUuMjcuMTgtMjAuMzYsNy44NS0yNC40Niw4aC0xOC4zOGMtMS42LDAtNS43NTcsMi40NS01LjY5LDYuMDhjLjEsNC41NCw0LjcxLDYuNjUsOS4xOSw1LjkyYzAsMC0xNC45NTcsMzMuMTgtMTYuODgsMzcuNTJjLTMuMzcyLDcuNjEsMTIuNDcsMTQuOTcsMjIuOSwxNC43MmMxMS44LS42LDI2LjEyLTcuMzEsMjIuODYtMTMuOTJjLTIuNS01LjA3LTE2LjY4LTM4LjMyLTE2LjY4LTM4LjMyYzUuNzEsMCwxOC4zNy03Ljg1LDI3LjE0LTh2NzYuNzhoLTIwYy0zLjkxLDAtMy45MSwxMiwwLDEyaDUyYzMuOTEsMCwzLjkxLTEyLDAtMTJoLTIwdi03Ni43OGM4LjctLjEsMjEuMTQsNy45NywyNy4zNCw4YzAsMC0xNC40MSwzMi44NC0xNi44OCwzOC4zMmMtMi43MSw2LDExLjYxLDEzLjkyLDIyLjksMTMuOTJjMTEuOCwwLDI2LjEtNi4zNywyMi45LTEzLjkyYy0yLjItNS4zMS0xNi45LTM4LjMyLTE2LjktMzguMzJjNC44LjQ1LDkuNi0xLjU3LDkuNi01LjkyYy0uMS00LjYtNC02LjA5LTYuMS02LjA4YzAsMC0yMi43OS0uMi0xOC40LDBjMCwwLTE4Ljk4LTcuOTQtMjQuNDYtOHptMzIuODYsNDQuNjQsMTAuNCwyNGMtMy44LDEuNzMtMTguNTksMS4xMi0yMC44NCwwem0tNzcuNywwLDEwLjQ0LDI0Yy04LjAyLDMuMjgtMTUuMDEsMi45MS0yMC44NCwwYzAsMCwxMC4zNi0yMy45NiwxMC40LTI0eiIvPjwvc3ZnPgo%3D" alt="MIT License"></a>
+<a href="https://github.com/vapor/sql-kit/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/vapor/sql-kit/test.yml?event=push&style=plastic&logo=github&label=test&logoColor=%23ccc" alt="Continuous Integration"></a>
+<a href="https://codecov.io/github/vapor/sql-kit"><img src="https://img.shields.io/codecov/c/github/vapor/sql-kit?style=plastic&logo=codecov&label=Codecov&token=yDzzHja8lt"></a>
+<a href="https://swift.org"><img src="https://img.shields.io/badge/swift-5.7%2b-white?style=plastic&logoColor=%23f07158&labelColor=gray&color=%23f07158&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI%2BPHBhdGggZD0iTSA2LDI0YyAtMywwIC02LC0zIC02LC02diAtMTJjIDAsLTMgMywtNiA2LC02aCAxMmMgMywwIDYsMyA2LDZ2IDEyYyAwLDMgLTMsNiAtNiw2eiIgZmlsbD0iI2YwNzE1OCIvPjxwYXRoIGQ9Ik0gMTMuNTUsMy40YyA0LjE1LDIuMzkgNi4zLDcuNTMgNS4zLDExLjUgMS45NSwyLjggMS42NSw1LjE3IDEuMzgsNC42NiAtMS4yLC0yLjMzIC0zLjMzLC0xLjQyIC00LjM3LC0wLjcxIC0zLjksMS44MSAtMTAuMTYsMC4xOCAtMTMuNDYsLTUuMDMgMi45OCwyLjIgNy4yLDMuMTUgMTAuMywxLjI1IC00LjYsLTMuNTcgLTguNSwtOS4xNyAtOC41LC05LjI4IDIuMjgsMi4xNSA1Ljk4LDQuODQgNy4zLDUuNzEgLTIuOCwtMy4xIC01LjMsLTYuNjUgLTUuMiwtNi42NSAyLjczLDIuNjggNS42Niw1LjIgOC45LDcuMiAwLjM3LC0wLjc5IDEuNDMsLTQuNDcgLTEuNjUsLTguNjV6IiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg%3D%3D" alt="Swift 5.7+"></a>
 </p>
 
 <br>
