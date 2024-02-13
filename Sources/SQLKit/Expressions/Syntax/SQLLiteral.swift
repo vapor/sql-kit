@@ -21,42 +21,19 @@ public enum SQLLiteral: SQLExpression {
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         switch self {
-        case .all:
-            serializer.write("*")
-            
+        case .all:                  serializer.write("*")
+        case .default:              serializer.dialect.literalDefault.serialize(to: &serializer)
+        case .null:                 serializer.write("NULL")
+        case .boolean(let bool):    serializer.dialect.literalBoolean(bool).serialize(to: &serializer)
+        case .numeric(let numeric): serializer.write(numeric)
         case .string(let string):
-            #if DEBUG
             if let rawQuote = (serializer.dialect.literalStringQuote as? SQLRaw)?.sql {
-                let containsQuote: Bool
-                if #available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
-                    containsQuote = string.contains(rawQuote)
-                } else {
-                    containsQuote = string.indices.first(where: {
-                        string[$0..<(string.index($0, offsetBy: rawQuote.count + 1, limitedBy: string.endIndex) ?? string.endIndex)]
-                            .prefix(rawQuote.count) == rawQuote
-                    }) != nil
-                }
-                if containsQuote {
-                    serializer.database.logger.debug("WARNING: Literal string used in SQL expression contains one or more literal string delimiters; this is extremely unsafe and can lead to trivial SQL injection.")
-                }
+                serializer.write("\(rawQuote)\(string.sqlkit_replacing(rawQuote, with: "\(rawQuote)\(rawQuote)"))\(rawQuote)")
+            } else {
+                serializer.dialect.literalStringQuote.serialize(to: &serializer)
+                serializer.write(string)
+                serializer.dialect.literalStringQuote.serialize(to: &serializer)
             }
-            #endif
-        
-            serializer.dialect.literalStringQuote.serialize(to: &serializer)
-            serializer.write(string)
-            serializer.dialect.literalStringQuote.serialize(to: &serializer)
-        
-        case .numeric(let numeric):
-            serializer.write(numeric)
-        
-        case .null:
-            serializer.write("NULL")
-        
-        case .default:
-            serializer.dialect.literalDefault.serialize(to: &serializer)
-        
-        case .boolean(let bool):
-            serializer.dialect.literalBoolean(bool).serialize(to: &serializer)
         }
     }
 }
