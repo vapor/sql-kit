@@ -31,15 +31,16 @@ enum SQLCodingError: Error, CustomStringConvertible, CustomDebugStringConvertibl
     /// which is not supported for row/query coding.
     case singleValueContainer(codingPath: [any CodingKey])
     
-    static func error(for function: String, at codingPath: [any CodingKey]) -> SQLCodingError {
+    static func error(in function: String, at codingPath: [any CodingKey]) -> SQLCodingError {
         switch function {
         case "unkeyedContainer()":
             return .unkeyedContainer(codingPath: codingPath)
         case "singleValueContainer()":
             return .singleValueContainer(codingPath: codingPath)
         case "nestedContainer(keyedBy:forKey:)", "nestedContainer(keyedBy:)",
-             "nestedUnkeyedContainer(forKey:)", "nestedUnkeyedContainer()",
-             "superEncoder()", "superDecoder()", "superEncoder(forKey:)", "superDecoder(forKey:)",
+             "nestedUnkeyedContainer(forKey:)",  "nestedUnkeyedContainer()",
+             "superEncoder(forKey:)",            "superEncoder()",
+             "superDecoder(forKey:)",            "superDecoder()",
              _:
             return .nesting(method: function, codingPath: codingPath)
         }
@@ -64,63 +65,85 @@ enum SQLCodingError: Error, CustomStringConvertible, CustomDebugStringConvertibl
 }
 
 extension Error where Self == SQLCodingError {
-    static func invalid(f: String = #function, in c: some Decoder) -> Self                                             { self.error(for: f, at: c.codingPath) }
-    static func invalid(f: String = #function, in c: some Encoder) -> Self                                             { self.error(for: f, at: c.codingPath) }
-    static func invalid(f: String = #function, in c: some KeyedEncodingContainerProtocol, key: some CodingKey) -> Self { self.error(for: f, at: c.codingPath + [key]) }
-    static func invalid(f: String = #function, in c: some KeyedDecodingContainerProtocol, key: some CodingKey) -> Self { self.error(for: f, at: c.codingPath + [key]) }
-    static func invalid(f: String = #function, in c: some UnkeyedEncodingContainer) -> Self                            { self.error(for: f, at: c.codingPath) }
-    static func invalid(f: String = #function, in c: some UnkeyedDecodingContainer) -> Self                            { self.error(for: f, at: c.codingPath) }
+    static func invalid(function: String = #function, in container: some Decoder) -> Self {
+        self.error(in: function, at: container.codingPath)
+    }
+    
+    static func invalid(function: String = #function, in container: some Encoder) -> Self {
+        self.error(in: function, at: container.codingPath)
+    }
+    
+    static func invalid(function: String = #function, in container: some KeyedEncodingContainerProtocol, key: some CodingKey) -> Self {
+        self.error(in: function, at: container.codingPath + [key])
+    }
+    
+    static func invalid(function: String = #function, in container: some KeyedDecodingContainerProtocol, key: some CodingKey) -> Self {
+        self.error(in: function, at: container.codingPath + [key])
+    }
+    
+    static func invalid(function: String = #function, in container: some UnkeyedEncodingContainer) -> Self {
+        self.error(in: function, at: container.codingPath)
+    }
+    
+    static func invalid(function: String = #function, in container: some UnkeyedDecodingContainer) -> Self {
+        self.error(in: function, at: container.codingPath)
+    }
 }
 
 /// A `CodingKey` which can't be successfully initialized and never holds a valid value.
 ///
 /// Used as a placeholder by ``FailureEncoder``.
-@usableFromInline
 struct NeverCodingKey: CodingKey {
-    @inlinable var stringValue: String { "" }
-    @inlinable var intValue: Int? { nil }
-    @inlinable init?(stringValue: String) { return nil }
-    @inlinable init?(intValue: Int) { return nil }
+    var stringValue: String    { "" }
+    var intValue: Int?         { nil }
+    init?(stringValue: String) { nil }
+    init?(intValue: Int)       { nil }
 }
 
 /// This is a workaround for the inability of encoders to throw errors in various places. It's still better than fatalError()ing.
-@usableFromInline
-struct FailureEncoder<K: CodingKey, E: Swift.Error>: Encoder, KeyedEncodingContainerProtocol, UnkeyedEncodingContainer, SingleValueEncodingContainer {
-    @usableFromInline let error: E
-    @inlinable init(error: E)                                                                              { self.error = error }
-    @inlinable init(error: E) where K == NeverCodingKey                                                    { self.error = error }
-    @inlinable var codingPath: [any CodingKey]                                                             { [] }
-    @inlinable var userInfo: [CodingUserInfoKey: Any]                                                      { [:] }
-    @inlinable var count: Int                                                                              { 0 }
-    @inlinable func encodeNil() throws                                                                     { throw self.error }
-    @inlinable func encodeNil(forKey: K) throws                                                            { throw self.error }
-    @inlinable func encode(_: some Encodable) throws                                                       { throw self.error }
-    @inlinable func encode(_: some Encodable, forKey: K) throws                                            { throw self.error }
-    @inlinable func container<N: CodingKey>(keyedBy: N.Type) -> KeyedEncodingContainer<N>                  { .init(FailureEncoder<N, E>(error: self.error)) }
-    @inlinable func nestedContainer<N: CodingKey>(keyedBy: N.Type) -> KeyedEncodingContainer<N>            { self.container(keyedBy: N.self) }
-    @inlinable func nestedContainer<N: CodingKey>(keyedBy: N.Type, forKey: K) -> KeyedEncodingContainer<N> { self.container(keyedBy: N.self) }
-    @inlinable func unkeyedContainer() -> any UnkeyedEncodingContainer                                     { self }
-    @inlinable func nestedUnkeyedContainer() -> any UnkeyedEncodingContainer                               { self }
-    @inlinable func nestedUnkeyedContainer(forKey: K) -> any UnkeyedEncodingContainer                      { self }
-    @inlinable func superEncoder() -> any Encoder                                                          { self }
-    @inlinable func superEncoder(forKey: K) -> any Encoder                                                 { self }
-    @inlinable func singleValueContainer() -> any SingleValueEncodingContainer                             { self }
+struct FailureEncoder<K: CodingKey>: Encoder, KeyedEncodingContainerProtocol, UnkeyedEncodingContainer, SingleValueEncodingContainer {
+    let error: any Error
+    init(_ error: any Error)                                                                    { self.error = error }
+    init(_ error: any Error) where K == NeverCodingKey                                          { self.error = error }
+    var codingPath: [any CodingKey]                                                             { [] }
+    var userInfo: [CodingUserInfoKey: Any]                                                      { [:] }
+    var count: Int                                                                              { 0 }
+    func encodeNil() throws                                                                     { throw self.error }
+    func encodeNil(forKey: K) throws                                                            { throw self.error }
+    func encode(_: some Encodable) throws                                                       { throw self.error }
+    func encode(_: some Encodable, forKey: K) throws                                            { throw self.error }
+    func container<N: CodingKey>(keyedBy: N.Type = N.self) -> KeyedEncodingContainer<N>         { .init(FailureEncoder<N>(self.error)) }
+    func nestedContainer<N: CodingKey>(keyedBy: N.Type) -> KeyedEncodingContainer<N>            { self.container() }
+    func nestedContainer<N: CodingKey>(keyedBy: N.Type, forKey: K) -> KeyedEncodingContainer<N> { self.container() }
+    func unkeyedContainer() -> any UnkeyedEncodingContainer                                     { self }
+    func nestedUnkeyedContainer() -> any UnkeyedEncodingContainer                               { self }
+    func nestedUnkeyedContainer(forKey: K) -> any UnkeyedEncodingContainer                      { self }
+    func superEncoder() -> any Encoder                                                          { self }
+    func superEncoder(forKey: K) -> any Encoder                                                 { self }
+    func singleValueContainer() -> any SingleValueEncodingContainer                             { self }
 }
 
 extension StringProtocol {
     /// Returns the string with its first character lowercased.
-    @inlinable var decapitalized: String { self.isEmpty ? "" : "\(self[self.startIndex].lowercased())\(self.dropFirst())" }
+    @inlinable
+    var decapitalized: String {
+        self.isEmpty ? "" : "\(self[self.startIndex].lowercased())\(self.dropFirst())"
+    }
 
     /// Returns the string with its first character uppercased.
-    @inlinable var encapitalized: String { self.isEmpty ? "" : "\(self[self.startIndex].uppercased())\(self.dropFirst())" }
+    @inlinable
+    var encapitalized: String {
+        self.isEmpty ? "" : "\(self[self.startIndex].uppercased())\(self.dropFirst())"
+    }
 
     /// Returns the string with any `snake_case` converted to `camelCase`.
     ///
     /// This is a modified version of Foundation's implementation:
     /// https://github.com/apple/swift-foundation/blob/8010dfe6b1c38cdf363c8d3d3b43d7d4f4c9987b/Sources/FoundationEssentials/JSON/JSONDecoder.swift
     var convertedFromSnakeCase: String {
-        guard !self.isEmpty, let firstNonUnderscore = self.firstIndex(where: { $0 != "_" })
-        else { return .init(self) }
+        guard !self.isEmpty, let firstNonUnderscore = self.firstIndex(where: { $0 != "_" }) else {
+            return .init(self)
+        }
         
         var lastNonUnderscore = self.endIndex
         repeat {
@@ -143,7 +166,9 @@ extension StringProtocol {
     /// This is a modified version of Foundation's implementation:
     /// https://github.com/apple/swift-foundation/blob/8010dfe6b1c38cdf363c8d3d3b43d7d4f4c9987b/Sources/FoundationEssentials/JSON/JSONEncoder.swift
     var convertedToSnakeCase: String {
-        guard !self.isEmpty else { return .init(self) }
+        guard !self.isEmpty else {
+            return .init(self)
+        }
 
         var words: [Range<String.Index>] = []
         var wordStart = self.startIndex, searchIndex = self.index(after: wordStart)
@@ -171,24 +196,30 @@ extension StringProtocol {
         if #available(macOS 12.3, iOS 15.4, watchOS 8.5, tvOS 15.4, *) {
             return String(self).codingKey
         } else {
-            return SomeCodingKey(stringValue: String(self))
+            return SomeCodingKey(stringValue: .init(self))
         }
     }
     
     /// Returns the string minus the given prefix, iff that prefix is non-`nil` and in the string.
     @inlinable
     func drop(prefix: (some StringProtocol)?) -> Self.SubSequence {
-        guard let prefix, self.starts(with: prefix) else { return self[...] }
-        return self.dropFirst(prefix.count)
+        if #available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
+            return prefix.map(self.trimmingPrefix(_:)) ?? self[...]
+        } else {
+            guard let prefix, self.starts(with: prefix) else {
+                return self[...]
+            }
+            return self.dropFirst(prefix.count)
+        }
     }
 }
 
 extension DecodingError.Context {
     /// Return a context identical to `self`, except with the given coding path prepended.
     @inlinable
-    func withPrefix(_ prefixPath: [any CodingKey]) -> DecodingError.Context {
+    func with(prefix: [any CodingKey]) -> Self {
         .init(
-            codingPath: prefixPath + self.codingPath,
+            codingPath: prefix + self.codingPath,
             debugDescription: self.debugDescription,
             underlyingError: self.underlyingError
         )
@@ -198,9 +229,9 @@ extension DecodingError.Context {
 extension EncodingError.Context {
     /// Return a context identical to `self`, except with the given coding path prepended.
     @inlinable
-    func withPrefix(_ prefixPath: [any CodingKey]) -> EncodingError.Context {
+    func with(prefix: [any CodingKey]) -> Self {
         .init(
-            codingPath: prefixPath + self.codingPath,
+            codingPath: prefix + self.codingPath,
             debugDescription: self.debugDescription,
             underlyingError: self.underlyingError
         )

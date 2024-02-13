@@ -57,12 +57,13 @@ public struct SQLRowDecoder {
     public init(
         prefix: String? = nil,
         keyDecodingStrategy: KeyDecodingStrategy = .useDefaultKeys,
+        userInfo: [CodingUserInfoKey: any Sendable] = [:]
     ) {
         self.configuration = .init(prefix: prefix, keyDecodingStrategy: keyDecodingStrategy, userInfo: userInfo)
     }
 
     /// Decode a value of type `T` from the given ``SQLRow``.
-    func decode<T: Decodable>(_: T.Type, from row: any SQLRow) throws -> T {
+    func decode<T: Decodable>(_: T.Type, from row: some SQLRow) throws -> T {
         try T.init(from: SQLRowDecoderImpl(
             row: row,
             configuration: self.configuration
@@ -91,14 +92,14 @@ public struct SQLRowDecoder {
     internal var configuration: Configuration = .init()
 
     /// Underlying implementation.
-    fileprivate final class SQLRowDecoderImpl: Decoder {
+    fileprivate final class SQLRowDecoderImpl<Row: SQLRow>: Decoder {
         let configuration: Configuration
-        let row: any SQLRow
+        let row: Row
         var codingPath: [any CodingKey] = []
         var userInfo: [CodingUserInfoKey: Any] { self.configuration.userInfo }
 
         init(
-            row: any SQLRow,
+            row: Row,
             codingPath: [any CodingKey] = [],
             configuration: Configuration
         ) {
@@ -107,24 +108,18 @@ public struct SQLRowDecoder {
             self.configuration = configuration
         }
 
-        func container<Key: CodingKey>(keyedBy: Key.Type) throws -> KeyedDecodingContainer<Key> {
-            .init(KeyedContainer(decoder: self))
-        }
+        func container<Key: CodingKey>(keyedBy: Key.Type) throws -> KeyedDecodingContainer<Key> { .init(KeyedContainer(self)) }
         
-        func unkeyedContainer() throws -> any UnkeyedDecodingContainer {
-            throw .invalid(in: self)
-        }
+        func unkeyedContainer() throws -> any UnkeyedDecodingContainer { throw .invalid(in: self) }
         
-        func singleValueContainer() throws -> any SingleValueDecodingContainer {
-            throw .invalid(in: self)
-        }
+        func singleValueContainer() throws -> any SingleValueDecodingContainer { throw .invalid(in: self) }
 
         private struct KeyedContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
             var codingPath: [any CodingKey] { self.decoder.codingPath }
             let decoder: SQLRowDecoderImpl
             let codingKeyToColumnNameMap: [String: String]
 
-            init(decoder: SQLRowDecoderImpl) {
+            init(_ decoder: SQLRowDecoderImpl) {
                 self.decoder = decoder
                 self.codingKeyToColumnNameMap = .init(uniqueKeysWithValues: decoder.row
                     .allColumns
@@ -152,10 +147,10 @@ public struct SQLRowDecoder {
                 defer { self.decoder.codingPath.removeLast() }
                 
                 do { return try closure(name) }
-                catch DecodingError.valueNotFound(let type, let context) { throw DecodingError.valueNotFound(type, context.withPrefix(self.codingPath)) }
-                catch DecodingError.dataCorrupted(let context)           { throw DecodingError.dataCorrupted(context.withPrefix(self.codingPath)) }
-                catch DecodingError.typeMismatch(let type, let context)  { throw DecodingError.typeMismatch(type, context.withPrefix(self.codingPath)) }
-                catch DecodingError.keyNotFound(let ekey, let context)   { throw DecodingError.keyNotFound(ekey, context.withPrefix(self.codingPath)) }
+                catch DecodingError.valueNotFound(let type, let context) { throw DecodingError.valueNotFound(type, context.with(prefix: self.codingPath)) }
+                catch DecodingError.dataCorrupted(let context)           { throw DecodingError.dataCorrupted(context.with(prefix: self.codingPath)) }
+                catch DecodingError.typeMismatch(let type, let context)  { throw DecodingError.typeMismatch(type, context.with(prefix: self.codingPath)) }
+                catch DecodingError.keyNotFound(let ekey, let context)   { throw DecodingError.keyNotFound(ekey, context.with(prefix: self.codingPath)) }
             }
 
             var allKeys: [Key] {
@@ -181,11 +176,7 @@ public struct SQLRowDecoder {
             func decode(_: UInt16.Type, forKey key: Key) throws -> UInt16 { try self.withColumn(for: key) { try self.decoder.row.decode(column: $0)    } }
             func decode(_: UInt32.Type, forKey key: Key) throws -> UInt32 { try self.withColumn(for: key) { try self.decoder.row.decode(column: $0)    } }
             func decode(_: UInt64.Type, forKey key: Key) throws -> UInt64 { try self.withColumn(for: key) { try self.decoder.row.decode(column: $0)    } }
-            func decode<T: Decodable>(_: T.Type, forKey key: Key) throws -> T {
-                try self.withColumn(for: key) {
-                    try self.decoder.row.decode(column: $0)
-                }
-            }
+            func decode<T: Decodable>(_: T.Type, forKey key: Key) throws -> T { try self.withColumn(for: key) { try self.decoder.row.decode(column: $0) } }
 
             func nestedContainer<N: CodingKey>(keyedBy: N.Type, forKey key: Key) throws -> KeyedDecodingContainer<N> {
                 throw .invalid(in: self, key: key)

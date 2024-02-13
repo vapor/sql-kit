@@ -15,23 +15,22 @@ public protocol SQLRow: Sendable {
     
     /// If the given column name exists in the row, attempt to decode it as the given type and return the
     /// result if successful. Must throw an error if the column name does not exist in the row.
-    func decode<D>(column: String, as type: D.Type) throws -> D
-        where D: Decodable
+    func decode<D: Decodable>(column: String, as: D.Type) throws -> D
 }
 
 extension SQLRow {
     /// Decode an entire `Decodable` type at once, optionally applying a prefix and/or a decoding strategy
     /// to each key of the type before looking it up in the row.
-    public func decode<D>(model type: D.Type, prefix: String? = nil, keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys) throws -> D
-        where D: Decodable
-    {
-        try SQLRowDecoder(prefix: prefix, keyDecodingStrategy: keyDecodingStrategy).decode(D.self, from: self)
+    public func decode<D: Decodable>(
+        model type: D.Type,
+        prefix: String? = nil,
+        keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys
+    ) throws -> D {
+        try self.decode(model: D.self, with: .init(prefix: prefix, keyDecodingStrategy: keyDecodingStrategy))
     }
     
     /// Decode an entire `Decodable` type at once using an explicit `SQLRowDecoder`.
-    public func decode<D>(model type: D.Type, with rowDecoder: SQLRowDecoder) throws -> D
-        where D: Decodable
-    {
+    public func decode<D: Decodable>(model: D.Type, with rowDecoder: SQLRowDecoder) throws -> D {
         try rowDecoder.decode(D.self, from: self)
     }
     
@@ -57,7 +56,7 @@ extension SQLRow {
     ///
     /// - Todo: Find a way to accomplish this result without polluting the
     ///         method namespace.
-    public func decode<D>(column: String, inferringAs type: D.Type = D.self) throws -> D where D: Decodable {
+    public func decode<D: Decodable>(column: String, inferringAs: D.Type = D.self) throws -> D {
         try self.decode(column: column, as: D.self)
     }
 }

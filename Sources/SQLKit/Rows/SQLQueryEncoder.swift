@@ -139,11 +139,11 @@ public struct SQLQueryEncoder {
         }
         
         func unkeyedContainer() -> any UnkeyedEncodingContainer {
-             FailureEncoder(error: .invalid(in: self))
+             FailureEncoder(.invalid(in: self))
         }
         
         func singleValueContainer() -> any SingleValueEncodingContainer {
-            FailureEncoder(error: .invalid(in: self))
+            FailureEncoder(.invalid(in: self))
         }
 
         @inlinable
@@ -173,7 +173,7 @@ public struct SQLQueryEncoder {
             let nils: Bool
 
             mutating func encodeNil(forKey key: Key)               throws { self.encoder.withColumnName(for: key) { $1.append(($0, SQLLiteral.null)) } }
-            mutating func encode(_ value: Bool,   forKey key: Key) throws { self.encoder.withColumnName(for: key) { $1.append(($0, SQLBind(value))) } }
+            mutating func encode(_ value: Bool,   forKey key: Key) throws { self.encoder.withColumnName(for: key) { $1.append(($0, SQLLiteral.boolean(value))) } }
             mutating func encode(_ value: String, forKey key: Key) throws { self.encoder.withColumnName(for: key) { $1.append(($0, SQLBind(value))) } }
             mutating func encode(_ value: Double, forKey key: Key) throws { self.encoder.withColumnName(for: key) { $1.append(($0, SQLBind(value))) } }
             mutating func encode(_ value: Float,  forKey key: Key) throws { self.encoder.withColumnName(for: key) { $1.append(($0, SQLBind(value))) } }
@@ -213,17 +213,18 @@ public struct SQLQueryEncoder {
             }
 
             mutating func nestedContainer<N: CodingKey>(keyedBy: N.Type, forKey key: Key) -> KeyedEncodingContainer<N> {
-                .init(FailureEncoder(error: .invalid(in: self, key: key)))
+                .init(FailureEncoder(.invalid(in: self, key: key)))
             }
             mutating func nestedUnkeyedContainer(forKey key: Key) -> any UnkeyedEncodingContainer {
-                FailureEncoder(error: .invalid(in: self, key: key))
+                FailureEncoder(.invalid(in: self, key: key))
             }
             mutating func superEncoder() -> any Encoder {
-                FailureEncoder(error: .invalid(in: self.encoder))
+                FailureEncoder(.invalid(in: self.encoder))
             }
             mutating func superEncoder(forKey key: Key) -> any Encoder {
-                FailureEncoder(error: .invalid(in: self, key: key))
+                FailureEncoder(.invalid(in: self, key: key))
             }
         }
     }
 }
+
