@@ -6,6 +6,13 @@ public protocol SQLQueryFetcher: SQLQueryBuilder {}
 extension SQLQueryFetcher {
     // MARK: First
 
+    /// Returns the named column from the first output row, if any, decoded as a given type.
+    public func first<D: Decodable>(decodingColumn column: String, as: D.Type) -> EventLoopFuture<D?> {
+        self.first().flatMapThrowing {
+            try $0?.decode(column: column, as: D.self)
+        }
+    }
+
     /// Returns the first output row, if any, decoded as a given type.
     public func first<D: Decodable>(decoding: D.Type) -> EventLoopFuture<D?> {
         self.first().flatMapThrowing {
@@ -23,6 +30,15 @@ extension SQLQueryFetcher {
     }
     
     // MARK: All
+
+    /// Returns the named column from all output rows, if any, decoded as a given type.
+    public func all<D: Decodable>(decodingColumn column: String, as: D.Type) -> EventLoopFuture<[D]> {
+        self.all().flatMapThrowing {
+            try $0.map {
+                try $0.decode(column: column, as: D.self)
+            }
+        }
+    }
 
     /// Returns all output rows, if any, decoded as a given type.
     public func all<D: Decodable>(decoding: D.Type) -> EventLoopFuture<[D]> {
