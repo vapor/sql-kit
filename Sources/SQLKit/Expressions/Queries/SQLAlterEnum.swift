@@ -5,6 +5,7 @@ public struct SQLAlterEnum: SQLExpression {
     public var name: any SQLExpression
     public var value: (any SQLExpression)?
 
+    // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {

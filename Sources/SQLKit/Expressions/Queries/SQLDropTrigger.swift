@@ -23,7 +23,7 @@ public struct SQLDropTrigger: SQLExpression {
         self.name = name
     }
 
-    /// See ``SQLExpression/serialize(to:)``.
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         let dialect = serializer.dialect
         

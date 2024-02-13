@@ -7,7 +7,8 @@ public struct SQLList: SQLExpression {
         self.expressions = expressions
         self.separator = separator
     }
-    
+
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         var first = true
         for el in self.expressions {

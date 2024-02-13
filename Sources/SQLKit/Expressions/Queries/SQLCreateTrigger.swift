@@ -63,6 +63,7 @@ public struct SQLCreateTrigger: SQLExpression {
         self.init(trigger: SQLIdentifier(trigger), table: SQLIdentifier(table), when: when, event: event)
     }
 
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         let syntax = serializer.dialect.triggerSyntax.create
         let when = self.when as? WhenSpecifier, event = self.event as? EventSpecifier, each = self.each as? EachSpecifier

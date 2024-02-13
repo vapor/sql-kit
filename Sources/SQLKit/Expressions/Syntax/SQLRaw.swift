@@ -16,6 +16,7 @@ public struct SQLRaw: SQLExpression {
         self.binds = binds
     }
     
+    // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.write(self.sql)

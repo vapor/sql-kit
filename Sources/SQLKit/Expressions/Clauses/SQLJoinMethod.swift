@@ -4,6 +4,7 @@ public enum SQLJoinMethod: SQLExpression {
     case left
     case right
     
+    // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         switch self {

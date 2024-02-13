@@ -15,6 +15,7 @@ public struct SQLNestedSubpathExpression: SQLExpression {
         self.init(column: SQLIdentifier(column), path: path)
     }
 
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.dialect.nestedSubpathExpression(in: self.column, for: self.path)?.serialize(to: &serializer)
     }

@@ -31,6 +31,7 @@ public struct SQLEnumDataType: SQLExpression {
         self.cases = cases
     }
 
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         switch serializer.dialect.enumSyntax {
         case .inline:

@@ -18,6 +18,7 @@ public enum SQLForeignKeyAction: SQLExpression {
     /// (There must be a row in the referenced table matching the default values, if they are not null, or the operation will fail.)
     case setDefault
     
+    // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         switch self {

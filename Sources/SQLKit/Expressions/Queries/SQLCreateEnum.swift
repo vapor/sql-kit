@@ -13,6 +13,7 @@ public struct SQLCreateEnum: SQLExpression {
         self.values = values
     }
 
+    // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {

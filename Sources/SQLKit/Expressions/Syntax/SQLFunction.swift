@@ -23,6 +23,7 @@ public struct SQLFunction: SQLExpression {
         self.args = args
     }
     
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.write(self.name)
         SQLGroupExpression(self.args).serialize(to: &serializer)

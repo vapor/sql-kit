@@ -13,6 +13,7 @@ public struct SQLColumn: SQLExpression {
         self.table = table
     }
     
+    // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         if let table = self.table {

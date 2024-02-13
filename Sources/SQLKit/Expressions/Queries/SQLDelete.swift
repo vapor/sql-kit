@@ -19,6 +19,7 @@ public struct SQLDelete: SQLExpression {
         self.table = table
     }
     
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {
             $0.append("DELETE FROM", self.table)

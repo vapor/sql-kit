@@ -22,6 +22,7 @@ public struct SQLUpdate: SQLExpression {
         self.predicate = nil
     }
     
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {
             $0.append("UPDATE")

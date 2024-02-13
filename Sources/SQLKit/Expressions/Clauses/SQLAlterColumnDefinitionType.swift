@@ -18,6 +18,7 @@ public struct SQLAlterColumnDefinitionType: SQLExpression {
         self.dataType = dataType
     }
 
+    // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {

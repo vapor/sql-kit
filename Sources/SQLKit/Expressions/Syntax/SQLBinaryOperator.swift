@@ -36,9 +36,6 @@ public enum SQLBinaryOperator: SQLExpression {
     /// `OR`
     case or
     
-    /// `||`
-    case concatenate
-    
     /// `*`
     case multiply
     
@@ -60,28 +57,32 @@ public enum SQLBinaryOperator: SQLExpression {
     /// `IS NOT`
     case isNot
     
+    /// `||`
+    case concatenate
+    
+    // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         switch self {
-        case .equal: serializer.write("=")
-        case .notEqual: serializer.write("<>")
-        case .and: serializer.write("AND")
-        case .or: serializer.write("OR")
-        case .in: serializer.write("IN")
-        case .notIn: serializer.write("NOT IN")
-        case .greaterThan: serializer.write(">")
+        case .equal:              serializer.write("=")
+        case .notEqual:           serializer.write("<>")
+        case .and:                serializer.write("AND")
+        case .or:                 serializer.write("OR")
+        case .in:                 serializer.write("IN")
+        case .notIn:              serializer.write("NOT IN")
+        case .greaterThan:        serializer.write(">")
         case .greaterThanOrEqual: serializer.write(">=")
-        case .lessThan: serializer.write("<")
-        case .lessThanOrEqual: serializer.write("<=")
-        case .is: serializer.write("IS")
-        case .isNot: serializer.write("IS NOT")
-        case .like: serializer.write("LIKE")
-        case .notLike: serializer.write("NOT LIKE")
-        case .multiply: serializer.write("*")
-        case .divide: serializer.write("/")
-        case .modulo: serializer.write("%")
-        case .add: serializer.write("+")
-        case .subtract: serializer.write("-")
+        case .lessThan:           serializer.write("<")
+        case .lessThanOrEqual:    serializer.write("<=")
+        case .is:                 serializer.write("IS")
+        case .isNot:              serializer.write("IS NOT")
+        case .like:               serializer.write("LIKE")
+        case .notLike:            serializer.write("NOT LIKE")
+        case .multiply:           serializer.write("*")
+        case .divide:             serializer.write("/")
+        case .modulo:             serializer.write("%")
+        case .add:                serializer.write("+")
+        case .subtract:           serializer.write("-")
 
         // See https://dev.mysql.com/doc/refman/8.0/en/sql-mode.html#sqlmode_pipes_as_concat
         case .concatenate:
