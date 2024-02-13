@@ -11,6 +11,19 @@ public protocol SQLPredicateBuilder: AnyObject {
 }
 
 extension SQLPredicateBuilder {
+    /// Adds a column to encodable comparison to this builder's `WHERE` clause by `AND`ing.
+    ///
+    ///     builder.where("name", .equal, "Earth")
+    ///
+    /// The encodable value supplied will be bound to the query as a parameter.
+    ///
+    ///     SELECT * FROM "planets" WHERE "name" = $0 ["Earth"]
+    @inlinable
+    @discardableResult
+    public func `where`(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: some Encodable & Sendable) -> Self {
+        self.where(SQLColumn(lhs), op, SQLBind(rhs))
+    }
+
     /// Adds a column to column comparison to this builder's `WHERE` clause by `AND`ing.
     ///
     ///     builder.where("firstName", .equal, column: "lastName")
@@ -106,6 +119,19 @@ extension SQLPredicateBuilder {
 }
 
 extension SQLPredicateBuilder {
+    /// Adds a column to encodable comparison to this builder's `WHERE` clause by `OR`ing.
+    ///
+    ///     builder.where("name", .equal, "Earth")
+    ///
+    /// The encodable value supplied will be bound to the query as a parameter.
+    ///
+    ///     SELECT * FROM "planets" WHERE "name" = $0 ["Earth"]
+    @inlinable
+    @discardableResult
+    public func orWhere(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: some Encodable & Sendable) -> Self {
+        self.orWhere(SQLColumn(lhs), op, SQLBind(rhs))
+    }
+
     /// Adds a column to column comparison to this builder's `WHERE` clause by `OR`ing.
     ///
     ///     builder.where(SQLLiteral.boolean(false)).orWhere("firstName", .equal, column: "lastName")
