@@ -1,5 +1,5 @@
 /// Errors raised by ``SQLRowDecoder`` and ``SQLQueryEncoder``.
-enum SQLCodingError: Error, CustomStringConvertible, CustomDebugStringConvertible {
+enum SQLCodingError: Error, CustomStringConvertible, CustomDebugStringConvertible, Sendable {
     /// An attempt was made to invoke one of the "nested container" methods during encoding or decoding.
     ///
     /// The following methods are not supported for row/query coding:

@@ -66,15 +66,15 @@ extension SQLQueryString: StringInterpolationProtocol {
     
     /// Embed an `Encodable` value as a binding in the SQL query.
     @inlinable
-    public mutating func appendInterpolation(bind value: any Encodable) {
+    public mutating func appendInterpolation(bind value: some Encodable & Sendable) {
         self.fragments.append(SQLBind(value))
     }
 
     /// Embed multiple `Encodable` values as bindings in the SQL query, separating the bind
     /// placeholders with commas. Useful in conjunction with the `IN` operator.
     @inlinable
-    public mutating func appendInterpolation(binds values: [any Encodable]) {
-        self.fragments.append(SQLList(values.map(SQLBind.init)))
+    public mutating func appendInterpolation(binds values: [any Encodable & Sendable]) {
+        self.fragments.append(SQLList(values.map { SQLBind($0) }))
     }
     
     /// Embed an integer as a literal value, as if via ``SQLLiteral/numeric(_:)``

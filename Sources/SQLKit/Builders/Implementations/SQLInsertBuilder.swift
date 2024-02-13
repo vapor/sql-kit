@@ -121,15 +121,15 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder {
     @inlinable
     @discardableResult
     @_disfavoredOverload
-    public func values(_ values: any Encodable...) -> Self {
+    public func values(_ values: any Encodable & Sendable...) -> Self {
         self.values(values)
     }
     
     /// Add a set of values to be inserted as a single row.
     @inlinable
     @discardableResult
-    public func values(_ values: [any Encodable]) -> Self {
-        self.values(values.map(SQLBind.init(_:)))
+    public func values(_ values: [any Encodable & Sendable]) -> Self {
+        self.values(values.map { SQLBind($0) })
     }
     
     /// Add a set of values to be inserted as a single row.

@@ -71,7 +71,7 @@ public struct SQLUnion: SQLExpression {
 ///   publicly before she realized there were several missing pieces; changing it now would be potentially
 ///   source-breaking, so it has to be left like this until the next major version.
 public struct SQLUnionJoiner: SQLExpression {
-    public enum `Type`: Equatable, CaseIterable {
+    public enum `Type`: Equatable, CaseIterable, Sendable {
         case union, unionAll, intersect, intersectAll, except, exceptAll
     }
     

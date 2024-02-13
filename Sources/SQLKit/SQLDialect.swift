@@ -4,7 +4,7 @@
 /// possible. While SQL dialects in the wild vary too widely in practice for this to ever
 /// be 100% effective, they also have enough in common to avoid having to rewrite the
 /// entire serialization logic for each database driver.
-public protocol SQLDialect {
+public protocol SQLDialect: Sendable {
     /// The name of the dialect.
     ///
     /// Dialect names were intended to just be human-readable strings, but in reality there
@@ -180,7 +180,7 @@ public protocol SQLDialect {
 }
 
 /// Encapsulates a dialect's support for `ALTER TABLE` syntax.
-public struct SQLAlterTableSyntax {
+public struct SQLAlterTableSyntax: Sendable {
     /// Expression for altering a column's definition.
     ///
     ///     ALTER TABLE table [alterColumnDefinitionClause] column column_definition
@@ -213,7 +213,7 @@ public struct SQLAlterTableSyntax {
 }
 
 /// Possible values for a dialect's strongly-typed enumeration support.
-public enum SQLEnumSyntax {
+public enum SQLEnumSyntax: Sendable {
     /// MySQL's "inline" enumerations.
     ///
     /// MySQL defines an `ENUM` field type, which contains a listing of its individual cases inline.
@@ -263,9 +263,9 @@ public enum SQLEnumSyntax {
 }
 
 /// Encapsulates a dialect's support for `CREATE TRIGGER` and `DROP TRIGGER` syntax.
-public struct SQLTriggerSyntax {
+public struct SQLTriggerSyntax: Sendable {
     /// Describes more specific support for `CREATE TRIGGER` syntax.
-    public struct Create: OptionSet {
+    public struct Create: OptionSet, Sendable {
         public var rawValue = 0
         public init(rawValue: Int) { self.rawValue = rawValue }
 
@@ -306,7 +306,7 @@ public struct SQLTriggerSyntax {
     }
 
     /// Describes more specific support for `DROP TRIGGER` syntax.
-    public struct Drop: OptionSet {
+    public struct Drop: OptionSet, Sendable {
         public var rawValue = 0
         public init(rawValue: Int) { self.rawValue = rawValue }
 
@@ -332,7 +332,7 @@ public struct SQLTriggerSyntax {
 }
 
 /// The supported syntax variants which a SQL dialect can use to to specify `UPSERT` clauses.
-public enum SQLUpsertSyntax: Equatable, CaseIterable {
+public enum SQLUpsertSyntax: Equatable, CaseIterable, Sendable {
     /// Indicates usage of the SQL-standard `ON CONFLICT ...` syntax, including index and update predicates, the
     /// `excluded.` pseudo-table name, and the `DO NOTHING` action for "ignore conflicts".
     case standard
@@ -350,7 +350,7 @@ public enum SQLUpsertSyntax: Equatable, CaseIterable {
 /// > Note: The `union` and `unionAll` flags are a bit redundant, since every dialect SQLKit supports
 ///   at the time of this writing supports them. Still, there are SQL dialects in the wild that do not,
 ///   such as mSQL, so the flags are here for completeness' sake.
-public struct SQLUnionFeatures: OptionSet {
+public struct SQLUnionFeatures: OptionSet, Sendable {
     public var rawValue = 0
     public init(rawValue: Int) { self.rawValue = rawValue }
     

@@ -11,14 +11,14 @@ extension SQLColumnUpdateBuilder {
     /// for each pair.
     @inlinable
     @discardableResult
-    public func set<E>(model: E) throws -> Self where E: Encodable {
+    public func set(model: some Encodable & Sendable) throws -> Self {
         try SQLQueryEncoder().encode(model).reduce(self) { $0.set(SQLColumn($1.0), to: $1.1) }
     }
     
     /// Add an assignment of the column with the given name to the provided bound value.
     @inlinable
     @discardableResult
-    public func set(_ column: String, to bind: any Encodable) -> Self {
+    public func set(_ column: String, to bind: some Encodable & Sendable) -> Self {
         self.set(SQLColumn(column), to: SQLBind(bind))
     }
     
@@ -32,7 +32,7 @@ extension SQLColumnUpdateBuilder {
     /// Add an assignment of the given column to the provided bound value.
     @inlinable
     @discardableResult
-    public func set(_ column: any SQLExpression, to bind: any Encodable) -> Self {
+    public func set(_ column: any SQLExpression, to bind: some Encodable & Sendable) -> Self {
         self.set(column, to: SQLBind(bind))
     }
     

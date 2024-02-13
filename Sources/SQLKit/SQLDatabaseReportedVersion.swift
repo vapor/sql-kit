@@ -11,7 +11,7 @@
 /// Each type implementing ``SQLDatabaseReportedVersion`` is responsible for providing
 /// defintions of equality and ordering semantics between versions which are meaningful
 /// in the versioning scheme of the underlying database.
-public protocol SQLDatabaseReportedVersion: Comparable {
+public protocol SQLDatabaseReportedVersion: Comparable, Sendable {
     /// The version represented as a `String`.
     var stringValue: String { get }
     
@@ -37,37 +37,37 @@ public protocol SQLDatabaseReportedVersion: Comparable {
 extension SQLDatabaseReportedVersion {
     // See `Equatable.==(_:_:)`
     @inlinable
-    public static func ==(lhs: Self, rhs: Self) -> Bool {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.isEqual(to: rhs)
     }
     
     // See `Equatable.!=(_:_:)`
     @inlinable
-    public static func !=(lhs: Self, rhs: Self) -> Bool {
+    public static func != (lhs: Self, rhs: Self) -> Bool {
         !lhs.isEqual(to: rhs)
     }
     
     // See `Comparable.<(_:_:)`
     @inlinable
-    public static func <(lhs: Self, rhs: Self) -> Bool {
+    public static func < (lhs: Self, rhs: Self) -> Bool {
         lhs.isOlder(than: rhs)
     }
 
     // See `Comparable.<=(_:_:)`
     @inlinable
-    public static func <=(lhs: Self, rhs: Self) -> Bool {
+    public static func <= (lhs: Self, rhs: Self) -> Bool {
         lhs.isNotNewer(than: rhs)
     }
 
     // See `Comparable.>(_:_:)`
     @inlinable
-    public static func >(lhs: Self, rhs: Self) -> Bool {
+    public static func > (lhs: Self, rhs: Self) -> Bool {
         lhs.isNewer(than: rhs)
     }
 
     // See `Comparable.>=(_:_:)`
     @inlinable
-    public static func >=(lhs: Self, rhs: Self) -> Bool {
+    public static func >= (lhs: Self, rhs: Self) -> Bool {
         lhs.isNotOlder(than: rhs)
     }
 }
