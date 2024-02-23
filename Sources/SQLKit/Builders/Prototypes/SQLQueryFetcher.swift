@@ -15,11 +15,28 @@ extension SQLQueryFetcher {
 
     /// Returns the first output row, if any, decoded as a given type.
     public func first<D: Decodable>(decoding: D.Type) -> EventLoopFuture<D?> {
+        self.first(decoding: D.self, with: .init())
+    }
+
+    /// Returns the first output row, if any, decoded as a given type using the given configuration.
+    public func first<D: Decodable>(
+        decoding: D.Type,
+        prefix: String? = nil,
+        keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys
+    ) -> EventLoopFuture<D?> {
+        self.first(decoding: D.self, with: .init(prefix: prefix, keyDecodingStrategy: keyDecodingStrategy))
+    }
+
+    /// Returns the first output row, if any, decoded as a given type using the given row decoder.
+    public func first<D: Decodable>(
+        decoding: D.Type,
+        with decoder: SQLRowDecoder
+    ) -> EventLoopFuture<D?> {
         self.first().flatMapThrowing {
-            try $0?.decode(model: D.self)
+            try $0?.decode(model: D.self, with: decoder)
         }
     }
-    
+
     /// Returns the first output row, if any.
     public func first() -> EventLoopFuture<(any SQLRow)?> {
         if let partialBuilder = self as? (any SQLPartialResultBuilder & SQLQueryFetcher) {
@@ -42,13 +59,30 @@ extension SQLQueryFetcher {
 
     /// Returns all output rows, if any, decoded as a given type.
     public func all<D: Decodable>(decoding: D.Type) -> EventLoopFuture<[D]> {
+        self.all(decoding: D.self, with: .init())
+    }
+    
+    /// Returns all output rows, if any, decoded as a given type using the given configuration.
+    public func all<D: Decodable>(
+        decoding: D.Type,
+        prefix: String? = nil,
+        keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys
+    ) -> EventLoopFuture<[D]> {
+        self.all(decoding: D.self, with: .init(prefix: prefix, keyDecodingStrategy: keyDecodingStrategy))
+    }
+
+    /// Returns all output rows, if any, decoded as a given type using the given row decoder.
+    public func all<D: Decodable>(
+        decoding: D.Type,
+        with decoder: SQLRowDecoder
+    ) -> EventLoopFuture<[D]> {
         self.all().flatMapThrowing {
             try $0.map {
-                try $0.decode(model: D.self)
+                try $0.decode(model: D.self, with: decoder)
             }
         }
     }
-    
+
     /// Collects all raw output into an array and returns it.
     public func all() -> EventLoopFuture<[any SQLRow]> {
         let rows = RowsBox()
@@ -62,14 +96,44 @@ extension SQLQueryFetcher {
 
     /// Executes the query, decoding each output row as a given type and calling a provided handler with the result.
     @preconcurrency
-    public func run<D: Decodable>(decoding: D.Type, _ handler: @escaping @Sendable (Result<D, any Error>) -> ()) -> EventLoopFuture<Void> {
+    public func run<D: Decodable>(
+        decoding: D.Type,
+        _ handler: @escaping @Sendable (Result<D, any Error>) -> ()
+    ) -> EventLoopFuture<Void> {
+        self.run { row in handler(Result { try row.decode(model: D.self, with: .init()) }) }
+    }
+    
+    /// Executes the query, decoding each output row as a given type using the given configuration and calling a
+    /// provided handler with the result.
+    @preconcurrency
+    public func run<D: Decodable>(
+        decoding: D.Type,
+        prefix: String? = nil,
+        keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys,
+        _ handler: @escaping @Sendable (Result<D, any Error>) -> ()
+    ) -> EventLoopFuture<Void> {
         self.run { row in
             handler(Result {
-                try row.decode(model: D.self)
+                try row.decode(model: D.self, with: .init(prefix: prefix, keyDecodingStrategy: keyDecodingStrategy))
             })
         }
     }
-    
+
+    /// Executes the query, decoding each output row as a given type using the given row decoder and calling a
+    /// provided handler with the result.
+    @preconcurrency
+    public func run<D: Decodable>(
+        decoding: D.Type,
+        with decoder: SQLRowDecoder,
+        _ handler: @escaping @Sendable (Result<D, any Error>) -> ()
+    ) -> EventLoopFuture<Void> {
+        self.run { row in
+            handler(Result {
+                try row.decode(model: D.self, with: decoder)
+            })
+        }
+    }
+
     /// Runs the query, passing output to the supplied closure as it is recieved.
     /// The returned future signals completion of the query.
     @preconcurrency
@@ -78,8 +142,9 @@ extension SQLQueryFetcher {
     }
 }
 
+/// A simple helper type for working with a mutable value capture across concurrency domains.
 @usableFromInline
-internal final class RowsBox: @unchecked Sendable {
+final class RowsBox: @unchecked Sendable {
     @usableFromInline
     var all: [any SQLRow] = []
     

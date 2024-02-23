@@ -66,20 +66,78 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder/*, SQL
         keyEncodingStrategy: SQLQueryEncoder.KeyEncodingStrategy = .useDefaultKeys,
         nilEncodingStrategy: SQLQueryEncoder.NilEncodingStrategy = .default
     ) throws -> Self {
-        try models([model], prefix: prefix, keyEncodingStrategy: keyEncodingStrategy, nilEncodingStrategy: nilEncodingStrategy)
+        try self.models(
+            [model],
+            prefix: prefix,
+            keyEncodingStrategy: keyEncodingStrategy,
+            nilEncodingStrategy: nilEncodingStrategy
+        )
     }
-    
-    /// Adds an array of encodable values to be inserted.
+
+    /// Use an `Encodable` value to generate a row to insert and add that row to the query.
     ///
-    ///     db.insert(into: Planet.self).models([mercury, venus, earth, mars]).run()
+    /// Example usage:
     ///
-    /// - Note: The term "model" here does _not_ refer to Fluent's `Model` type.
+    /// ```swift
+    /// let earth = Planet(id: nil, name: "Earth", isInhabited: true)
+    /// let encoder = SQLQueryEncoder(nilEncodingStrategy: .asNil)
+    ///
+    /// try await sqlDatabase.insert(into: "planets")
+    ///     .model(earth, with: encoder)
+    ///     .run()
+    ///
+    /// // Effectively the same as:
+    /// try await sqlDatabase.insert(into: "planets")
+    ///     .columns("id", "name", "isInhabited")
+    ///     .values(SQLLiteral.null, SQLBind(earth.name), SQLBind(earth.isInhabited))
+    ///     .run()
+    /// ```
+    ///
+    /// > Note: The term "model" does _not_ refer to Fluent's `Model` type. Fluent models are not compatible with
+    /// > this method or any of its variants.
     ///
     /// - Parameters:
-    ///   - models: `Encodable` models to insert.
-    ///   - prefix: An optional prefix to apply to the values' derived column names.
-    ///   - keyEncodingStrategy: See ``SQLQueryEncoder/KeyEncodingStrategy-swift.enum``.
-    ///   - nilEncodingStrategy: See ``SQLQueryEncoder/NilEncodingStrategy-swift.enum``.
+    ///   - model: A value to insert. This can be any encodable type which represents an aggregate value.
+    ///   - encoder: A preconfigured ``SQLQueryEncoder`` to use for encoding.
+    @inlinable
+    @discardableResult
+    public func model(
+        _ model: some Encodable,
+        with encoder: SQLQueryEncoder
+    ) throws -> Self {
+        try self.models([model], with: encoder)
+    }
+
+    /// Use an array of `Encodable` values to generate rows to insert and add those rows to the query.
+    ///
+    /// Example usage:
+    ///
+    /// ```swift
+    /// let earth = Planet(id: nil, name: "Earth", isInhabited: true)
+    /// let mars = Planet(id: nil, name: "Mars", isInhabited: false)
+    ///
+    /// try await sqlDatabase.insert(into: "planets")
+    ///     .models([earth, mars], keyEncodingStrategy: .convertToSnakeCase)
+    ///     .run()
+    ///
+    /// // Effectively the same as:
+    /// try await sqlDatabase.insert(into: "planets")
+    ///     .columns("id", "name", "is_inhabited")
+    ///     .values(SQLBind(earth.id), SQLBind(earth.name), SQLBind(earth.isInhabited))
+    ///     .values(SQLBind(mars.id), SQLBind(mars.name), SQLBind(mars.isInhabited))
+    ///     .run()
+    /// ```
+    ///
+    /// > Note: The term "model" does _not_ refer to Fluent's `Model` type. Fluent models are not compatible with
+    /// > this method or any of its variants.
+    ///
+    /// - Parameters:
+    ///   - models: Array of values of a given type to insert. The given type may be any encodable type which
+    ///     represents an aggregate value.
+    ///   - prefix: See ``SQLQueryEncoder/prefix``.
+    ///   - keyEncodingStrategy: See ``SQLQueryEncoder/keyEncodingStrategy-swift.property``.
+    ///   - nilEncodingStrategy: See ``SQLQueryEncoder/nilEncodingStrategy-swift.property`.
+    @inlinable
     @discardableResult
     public func models(
         _ models: [some Encodable],
@@ -87,14 +145,60 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder/*, SQL
         keyEncodingStrategy: SQLQueryEncoder.KeyEncodingStrategy = .useDefaultKeys,
         nilEncodingStrategy: SQLQueryEncoder.NilEncodingStrategy = .default
     ) throws -> Self {
-        let encoder = SQLQueryEncoder(prefix: prefix, keyEncodingStrategy: keyEncodingStrategy, nilEncodingStrategy: nilEncodingStrategy)
-
+        try self.models(models, with: .init(prefix: prefix, keyEncodingStrategy: keyEncodingStrategy, nilEncodingStrategy: nilEncodingStrategy))
+    }
+    
+    /// Use an array of `Encodable` values to generate rows to insert and add those rows to the query.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// let earth = Planet(id: nil, name: "Earth", isInhabited: true)
+    /// let mars = Planet(id: nil, name: "Mars", isInhabited: false)
+    /// let encoder = SQLQueryEncoder(nilEncodingStrategy: .asNil)
+    ///
+    /// try await sqlDatabase.insert(into: "planets")
+    ///     .models([earth, mars], with: encoder)
+    ///     .run()
+    ///
+    /// // Effectively the same as:
+    /// try await sqlDatabase.insert(into: "planets")
+    ///     .columns("id", "name", "isInhabited")
+    ///     .values(SQLLiteral.null, SQLBind(earth.name), SQLBind(earth.isInhabited))
+    ///     .values(SQLLiteral.null, SQLBind(mars.name), SQLBind(mars.isInhabited))
+    ///     .run()
+    /// ```
+    ///
+    /// > Note: The term "model" does _not_ refer to Fluent's `Model` type. Fluent models are not compatible with
+    /// > this method or any of its variants.
+    ///
+    /// - Parameters:
+    ///   - models: Array of values of a given type to insert. The given type may be any encodable type which
+    ///     represents an aggregate value.
+    ///   - encodder: A preconfigured ``SQLQueryEncoder`` to use for encoding.
+    @discardableResult
+    public func models(
+        _ models: [some Encodable],
+        with encoder: SQLQueryEncoder
+    ) throws -> Self {
+        var validColumns: [String] = []
+        
         for model in models {
             let row = try encoder.encode(model)
-            if self.insert.columns.isEmpty {
-                self.columns(row.map(\.0))
+            if validColumns.isEmpty {
+                validColumns = row.map(\.0)
+                self.columns(validColumns)
             } else {
-                assert(self.insert.columns.count == row.count, "Wrong number of columns in model (wanted \(self.insert.columns.count), got \(row.count)): \(model)")
+                /// This is not the most ideal way to handle the "inconsistent NULL-ness" problem, but the established
+                /// public API of ``SQLQueryEncoder`` makes doing something nicer sufficiently complicated as to be
+                /// impractical; this will be rectified properly when the major version of SQLKit is next bumped.
+                guard validColumns == row.map(\.0) else {
+                    throw EncodingError.invalidValue(model, .init(codingPath: [], debugDescription: """
+                        One or more input models does not encode to the same set of columns. \
+                        This is usually the result of only some of the inputs having `nil` values for optional properties. \
+                        Try using `NilEncodingStrategy.asNil` to avoid this error.
+                        """
+                    ))
+                }
             }
             self.values(row.map(\.1))
         }

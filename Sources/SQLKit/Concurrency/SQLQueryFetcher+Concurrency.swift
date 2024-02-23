@@ -4,9 +4,25 @@ extension SQLQueryFetcher {
         try await self.first()?.decode(column: column, as: D.self)
     }
 
+    /// Concurrency-aware version of ``SQLQueryFetcher/first(decoding:prefix:keyDecodingStrategy:)-8e3pp``.
+    @inlinable
+    public func first<D: Decodable>(
+        decoding: D.Type,
+        prefix: String? = nil,
+        keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys
+    ) async throws -> D? {
+        try await self.first()?.decode(model: D.self, prefix: prefix, keyDecodingStrategy: keyDecodingStrategy)
+    }
+
+    /// Concurrency-aware version of ``SQLQueryFetcher/first(decoding:with:)-1n97m``.
+    @inlinable
+    public func first<D: Decodable>(decoding: D.Type, with decoder: SQLRowDecoder) async throws -> D? {
+        try await self.first()?.decode(model: D.self, with: decoder)
+    }
+
     /// Concurrency-aware version of ``SQLQueryFetcher/first(decoding:)-6gqh3``.
     @inlinable
-    public func first<D>(decoding: D.Type) async throws -> D? where D: Decodable {
+    public func first<D: Decodable>(decoding: D.Type) async throws -> D? {
         try await self.first()?.decode(model: D.self)
     }
     
@@ -25,9 +41,25 @@ extension SQLQueryFetcher {
         try await self.all().map { try $0.decode(column: column, as: D.self) }
     }
 
+    /// Concurrency-aware version of ``SQLQueryFetcher/all(decoding:prefix:keyDecodingStrategy:)-9ziys``.
+    @inlinable
+    public func all<D: Decodable>(
+        decoding: D.Type,
+        prefix: String? = nil,
+        keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys
+    ) async throws -> [D] {
+        try await self.all().map { try $0.decode(model: D.self, prefix: prefix, keyDecodingStrategy: keyDecodingStrategy) }
+    }
+
+    /// Concurrency-aware version of ``SQLQueryFetcher/all(decoding:with:)-5fc4b``.
+    @inlinable
+    public func all<D: Decodable>(decoding: D.Type, with decoder: SQLRowDecoder) async throws -> [D] {
+        try await self.all().map { try $0.decode(model: D.self, with: decoder) }
+    }
+
     /// Concurrency-aware version of ``SQLQueryFetcher/all(decoding:)-6q02f``.
     @inlinable
-    public func all<D>(decoding: D.Type) async throws -> [D] where D: Decodable {
+    public func all<D: Decodable>(decoding: D.Type) async throws -> [D] {
         try await self.all().map { try $0.decode(model: D.self) }
     }
     
@@ -41,10 +73,33 @@ extension SQLQueryFetcher {
     
     /// Concurrency-aware version of ``SQLQueryFetcher/run(decoding:_:)-6z89k``.
     @inlinable
-    public func run<D>(decoding: D.Type, _ handler: @escaping @Sendable (Result<D, any Error>) -> ()) async throws -> Void where D: Decodable {
+    public func run<D: Decodable>(
+        decoding: D.Type, _ handler: @escaping @Sendable (Result<D, any Error>
+    ) -> ()) async throws {
         try await self.run { row in handler(Result { try row.decode(model: D.self) }) }
     }
-    
+
+    /// Concurrency-aware version of ``SQLQueryFetcher/run(decoding:prefix:keyDecodingStrategy:_:)-8yslt``.
+    @preconcurrency
+    public func run<D: Decodable>(
+        decoding: D.Type,
+        prefix: String? = nil,
+        keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys,
+        _ handler: @escaping @Sendable (Result<D, any Error>) -> ()
+    ) async throws {
+        try await self.run { row in handler(Result { try row.decode(model: D.self, prefix: prefix, keyDecodingStrategy: keyDecodingStrategy) }) }
+    }
+
+    /// Concurrency-aware version of ``SQLQueryFetcher/run(decoding:with:_:)-4tte7``.
+    @preconcurrency
+    public func run<D: Decodable>(
+        decoding: D.Type,
+        with decoder: SQLRowDecoder,
+        _ handler: @escaping @Sendable (Result<D, any Error>) -> ()
+    ) async throws {
+        try await self.run { row in handler(Result { try row.decode(model: D.self, with: decoder) }) }
+    }
+
     /// Concurrency-aware version of ``SQLQueryFetcher/run(_:)-542bs``.
     @inlinable
     public func run(_ handler: @escaping @Sendable (any SQLRow) -> ()) async throws -> Void {
