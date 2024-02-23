@@ -25,6 +25,14 @@ public enum SQLDataType: SQLExpression {
     /// byte string admitting of no particular format or representation).
     case blob
     
+    /// Translates to `TIMESTAMP`, unless overridden by dialect. Represents a type suitable for storing the encoded
+    /// value of a `Date` in a form which can be saved to and reloaded from the database without suffering skew caused
+    /// by time zone calculations.
+    ///
+    /// > Note: Implemented as a static var rather than a new case for now because adding new cases to a public enum
+    /// > is a source-breaking change.
+    public static var timestamp: Self { .custom(SQLRaw("TIMESTAMP")) }
+    
     /// Translates to the serialization of the given expression, unless overridden by dialect.
     case custom(any SQLExpression)
 
