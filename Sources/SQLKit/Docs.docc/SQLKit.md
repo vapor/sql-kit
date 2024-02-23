@@ -379,8 +379,6 @@ SELECT * FROM "planets" WHERE "name" = $1 -- bindings: ["planet"]
 
 The `\(bind:)` interpolation should be used for any user input to avoid SQL injection. The `\(ident:)` interpolation is used to safely specify identifiers such as table and column names.
 
-##### ⚠️ **Important!**⚠️
-
-Always prefer a structured query (i.e. one for which a builder or expression type exists) over raw queries. Consider writing your own `SQLExpression`s, and even your own `SQLQueryBuilder`s, rather than using raw queries, and don't hesitate to [open an issue](https://github.com/vapor/sql-kit/issues/new) to ask for additional feature support.
+> Important: Always prefer a structured query (i.e. one for which a builder or expression type exists) over raw queries. Consider writing your own ``SQLExpression``s, and even your own ``SQLQueryBuilder``s, rather than using raw queries, and don't hesitate to [open an issue](https://github.com/vapor/sql-kit/issues/new) to ask for additional feature support.
 
 -->

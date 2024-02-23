@@ -36,14 +36,18 @@ public struct SQLColumnAssignment: SQLExpression {
     }
     
     /// Create a column assignment from a column name and using the excluded value
-    /// from an upsert's values list. See ``SQLExcludedColumn``.
+    /// from an upsert's values list.
+    ///
+    /// See ``SQLExcludedColumn`` for additional details about excluded values.
     @inlinable
     public init(settingExcludedValueFor columnName: String) {
         self.init(settingExcludedValueFor: SQLColumn(columnName))
     }
 
     /// Create a column assignment from a column identifier and using the excluded value
-    /// from an upsert's values list. See ``SQLExcludedColumn``.
+    /// from an upsert's values list.
+    ///
+    /// See ``SQLExcludedColumn`` for additional details about excluded values.
     @inlinable
     public init(settingExcludedValueFor column: any SQLExpression) {
         self.init(setting: column, to: SQLExcludedColumn(column))

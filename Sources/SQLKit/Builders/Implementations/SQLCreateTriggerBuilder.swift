@@ -3,10 +3,10 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     /// ``SQLCreateTrigger`` query being built.
     public var createTrigger: SQLCreateTrigger
 
-    /// See ``SQLQueryBuilder/database``.
+    // See `SQLQueryBuilder.database`.
     public var database: any SQLDatabase
 
-    /// See ``SQLQueryBuilder/query``.
+    // See `SQLQueryBuilder.query`.
     @inlinable
     public var query: any SQLExpression {
         self.createTrigger

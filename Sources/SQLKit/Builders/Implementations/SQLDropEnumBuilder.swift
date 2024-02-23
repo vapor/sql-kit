@@ -1,14 +1,12 @@
-import NIOCore
-
 /// Builds ``SQLDropEnum`` queries.
 public final class SQLDropEnumBuilder: SQLQueryBuilder {
     /// ``SQLDropEnum`` query being built.
     public var dropEnum: SQLDropEnum
 
-    /// See ``SQLQueryBuilder/database``.
+    // See `SQLQueryBuilder.database`.
     public var database: any SQLDatabase
 
-    /// See ``SQLQueryBuilder/query``.
+    // See `SQLQueryBuilder.query`.
     @inlinable
     public var query: any SQLExpression {
         self.dropEnum
@@ -40,7 +38,7 @@ public final class SQLDropEnumBuilder: SQLQueryBuilder {
         return self
     }
     
-    /// See ``SQLQueryBuilder/run()-2sxsg``.
+    // See `SQLQueryBuilder.run()`.
     @inlinable
     public func run() -> EventLoopFuture<Void> {
         guard self.database.dialect.enumSyntax == .typeName else {

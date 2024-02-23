@@ -9,23 +9,23 @@ public final class SQLDeleteBuilder: SQLQueryBuilder, SQLPredicateBuilder, SQLRe
     /// ``SQLDelete`` query being built.
     public var delete: SQLDelete
 
-    /// See ``SQLQueryBuilder/database``.
+    // See `SQLQueryBuilder.database`.
     public var database: any SQLDatabase
 
-    /// See ``SQLQueryBuilder/query``.
+    // See `SQLQueryBuilder.query`.
     @inlinable
     public var query: any SQLExpression {
         self.delete
     }
 
-    /// See ``SQLPredicateBuilder/predicate``.
+    // See `SQLPredicateBuilder.predicate`.
     @inlinable
     public var predicate: (any SQLExpression)? {
         get { self.delete.predicate }
         set { self.delete.predicate = newValue }
     }
 
-    /// See ``SQLReturningBuilder/returning``.
+    // See `SQLReturningBuilder.returning`.
     @inlinable
     public var returning: SQLReturning? {
         get { self.delete.returning }

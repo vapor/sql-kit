@@ -16,7 +16,6 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.63.0"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.5.4"),
-        .package(url: "https://github.com/apple/swift-algorithms.git", from: "1.2.0"),
         .package(url: "https://github.com/apple/swift-collections.git", from: "1.1.0"),
         .package(url: "https://github.com/apple/swift-docc-plugin.git", from: "1.3.0"),
     ],
@@ -26,7 +25,6 @@ let package = Package(
             dependencies: [
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "NIOCore", package: "swift-nio"),
-                .product(name: "Algorithms", package: "swift-algorithms"),
                 .product(name: "Collections", package: "swift-collections"),
             ]
         ),

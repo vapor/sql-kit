@@ -3,10 +3,10 @@ public final class SQLDropTableBuilder: SQLQueryBuilder {
     /// ``SQLDropTable`` query being built.
     public var dropTable: SQLDropTable
     
-    /// See ``SQLQueryBuilder/database``.
+    // See `SQLQueryBuilder.database`.
     public var database: any SQLDatabase
     
-    /// See ``SQLQueryBuilder/query``.
+    // See `SQLQueryBuilder.query`.
     @inlinable
     public var query: any SQLExpression {
         self.dropTable

@@ -1,6 +1,6 @@
 /// Nested ``SQLPredicateBuilder`` for building expression groups.
 public final class SQLPredicateGroupBuilder: SQLPredicateBuilder {
-    /// See ``SQLPredicateBuilder/predicate``.
+    // See `SQLPredicateBuilder.predicate`.
     public var predicate: (any SQLExpression)?
     
     /// Create a new ``SQLPredicateGroupBuilder``.

@@ -10,10 +10,10 @@ public final class SQLCreateTableBuilder: SQLQueryBuilder {
     /// ``SQLCreateTable`` query being built.
     public var createTable: SQLCreateTable
     
-    /// See ``SQLQueryBuilder/database``.
+    // See `SQLQueryBuilder.database`.
     public var database: any SQLDatabase
 
-    /// See ``SQLQueryBuilder/query``.
+    // See `SQLQueryBuilder.query`.
     @inlinable
     public var query: any SQLExpression {
         self.createTable

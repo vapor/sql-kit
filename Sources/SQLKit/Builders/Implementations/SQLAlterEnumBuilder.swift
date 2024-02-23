@@ -1,14 +1,12 @@
-import NIOCore
-
 /// Builds ``SQLAlterEnum`` queries.
 public final class SQLAlterEnumBuilder: SQLQueryBuilder {
     /// ``SQLAlterEnum`` query being built.
     public var alterEnum: SQLAlterEnum
 
-    /// See ``SQLQueryBuilder/database``.
+    // See `SQLQueryBuilder.database`.
     public var database: any SQLDatabase
     
-    /// See ``SQLQueryBuilder/query``.
+    // See `SQLQueryBuilder.query`.
     @inlinable
     public var query: any SQLExpression {
         self.alterEnum
@@ -36,7 +34,7 @@ public final class SQLAlterEnumBuilder: SQLQueryBuilder {
         return self
     }
     
-    /// See ``SQLQueryBuilder/run()-2zws8``.
+    // See `SQLQueryBuilder.run()`.
     @inlinable
     public func run() -> EventLoopFuture<Void> {
         guard self.database.dialect.enumSyntax == .typeName else {
