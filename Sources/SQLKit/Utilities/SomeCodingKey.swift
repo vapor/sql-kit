@@ -1,6 +1,6 @@
 /// A straightforward implementation of `CodingKey`, used to represent arbitrary keys.
 ///
-/// This type exists primarily as a helper, compensating for our inability to depend on
+/// This implementation is a simple helper, compensating for our inability to depend on
 /// the presence of [`CodingKeyRepresentable`] (introduced in Swift 5.6 and tagged with a
 /// macOS 12.3 availability requirement). Its implementation is largely identical to the
 /// standard library's internal [`_DictionaryCodingKey`] type, as it serves the same purpose.

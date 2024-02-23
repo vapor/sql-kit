@@ -1,11 +1,11 @@
 /// Constraints for ``SQLCreateTable`` (column and table constraints).
 public struct SQLConstraint: SQLExpression {
     /// The constraint's name, if any.
-    ///
-    ///     CONSTRAINT <name>
     public var name: (any SQLExpression)?
 
-    /// The constraint's algorithm. See ``SQLTableConstraintAlgorithm`` and ``SQLColumnConstraintAlgorithm``.
+    /// The constraint's algorithm.
+    ///
+    /// See ``SQLTableConstraintAlgorithm`` and ``SQLColumnConstraintAlgorithm``.
     public var algorithm: any SQLExpression
 
     /// Create an ``SQLConstraint``.

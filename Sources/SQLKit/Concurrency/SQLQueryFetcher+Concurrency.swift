@@ -1,5 +1,6 @@
 extension SQLQueryFetcher {
     /// Concurrency-aware version of ``SQLQueryFetcher/first(decodingColumn:as:)-4965m``.
+    @inlinable
     public func first<D: Decodable>(decodingColumn column: String, as: D.Type) async throws -> D? {
         try await self.first()?.decode(column: column, as: D.self)
     }
@@ -37,6 +38,7 @@ extension SQLQueryFetcher {
     }
     
     /// Concurrency-aware version of ``SQLQueryFetcher/all(decodingColumn:as:)-197ym``.
+    @inlinable
     public func all<D: Decodable>(decodingColumn column: String, as: D.Type) async throws -> [D] {
         try await self.all().map { try $0.decode(column: column, as: D.self) }
     }
@@ -80,6 +82,7 @@ extension SQLQueryFetcher {
     }
 
     /// Concurrency-aware version of ``SQLQueryFetcher/run(decoding:prefix:keyDecodingStrategy:_:)-8yslt``.
+    @inlinable
     @preconcurrency
     public func run<D: Decodable>(
         decoding: D.Type,
@@ -91,6 +94,7 @@ extension SQLQueryFetcher {
     }
 
     /// Concurrency-aware version of ``SQLQueryFetcher/run(decoding:with:_:)-4tte7``.
+    @inlinable
     @preconcurrency
     public func run<D: Decodable>(
         decoding: D.Type,

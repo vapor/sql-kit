@@ -51,10 +51,10 @@ extension SQLReturningBuilder {
 ///   database, whereas those mutations could not be applied to the original builder. An unfortunate
 ///   example of Hyrum's Law, that.
 public final class SQLReturningResultBuilder<QueryBuilder: SQLReturningBuilder>: SQLQueryFetcher {
-    /// See ``SQLQueryBuilder/query``.
+    // See `SQLQueryBuilder.query`.
     public var query: any SQLExpression
     
-    /// See ``SQLQueryBuilder/database``.
+    // See `SQLQueryBuilder.database`.
     public var database: any SQLDatabase
 
     @usableFromInline

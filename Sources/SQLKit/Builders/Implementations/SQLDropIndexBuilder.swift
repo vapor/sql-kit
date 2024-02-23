@@ -3,10 +3,10 @@ public final class SQLDropIndexBuilder: SQLQueryBuilder {
     /// ``SQLDropIndex`` query being built.
     public var dropIndex: SQLDropIndex
     
-    /// See ``SQLQueryBuilder/database``.
+    // See `SQLQueryBuilder.database`.
     public var database: any SQLDatabase
     
-    /// See ``SQLQueryBuilder/query``.
+    // See `SQLQueryBuilder.query`.
     public var query: any SQLExpression {
         self.dropIndex
     }

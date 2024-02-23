@@ -1,6 +1,6 @@
 /// Nested ``SQLSecondaryPredicateBuilder`` for building expression groups.
 public final class SQLSecondaryPredicateGroupBuilder: SQLSecondaryPredicateBuilder {
-    /// See ``SQLSecondaryPredicateBuilder/secondaryPredicate``.
+    // See `SQLSecondaryPredicateBuilder.secondaryPredicate`.
     public var secondaryPredicate: (any SQLExpression)?
     
     /// Create a new ``SQLSecondaryPredicateGroupBuilder``.

@@ -3,10 +3,10 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
     /// ``SQLAlterTable`` query being built.
     public var alterTable: SQLAlterTable
 
-    /// See ``SQLQueryBuilder/database``.
+    // See `SQLQueryBuilder.database`.
     public var database: any SQLDatabase
 
-    /// See ``SQLQueryBuilder/query``.
+    // See `SQLQueryBuilder.query`.
     @inlinable
     public var query: any SQLExpression {
         self.alterTable
