@@ -55,7 +55,7 @@ SQLKit does not deal with creating or managing database connections itself. This
 
 ### Database
 
-Instances of `SQLDatabase` are capable of serializing and executing `SQLExpression`.
+Instances of `SQLDatabase` are capable of serializing and executing `SQLExpression`s.
 
 ```swift
 let db: any SQLDatabase = ...

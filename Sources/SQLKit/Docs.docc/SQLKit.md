@@ -39,6 +39,7 @@ SQLKit does _not_ provide facilities for creating or managing database connectio
 
 ### Builder Protocols
 
+- ``SQLAliasedColumnListBuilder``
 - ``SQLColumnUpdateBuilder``
 - ``SQLConflictUpdateBuilder``
 - ``SQLJoinBuilder``
@@ -50,7 +51,9 @@ SQLKit does _not_ provide facilities for creating or managing database connectio
 - ``SQLReturningBuilder``
 - ``SQLSecondaryPredicateBuilder``
 - ``SQLSecondaryPredicateGroupBuilder``
+- ``SQLSubqueryBuilder``
 - ``SQLSubqueryClauseBuilder``
+- ``SQLUnqualifiedColumnListBuilder``
 
 ### Query Builders
 
@@ -94,7 +97,6 @@ SQLKit does _not_ provide facilities for creating or managing database connectio
 - ``SQLConstraint``
 - ``SQLDataType``
 - ``SQLDirection``
-- ``SQLDistinct``
 - ``SQLForeignKeyAction``
 - ``SQLNestedSubpathExpression``
 - ``SQLQualifiedTable``
@@ -117,6 +119,7 @@ SQLKit does _not_ provide facilities for creating or managing database connectio
 - ``SQLLockingClause``
 - ``SQLOrderBy``
 - ``SQLReturning``
+- ``SQLSubquery``
 - ``SQLTableConstraintAlgorithm``
 - ``SQLUnionJoiner``
 
@@ -144,6 +147,7 @@ SQLKit does _not_ provide facilities for creating or managing database connectio
 
 ### Deprecated
 
+- ``SQLDistinct``
 - ``SQLError``
 - ``SQLErrorType``
 

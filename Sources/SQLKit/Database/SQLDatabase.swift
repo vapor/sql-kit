@@ -11,7 +11,7 @@ import NIOCore
 /// implementations of ``SQLDialect`` and ``SQLRow`` (both of which are hooked up via ``SQLDatabase``).
 ///
 /// > Note: Most of ``SQLDatabase``'s functionality is relatively low-level. Clients of SQLKit
-///   who want to query a database should use the higher-level API rooted at ``SQLQueryBuilder``.
+/// > who want to query a database should use the higher-level API rooted at ``SQLQueryBuilder``.
 ///
 /// Example of manually constructing and executing a query from expressions without a query builder:
 ///
@@ -51,11 +51,11 @@ public protocol SQLDatabase: Sendable {
     /// update), or even become unknown again after being known.
     ///
     /// > Note: This version number has nothing to do with ``SQLKit`` or (usually) of the driver
-    ///   implementation for the database, nor does it represent any data stored within the database;
-    ///   it is the version of the database implementation _itself_ (such as of a MySQL server or
-    ///   `libsqlite3` library). The primary motivation for finally adding this property stemmed from
-    ///   the desire to enable customizing ``SQLDialect`` configurations based on the actual feature set
-    ///   available at runtime, rather than the old solution of hardcoding a "safe" baseline.
+    /// > implementation for the database, nor does it represent any data stored within the database;
+    /// > it is the version of the database implementation _itself_ (such as of a MySQL server or
+    /// > `libsqlite3` library). The primary motivation for finally adding this property stemmed from
+    /// > the desire to enable customizing ``SQLDialect`` configurations based on the actual feature set
+    /// > available at runtime, rather than the old solution of hardcoding a "safe" baseline.
     var version: (any SQLDatabaseReportedVersion)? { get }
 
     /// The descriptor for the SQL dialect supported by the given database. It is permitted for different

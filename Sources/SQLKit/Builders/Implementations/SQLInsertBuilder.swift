@@ -1,18 +1,24 @@
 /// Builds ``SQLInsert`` queries.
-public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder {
-    /// ``SQLInsert`` query being built.
+///
+/// > Note: Although in the strictest sense, this builder could conform to ``SQLUnqualifiedColumnListBuilder``, doing
+/// > so would be semantically inappropriate. the protocol documents its `columns()` methods as being additive, but
+/// > ``SQLInsertBuilder``'s otherwise-identical public APIs overwrite the effects of any previous invocation. It
+/// > would ideally be preferable to change ``SQLInsertBuilder``'s semantics in this regard, but this would be a
+/// > significant breaking change in the API's behavior, and must therefore wait for a major version bump.
+public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder/*, SQLUnqualifiedColumnListBuilder*/ {
+    /// The ``SQLInsert`` query this builder builds.
     public var insert: SQLInsert
     
-    /// See ``SQLQueryBuilder/database``.
+    // See `SQLQueryBuilder.database`.
     public var database: any SQLDatabase
     
-    /// See ``SQLQueryBuilder/query``.
+    // See `SQLQueryBuilder.query`.
     @inlinable
     public var query: any SQLExpression {
         self.insert
     }
 
-    /// See ``SQLReturningBuilder/returning``.
+    // See `SQLReturningBuilder.returning`.
     @inlinable
     public var returning: SQLReturning? {
         get { self.insert.returning }
@@ -26,17 +32,32 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder {
         self.database = database
     }
     
-    /// Adds a single encodable value to be inserted.
+    /// Use an `Encodable` value to generate a row to insert and add that row to the query.
     ///
-    ///     db.insert(into: Planet.self).model(earth).run()
+    /// Example usage:
     ///
-    /// - Note: The term "model" here does _not_ refer to Fluent's `Model` type.
+    /// ```swift
+    /// let earth = Planet(id: nil, name: "Earth", isInhabited: true)
+    ///
+    /// try await sqlDatabase.insert(into: "planets")
+    ///     .model(earth, keyEncodingStrategy: .convertToSnakeCase)
+    ///     .run()
+    ///
+    /// // Effectively the same as:
+    /// try await sqlDatabase.insert(into: "planets")
+    ///     .columns("id", "name", "is_inhabited")
+    ///     .values(SQLBind(earth.id), SQLBind(earth.name), SQLBind(earth.isInhabited))
+    ///     .run()
+    /// ```
+    ///
+    /// > Note: The term "model" does _not_ refer to Fluent's `Model` type. Fluent models are not compatible with
+    /// > this method or any of its variants.
     ///
     /// - Parameters:
-    ///   - model: `Encodable` model to insert. This can be any encodable type.
-    ///   - prefix: An optional prefix to apply to the value's derived column names.
-    ///   - keyEncodingStrategy: See ``SQLQueryEncoder/KeyEncodingStrategy-swift.enum``.
-    ///   - nilEncodingStrategy: See ``SQLQueryEncoder/NilEncodingStrategy-swift.enum``.
+    ///   - model: A value to insert. This can be any encodable type which represents an aggregate value.
+    ///   - prefix: See ``SQLQueryEncoder/prefix``.
+    ///   - keyEncodingStrategy: See ``SQLQueryEncoder/keyEncodingStrategy-swift.property``.
+    ///   - nilEncodingStrategy: See ``SQLQueryEncoder/nilEncodingStrategy-swift.property`.
     @inlinable
     @discardableResult
     public func model(
@@ -80,36 +101,36 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder {
         return self
     }
     
-    /// Specify the set of columns that appear in the list(s) of values.
+    /// Specify mutiple columns to be included in the list of columns for the query.
     ///
-    /// Overwrites the existing set of columns, if any.
+    /// Overwrites any previously specified column list.
     @inlinable
     @discardableResult
     public func columns(_ columns: String...) -> Self {
         self.columns(columns)
     }
     
-    /// Specify the set of columns that appear in the list(s) of values.
+    /// Specify mutiple columns to be included in the list of columns for the query.
     ///
-    /// Overwrites the existing set of columns, if any.
+    /// Overwrites any previously specified column list.
     @inlinable
     @discardableResult
     public func columns(_ columns: [String]) -> Self {
         self.columns(columns.map(SQLIdentifier.init(_:)))
     }
     
-    /// Specify the set of columns that appear in the list(s) of values.
+    /// Specify mutiple columns to be included in the list of columns for the query.
     ///
-    /// Overwrites the existing set of columns, if any.
+    /// Overwrites any previously specified column list.
     @inlinable
     @discardableResult
     public func columns(_ columns: any SQLExpression...) -> Self {
         self.columns(columns)
     }
     
-    /// Specify the set of columns that appear in the list(s) of values.
+    /// Specify mutiple columns to be included in the list of columns for the query.
     ///
-    /// Overwrites the existing set of columns, if any.
+    /// Overwrites any previously specified column list.
     @inlinable
     @discardableResult
     public func columns(_ columns: [any SQLExpression]) -> Self {
