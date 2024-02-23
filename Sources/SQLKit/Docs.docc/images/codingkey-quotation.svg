@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="84" viewBox="0 0 500 70">
+<style>
+  * { letter-spacing: 0.25px; font: italic 300 16px Georgia; }
+  #q, #r { font: 400 40px Georgia; }
+  #s { font: italic 14px Menlo; }
+  #t { letter-spacing: 0; font: italic 200 16px HelveticaNeue; }
+</style>
+<rect width="4" height="70" rx="3" fill="#ddd"/>
+<text x="36"  y="18"><tspan id="s">CodingKey</tspan> is the standard library’s answer to the concept of a</text>
+<text x="37"  y="38">protocol whose requirements are a recursive identity crisis.</text>
+<text x="17"  y="36" id="q">“</text>
+<text x="479" y="55" id="r">”</text>
+<text x="360" y="66" id="t">–– Unknown</text>
+</svg>

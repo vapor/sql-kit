@@ -1,63 +1,66 @@
-/// SQL binary expression operators, i.e., `==`, `!=`, `AND`, `+`, etc.
+/// SQL binary expression operators.
 public enum SQLBinaryOperator: SQLExpression {
-    /// `=` or `==`
+    /// Equality. `=` or `==` in most dialects.
     case equal
     
-    /// `!=` or `<>`
+    /// Inequality. `!=` or `<>` in most dialects.
     case notEqual
     
-    /// `>`
+    /// Arranged in descending order, or `>`.
     case greaterThan
     
-    /// `<`
+    /// Arranged in ascending order, or `<`.
     case lessThan
     
-    /// `>=`
+    /// Not arranged in ascending order, or `>=`.
     case greaterThanOrEqual
     
-    /// `<=`
+    /// Not arranged in descending order, or `<=`.
     case lessThanOrEqual
     
-    /// `LIKE`
+    /// SQL pattern match, or `LIKE`.
     case like
     
-    /// `NOT LIKE`
+    /// SQL pattern mismatch, or `NOT LIKE`.
     case notLike
     
-    /// `IN`
+    /// Set membership, or `IN`.
     case `in`
     
-    /// `NOT IN`
+    /// Set exclusion, or `NOT IN`.
     case `notIn`
     
-    /// `AND`
+    /// Logical conjunction, or `AND`.
     case and
     
-    /// `OR`
+    /// Logical disjunction, or `OR`.
     case or
     
-    /// `*`
+    /// Arithmetic multiplication, or `*`.
     case multiply
     
-    /// `/`
+    /// Arithmetic division, or `/`.
     case divide
     
-    /// `%`
+    /// Arithmetic remainder, or `%`.
     case modulo
     
-    /// `+`
+    /// Arithmetic addition, or `+`.
     case add
     
-    /// `-`
+    /// Arithmetic subtraction, or `-`.
     case subtract
 
-    /// `IS`
+    /// Typed identity, or `IS`.
     case `is`
 
-    /// `IS NOT`
+    /// Typed dissimilarity, or `IS NOT`.
     case isNot
     
-    /// `||`
+    /// String concatenation, or `||`.
+    ///
+    /// This operator is not implemented. Attempting to use it will trigger a runtime error.
+    @available(*, deprecated, message: "The || concatenation operator is not implemented due to legacy compatibility issues. Use SQLFunction(\"concat\") instead.")
     case concatenate
     
     // See `SQLExpression.serialize(to:)`.

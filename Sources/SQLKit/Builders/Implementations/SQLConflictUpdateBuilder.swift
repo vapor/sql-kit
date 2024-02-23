@@ -1,10 +1,10 @@
 /// A builder for specifying column updates and an optional predicate to be applied to
 /// rows that caused unique key conflicts during an `INSERT`.
 public final class SQLConflictUpdateBuilder: SQLColumnUpdateBuilder, SQLPredicateBuilder {
-    /// See ``SQLColumnUpdateBuilder/values``.
+    // See `SQLColumnUpdateBuilder.values`.
     public var values: [any SQLExpression]
     
-    /// See ``SQLPredicateBuilder/predicate``.
+    // See `SQLPredicateBuilder.predicate`.
     public var predicate: (any SQLExpression)?
     
     /// Create a conflict update builder.
@@ -15,7 +15,9 @@ public final class SQLConflictUpdateBuilder: SQLColumnUpdateBuilder, SQLPredicat
     }
 
     /// Add an assignment of the column with the given name, using the value the column was
-    /// given in the `INSERT` query's `VALUES` list. See ``SQLExcludedColumn``.
+    /// given in the `INSERT` query's `VALUES` list.
+    ///
+    /// See ``SQLExcludedColumn`` for additional details.
     @inlinable
     @discardableResult
     public func set(excludedValueOf columnName: String) -> Self {
@@ -23,7 +25,9 @@ public final class SQLConflictUpdateBuilder: SQLColumnUpdateBuilder, SQLPredicat
     }
     
     /// Add an assignment of the given column, using the value the column was given in the
-    /// `INSERT` query's `VALUES` list. See ``SQLExcludedColumn``.
+    /// `INSERT` query's `VALUES` list.
+    ///
+    /// See ``SQLExcludedColumn`` for additional details.
     @inlinable
     @discardableResult
     public func set(excludedValueOf column: any SQLExpression) -> Self {
@@ -33,7 +37,7 @@ public final class SQLConflictUpdateBuilder: SQLColumnUpdateBuilder, SQLPredicat
     
     /// Encodes the given `Encodable` value to a sequence of key-value pairs and adds an assignment
     /// for each pair which uses the values each column was given in the original `INSERT` query's
-    /// `VALUES` list. See ``SQLExcludedColumn``.
+    /// `VALUES` list.
     @inlinable
     @discardableResult
     public func set(excludedContentOf model: some Encodable & Sendable) throws -> Self {
