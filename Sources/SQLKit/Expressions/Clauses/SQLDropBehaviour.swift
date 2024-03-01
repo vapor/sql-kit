@@ -1,12 +1,11 @@
-/// RESTRICT | CASCADE
+/// Specifies a behavior when performing a `DROP` operation on a database object which is referenced by other objects.
+///
+/// > Warning: These behaviors are not supported by all dialects.
 public enum SQLDropBehavior: SQLExpression {
-    /// The drop behavior clause specifies if objects that depend on a table
-    /// should also be dropped or not when the table is dropped.
-    
-    /// Refuse to drop the table if any objects depend on it.
+    /// Refuse to drop the object if it has any remaining references from other objects.
     case restrict
     
-    /// Automatically drop objects that depend on the table (such as views).
+    /// When the object is referenced from other objects, recursively delete the referencing objects as well.
     case cascade
     
     // See `SQLExpression.serialize(to:)`.
