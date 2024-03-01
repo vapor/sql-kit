@@ -165,49 +165,39 @@ public enum SQLColumnConstraintAlgorithm: SQLExpression {
     
     // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
-        switch self {
-        case .primaryKey(let autoIncrement):
-            if autoIncrement {
-                if serializer.database.dialect.supportsAutoIncrement {
-                    if let function = serializer.database.dialect.autoIncrementFunction {
-                        serializer.dialect.literalDefault.serialize(to: &serializer)
-                        serializer.write(" ")
-                        function.serialize(to: &serializer)
-                        serializer.write(" ")
-                        serializer.write("PRIMARY KEY")
+        serializer.statement {
+            switch self {
+            case .primaryKey(let autoIncrement):
+                if autoIncrement, $0.dialect.supportsAutoIncrement {
+                    if let function = $0.dialect.autoIncrementFunction {
+                        $0.append($0.dialect.literalDefault, function, "PRIMARY KEY")
                     } else {
-                        serializer.write("PRIMARY KEY")
-                        serializer.write(" ")
-                        serializer.dialect.autoIncrementClause.serialize(to: &serializer)
+                        $0.append("PRIMARY KEY", $0.dialect.autoIncrementClause)
                     }
                 } else {
-                    serializer.database.logger.warning("Autoincrement not supported, skipping")
-                    serializer.write("PRIMARY KEY")
+                    if autoIncrement {
+                        $0.logger.debug("Autoincrement requested but not supported, ignoring")
+                    }
+                    $0.append("PRIMARY KEY")
                 }
-            } else {
-                serializer.write("PRIMARY KEY")
+            case .notNull:
+                $0.append("NOT NULL")
+            case .unique:
+                $0.append("UNIQUE")
+            case .check(let expression):
+                $0.append("CHECK", SQLGroupExpression(expression))
+            case .collate(name: let collate):
+                $0.append("COLLATE", collate)
+            case .default(let expression):
+                $0.append($0.dialect.literalDefault)
+                $0.append(expression)
+            case .foreignKey(let foreignKey):
+                $0.append(foreignKey)
+            case .generated(let expression):
+                $0.append("GENERATED ALWAYS AS", SQLGroupExpression(expression), "STORED")
+            case .custom(let expression):
+                $0.append(expression)
             }
-        case .notNull:
-            serializer.write("NOT NULL")
-        case .unique:
-            serializer.write("UNIQUE")
-        case .check(let expression):
-            serializer.write("CHECK ")
-            SQLGroupExpression(expression).serialize(to: &serializer)
-        case .collate(name: let collate):
-            serializer.write("COLLATE ")
-            collate.serialize(to: &serializer)
-        case .default(let expression):
-            serializer.write("DEFAULT ")
-            expression.serialize(to: &serializer)
-        case .foreignKey(let foreignKey):
-            foreignKey.serialize(to: &serializer)
-        case .generated(let expression):
-            serializer.write("GENERATED ALWAYS AS ")
-            SQLGroupExpression(expression).serialize(to: &serializer)
-            serializer.write(" STORED")
-        case .custom(let expression):
-            expression.serialize(to: &serializer)
         }
     }
 }

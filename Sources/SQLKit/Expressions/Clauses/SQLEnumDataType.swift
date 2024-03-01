@@ -33,18 +33,17 @@ public struct SQLEnumDataType: SQLExpression {
 
     // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
-        switch serializer.dialect.enumSyntax {
-        case .inline:
-            // e.g. ENUM('case1', 'case2')
-            SQLRaw("ENUM").serialize(to: &serializer)
-            SQLGroupExpression(self.cases).serialize(to: &serializer)
-        default:
-            // NOTE: Consider using a CHECK constraint
-            //      with a TEXT type to verify that the
-            //      text value for a column is in a list
-            //      of possible options.
-            SQLDataType.text.serialize(to: &serializer)
-            serializer.database.logger.warning("Database does not support inline enums. Storing as TEXT instead.")
+        serializer.statement {
+            switch $0.dialect.enumSyntax {
+            case .inline:
+                $0.append("ENUM", SQLGroupExpression(self.cases))
+            case .typeName:
+                $0.logger.warning("SQLEnumDataType is not intended for use with PostgreSQL-style enum syntax.")
+                fallthrough
+            case .unsupported:
+                // Do not warn for this case; just transparently fall back to text.
+                $0.append(SQLDataType.text)
+            }
         }
     }
 }
