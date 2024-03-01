@@ -13,13 +13,16 @@
 ///   If this affects your usage, use a raw query or manually construct the necessary expressions
 ///   to specify and use the alias for now.
 public struct SQLExcludedColumn: SQLExpression {
+    /// The excluded colmn's name.
     public var name: any SQLExpression
     
+    /// Create an excluded column specifier.
     @inlinable
     public init(_ name: String) {
         self.init(SQLColumn(name))
     }
     
+    /// Create an excluded column specifier.
     @inlinable
     public init(_ name: any SQLExpression) {
         self.name = name
