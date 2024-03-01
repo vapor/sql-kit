@@ -100,9 +100,29 @@ public struct SQLStatement: SQLExpression {
         self.database.dialect
     }
 
+    // See `SQLExpression.serialize(to:)`.
+    @inlinable
+    public func serialize(to serializer: inout SQLSerializer) {
+        /// Although `self.parts.interspersed(with: SQLRaw(" ")).forEach { $0.serialize(to: &serializer) }` would be a
+        /// more "elegant" way to write this, it results in the creation of `self.parts.count - 1` identical instances
+        /// of ``SQLRaw`` and requires the compiler to dynamically dispatch a call to each one's `serialize(to:)`
+        /// method. While the total overhead of this behavior is unlikely to be measurable in practice unless the
+        /// statement has a very large number of constitutent parts, saving a couple of extra lines of code with a
+        /// "clever trick" is still not at all worth it - especially since it also requires importing the
+        /// `swift-algorithms` package, an entire additional dependency which adds insult to injury in the form of
+        /// increased overall compile time.
+        var iter = self.parts.makeIterator()
+        
+        iter.next()?.serialize(to: &serializer)
+        while let part = iter.next() {
+            serializer.write(" ")
+            part.serialize(to: &serializer)
+        }
+    }
+
+    // MARK: - Append methods, cardinality 1
+    
     /// Add raw text to the statement output.
-    ///
-    /// - Parameter raw: The text to add.
     @inlinable
     public mutating func append(_ raw: String) {
         self.append(SQLRaw(raw))
@@ -115,8 +135,6 @@ public struct SQLStatement: SQLExpression {
     /// > forms until the statement itself is esrialized. This may produce unexpected behavior if an expression is a
     /// > reference type with mutable properties, or if its serialization is dependent on the current overall
     /// > serialization state.
-    ///
-    /// - Parameter part: The expression to add.
     @inlinable
     public mutating func append(_ part: any SQLExpression) {
         self.parts.append(part)
@@ -124,57 +142,95 @@ public struct SQLStatement: SQLExpression {
     
     /// Add an optional unserialized ``SQLExpression`` of any kind to the output.
     ///
-    /// This is intended as a convenient shorthand for `if let expr { statement.append(expr) }`.
-    ///
-    /// See also ``append(_:)-7s7z8``.
-    ///
-    /// - Parameter maybePart: An expression to add, if not `nil`.
+    /// This is shorthand for `if let expr { statement.append(expr) }`.
     @inlinable
     public mutating func append(_ maybePart: (any SQLExpression)?) {
         maybePart.map { self.append($0) }
     }
 
-    /// Add raw text and an unserialized ``SQLExpression`` to tbe statement output, in that order.
-    ///
-    /// See also ``append(_:)-7s7z8`` and ``append(_:_:)-236y3``.
-    ///
-    /// - Parameters:
-    ///   - raw: The raw text to add.
-    ///   - part: The expression to add.
+    // MARK: - Append methods, cardinality 2
+    
+    /// Add two raw text strings to the statement output.
+    @inlinable
+    public mutating func append(_ raw1: String, _ raw2: String) {
+        self.parts.append(contentsOf: [SQLRaw(raw1), SQLRaw(raw2)])
+    }
+
+    /// Add raw text and an unserialized ``SQLExpression`` to the statement output, in that order.
     @inlinable
     public mutating func append(_ raw: String, _ part: any SQLExpression) {
-        self.append(raw)
-        self.append(part)
+        self.parts.append(contentsOf: [SQLRaw(raw), part])
     }
 
-    /// Add an unserialized ``SQLExpression`` and raw text to tbe statement output, in that order.
+    /// Add raw text and an optional unserialized ``SQLExpression`` to the statement output, in that order.
     ///
-    /// See also ``append(_:)-7s7z8`` and ``append(_:_:)-53s9b``.
-    ///
-    /// - Parameters:
-    ///   - part: The expression to add.
-    ///   - raw: The raw text to add.
+    /// > Note: Because this method's non-optional variant, ``append(_:_:)-53s9b``, already existed as public API,
+    /// > source compatibility requires that this version must be declared separately, rather than allowing the
+    /// > compiler to infer the optionality as needed as with, for example, ``append(_:_:)-2hsg3``.
     @inlinable
-    public mutating func append(_ part: any SQLExpression, _ raw: String) {
-        self.append(part)
-        self.append(raw)
+    public mutating func append(_ raw: String, _ part: (any SQLExpression)?) {
+        self.parts.append(contentsOf: [SQLRaw(raw), part].compactMap { $0 })
     }
 
-    // See `SQLExpression.serialize(to:)`.
+    /// Add an optional unserialized ``SQLExpression`` and raw text to the statement output, in that order.
     @inlinable
-    public func serialize(to serializer: inout SQLSerializer) {
-        /// Although `self.parts.interspersed(with: SQLRaw(" ")).forEach { $0.serialize(to: &serializer) }` would be a
-        /// more "elegant" way to write this, it results in the creation of `self.parts.count - 1` identical instances
-        /// of ``SQLRaw`` and requires the compiler to dynamically dispatch a call to each one's `serialize(to:)`
-        /// method. While the total overhead of this behavior is unlikely to be measurable in practice unless the
-        /// statement has a very large number of constitutent parts, saving a couple of extra lines of code with a
-        /// "clever trick" is still not at all worth it - especially since it also requires importing the
-        /// `swift-algorithms` package, an entire additional dependency which adds insult to injury in the form of
-        /// increased overall compile time.
-        self.parts.first?.serialize(to: &serializer)
-        self.parts.dropFirst().forEach {
-            serializer.write(" ")
-            $0.serialize(to: &serializer)
-        }
+    public mutating func append(_ part: (any SQLExpression)?, _ raw: String) {
+        self.parts.append(contentsOf: [part, SQLRaw(raw)].compactMap { $0 })
+    }
+
+    /// Add two optional unserialized ``SQLExpression``s to the statement output.
+    @inlinable
+    public mutating func append(_ part1: (any SQLExpression)?, _ part2: (any SQLExpression)?) {
+        self.parts.append(contentsOf: [part1, part2].compactMap { $0 })
+    }
+
+    // MARK: - Append methods, cardinality 3
+    
+    /// Add three raw text strings to the statement.
+    @inlinable
+    public mutating func append(_ p1: String, _ p2: String, _ p3: String) {
+        self.parts.append(contentsOf: [SQLRaw(p1), SQLRaw(p2), SQLRaw(p3)])
+    }
+    
+    /// Add an optional unserialized ``SQLExpression`` and two raw text strings to the statement output.
+    @inlinable
+    public mutating func append(_ p1: (any SQLExpression)?, _ p2: String, _ p3: String) {
+        self.parts.append(contentsOf: [p1, SQLRaw(p2), SQLRaw(p3)].compactMap { $0 })
+    }
+
+    /// Add raw text, an optional unserialized ``SQLExpression``, and more raw text to the statement output.
+    @inlinable
+    public mutating func append(_ p1: String, _ p2: (any SQLExpression)?, _ p3: String) {
+        self.parts.append(contentsOf: [SQLRaw(p1), p2, SQLRaw(p3)].compactMap { $0 })
+    }
+
+    /// Add two optional unserialized ``SQLExpression``s and raw text to the statement output.
+    @inlinable
+    public mutating func append(_ p1: (any SQLExpression)?, _ p2: (any SQLExpression)?, _ p3: String) {
+        self.parts.append(contentsOf: [p1, p2, SQLRaw(p3)].compactMap { $0 })
+    }
+
+    /// Add two raw texts strings and an optional unserialized ``SQLExpression`` to the statement output, in that order.
+    @inlinable
+    public mutating func append(_ p1: String, _ p2: String, _ p3: (any SQLExpression)?) {
+        self.parts.append(contentsOf: [SQLRaw(p1), SQLRaw(p2), p3].compactMap { $0 })
+    }
+
+    /// Add raw text and two optional unserialized ``SQLExpression``s to the statement output.
+    @inlinable
+    public mutating func append(_ p1: String, _ p2: (any SQLExpression)?, _ p3: (any SQLExpression)?) {
+        self.parts.append(contentsOf: [SQLRaw(p1), p2, p3].compactMap { $0 })
+    }
+
+    /// Add an optional unserialized ``SQLExpression``, raw text, and an optional unserialized ``SQLExpression`` to the statement output.
+    @inlinable
+    public mutating func append(_ p1: (any SQLExpression)?, _ p2: String, _ p3: (any SQLExpression)?) {
+        self.parts.append(contentsOf: [p1, SQLRaw(p2), p3].compactMap { $0 })
+    }
+
+    /// Add three optional unserialized ``SQLExpression``s to the statement output.
+    @inlinable
+    public mutating func append(_ p1: (any SQLExpression)?, _ p2: (any SQLExpression)?, _ p3: (any SQLExpression)?) {
+        self.parts.append(contentsOf: [p1, p2, p3].compactMap { $0 })
     }
 }

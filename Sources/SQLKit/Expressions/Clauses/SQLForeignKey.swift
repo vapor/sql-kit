@@ -23,18 +23,14 @@ public struct SQLForeignKey: SQLExpression {
     
     // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
-        serializer.write("REFERENCES ")
-        self.table.serialize(to: &serializer)
-        serializer.write(" ")
-        SQLGroupExpression(self.columns).serialize(to: &serializer)
-
-        if let onDelete = self.onDelete {
-            serializer.write(" ON DELETE ")
-            onDelete.serialize(to: &serializer)
-        }
-        if let onUpdate = self.onUpdate {
-            serializer.write(" ON UPDATE ")
-            onUpdate.serialize(to: &serializer)
+        serializer.statement {
+            $0.append("REFERENCES", self.table, SQLGroupExpression(self.columns))
+            if let onDelete = self.onDelete {
+                $0.append("ON DELETE", onDelete)
+            }
+            if let onUpdate = self.onUpdate {
+                $0.append("ON UPDATE", onUpdate)
+            }
         }
     }
 }

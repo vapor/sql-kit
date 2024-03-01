@@ -18,12 +18,8 @@ public struct SQLColumnDefinition: SQLExpression {
     
     // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
-        self.column.serialize(to: &serializer)
-        serializer.write(" ")
-        self.dataType.serialize(to: &serializer)
-        if !self.constraints.isEmpty {
-            serializer.write(" ")
-            SQLList(self.constraints, separator: SQLRaw(" ")).serialize(to: &serializer)
+        serializer.statement {
+            $0.append(self.column, self.dataType, SQLList(self.constraints, separator: SQLRaw(" ")))
         }
     }
 }
