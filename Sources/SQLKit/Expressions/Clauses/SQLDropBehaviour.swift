@@ -15,6 +15,10 @@ public enum SQLDropBehavior: SQLExpression {
     // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
+        guard serializer.dialect.supportsDropBehavior else {
+            return
+        }
+        
         switch self {
         case .restrict: serializer.write("RESTRICT")
         case .cascade:  serializer.write("CASCADE")

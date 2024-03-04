@@ -7,6 +7,9 @@
 /// Not all dialects support index predicates, nor does this expression attempt to support all of the numerous
 /// additional indexing options available with different drivers.
 ///
+/// > Note: Because support for an `IF NOT EXISTS` clause on `CREATE IDNEX` queries varies in unusual ways between
+/// > dialects, it is not currently supported by this expression.
+///
 /// See ``SQLCreateIndexBuilder``.
 public struct SQLCreateIndex: SQLExpression {
     /// The name of the index.
@@ -32,6 +35,12 @@ public struct SQLCreateIndex: SQLExpression {
     /// The list of columns covered by the index.
     public var columns: [any SQLExpression]
     
+    /// If not `nil`, a predicate identifying which rows of the table are included in the index.
+    ///
+    /// Not all dialects support partial indexes. There is currently no check for this; users must ensure that a
+    /// predicate is not specified when not supported.
+    public var predicate: (any SQLExpression)?
+    
     /// Create a index creation query.
     ///
     /// - Parameter name: The name to assign to the index/constraint.
@@ -41,6 +50,7 @@ public struct SQLCreateIndex: SQLExpression {
         self.table = nil
         self.modifier = nil
         self.columns = []
+        self.predicate = nil
     }
     
     // See `SQLExpression.serialize(to:)`.
@@ -49,6 +59,9 @@ public struct SQLCreateIndex: SQLExpression {
             $0.append("CREATE", self.modifier, "INDEX")
             $0.append("ON", self.table)
             $0.append(SQLGroupExpression(self.columns))
+            if let predicate = self.predicate {
+                $0.append("WHERE", predicate)
+            }
         }
     }
 }
