@@ -1,9 +1,10 @@
 /// Errors raised by ``SQLRowDecoder`` and ``SQLQueryEncoder``.
 enum SQLCodingError: Error, CustomStringConvertible, Sendable {
     /// An attempt was made to invoke one of the forbidden coding methods, or a restricted coding method in an
-    /// unsupported context, during encoding or decoding.
+    /// unsupported context, during query encoding or row decoding.
     ///
-    /// The following methods are entire unsupported during row/query coding:
+    /// The following methods are always usupported:
+    ///
     /// - `Encoder.unkeyedContainer()`
     /// - `Decoder.unkeyedContainer()`
     /// - `KeyedEncodingContainer.nestedContainer(keyedBy:forKey:)`
@@ -15,7 +16,8 @@ enum SQLCodingError: Error, CustomStringConvertible, Sendable {
     /// - Any use of `UnkeyedEncodingContainer`
     /// - Any use of `UnkeyedDecodingContainer`
     ///
-    /// The following methods are supported only when the current coding path is empty:
+    /// The following methods are unsupported unless the current coding path is empty:
+    ///
     /// - `Encoder.container(keyedBy:)`
     /// - `Decoder.container(keyedBy:)`
     /// - `KeyedEncodingContainer.superEncoder(forKey:)`
@@ -25,16 +27,16 @@ enum SQLCodingError: Error, CustomStringConvertible, Sendable {
     // See `CustomStringConvertible.description`.
     var description: String {
         switch self {
-        case .unsupportedOperation(let operation, codingPath: let codingPath):
-            return "Value at path '\(codingPath.map(\.stringValue).joined(separator: "."))' attempted an unsupported operation: '\(operation)'"
+        case .unsupportedOperation(let operation, codingPath: let path):
+            return "Value at path '\(path.map(\.stringValue).joined(separator: "."))' attempted an unsupported operation: '\(operation)'"
         }
     }
 }
 
 extension Error where Self == SQLCodingError {
     /// Yield a ``SQLCodingError/unsupportedOperation(_:codingPath:)`` for the given operation and path.
-    static func invalid(_ f: String = #function, at: [any CodingKey]) -> Self {
-        .unsupportedOperation(f, codingPath: at)
+    static func invalid(_ function: String = #function, at path: [any CodingKey]) -> Self {
+        .unsupportedOperation(function, codingPath: path)
     }
 }
 
@@ -42,10 +44,25 @@ extension Error where Self == SQLCodingError {
 ///
 /// Used as a placeholder by ``FailureEncoder``.
 struct NeverKey: CodingKey {
-    var stringValue: String    { "" }
-    var intValue: Int?         { nil }
-    init?(stringValue: String) { nil }
-    init?(intValue: Int)       { nil }
+    // See `CodingKey.stringValue`.
+    var stringValue: String {
+        ""
+    }
+    
+    // See `CodingKey.intValue`.
+    var intValue: Int? {
+        nil
+    }
+    
+    // See `CodingKey.init(stringValue:)`.
+    init?(stringValue: String) {
+        nil
+    }
+    
+    // See `CodingKey.init?(intValue:)`.
+    init?(intValue: Int) {
+        nil
+    }
 }
 
 /// An encoder which throws a predetermined error from every method which can throw and recurses back to itself from
@@ -113,11 +130,16 @@ extension DecodingError {
     /// Return the same error with its context modified to have the given coding path prepended.
     func under(path: [any CodingKey]) -> Self {
         switch self {
-        case let .valueNotFound(type, context): return .valueNotFound(type, context.with(prefix: path))
-        case let .dataCorrupted(context):       return .dataCorrupted(context.with(prefix: path))
-        case let .typeMismatch(type, context):  return .typeMismatch(type, context.with(prefix: path))
-        case let .keyNotFound(key, context):    return .keyNotFound(key, context.with(prefix: path))
-        @unknown default: return self
+        case let .valueNotFound(type, context):
+            return .valueNotFound(type, context.with(prefix: path))
+        case let .dataCorrupted(context):
+            return .dataCorrupted(context.with(prefix: path))
+        case let .typeMismatch(type, context):
+            return .typeMismatch(type, context.with(prefix: path))
+        case let .keyNotFound(key, context):
+            return .keyNotFound(key, context.with(prefix: path))
+        @unknown default:
+            return self
         }
     }
 }

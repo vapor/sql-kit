@@ -16,10 +16,14 @@ public enum SQLDirection: SQLExpression {
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         switch self {
-        case .ascending:  serializer.write("ASC")
-        case .descending: serializer.write("DESC")
-        case .null:       serializer.write("NULL")
-        case .notNull:    serializer.write("NOT NULL")
+        case .ascending:
+            serializer.write("ASC")
+        case .descending:
+            serializer.write("DESC")
+        case .null:
+            serializer.write("NULL")
+        case .notNull:
+            serializer.write("NOT NULL")
         }
     }
 }

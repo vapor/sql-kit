@@ -91,7 +91,7 @@ extension SQLSubqueryClauseBuilder {
     /// Adds a `DISTINCT` clause to the select statement and explicitly specifies columns to select,
     /// overwriting any previously specified columns.
     ///
-    /// - Warning: This does _NOT_ invoke PostgreSQL's `DISTINCT ON (...)` syntax!
+    /// > Warning: This does _NOT_ invoke PostgreSQL's `DISTINCT ON (...)` syntax!
     @inlinable
     @discardableResult
     public func distinct(on column: String, _ columns: String...) -> Self {
@@ -101,7 +101,7 @@ extension SQLSubqueryClauseBuilder {
     /// Adds a `DISTINCT` clause to the select statement and explicitly specifies columns to select,
     /// overwriting any previously specified columns.
     ///
-    /// - Warning: This does _NOT_ invoke PostgreSQL's `DISTINCT ON (...)` syntax!
+    /// > Warning: This does _NOT_ invoke PostgreSQL's `DISTINCT ON (...)` syntax!
     @inlinable
     @discardableResult
     public func distinct(on column: any SQLExpression, _ columns: any SQLExpression...) -> Self {
@@ -111,7 +111,7 @@ extension SQLSubqueryClauseBuilder {
     /// Adds a `DISTINCT` clause to the select statement and explicitly specifies columns to select,
     /// overwriting any previously specified columns.
     ///
-    /// - Warning: This does _NOT_ invoke PostgreSQL's `DISTINCT ON (...)` syntax!
+    /// > Warning: This does _NOT_ invoke PostgreSQL's `DISTINCT ON (...)` syntax!
     @inlinable
     @discardableResult
     public func distinct(on columns: [any SQLExpression]) -> Self {
@@ -198,8 +198,8 @@ extension SQLSubqueryClauseBuilder {
     /// determined by the specific locking clause and the underlying database's support for
     /// this construct.
     ///
-    /// - Warning: If the database in use does not support locking reads, the locking clause
-    ///   will be silently ignored regardless of its value.
+    /// > Warning: If the database in use does not support locking reads, the locking clause
+    /// > will be silently ignored regardless of its value.
     @inlinable
     @discardableResult
     public func `for`(_ lockingClause: SQLLockingClause) -> Self {
@@ -217,10 +217,10 @@ extension SQLSubqueryClauseBuilder {
     /// determined by the specific locking clause and the underlying database's support for
     /// this construct.
     ///
-    /// - Note: This method allows providing an arbitrary SQL expression as the locking clause.
-    /// 
-    /// - Warning: If the database in use does not support locking reads, the locking clause
-    ///   will be silently ignored regardless of its value.
+    /// > Note: This method allows providing an arbitrary SQL expression as the locking clause.
+    ///
+    /// > Warning: If the database in use does not support locking reads, the locking clause
+    /// > will be silently ignored regardless of its value.
     @inlinable
     @discardableResult
     public func lockingClause(_ lockingClause: any SQLExpression) -> Self {

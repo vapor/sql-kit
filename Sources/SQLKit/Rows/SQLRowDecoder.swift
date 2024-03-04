@@ -101,9 +101,12 @@ public struct SQLRowDecoder: Sendable {
         /// > database column names.
         fileprivate func apply(to key: some StringProtocol) -> String {
             switch self {
-            case .useDefaultKeys:       return .init(key)
-            case .convertFromSnakeCase: return .init(key).convertedToSnakeCase // N.B.: NOT a typo!
-            case .custom(let custom):   return custom([String(key).codingKeyValue]).stringValue
+            case .useDefaultKeys:
+                return .init(key)
+            case .convertFromSnakeCase:
+                return .init(key).convertedToSnakeCase // N.B.: NOT a typo!
+            case .custom(let custom):
+                return custom([String(key).codingKeyValue]).stringValue
             }
         }
     }
@@ -178,13 +181,17 @@ public struct SQLRowDecoder: Sendable {
         var codingPath: [any CodingKey] = []
         
         // See `Decoder.userInfo`.
-        var userInfo: [CodingUserInfoKey: Any] { self.configuration.userInfo }
+        var userInfo: [CodingUserInfoKey: Any] {
+            self.configuration.userInfo
+        }
 
         // See `Decoder.container(keyedBy:)`.
         func container<Key: CodingKey>(keyedBy: Key.Type) throws -> KeyedDecodingContainer<Key> {
             /// If the coding path is not empty, we have reached this point via `superDecoder(forKey:)`, from which
             /// the only valid request is for a single-value container.
-            guard self.codingPath.isEmpty else { throw .invalid(at: self.codingPath) }
+            guard self.codingPath.isEmpty else {
+                throw .invalid(at: self.codingPath)
+            }
             
             /// Otherwise, a keyed container request is valid.
             return .init(KeyedContainer(decoder: self))
@@ -211,7 +218,9 @@ public struct SQLRowDecoder: Sendable {
         /// An implementation of `KeyedDecodingContainerProtocol` for ``SQLRowDecoderImpl``.
         private struct KeyedContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
             // See `KeyedDecodingContainerProtocol.codingPath`.
-            var codingPath: [any CodingKey] { self.decoder.codingPath }
+            var codingPath: [any CodingKey] {
+                self.decoder.codingPath
+            }
             
             /// The decoder which created this container.
             let decoder: SQLRowDecoderImpl
@@ -223,11 +232,16 @@ public struct SQLRowDecoder: Sendable {
                 /// not be reliably performed with the existing
                 /// ``SQLRowDecoder/KeyDecodingStrategy-swift.enum/custom(_:)`` API. This implementation does the best
                 /// it can with the given limitations.
-                self.decoder.row.allColumns.map { String($0.drop(prefix: self.decoder.configuration.prefix)) }.map {
+                self.decoder.row.allColumns.map {
+                    String($0.drop(prefix: self.decoder.configuration.prefix))
+                }.map {
                     switch self.decoder.configuration.keyDecodingStrategy {
-                    case .useDefaultKeys: return $0
-                    case .convertFromSnakeCase: return $0.convertedFromSnakeCase
-                    case .custom(_): return $0 // this is inaccurate but there's little to be done about it
+                    case .useDefaultKeys:
+                        return $0
+                    case .convertFromSnakeCase:
+                        return $0.convertedFromSnakeCase
+                    case .custom(_):
+                        return $0 // this is inaccurate but there's little to be done about it
                     }
                 }.compactMap(Key.init(stringValue:))
             }
@@ -303,7 +317,9 @@ public struct SQLRowDecoder: Sendable {
         /// An implementation of `SingleValueDecodingContainer` for ``SQLRowDecoderImpl``.
         private struct SingleValueContainer: SingleValueDecodingContainer {
             // See `SingleValueDecodingContainer.codingPath`.
-            var codingPath: [any CodingKey] { self.decoder.codingPath }
+            var codingPath: [any CodingKey] {
+                self.decoder.codingPath
+            }
             
             /// The decoder which created this container.
             let decoder: SQLRowDecoderImpl
