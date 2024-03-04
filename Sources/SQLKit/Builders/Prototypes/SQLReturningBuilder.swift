@@ -43,13 +43,13 @@ extension SQLReturningBuilder {
 ///     // Incorrect:
 ///     db.insert(into: "foo").returning("id").model(foo).first() // Syntax error
 ///
-/// - Note: The only reason we can't make ``SQLReturningResultBuilder`` conditionally conform to the
-///   other builder protocols and thus remove the "last-in-chain" restriction is that it has historically
-///   exposed its ``query`` and ``database`` properties as both mutable and public, whereas they are
-///   get-only in the ``SQLQueryBuilder`` protocol. As a result, we cannot simply store the original
-///   builder instead, because users may have been leveraging the ability to modify the query and/or
-///   database, whereas those mutations could not be applied to the original builder. An unfortunate
-///   example of Hyrum's Law, that.
+/// > Note: The only reason we can't make ``SQLReturningResultBuilder`` conditionally conform to the
+/// > other builder protocols and thus remove the "last-in-chain" restriction is that it has historically
+/// > exposed its ``query`` and ``database`` properties as both mutable and public, whereas they are
+/// > get-only in the ``SQLQueryBuilder`` protocol. As a result, we cannot simply store the original
+/// > builder instead, because users may have been leveraging the ability to modify the query and/or
+/// > database, whereas those mutations could not be applied to the original builder. An unfortunate
+/// > example of Hyrum's Law, that.
 public final class SQLReturningResultBuilder<QueryBuilder: SQLReturningBuilder>: SQLQueryFetcher {
     // See `SQLQueryBuilder.query`.
     public var query: any SQLExpression

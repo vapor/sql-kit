@@ -31,7 +31,9 @@ public enum SQLDataType: SQLExpression {
     ///
     /// > Note: Implemented as a static var rather than a new case for now because adding new cases to a public enum
     /// > is a source-breaking change.
-    public static var timestamp: Self { .custom(SQLRaw("TIMESTAMP")) }
+    public static var timestamp: Self {
+        .custom(SQLRaw("TIMESTAMP"))
+    }
     
     /// Translates to the serialization of the given expression, unless overridden by dialect.
     case custom(any SQLExpression)
@@ -45,13 +47,20 @@ public enum SQLDataType: SQLExpression {
             sql = dialect
         } else {
             switch self {
-            case .smallint:        sql = SQLRaw("SMALLINT")
-            case .int:             sql = SQLRaw("INTEGER")
-            case .bigint:          sql = SQLRaw("BIGINT")
-            case .text:            sql = SQLRaw("TEXT")
-            case .real:            sql = SQLRaw("REAL")
-            case .blob:            sql = SQLRaw("BLOB")
-            case .custom(let exp): sql = exp
+            case .smallint:
+                sql = SQLRaw("SMALLINT")
+            case .int:
+                sql = SQLRaw("INTEGER")
+            case .bigint:
+                sql = SQLRaw("BIGINT")
+            case .text:
+                sql = SQLRaw("TEXT")
+            case .real:
+                sql = SQLRaw("REAL")
+            case .blob:
+                sql = SQLRaw("BLOB")
+            case .custom(let exp):
+                sql = exp
             }
         }
         sql.serialize(to: &serializer)

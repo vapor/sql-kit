@@ -60,7 +60,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
 
     /// Specify the trigger's timing.
     ///
-    /// - Note: Only applies to constraint triggers.
+    /// > Note: Only applies to constraint triggers.
     @inlinable
     @discardableResult
     public func timing(_ value: SQLCreateTrigger.TimingSpecifier) -> Self {
@@ -70,7 +70,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
 
     /// Specify the trigger's timing.
     ///
-    /// - Note: Only applies to constraint triggers.
+    /// > Note: Only applies to constraint triggers.
     @inlinable
     @discardableResult
     public func timing(_ value: any SQLExpression) -> Self {
@@ -90,7 +90,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     ///
     /// To specify a schema-qualified table, use ``SQLQualifiedTable``.
     ///
-    /// - Note: This option is used for foreign key constraints and is not recommended for general use. Only applies to constraint triggers.
+    /// > Note: This option is used for foreign key constraints and is not recommended for general use. Only applies to constraint triggers.
     @inlinable
     @discardableResult
     public func referencedTable(_ value: String) -> Self {
@@ -101,7 +101,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     ///
     /// To specify a schema-qualified table, use ``SQLQualifiedTable``.
     ///
-    /// - Note: This option is used for foreign key constraints and is not recommended for general use. Only applies to constraint triggers.
+    /// > Note: This option is used for foreign key constraints and is not recommended for general use. Only applies to constraint triggers.
     @inlinable
     @discardableResult
     public func referencedTable(_ value: any SQLExpression) -> Self {

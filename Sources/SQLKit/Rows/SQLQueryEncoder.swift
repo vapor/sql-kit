@@ -7,17 +7,18 @@ import OrderedCollections
 /// array of "column name"/"value expression" pairs.
 ///
 /// This type is, somewhat confusingly, designed primarily for use with methods such as
+/// 
 /// - ``SQLInsertBuilder``:
-///   * ``SQLInsertBuilder/model(_:prefix:keyEncodingStrategy:nilEncodingStrategy:)``
-///   * ``SQLInsertBuilder/model(_:with:)``
-///   * ``SQLInsertBuilder/models(_:prefix:keyEncodingStrategy:nilEncodingStrategy:)``
-///   * ``SQLInsertBuilder/models(_:with:)``
+///   - ``SQLInsertBuilder/model(_:prefix:keyEncodingStrategy:nilEncodingStrategy:)``
+///   - ``SQLInsertBuilder/model(_:with:)``
+///   - ``SQLInsertBuilder/models(_:prefix:keyEncodingStrategy:nilEncodingStrategy:)``
+///   - ``SQLInsertBuilder/models(_:with:)``
 /// - ``SQLColumnUpdateBuilder``:
-///   * ``SQLColumnUpdateBuilder/set(model:prefix:keyEncodingStrategy:nilEncodingStrategy:)``
-///   * ``SQLColumnUpdateBuilder/set(model:with:)``
+///   - ``SQLColumnUpdateBuilder/set(model:prefix:keyEncodingStrategy:nilEncodingStrategy:)``
+///   - ``SQLColumnUpdateBuilder/set(model:with:)``
 /// - ``SQLConflictUpdateBuilder``:
-///   * ``SQLConflictUpdateBuilder/set(excludedContentOf:prefix:keyEncodingStrategy:nilEncodingStrategy:)``
-///   * ``SQLConflictUpdateBuilder/set(excludedContentOf:with:)``
+///   - ``SQLConflictUpdateBuilder/set(excludedContentOf:prefix:keyEncodingStrategy:nilEncodingStrategy:)``
+///   - ``SQLConflictUpdateBuilder/set(excludedContentOf:with:)``
 ///
 /// It can also be manually invoked. For example:
 ///
@@ -112,9 +113,12 @@ public struct SQLQueryEncoder: Sendable {
         /// name which will be stored in the database.
         fileprivate func apply(to name: any CodingKey) -> String {
             switch self {
-            case .useDefaultKeys:      return name.stringValue
-            case .convertToSnakeCase:  return name.stringValue.convertedToSnakeCase
-            case .custom(let closure): return closure([name]).stringValue
+            case .useDefaultKeys:
+                return name.stringValue
+            case .convertToSnakeCase:
+                return name.stringValue.convertedToSnakeCase
+            case .custom(let closure):
+                return closure([name]).stringValue
             }
         }
     }
@@ -205,14 +209,18 @@ public struct SQLQueryEncoder: Sendable {
         var codingPath: [any CodingKey] = []
         
         // See `Encoder.userInfo`.
-        var userInfo: [CodingUserInfoKey: Any] { self.configuration.userInfo }
+        var userInfo: [CodingUserInfoKey: Any] {
+            self.configuration.userInfo
+        }
 
         // See `Encoder.container(keyedBy:)`.
         func container<Key: CodingKey>(keyedBy: Key.Type) -> KeyedEncodingContainer<Key> {
             /// If the coding path is not empty, we have reached this point via `superEncoder(forKey:)`, from which
             /// the only valid request is for a single-value container. Since this method cannot throw directly,
             /// return a ``FailureEncoder`` which will throw the error at the earliest possible opportunity.
-            guard self.codingPath.isEmpty else { return .invalid(at: self.codingPath) }
+            guard self.codingPath.isEmpty else {
+                return .invalid(at: self.codingPath)
+            }
             
             /// Otherwise, a keyed container request is valid.
             return .init(KeyedContainer(encoder: self))
@@ -242,7 +250,9 @@ public struct SQLQueryEncoder: Sendable {
         /// An implementation of `KeyedEncodingContainerProtocol` for ``SQLQueryEncoderImpl``.
         private struct KeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
             // See `KeyedEncodingContainerProtocol.codingPath`.
-            var codingPath: [any CodingKey] { self.encoder.codingPath }
+            var codingPath: [any CodingKey] {
+                self.encoder.codingPath
+            }
             
             /// The encoder which created this container.
             let encoder: SQLQueryEncoderImpl
@@ -330,7 +340,9 @@ public struct SQLQueryEncoder: Sendable {
         /// An implementation of `SingleValueEncodingContainer` for ``SQLQueryEncoderImpl``.
         private struct SingleValueContainer: SingleValueEncodingContainer {
             // See `SingleValueEncodingContainer.codingPath`.
-            var codingPath: [any CodingKey] { self.encoder.codingPath }
+            var codingPath: [any CodingKey] {
+                self.encoder.codingPath
+            }
             
             /// The encoder which created this container.
             let encoder: SQLQueryEncoderImpl
@@ -339,10 +351,14 @@ public struct SQLQueryEncoder: Sendable {
             mutating func encodeNil() throws {
                 /// If the coding path is empty, the attempt to encode a scalar value is taking place on the
                 /// top-level encoder, which is invalid.
-                guard let key = self.codingPath.last else { throw .invalid(at: self.codingPath) }
+                guard let key = self.codingPath.last else {
+                    throw .invalid(at: self.codingPath)
+                }
                 
                 /// Account for the configured ``SQLQueryEncoder/nilEncodingStrategy-swift.property``.
-                guard self.encoder.configuration.nilEncodingStrategy == .asNil else { return }
+                guard self.encoder.configuration.nilEncodingStrategy == .asNil else {
+                    return
+                }
                 
                 self.encoder.set(SQLLiteral.null, forKey: key)
             }

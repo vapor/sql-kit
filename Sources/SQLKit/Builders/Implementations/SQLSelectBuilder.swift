@@ -1,8 +1,8 @@
 /// Builds ``SQLSelect`` queries.
 ///
-/// - Note: This is effectively nothing but a concrete conformance to ``SQLSubqueryClauseBuilder``
-///   which provides storage for the ``SQLSelect`` and adds ``SQLQueryFetcher`` so the query can
-///   actually be executed.
+/// > Note: This is effectively nothing but a concrete conformance to ``SQLSubqueryClauseBuilder``
+/// > which provides storage for the ``SQLSelect`` and adds ``SQLQueryFetcher`` so the query can
+/// > actually be executed.
 public final class SQLSelectBuilder: SQLQueryBuilder, SQLQueryFetcher, SQLSubqueryClauseBuilder {
     // See `SQLSubqueryClauseBuilder.select`.
     public var select: SQLSelect

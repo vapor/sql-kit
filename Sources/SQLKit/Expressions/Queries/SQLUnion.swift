@@ -67,10 +67,10 @@ public struct SQLUnion: SQLExpression {
     }
 }
 
-/// - Note: There's no technical reason that this is an `enum` nested in a `struct` rather than just a bare
-///   `enum`. It's this way because Gwynne merged a PR for an early version of this code and it was released
-///   publicly before she realized there were several missing pieces; changing it now would be potentially
-///   source-breaking, so it has to be left like this until the next major version.
+/// > Note: There's no technical reason that this is an `enum` nested in a `struct` rather than just a bare
+/// > `enum`. It's this way because Gwynne merged a PR for an early version of this code and it was released
+/// > publicly before she realized there were several missing pieces; changing it now would be potentially
+/// > source-breaking, so it has to be left like this until the next major version.
 public struct SQLUnionJoiner: SQLExpression {
     public enum `Type`: Equatable, CaseIterable, Sendable {
         case union, unionAll, intersect, intersectAll, except, exceptAll
