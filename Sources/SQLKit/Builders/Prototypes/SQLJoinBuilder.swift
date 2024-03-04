@@ -12,20 +12,6 @@ extension SQLJoinBuilder {
     ///   - table: The name of the table to join.
     ///   - method: The join method to use.
     ///   - expression: A string containing a join condition.
-    @available(*, deprecated, message: "Specifying conditions as raw strings is unsafe. Use `SQLBinaryExpression` etc. instead.")
-    @inlinable
-    @discardableResult
-    public func join(_ table: String, method: SQLJoinMethod = .inner, on expression: String) -> Self {
-         self.join(SQLIdentifier(table), method: method, on: SQLRaw(expression))
-    }
-
-    /// Include the given table in the list of those used by the query, performing an explicit join using the
-    /// given method and condition(s). Tables are joined left to right.
-    ///
-    /// - Parameters:
-    ///   - table: The name of the table to join.
-    ///   - method: The join method to use.
-    ///   - expression: A string containing a join condition.
     @inlinable
     @discardableResult
     public func join(_ table: String, method: SQLJoinMethod = .inner, on expression: any SQLExpression) -> Self {

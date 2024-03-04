@@ -45,8 +45,3 @@ extension SQLSubquery {
         return builder.query
     }
 }
-
-/// Formerly a separate builder used to construct `SELECT` subqueries in `CREATE TABLE` queries, now a deprecated
-/// alias for the more general-purpose ``SQLSubqueryBuilder``.
-@available(*, deprecated, renamed: "SQLSubqueryBuilder", message: "Superseded by SQLSubqueryBuilder")
-public typealias SQLCreateTableAsSubqueryBuilder = SQLSubqueryBuilder

@@ -10,16 +10,6 @@ public protocol SQLAliasedColumnListBuilder: SQLUnqualifiedColumnListBuilder {
 }
 
 extension SQLAliasedColumnListBuilder {
-    /// Specify a column qualified with a table name to be part of the result set of the query.
-    ///
-    /// This method is deprecated. Use ``SQLColumn/init(_:table:)-7zgbm`` or ``SQLColumn/init(_:table:)-21210`` instead.
-    @inlinable
-    @discardableResult
-    @available(*, deprecated, renamed: "SQLColumn.init(_:table:)", message: "Use ``SQLColumn.init(_:table:)`` instead.")
-    public func column(table: String, column: String) -> Self {
-        self.column(SQLColumn(column, table: table))
-    }
-
     /// Specify a column to retrieve with an aliased name.
     @inlinable
     @discardableResult

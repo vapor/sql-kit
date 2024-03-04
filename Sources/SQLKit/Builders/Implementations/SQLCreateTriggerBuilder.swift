@@ -79,14 +79,6 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     }
 
     /// Specify a conditional expression which determines whether the trigger is actually executed.
-    @available(*, deprecated, message: "Specifying conditions as raw strings is unsafe. Use `SQLBinaryExpression` etc. instead.")
-    @inlinable
-    @discardableResult
-    public func condition(_ value: String) -> Self {
-        self.condition(SQLRaw(value))
-    }
-
-    /// Specify a conditional expression which determines whether the trigger is actually executed.
     @inlinable
     @discardableResult
     public func condition(_ value: any SQLExpression) -> Self {
@@ -115,14 +107,6 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     public func referencedTable(_ value: any SQLExpression) -> Self {
         self.createTrigger.referencedTable = value
         return self
-    }
-
-    /// Specify a body for the trigger.
-    @available(*, deprecated, message: "Specifying SQL statements as raw strings is unsafe. Use `SQLQueryString` or `SQLRaw` explicitly.")
-    @inlinable
-    @discardableResult
-    public func body(_ statements: [String]) -> Self {
-        self.body(statements.map { SQLRaw($0) })
     }
 
     /// Specify a body for the trigger.

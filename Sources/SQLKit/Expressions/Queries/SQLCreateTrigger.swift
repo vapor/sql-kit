@@ -169,22 +169,7 @@ public struct SQLCreateTrigger: SQLExpression {
     }
 }
 
-/// Old name for ``SQLCreateTrigger/WhenSpecifier``.
-@available(*, deprecated, renamed: "SQLCreateTrigger.WhenSpecifier")
-public typealias SQLTriggerWhen = SQLCreateTrigger.WhenSpecifier
 
-/// Old name for ``SQLCreateTrigger/EventSpecifier``.
-@available(*, deprecated, renamed: "SQLCreateTrigger.EventSpecifier")
-public typealias SQLTriggerEvent = SQLCreateTrigger.EventSpecifier
 
-/// Old name for ``SQLCreateTrigger/TimingSpecifier``.
-@available(*, deprecated, renamed: "SQLCreateTrigger.TimingSpecifier")
-public typealias SQLTriggerTiming = SQLCreateTrigger.TimingSpecifier
 
-/// Old name for ``SQLCreateTrigger/EachSpecifier``.
-@available(*, deprecated, renamed: "SQLCreateTrigger.EachSpecifier")
-public typealias SQLTriggerEach = SQLCreateTrigger.EachSpecifier
 
-/// Old name for ``SQLCreateTrigger/OrderSpecifier``.
-@available(*, deprecated, renamed: "SQLCreateTrigger.OrderSpecifier")
-public typealias SQLTriggerOrder = SQLCreateTrigger.OrderSpecifier

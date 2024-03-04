@@ -78,27 +78,6 @@ public struct SQLUnionJoiner: SQLExpression {
     
     public var type: `Type`
 
-    @available(*, deprecated, message: "Use .type` instead.")
-    @inlinable
-    public var all: Bool {
-        get { [.unionAll, .intersectAll, .exceptAll].contains(self.type) }
-        set { switch (self.type, newValue) {
-            case (.union, true): self.type = .unionAll
-            case (.unionAll, false): self.type = .union
-            case (.intersect, true): self.type = .intersectAll
-            case (.intersectAll, false): self.type = .intersect
-            case (.except, true): self.type = .exceptAll
-            case (.exceptAll, false): self.type = .except
-            default: break
-        } }
-    }
-    
-    @available(*, deprecated, message: "Use .init(type:)` instead.")
-    @inlinable
-    public init(all: Bool) {
-        self.init(type: all ? .unionAll : .union)
-    }
-    
     @inlinable
     public init(type: `Type`) {
         self.type = type
