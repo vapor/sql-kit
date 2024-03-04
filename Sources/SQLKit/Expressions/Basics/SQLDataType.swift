@@ -36,13 +36,6 @@ public enum SQLDataType: SQLExpression {
     /// Translates to the serialization of the given expression, unless overridden by dialect.
     case custom(any SQLExpression)
 
-    /// An inadvertently public test utility. Do not use.
-    @available(*, deprecated, message: "This is a test utility method that was incorrectly made public. Use `.custom()` directly instead.")
-    @inlinable
-    public static func type(_ string: String) -> Self {
-        .custom(SQLIdentifier(string))
-    }
-    
     // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
