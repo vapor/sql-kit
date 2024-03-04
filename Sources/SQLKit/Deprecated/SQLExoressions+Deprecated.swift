@@ -27,6 +27,16 @@ extension SQLDropEnum {
     }
 }
 
+extension SQLDropTrigger {
+    /// A legacy alias for toggling ``dropBehavior`` between ``SQLDropBehavior/restrict`` (`false`) and
+    /// ``SQLDropBehavior/cascade`` (`true`). Prefer setting ``dropBehavior`` directly instead.
+    @available(*, deprecated, renamed: "dropBehavior")
+    public var cascade: Bool {
+        get { self.dropBehavior == .cascade }
+        set { self.dropBehavior = newValue ? .cascade : .restrict }
+    }
+}
+
 extension SQLQueryString {
     /// [DEPRECATED] Adds an interpolated string of raw SQL.
     ///
