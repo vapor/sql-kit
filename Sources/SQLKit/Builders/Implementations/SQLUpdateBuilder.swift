@@ -43,7 +43,7 @@ public final class SQLUpdateBuilder: SQLQueryBuilder, SQLPredicateBuilder, SQLRe
     /// Create a new ``SQLUpdateBuilder``.
     ///
     /// Use this API directly only if you need to have control over the builder's initial update query. Prefer using
-    /// ``SQLDatabase/update(_:)-42k7h`` or ``SQLDatabase/update(_:)-2fl0d`` whnever possible.
+    /// ``SQLDatabase/update(_:)-2tf1c`` or ``SQLDatabase/update(_:)-80964`` whnever possible.
     ///
     /// - Parameters:
     ///   - update: A query to use as the builder's initial state. It must at minimum specify a table to update.

@@ -1,4 +1,4 @@
-/// Encapsulates a `col_name=value` expression in the context of an `UPDATE` query's value
+/// Encapsulates a `column_name=value` expression in the context of an `UPDATE` query's value
 /// assignment list. This is distinct from an ``SQLBinaryExpression`` using the `.equal`
 /// operator in that the left side must be an _unqualified_ column name, the operator must
 /// be `=`, and the right side may use ``SQLExcludedColumn`` when the assignment appears in
@@ -57,7 +57,7 @@ public struct SQLColumnAssignment: SQLExpression {
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {
-            // N.B.: Do not use SQLBinaryOperator.equal here; it can vary between dialects
+            /// N.B.: Do not use SQLBinaryOperator.equal here; it can vary between dialects
             $0.append(self.columnName, "=", self.value)
         }
     }

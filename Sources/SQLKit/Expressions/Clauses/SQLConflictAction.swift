@@ -1,6 +1,6 @@
 /// An action to take when an `INSERT` query encounters a unique constraint violation.
 ///
-/// > Note: This is one of the only types at this layer which is _not_ an ``SQLExpression`.
+/// > Note: This is one of the only types at this layer which is _not_ an ``SQLExpression``.
 /// > This is down to the unfortunate fact that while PostgreSQL and SQLite both support the
 /// > standard's straightforward `ON CONFLICT DO NOTHING` syntax which goes in the same place
 /// > in the query as an update action would, MySQL can only express the ``noAction`` case

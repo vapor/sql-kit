@@ -27,7 +27,7 @@ public final class SQLDropIndexBuilder: SQLQueryBuilder {
     }
     
     /// Convenience method for specifying an owning object using a `String`. See
-    /// ``on(_:)-4oksx`` for details.
+    /// ``on(_:)-84xo2`` for details.
     @inlinable
     @discardableResult
     public func on(_ owningObject: String) -> Self {

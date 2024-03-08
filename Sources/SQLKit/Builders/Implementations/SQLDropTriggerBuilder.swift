@@ -34,7 +34,7 @@ public final class SQLDropTriggerBuilder: SQLQueryBuilder {
     @inlinable
     @discardableResult
     public func cascade() -> Self {
-        self.dropTrigger.cascade = true
+        self.dropTrigger.dropBehavior = .cascade
         return self
     }
     

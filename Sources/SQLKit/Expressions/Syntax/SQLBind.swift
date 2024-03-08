@@ -9,7 +9,7 @@ public struct SQLBind: SQLExpression {
         self.encodable = encodable
     }
     
-    /// Create a lsit of bindings to an array of values, with the placeholders wrapped in an ``SQLGroupExpression``.
+    /// Create a list of bindings to an array of values, with the placeholders wrapped in an ``SQLGroupExpression``.
     @inlinable
     public static func group(_ items: some Collection<some Encodable & Sendable>) -> any SQLExpression {
         SQLGroupExpression(items.map(SQLBind.init))
