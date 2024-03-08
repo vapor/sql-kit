@@ -34,7 +34,7 @@ public final class SQLDropEnumBuilder: SQLQueryBuilder {
     @inlinable
     @discardableResult
     public func cascade() -> Self {
-        self.dropEnum.cascade = true
+        self.dropEnum.dropBehavior = .cascade
         return self
     }
     

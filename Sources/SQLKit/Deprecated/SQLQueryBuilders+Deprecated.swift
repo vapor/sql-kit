@@ -1,7 +1,7 @@
 extension SQLAliasedColumnListBuilder {
     /// Specify a column qualified with a table name to be part of the result set of the query.
     ///
-    /// This method is deprecated. Use ``SQLColumn/init(_:table:)-7zgbm`` or ``SQLColumn/init(_:table:)-21210`` instead.
+    /// This method is deprecated. Use ``SQLColumn/init(_:table:)-19zso`` or ``SQLColumn/init(_:table:)-77d24`` instead.
     @inlinable
     @discardableResult
     @available(*, deprecated, renamed: "SQLColumn.init(_:table:)", message: "Use ``SQLColumn.init(_:table:)`` instead.")

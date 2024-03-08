@@ -166,7 +166,7 @@ public struct SQLStatement: SQLExpression {
     ///
     /// > Note: Because this method's non-optional variant, ``append(_:_:)-53s9b``, already existed as public API,
     /// > source compatibility requires that this version must be declared separately, rather than allowing the
-    /// > compiler to infer the optionality as needed as with, for example, ``append(_:_:)-2hsg3``.
+    /// > compiler to infer the optionality as needed as with, for example, ``append(_:_:)-4g2tf``.
     @inlinable
     public mutating func append(_ raw: String, _ part: (any SQLExpression)?) {
         self.parts.append(contentsOf: [SQLRaw(raw), part].compactMap { $0 })
