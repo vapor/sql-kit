@@ -69,12 +69,6 @@ extension SQLSubqueryClauseBuilder {
         get { self.select.columns }
         set { self.select.columns = newValue }
     }
-    
-    // See `SQLAliasedColumnListBuilder.columns`.
-    public var columns: [any SQLExpression] {
-        get { self.select.columns }
-        set { self.select.columns = newValue }
-    }
 }
 
 // MARK: - Distinct
