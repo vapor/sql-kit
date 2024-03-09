@@ -48,8 +48,8 @@ extension SQLReturningBuilder {
 /// > exposed its ``query`` and ``database`` properties as both mutable and public, whereas they are
 /// > get-only in the ``SQLQueryBuilder`` protocol. As a result, we cannot simply store the original
 /// > builder instead, because users may have been leveraging the ability to modify the query and/or
-/// > database, whereas those mutations could not be applied to the original builder. An unfortunate
-/// > example of Hyrum's Law, that.
+/// > database, whereas those mutations could not be applied to the original builder - a classic example
+/// > of [Hyrum's Law](https://hyrumslaw.com) and its consequences.
 public final class SQLReturningResultBuilder<QueryBuilder: SQLReturningBuilder>: SQLQueryFetcher {
     // See `SQLQueryBuilder.query`.
     public var query: any SQLExpression
