@@ -5,16 +5,14 @@
 ///
 /// An aliased column list builder is also an unqualified column list builder.
 /// See ``SQLUnqualifiedColumnListBuilder``.
-public protocol SQLAliasedColumnListBuilder: SQLUnqualifiedColumnListBuilder {
-    var columns: [any SQLExpression] { get set }
-}
+public protocol SQLAliasedColumnListBuilder: SQLUnqualifiedColumnListBuilder {}
 
 extension SQLAliasedColumnListBuilder {
     /// Specify a column to retrieve with an aliased name.
     @inlinable
     @discardableResult
     public func column(_ column: String, as alias: String) -> Self {
-        return self.column(SQLColumn(column), as: SQLIdentifier(alias))
+        self.column(SQLColumn(column), as: SQLIdentifier(alias))
     }
 
     /// Specify a column to retrieve with an aliased name.

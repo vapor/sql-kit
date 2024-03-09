@@ -67,7 +67,7 @@ extension SQLColumnUpdateBuilder {
     @inlinable
     @discardableResult
     public func set(_ column: any SQLExpression, to value: any SQLExpression) -> Self {
-        self.values.append(SQLBinaryExpression(left: column, op: SQLBinaryOperator.equal, right: value))
+        self.values.append(SQLColumnAssignment(setting: column, to: value))
         return self
     }
 }
