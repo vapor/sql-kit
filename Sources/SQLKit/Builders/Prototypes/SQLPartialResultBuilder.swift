@@ -16,6 +16,7 @@ extension SQLPartialResultBuilder {
     /// Adds a `LIMIT` clause to the query. If called more than once, the last call wins.
     ///
     /// - Parameter max: Optional maximum limit. If `nil`, any existing limit is removed.
+    ///   The value may not be negative.
     @inlinable
     @discardableResult
     public func limit(_ max: Int?) -> Self {
@@ -25,7 +26,7 @@ extension SQLPartialResultBuilder {
 
     /// Adds a `OFFSET` clause to the query. If called more than once, the last call wins.
     ///
-    /// - Parameter max: Optional offset. If `nil`, any existing offset is removed.
+    /// - Parameter max: Optional offset. If `nil`, any existing offset is removed. The value may not be negative.
     /// - Returns: `self` for chaining.
     @inlinable
     @discardableResult

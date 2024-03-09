@@ -45,13 +45,15 @@ extension SQLRow {
     ///   - type: The type to decode.
     ///   - prefix: A prefix to discard from column names when looking up coding keys.
     ///   - keyDecodingStrategy: A decoding strategy to use for coding keys.
+    ///   - userInfo: See ``SQLRowDecoder/userInfo``.
     /// - Returns: An instance of the decoded type.
     public func decode<D: Decodable>(
         model type: D.Type,
         prefix: String? = nil,
-        keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys
+        keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys,
+        userInfo: [CodingUserInfoKey: any Sendable] = [:]
     ) throws -> D {
-        try self.decode(model: D.self, with: .init(prefix: prefix, keyDecodingStrategy: keyDecodingStrategy))
+        try self.decode(model: D.self, with: .init(prefix: prefix, keyDecodingStrategy: keyDecodingStrategy, userInfo: userInfo))
     }
     
     /// Decode an entire `Decodable` "model" type at once using an explicit ``SQLRowDecoder``.

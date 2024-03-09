@@ -1,12 +1,11 @@
 /// Common definitions for any query builder which permits specifying a primary predicate.
 ///
-///     builder.where("name", .equal, "Earth")
+/// - Expressions specified with ``where(_:)`` are considered conjunctive (`AND`).
+/// - Expressions specified with ``orWhere(_:)`` are considered inclusively disjunctive (`OR`).
 ///
-/// Expressions specified with ``where(_:)`` are considered conjunctive (`AND`).
-/// Expressions specified with ``orWhere(_:)`` are considered inclusively disjunctive (`OR`).
-/// See ``SQLPredicateGroupBuilder`` for details of grouping expressions (i.e. with parenthesis).
+/// See ``SQLPredicateGroupBuilder`` for details of grouping expressions (e.g. with parenthesis).
 public protocol SQLPredicateBuilder: AnyObject {
-    /// Expression being built.
+    /// The predicate under construction.
     var predicate: (any SQLExpression)? { get set }
 }
 
