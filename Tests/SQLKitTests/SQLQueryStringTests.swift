@@ -35,7 +35,7 @@ final class SQLQueryStringTests: XCTestCase {
         )
 
         XCTAssertEqual(
-            try self.db.raw(.init("|||SELECT * FROM staticTable WHERE name = uselessUnboundValue|||".dropFirst(3).dropLast(3))).simpleSerialize(),
+            try self.db.raw(.init(String("|||SELECT * FROM staticTable WHERE name = uselessUnboundValue|||".dropFirst(3).dropLast(3)))).simpleSerialize(),
             "SELECT * FROM staticTable WHERE name = uselessUnboundValue"
         )
     }

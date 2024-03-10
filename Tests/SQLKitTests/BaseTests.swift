@@ -26,7 +26,7 @@ final class SQLKitTests: XCTestCase {
     func testSelect_tableAllCols() {
         XCTAssertEqual(try self.db
             .select()
-            .column(table: "planets", column: "*")
+            .column(SQLColumn(SQLLiteral.all, table: SQLIdentifier("planets")))
             .from("planets")
             .where("name", .equal, SQLBind("Earth"))
             .simpleSerialize(),
@@ -349,13 +349,13 @@ final class SQLKitTests: XCTestCase {
                 SQLAlias(SQLGroupExpression(
                     self.db.select().column("name").from("stars").where(SQLColumn("orion"), .equal, SQLIdentifier("please space")).select
                 ), as: SQLIdentifier("star")),
-                method: SQLJoinMethod.outer,
+                method: SQLJoinMethod.inner,
                 on: SQLColumn(SQLIdentifier("planet_id"), table: SQLIdentifier("moons")), SQLBinaryOperator.isNot, SQLRaw("%%%%%%")
             )
             .where(SQLLiteral.null)
             .simpleSerialize(),
             // Yes, this query is very much pure gibberish.
-            "SELECT * FROM `planets` OUTER JOIN (SELECT `name` FROM `stars` WHERE `orion` = `please space`) AS `star` ON `moons`.`planet_id` IS NOT %%%%%% WHERE NULL"
+            "SELECT * FROM `planets` INNER JOIN (SELECT `name` FROM `stars` WHERE `orion` = `please space`) AS `star` ON `moons`.`planet_id` IS NOT %%%%%% WHERE NULL"
         )
     }
     
@@ -378,7 +378,7 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testInsertWithArrayOfEncodable() {
-        func weird<S: Sequence>(_ builder: SQLInsertBuilder, values: S) -> SQLInsertBuilder where S.Element: Encodable {
+        func weird(_ builder: SQLInsertBuilder, values: some Sequence<Encodable & Sendable>) -> SQLInsertBuilder {
             builder.values(Array(values))
         }
         
