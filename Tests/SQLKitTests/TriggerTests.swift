@@ -81,7 +81,7 @@ final class SQLKitTriggerTests: XCTestCase {
             .create(trigger: "foo", table: "planet", when: .after, event: .insert)
             .each(.row)
             .isConstraint()
-            .timing(.initiallyDeferred)
+            .timing(.deferredByDefault)
             .condition("\(ident: "foo") = \(ident: "bar")" as SQLQueryString)
             .procedure("qwer")
             .referencedTable(SQLIdentifier("galaxies"))
