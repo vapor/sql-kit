@@ -58,19 +58,22 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder/*, SQL
     ///   - prefix: See ``SQLQueryEncoder/prefix``.
     ///   - keyEncodingStrategy: See ``SQLQueryEncoder/keyEncodingStrategy-swift.property``.
     ///   - nilEncodingStrategy: See ``SQLQueryEncoder/nilEncodingStrategy-swift.property`.
+    ///   - userInfo: See ``SQLQueryEncoder/userInfo``.
     @inlinable
     @discardableResult
     public func model(
         _ model: some Encodable,
         prefix: String? = nil,
         keyEncodingStrategy: SQLQueryEncoder.KeyEncodingStrategy = .useDefaultKeys,
-        nilEncodingStrategy: SQLQueryEncoder.NilEncodingStrategy = .default
+        nilEncodingStrategy: SQLQueryEncoder.NilEncodingStrategy = .default,
+        userInfo: [CodingUserInfoKey: any Sendable] = [:]
     ) throws -> Self {
         try self.models(
             [model],
             prefix: prefix,
             keyEncodingStrategy: keyEncodingStrategy,
-            nilEncodingStrategy: nilEncodingStrategy
+            nilEncodingStrategy: nilEncodingStrategy,
+            userInfo: userInfo
         )
     }
 
@@ -137,15 +140,17 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder/*, SQL
     ///   - prefix: See ``SQLQueryEncoder/prefix``.
     ///   - keyEncodingStrategy: See ``SQLQueryEncoder/keyEncodingStrategy-swift.property``.
     ///   - nilEncodingStrategy: See ``SQLQueryEncoder/nilEncodingStrategy-swift.property`.
+    ///   - userInfo: See ``SQLQueryEncoder/userInfo``.
     @inlinable
     @discardableResult
     public func models(
         _ models: [some Encodable],
         prefix: String? = nil,
         keyEncodingStrategy: SQLQueryEncoder.KeyEncodingStrategy = .useDefaultKeys,
-        nilEncodingStrategy: SQLQueryEncoder.NilEncodingStrategy = .default
+        nilEncodingStrategy: SQLQueryEncoder.NilEncodingStrategy = .default,
+        userInfo: [CodingUserInfoKey: any Sendable] = [:]
     ) throws -> Self {
-        try self.models(models, with: .init(prefix: prefix, keyEncodingStrategy: keyEncodingStrategy, nilEncodingStrategy: nilEncodingStrategy))
+        try self.models(models, with: .init(prefix: prefix, keyEncodingStrategy: keyEncodingStrategy, nilEncodingStrategy: nilEncodingStrategy, userInfo: userInfo))
     }
     
     /// Use an array of `Encodable` values to generate rows to insert and add those rows to the query.

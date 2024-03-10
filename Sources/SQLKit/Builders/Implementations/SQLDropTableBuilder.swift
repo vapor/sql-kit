@@ -43,8 +43,7 @@ public final class SQLDropTableBuilder: SQLQueryBuilder {
     @inlinable
     @discardableResult
     public func cascade() -> Self {
-        self.dropTable.behavior = SQLDropBehavior.cascade
-        return self
+        self.behavior(.cascade)
     }
 
     /// Adds a `RESTRICT` clause to the `DROP TABLE` statement instructing that
@@ -52,8 +51,7 @@ public final class SQLDropTableBuilder: SQLQueryBuilder {
     @inlinable
     @discardableResult
     public func restrict() -> Self {
-        self.dropTable.behavior = SQLDropBehavior.restrict
-        return self
+        self.behavior(.restrict)
     }
 
     /// If the `TEMPORARY` keyword occurs between `DROP` and `TABLE`, then only

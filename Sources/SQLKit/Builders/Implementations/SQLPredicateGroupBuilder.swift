@@ -30,7 +30,7 @@ extension SQLPredicateBuilder {
         }
     }
     
-    /// Builds a grouped `WHERE` expression by disjunction (`OR`).
+    /// Builds a grouped `WHERE` expression by inclusive disjunction (`OR`).
     ///
     ///     builder.where("name", .equal, "Jupiter").orWhere {
     ///         $0.where("name", .equal, "Earth").where("type", .equal, PlanetType.smallRocky)

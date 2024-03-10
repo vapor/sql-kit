@@ -1,11 +1,4 @@
 /// Builds ``SQLCreateTable`` queries.
-///
-///     db.create(table: Planet.self).ifNotExists()
-///        .column("id", type: .int, .primaryKey)
-///        .column("galaxy_id", type: .int, .references(Galaxy.schema, "id"))
-///        .run()
-///
-/// See `SQLColumnBuilder` and `SQLQueryBuilder` for more information.
 public final class SQLCreateTableBuilder: SQLQueryBuilder {
     /// ``SQLCreateTable`` query being built.
     public var createTable: SQLCreateTable
@@ -280,6 +273,7 @@ extension SQLDatabase {
     }
     
     /// Create a new ``SQLCreateTableBuilder``.
+    @inlinable
     public func create(table: any SQLExpression) -> SQLCreateTableBuilder {
         .init(.init(name: table), on: self)
     }

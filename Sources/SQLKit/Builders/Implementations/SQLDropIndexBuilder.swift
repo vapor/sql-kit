@@ -62,8 +62,7 @@ public final class SQLDropIndexBuilder: SQLQueryBuilder {
     @inlinable
     @discardableResult
     public func cascade() -> Self {
-        self.dropIndex.behavior = SQLDropBehavior.cascade
-        return self
+        self.behavior(.cascade)
     }
 
     /// Adds a `RESTRICT` clause to the `DROP INDEX` statement instructing that
@@ -71,18 +70,19 @@ public final class SQLDropIndexBuilder: SQLQueryBuilder {
     @inlinable
     @discardableResult
     public func restrict() -> Self {
-        self.dropIndex.behavior = SQLDropBehavior.restrict
-        return self
+        self.behavior(.restrict)
     }
 }
 
 extension SQLDatabase {
     /// Create a new ``SQLDropIndexBuilder``.
+    @inlinable
     public func drop(index name: String) -> SQLDropIndexBuilder {
         self.drop(index: SQLIdentifier(name))
     }
     
     /// Create a new ``SQLDropIndexBuilder``.
+    @inlinable
     public func drop(index name: any SQLExpression) -> SQLDropIndexBuilder {
         .init(.init(name: name), on: self)
     }

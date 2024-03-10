@@ -4,8 +4,8 @@
 /// This type essentially acts as a bridge between `Codable` structure types and the per-column decoding methods
 /// provided by ``SQLRow``. It is, somewhat confusingly, designed primarily for use via ``SQLQueryFetcher``'s
 /// ``SQLQueryFetcher/all(decoding:)-5dt2x`` and ``SQLQueryFetcher/first(decoding:)-63noi`` methods, or somewhat more
-/// directly via ``SQLRow/decode(model:prefix:keyDecodingStrategy:)`` and ``SQLRow/decode(model:with:)``, but it can
-/// also be manually invoked. For example:
+/// directly via ``SQLRow/decode(model:prefix:keyDecodingStrategy:userInfo:)`` and ``SQLRow/decode(model:with:)``, but
+/// it can also be manually invoked. For example:
 ///
 /// ```swift
 /// struct MySimpleUserModel: Codable {

@@ -14,7 +14,13 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
 
     /// Create a new ``SQLCreateTriggerBuilder``.
     @usableFromInline
-    init(trigger: any SQLExpression, table: any SQLExpression, when: any SQLExpression, event: any SQLExpression, on database: any SQLDatabase) {
+    init(
+        trigger: any SQLExpression,
+        table: any SQLExpression,
+        when: any SQLExpression,
+        event: any SQLExpression,
+        on database: any SQLDatabase
+    ) {
         self.createTrigger = .init(trigger: trigger, table: table, when: when, event: event)
         self.database = database
     }
@@ -159,14 +165,23 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
 extension SQLDatabase {
     /// Create a new ``SQLCreateTriggerBuilder``.
     @inlinable
-    public func create(trigger: String, table: String, when: SQLCreateTrigger.WhenSpecifier, event: SQLCreateTrigger.EventSpecifier) -> SQLCreateTriggerBuilder {
+    public func create(
+        trigger: String,
+        table: String,
+        when: SQLCreateTrigger.WhenSpecifier,
+        event: SQLCreateTrigger.EventSpecifier
+    ) -> SQLCreateTriggerBuilder {
         self.create(trigger: SQLIdentifier(trigger), table: SQLIdentifier(table), when: when, event: event)
     }
 
     /// Create a new ``SQLCreateTriggerBuilder``.
     @inlinable
-    public func create(trigger: any SQLExpression, table: any SQLExpression, when: any SQLExpression, event: any SQLExpression) -> SQLCreateTriggerBuilder {
+    public func create(
+        trigger: any SQLExpression,
+        table: any SQLExpression,
+        when: any SQLExpression,
+        event: any SQLExpression
+    ) -> SQLCreateTriggerBuilder {
         .init(trigger: trigger, table: table, when: when, event: event, on: self)
     }
 }
-

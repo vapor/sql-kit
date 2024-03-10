@@ -2,17 +2,14 @@
 /// rows that caused unique key conflicts during an `INSERT`.
 public final class SQLConflictUpdateBuilder: SQLColumnUpdateBuilder, SQLPredicateBuilder {
     // See `SQLColumnUpdateBuilder.values`.
-    public var values: [any SQLExpression]
+    public var values: [any SQLExpression] = []
     
     // See `SQLPredicateBuilder.predicate`.
-    public var predicate: (any SQLExpression)?
+    public var predicate: (any SQLExpression)? = nil
     
     /// Create a conflict update builder.
     @usableFromInline
-    init() {
-        self.values = []
-        self.predicate = nil
-    }
+    init() {}
 
     /// Add an assignment of the column with the given name, using the value the column was
     /// given in the `INSERT` query's `VALUES` list.
@@ -52,11 +49,12 @@ public final class SQLConflictUpdateBuilder: SQLColumnUpdateBuilder, SQLPredicat
         excludedContentOf model: some Encodable & Sendable,
         prefix: String? = nil,
         keyEncodingStrategy: SQLQueryEncoder.KeyEncodingStrategy = .useDefaultKeys,
-        nilEncodingStrategy: SQLQueryEncoder.NilEncodingStrategy = .default
+        nilEncodingStrategy: SQLQueryEncoder.NilEncodingStrategy = .default,
+        userInfo: [CodingUserInfoKey: any Sendable] = [:]
     ) throws -> Self {
         try self.set(
             excludedContentOf: model,
-            with: .init(prefix: prefix, keyEncodingStrategy: keyEncodingStrategy, nilEncodingStrategy: nilEncodingStrategy)
+            with: .init(prefix: prefix, keyEncodingStrategy: keyEncodingStrategy, nilEncodingStrategy: nilEncodingStrategy, userInfo: userInfo)
         )
     }
 

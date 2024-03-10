@@ -1,4 +1,4 @@
-import OrderedCollections
+import struct OrderedCollections.OrderedDictionary
 
 /// An implementation of `Encoder` designed to encode "models" (or, in general, aggregate `Encodable` types) into a
 /// form which can be used as input to a database query.
@@ -9,15 +9,15 @@ import OrderedCollections
 /// This type is, somewhat confusingly, designed primarily for use with methods such as
 /// 
 /// - ``SQLInsertBuilder``:
-///   - ``SQLInsertBuilder/model(_:prefix:keyEncodingStrategy:nilEncodingStrategy:)``
+///   - ``SQLInsertBuilder/model(_:prefix:keyEncodingStrategy:nilEncodingStrategy:userInfo:)``
 ///   - ``SQLInsertBuilder/model(_:with:)``
-///   - ``SQLInsertBuilder/models(_:prefix:keyEncodingStrategy:nilEncodingStrategy:)``
+///   - ``SQLInsertBuilder/models(_:prefix:keyEncodingStrategy:nilEncodingStrategy:userInfo:)``
 ///   - ``SQLInsertBuilder/models(_:with:)``
 /// - ``SQLColumnUpdateBuilder``:
-///   - ``SQLColumnUpdateBuilder/set(model:prefix:keyEncodingStrategy:nilEncodingStrategy:)``
+///   - ``SQLColumnUpdateBuilder/set(model:prefix:keyEncodingStrategy:nilEncodingStrategy:userInfo:)``
 ///   - ``SQLColumnUpdateBuilder/set(model:with:)``
 /// - ``SQLConflictUpdateBuilder``:
-///   - ``SQLConflictUpdateBuilder/set(excludedContentOf:prefix:keyEncodingStrategy:nilEncodingStrategy:)``
+///   - ``SQLConflictUpdateBuilder/set(excludedContentOf:prefix:keyEncodingStrategy:nilEncodingStrategy:userInfo:)``
 ///   - ``SQLConflictUpdateBuilder/set(excludedContentOf:with:)``
 ///
 /// It can also be manually invoked. For example:
@@ -68,8 +68,8 @@ public struct SQLQueryEncoder: Sendable {
 
         /// Encode an explicit `NULL` value for columns with `nil` values.
         ///
-        /// Intended for use with ``SQLInsertBuilder/model(_:prefix:keyEncodingStrategy:nilEncodingStrategy:)``
-        /// and ``SQLInsertBuilder/models(_:prefix:keyEncodingStrategy:nilEncodingStrategy:)``.
+        /// Intended for use with ``SQLInsertBuilder/model(_:prefix:keyEncodingStrategy:nilEncodingStrategy:userInfo:)``
+        /// and ``SQLInsertBuilder/models(_:prefix:keyEncodingStrategy:nilEncodingStrategy:userInfo:)``.
         case asNil
     }
 

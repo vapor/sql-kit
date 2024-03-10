@@ -38,8 +38,8 @@ extension SQLRow {
     ///
     /// See ``SQLRowDecoder`` for additional details.
     ///
-    /// Most users should consider using ``SQLQueryFetcher/all(decoding:prefix:keyDecodingStrategy:)-53emu``
-    /// and/or ``SQLQueryFetcher/first(decoding:prefix:keyDecodingStrategy:)-34a1n`` instead.
+    /// Most users should consider using ``SQLQueryFetcher/all(decoding:prefix:keyDecodingStrategy:userInfo:)-5u1nz``
+    /// and/or ``SQLQueryFetcher/first(decoding:prefix:keyDecodingStrategy:userInfo:)-2str1`` instead.
     ///
     /// - Parameters:
     ///   - type: The type to decode.

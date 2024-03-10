@@ -14,50 +14,46 @@ package's functionality.
 - ``SQLDatabase/dialect``
 - ``SQLDatabase/queryLogLevel``
 
-### Concurrency interfaces
+### Query interface
 
 - ``SQLDatabase/execute(sql:_:)-7trgm``
 
-### EventLoopFuture interfaces
-
-- ``SQLDatabase/execute(sql:_:)-90wi9``
-
 ### DML queries
 
-- ``SQLDatabase/delete(from:)-53p45``
-- ``SQLDatabase/delete(from:)-9o76g``
-- ``SQLDatabase/insert(into:)-31xhl``
-- ``SQLDatabase/insert(into:)-7kcf9``
+- ``SQLDatabase/delete(from:)-3tx4f``
+- ``SQLDatabase/delete(from:)-4bqlu``
+- ``SQLDatabase/insert(into:)-67oqt``
+- ``SQLDatabase/insert(into:)-5n3gh``
 - ``SQLDatabase/select()``
 - ``SQLDatabase/union(_:)``
-- ``SQLDatabase/update(_:)-42k7h``
-- ``SQLDatabase/update(_:)-2fl0d``
+- ``SQLDatabase/update(_:)-2tf1c``
+- ``SQLDatabase/update(_:)-80964``
 
 ### DDL queries
 
-- ``SQLDatabase/alter(table:)-7ht30``
+- ``SQLDatabase/alter(table:)-42uao``
 - ``SQLDatabase/alter(table:)-68pbr``
-- ``SQLDatabase/create(table:)-8cj1n``
-- ``SQLDatabase/create(table:)-2dnjh``
-- ``SQLDatabase/drop(table:)-2aa1b``
-- ``SQLDatabase/drop(table:)-77lrz``
+- ``SQLDatabase/create(table:)-czz4``
+- ``SQLDatabase/create(table:)-2wdmn``
+- ``SQLDatabase/drop(table:)-938qt``
+- ``SQLDatabase/drop(table:)-7k2ai``
 
-- ``SQLDatabase/alter(enum:)-95006``
-- ``SQLDatabase/alter(enum:)-7l6tg``
-- ``SQLDatabase/create(enum:)-65h8k``
-- ``SQLDatabase/create(enum:)-2t6o5``
-- ``SQLDatabase/drop(enum:)-5726u``
-- ``SQLDatabase/drop(enum:)-6yxi7``
+- ``SQLDatabase/alter(enum:)-66oin``
+- ``SQLDatabase/alter(enum:)-7nb5b``
+- ``SQLDatabase/create(enum:)-81hl4``
+- ``SQLDatabase/create(enum:)-70oeh``
+- ``SQLDatabase/drop(enum:)-5leu1``
+- ``SQLDatabase/drop(enum:)-3jgv``
 
-- ``SQLDatabase/create(index:)-9vfh0``
-- ``SQLDatabase/create(index:)-40exk``
-- ``SQLDatabase/drop(index:)-6vrgx``
-- ``SQLDatabase/drop(index:)-5lfmu``
+- ``SQLDatabase/create(index:)-7yh28``
+- ``SQLDatabase/create(index:)-1iuey``
+- ``SQLDatabase/drop(index:)-62i2j``
+- ``SQLDatabase/drop(index:)-19tfk``
 
-- ``SQLDatabase/create(trigger:table:when:event:)-7gpbq``
-- ``SQLDatabase/create(trigger:table:when:event:)-1w9w``
-- ``SQLDatabase/drop(trigger:)-9wf4i``
-- ``SQLDatabase/drop(trigger:)-2qpz``
+- ``SQLDatabase/create(trigger:table:when:event:)-6ntdo``
+- ``SQLDatabase/create(trigger:table:when:event:)-9upcb``
+- ``SQLDatabase/drop(trigger:)-53mq6``
+- ``SQLDatabase/drop(trigger:)-5sfa8``
 
 ### Raw queries
 
@@ -67,3 +63,7 @@ package's functionality.
 ### Logging
 
 - ``SQLDatabase/logging(to:)``
+
+### Legacy query interface
+
+- ``SQLDatabase/execute(sql:_:)-90wi9``

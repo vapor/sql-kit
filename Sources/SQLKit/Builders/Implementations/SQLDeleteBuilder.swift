@@ -1,10 +1,4 @@
 /// Builds ``SQLDelete`` queries.
-///
-///     db.delete(from: Planet.self)
-///         .where("name", .notEqual, "Earth")
-///         .run()
-///
-/// See ``SQLPredicateBuilder`` for additional information.
 public final class SQLDeleteBuilder: SQLQueryBuilder, SQLPredicateBuilder, SQLReturningBuilder {
     /// ``SQLDelete`` query being built.
     public var delete: SQLDelete
@@ -48,6 +42,7 @@ extension SQLDatabase {
     }
     
     /// Create a new ``SQLDeleteBuilder``.
+    @inlinable
     public func delete(from table: any SQLExpression) -> SQLDeleteBuilder {
         .init(.init(table: table), on: self)
     }
