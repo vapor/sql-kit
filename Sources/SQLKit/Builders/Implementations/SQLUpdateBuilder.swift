@@ -1,11 +1,4 @@
 /// Builds ``SQLUpdate`` queries.
-///
-/// ```swift
-/// try await db.update("planets")
-///     .set("name", to: "Earth")
-///     .where("name", .equal, "Earth")
-///     .run()
-/// ```
 public final class SQLUpdateBuilder: SQLQueryBuilder, SQLPredicateBuilder, SQLReturningBuilder, SQLColumnUpdateBuilder {
     /// An ``SQLUpdate`` containing the complete current state of the builder.
     public var update: SQLUpdate
@@ -56,19 +49,21 @@ public final class SQLUpdateBuilder: SQLQueryBuilder, SQLPredicateBuilder, SQLRe
 }
 
 extension SQLDatabase {
-    public func update(_ table: String) -> SQLUpdateBuilder {
     /// Create a new ``SQLUpdateBuilder`` associated with this database.
     /// 
     /// - Parameter table: A table to specify for the builder's update query.
     /// - Returns: A new builder.
+    @inlinable
+    public func update(_ table: String) -> SQLUpdateBuilder {
         self.update(SQLIdentifier(table))
     }
     
-    public func update(_ table: any SQLExpression) -> SQLUpdateBuilder {
     /// Create a new ``SQLUpdateBuilder`` associated with this database.
     ///
     /// - Parameter table: An expression used as the target of the builder's update query.
-    /// - Returns: A new builder. 
+    /// - Returns: A new builder.
+    @inlinable
+    public func update(_ table: any SQLExpression) -> SQLUpdateBuilder {
         .init(.init(table: table), on: self)
     }
 }

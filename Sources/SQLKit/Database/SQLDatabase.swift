@@ -1,4 +1,6 @@
-import Logging
+import protocol NIOCore.EventLoop
+import class NIOCore.EventLoopFuture
+import struct Logging.Logger
 
 /// The core of an SQLKit driver. This common interface is the access point of both SQLKit itself and
 /// SQLKit clients to all of the information and behaviors necessary to provide and leverage the
@@ -49,18 +51,20 @@ public protocol SQLDatabase: Sendable {
     /// The `Logger` used for logging all operations relating to a given database.
     var logger: Logger { get }
     
-    /// The `EventLoop` used for asynchronous operations on a given database. If there is no specific
-    /// `EventLoop` which handles the database (such as because it is a connection pool which assigns
-    /// loops to connections at point of use, or because the underlying implementation is based on Swift
-    /// Concurrency or some other asynchronous execution technology), a single consistent `EventLoop`
-    /// must be chosen for the database and returned for this property nonetheless.
+    /// The `EventLoop` used for asynchronous operations on a given database.
+    ///
+    /// If there is no specific `EventLoop` which handles the database (such as because it is a connection pool which
+    /// assigns loops to connections at point of use, or because the underlying implementation is based on Swift
+    /// Concurrency or some other asynchronous execution technology), a single consistent `EventLoop` must be chosen
+    /// for the database and returned for this property nonetheless.
     var eventLoop: any EventLoop { get }
     
-    /// The version number the database reports for itself, provided as a type conforming to the
-    /// ``SQLDatabaseReportedVersion`` protocol. If the version number is not applicable (such as for
-    /// a connection pool dispatch wrapper) or not yet known, `nil` may be returned. Version numbers
-    /// may also change at runtime (for example, if a connection is auto-reconnected after a remote
-    /// update), or even become unknown again after being known.
+    /// The version number the database reports for itself.
+    ///
+    /// The version must be provided via a type conforming to the ``SQLDatabaseReportedVersion`` protocol. If the
+    /// version number is not applicable (such as for a connection pool dispatch wrapper) or not yet known, `nil` may
+    /// be returned. Version numbers may also change at runtime (for example, if a connection is auto-reconnected
+    /// after a remote update), or even become unknown again after being known.
     ///
     /// > Note: This version number has nothing to do with SQLKit or the driver implementation for the
     /// > database, nor does it represent any data stored within the database; it is the version of the
@@ -70,9 +74,12 @@ public protocol SQLDatabase: Sendable {
     /// > available at runtime, rather than the old solution of hardcoding a "safe" (but limited) baseline.
     var version: (any SQLDatabaseReportedVersion)? { get }
 
-    /// The descriptor for the SQL dialect supported by the given database. It is permitted for different
-    /// connections to the same database to have different dialects, though it's unclear how this would
-    /// be useful in practice.
+    /// The descriptor for the dialect of SQL supported by the given database.
+    ///
+    /// The dialect must be provided via a type conforming to the ``SQLDialect`` protocol. It is permitted for
+    /// different connections to the same database to report different dialects, although it's unclear how this would
+    /// be useful in practice; a dialect that differs based on database version should differentiate based on the
+    /// ``version-22wnn`` property instead.
     var dialect: any SQLDialect { get }
     
     /// The logging level used for reporting queries run on the given database to the database's logger.
@@ -93,7 +100,9 @@ public protocol SQLDatabase: Sendable {
     /// Requests that the given generic SQL query be serialized and executed on the database, and that
     /// the `onRow` closure be invoked once for each result row the query returns (if any).
     ///
-    /// Consider using ``execute(sql:_:)-7trgm`` instead when possible.
+    /// Although it is a protocol requirement for historical reasons, this is considered a legacy interface thanks
+    /// to its reliance on `EventLoopFuture`. Implementers should implement both this method and
+    /// ``execute(sql:_:)-7trgm`` if they can, and users should use ``execute(sql:_:)-7trgm`` whenever possible.
     ///
     /// - Parameters:
     ///   - query: An ``SQLExpression`` representing a complete query to execute.
@@ -156,7 +165,8 @@ extension SQLDatabase {
 }
 
 extension SQLDatabase {
-    /// Concurrency-aware version of ``SQLDatabase/execute(sql:_:)-90wi9``.
+    /// Requests that the given generic SQL query be serialized and executed on the database, and that
+    /// the `onRow` closure be invoked once for each result row the query returns (if any).
     ///
     /// If a concrete type conforming to ``SQLDatabase`` can provide a more efficient Concurrency-based implementation
     /// than forwarding the invocation through the legacy `EventLoopFuture`-based API, it should override this method

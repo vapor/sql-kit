@@ -1,6 +1,4 @@
 /// Builds ``SQLCreateIndex`` queries.
-///
-///     db.create(index: "planet_name_unique").on("planet").column("name").unique().run()
 public final class SQLCreateIndexBuilder: SQLQueryBuilder {
     /// ``SQLCreateIndex`` query being built.
     public var createIndex: SQLCreateIndex
@@ -14,6 +12,13 @@ public final class SQLCreateIndexBuilder: SQLQueryBuilder {
         self.createIndex
     }
     
+    /// Create a new ``SQLCreateIndexBuilder``.
+    @inlinable
+    public init(_ createIndex: SQLCreateIndex, on database: any SQLDatabase) {
+        self.createIndex = createIndex
+        self.database = database
+    }
+
     /// Adds `UNIQUE` modifier to the index being created.
     @inlinable
     @discardableResult
@@ -50,13 +55,6 @@ public final class SQLCreateIndexBuilder: SQLQueryBuilder {
     public func column(_ column: any SQLExpression) -> Self {
         self.createIndex.columns.append(column)
         return self
-    }
-    
-    /// Create a new `SQLCreateIndexBuilder`.
-    @inlinable
-    public init(_ createIndex: SQLCreateIndex, on database: any SQLDatabase) {
-        self.createIndex = createIndex
-        self.database = database
     }
 }
 
