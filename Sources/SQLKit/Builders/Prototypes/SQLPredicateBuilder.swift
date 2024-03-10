@@ -9,7 +9,11 @@ public protocol SQLPredicateBuilder: AnyObject {
     var predicate: (any SQLExpression)? { get set }
 }
 
+// MARK: - Conjunctive (AND)
+
 extension SQLPredicateBuilder {
+    // MARK: - Column/value comparison
+    
     /// Adds a column to encodable comparison to this builder's `WHERE` clause by `AND`ing.
     ///
     ///     builder.where("name", .equal, "Earth")
@@ -21,32 +25,6 @@ extension SQLPredicateBuilder {
     @discardableResult
     public func `where`(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: some Encodable & Sendable) -> Self {
         self.where(SQLColumn(lhs), op, SQLBind(rhs))
-    }
-
-    /// Adds a column to column comparison to this builder's `WHERE` clause by `AND`ing.
-    ///
-    ///     builder.where("firstName", .equal, column: "lastName")
-    ///
-    /// This method compares two _columns_.
-    ///
-    ///     SELECT * FROM "users" WHERE "firstName" = "lastName"
-    @inlinable
-    @discardableResult
-    public func `where`(_ lhs: String, _ op: SQLBinaryOperator, column rhs: String) -> Self {
-        self.where(SQLColumn(lhs), op, SQLColumn(rhs))
-    }
-
-    /// Adds a column to column comparison to this builder's `WHERE` clause by `AND`ing.
-    ///
-    ///     builder.where("firstName", .equal, column: "lastName")
-    ///
-    /// This method compares two _columns_.
-    ///
-    ///     SELECT * FROM "users" WHERE "firstName" = "lastName"
-    @inlinable
-    @discardableResult
-    public func `where`(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, column rhs: SQLIdentifier) -> Self {
-        self.where(SQLColumn(lhs), op, SQLColumn(rhs))
     }
 
     /// Adds a column to encodable comparison to this builder's `WHERE` clause by `AND`ing.
@@ -75,6 +53,36 @@ extension SQLPredicateBuilder {
         self.where(SQLColumn(lhs), op, SQLBind.group(rhs))
     }
 
+    // MARK: - Column/column comparison
+
+    /// Adds a column to column comparison to this builder's `WHERE` clause by `AND`ing.
+    ///
+    ///     builder.where("firstName", .equal, column: "lastName")
+    ///
+    /// This method compares two _columns_.
+    ///
+    ///     SELECT * FROM "users" WHERE "firstName" = "lastName"
+    @inlinable
+    @discardableResult
+    public func `where`(_ lhs: String, _ op: SQLBinaryOperator, column rhs: String) -> Self {
+        self.where(SQLColumn(lhs), op, SQLColumn(rhs))
+    }
+
+    /// Adds a column to column comparison to this builder's `WHERE` clause by `AND`ing.
+    ///
+    ///     builder.where("firstName", .equal, column: "lastName")
+    ///
+    /// This method compares two _columns_.
+    ///
+    ///     SELECT * FROM "users" WHERE "firstName" = "lastName"
+    @inlinable
+    @discardableResult
+    public func `where`(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, column rhs: SQLIdentifier) -> Self {
+        self.where(SQLColumn(lhs), op, SQLColumn(rhs))
+    }
+    
+    // MARK: - Column/expression comparison
+
     /// Adds a column to expression comparison to this builder' `WHERE` clause by `AND`ing.
     @inlinable
     @discardableResult
@@ -88,6 +96,8 @@ extension SQLPredicateBuilder {
     public func `where`(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: any SQLExpression) -> Self {
         self.where(SQLColumn(lhs), op, rhs)
     }
+    
+    // MARK: - Expressions
 
     /// Adds an expression to expression comparison to this builder's `WHERE` clause by `AND`ing.
     @inlinable
@@ -117,7 +127,11 @@ extension SQLPredicateBuilder {
     }
 }
 
+// MARK: - Inclusively disjunctive (OR)
+
 extension SQLPredicateBuilder {
+    // MARK: - Column/value comparison
+    
     /// Adds a column to encodable comparison to this builder's `WHERE` clause by `OR`ing.
     ///
     ///     builder.where("name", .equal, "Earth")
@@ -130,6 +144,22 @@ extension SQLPredicateBuilder {
     public func orWhere(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: some Encodable & Sendable) -> Self {
         self.orWhere(SQLColumn(lhs), op, SQLBind(rhs))
     }
+
+    /// Adds a column to encodable comparison to this builder's `WHERE` clause by `OR`ing.
+    @inlinable
+    @discardableResult
+    public func orWhere(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: some Encodable & Sendable) -> Self {
+        self.orWhere(SQLColumn(lhs), op, SQLBind(rhs))
+    }
+
+    /// Adds a column to encodable array comparison to this builder's `WHERE` clause by `OR`ing.
+    @inlinable
+    @discardableResult
+    public func orWhere(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: [some Encodable & Sendable]) -> Self {
+        self.orWhere(SQLColumn(lhs), op, SQLBind.group(rhs))
+    }
+
+    // MARK: - Column/column comparison
 
     /// Adds a column to column comparison to this builder's `WHERE` clause by `OR`ing.
     ///
@@ -151,19 +181,7 @@ extension SQLPredicateBuilder {
         self.orWhere(SQLColumn(lhs), op, SQLColumn(rhs))
     }
     
-    /// Adds a column to encodable comparison to this builder's `WHERE` clause by `OR`ing.
-    @inlinable
-    @discardableResult
-    public func orWhere(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: some Encodable & Sendable) -> Self {
-        self.orWhere(SQLColumn(lhs), op, SQLBind(rhs))
-    }
-
-    /// Adds a column to encodable array comparison to this builder's `WHERE` clause by `OR`ing.
-    @inlinable
-    @discardableResult
-    public func orWhere(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: [some Encodable & Sendable]) -> Self {
-        self.orWhere(SQLColumn(lhs), op, SQLBind.group(rhs))
-    }
+    // MARK: - Column/expression comparison
 
     /// Adds a column to expression comparison to the `WHERE` clause by `OR`ing.
     @inlinable
@@ -178,6 +196,8 @@ extension SQLPredicateBuilder {
     public func orWhere(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: any SQLExpression) -> Self {
         self.orWhere(SQLColumn(lhs), op, rhs)
     }
+
+    // MARK: - Expressions
 
     /// Adds an expression to expression comparison to this builder's `WHERE` clause by `OR`ing.
     @inlinable
