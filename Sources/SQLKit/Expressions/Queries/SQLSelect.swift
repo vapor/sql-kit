@@ -101,9 +101,15 @@ public struct SQLSelect: SQLExpression {
             if self.isDistinct {
                 $0.append("DISTINCT")
             }
-            $0.append(SQLList(self.columns))
-            $0.append("FROM", SQLList(self.tables))
-            $0.append(SQLList(self.joins, separator: SQLRaw(" ")))
+            if !self.columns.isEmpty {
+                $0.append(SQLList(self.columns))
+            }
+            if !self.tables.isEmpty {
+                $0.append("FROM", SQLList(self.tables))
+            }
+            if !self.joins.isEmpty {
+                $0.append(SQLList(self.joins, separator: SQLRaw(" ")))
+            }
             if self.predicate != nil {
                 $0.append("WHERE", self.predicate)
             }

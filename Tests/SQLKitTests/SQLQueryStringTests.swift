@@ -15,12 +15,12 @@ final class SQLQueryStringTests: XCTestCase {
 
     func testRawCustomStringConvertible() {
         let field = "name"
-        XCTAssertEqual(try self.db.raw("SELECT \(unsafeRaw: field) FROM users").simpleSerialize(), "SELECT name FROM users")
+        XCTAssertEqual(self.db.raw("SELECT \(unsafeRaw: field) FROM users").simpleSerialize(), "SELECT name FROM users")
     }
 
     func testRawQueryStringInterpolation() {
         let (table, planet) = ("planets", "Earth")
-        let output = XCTAssertNoThrowWithResult(try self.db.raw("SELECT * FROM \(ident: table) WHERE name = \(bind: planet)").advancedSerialize())
+        let output = XCTAssertNoThrowWithResult(self.db.raw("SELECT * FROM \(ident: table) WHERE name = \(bind: planet)").advancedSerialize())
         
         XCTAssertEqual(output?.sql, "SELECT * FROM `planets` WHERE name = ?")
         XCTAssertEqual(output?.binds.first as? String, planet)
@@ -30,23 +30,23 @@ final class SQLQueryStringTests: XCTestCase {
         let (table, planet) = ("planets", "Earth")
 
         XCTAssertEqual(
-            try self.db.raw(.init("SELECT * FROM \(table) WHERE name = \(planet)")).simpleSerialize(),
+            self.db.raw(.init("SELECT * FROM \(table) WHERE name = \(planet)")).simpleSerialize(),
             "SELECT * FROM planets WHERE name = Earth"
         )
 
         XCTAssertEqual(
-            try self.db.raw(.init(String("|||SELECT * FROM staticTable WHERE name = uselessUnboundValue|||".dropFirst(3).dropLast(3)))).simpleSerialize(),
+            self.db.raw(.init(String("|||SELECT * FROM staticTable WHERE name = uselessUnboundValue|||".dropFirst(3).dropLast(3)))).simpleSerialize(),
             "SELECT * FROM staticTable WHERE name = uselessUnboundValue"
         )
     }
 
     func testMakeQueryStringWithoutRawBuilder() {
         let queryString = SQLQueryString("query with \(ident: "identifier") and stuff")
-        XCTAssertEqual(try self.db.raw(queryString).simpleSerialize(), "query with `identifier` and stuff")
+        XCTAssertEqual(self.db.raw(queryString).simpleSerialize(), "query with `identifier` and stuff")
     }
     
     func testAllQueryStringInterpolationTypes() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .raw("""
                 Query string embeds:
                     \(unsafeRaw: "plain string embed")
@@ -78,7 +78,7 @@ final class SQLQueryStringTests: XCTestCase {
     }
     
     func testAppendingQueryStringByOperatorPlus() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .raw(
                 "INSERT INTO \(ident: "anything") " as SQLQueryString +
                 "(\(idents: ["col1", "col2", "col3"], joinedBy: ",")) " as SQLQueryString +
@@ -93,7 +93,7 @@ final class SQLQueryStringTests: XCTestCase {
         query += "(\(idents: ["col1", "col2", "col3"], joinedBy: ",")) " as SQLQueryString
         query += "VALUES (\(binds: [1, 2, 3]))" as SQLQueryString
         
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .raw(query)
             .simpleSerialize(),
             "INSERT INTO `anything` (`col1`,`col2`,`col3`) VALUES (?, ?, ?)"
@@ -101,7 +101,7 @@ final class SQLQueryStringTests: XCTestCase {
     }
     
     func testQueryStringArrayJoin() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .raw(
                 "INSERT INTO \(ident: "anything") " as SQLQueryString +
                 ((0..<5).map { "\(literal: "\($0)")" as SQLQueryString }).joined(separator: "..")

@@ -24,7 +24,7 @@ final class SQLKitTests: XCTestCase {
     // MARK: Basic Queries
     
     func testSelect_tableAllCols() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column(SQLColumn(SQLLiteral.all, table: SQLIdentifier("planets")))
             .from("planets")
@@ -35,7 +35,7 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testSelect_whereEncodable() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("*")
             .from("planets")
@@ -47,7 +47,7 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testSelect_whereList() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("*")
             .from("planets")
@@ -59,7 +59,7 @@ final class SQLKitTests: XCTestCase {
     }
 
     func testSelect_whereGroup() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("*")
             .from("planets")
@@ -74,7 +74,7 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testSelect_whereColumn() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("*")
             .from("planets")
@@ -86,7 +86,7 @@ final class SQLKitTests: XCTestCase {
 	}
 	
     func testSelect_withoutFrom() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column(SQLAlias.init(SQLFunction("LAST_INSERT_ID"), as: SQLIdentifier.init("id")))
             .simpleSerialize(),
@@ -95,7 +95,7 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testSelect_limitAndOrder() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("*")
             .from("planets")
@@ -108,7 +108,7 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testUpdate() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .update("planets")
             .where("name", .equal, "Jpuiter")
             .set("name", to: "Jupiter")
@@ -118,7 +118,7 @@ final class SQLKitTests: XCTestCase {
     }
 
     func testDelete() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .delete(from: "planets")
             .where("name", .equal, "Jupiter")
             .simpleSerialize(),
@@ -129,7 +129,7 @@ final class SQLKitTests: XCTestCase {
     // MARK: Locking Clauses
     
     func testLockingClause_forUpdate() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("*")
             .from("planets")
@@ -141,7 +141,7 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testLockingClause_forShare() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("*")
             .from("planets")
@@ -153,7 +153,7 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testLockingClause_raw() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("*")
             .from("planets")
@@ -167,7 +167,7 @@ final class SQLKitTests: XCTestCase {
     // MARK: Group By/Having
     
     func testGroupByHaving() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("*")
             .from("planets")
@@ -182,46 +182,46 @@ final class SQLKitTests: XCTestCase {
 
     func testIfExists() {
         self.db._dialect.supportsIfExists = true
-        XCTAssertEqual(try self.db.drop(table: "planets").ifExists().simpleSerialize(), "DROP TABLE IF EXISTS `planets`")
-        XCTAssertEqual(try self.db.drop(index: "planets_name_idx").ifExists().simpleSerialize(), "DROP INDEX IF EXISTS `planets_name_idx`")
+        XCTAssertEqual(self.db.drop(table: "planets").ifExists().simpleSerialize(), "DROP TABLE IF EXISTS `planets`")
+        XCTAssertEqual(self.db.drop(index: "planets_name_idx").ifExists().simpleSerialize(), "DROP INDEX IF EXISTS `planets_name_idx`")
 
         self.db._dialect.supportsIfExists = false
-        XCTAssertEqual(try self.db.drop(table: "planets").ifExists().simpleSerialize(), "DROP TABLE `planets`")
-        XCTAssertEqual(try self.db.drop(index: "planets_name_idx").ifExists().simpleSerialize(), "DROP INDEX `planets_name_idx`")
+        XCTAssertEqual(self.db.drop(table: "planets").ifExists().simpleSerialize(), "DROP TABLE `planets`")
+        XCTAssertEqual(self.db.drop(index: "planets_name_idx").ifExists().simpleSerialize(), "DROP INDEX `planets_name_idx`")
     }
 
     func testDropBehavior() {
         self.db._dialect.supportsDropBehavior = false
-        XCTAssertEqual(try self.db.drop(table: "planets").simpleSerialize()                             , "DROP TABLE `planets`")
-        XCTAssertEqual(try self.db.drop(index: "planets_name_idx").simpleSerialize()                    , "DROP INDEX `planets_name_idx`")
-        XCTAssertEqual(try self.db.drop(table: "planets").behavior(.cascade).simpleSerialize()          , "DROP TABLE `planets`")
-        XCTAssertEqual(try self.db.drop(index: "planets_name_idx").behavior(.cascade).simpleSerialize() , "DROP INDEX `planets_name_idx`")
-        XCTAssertEqual(try self.db.drop(table: "planets").behavior(.restrict).simpleSerialize()         , "DROP TABLE `planets`")
-        XCTAssertEqual(try self.db.drop(index: "planets_name_idx").behavior(.restrict).simpleSerialize(), "DROP INDEX `planets_name_idx`")
-        XCTAssertEqual(try self.db.drop(table: "planets").cascade().simpleSerialize()                   , "DROP TABLE `planets`")
-        XCTAssertEqual(try self.db.drop(index: "planets_name_idx").cascade().simpleSerialize()          , "DROP INDEX `planets_name_idx`")
-        XCTAssertEqual(try self.db.drop(table: "planets").restrict().simpleSerialize()                  , "DROP TABLE `planets`")
-        XCTAssertEqual(try self.db.drop(index: "planets_name_idx").restrict().simpleSerialize()         , "DROP INDEX `planets_name_idx`")
+        XCTAssertEqual(self.db.drop(table: "planets").simpleSerialize()                             , "DROP TABLE `planets`")
+        XCTAssertEqual(self.db.drop(index: "planets_name_idx").simpleSerialize()                    , "DROP INDEX `planets_name_idx`")
+        XCTAssertEqual(self.db.drop(table: "planets").behavior(.cascade).simpleSerialize()          , "DROP TABLE `planets`")
+        XCTAssertEqual(self.db.drop(index: "planets_name_idx").behavior(.cascade).simpleSerialize() , "DROP INDEX `planets_name_idx`")
+        XCTAssertEqual(self.db.drop(table: "planets").behavior(.restrict).simpleSerialize()         , "DROP TABLE `planets`")
+        XCTAssertEqual(self.db.drop(index: "planets_name_idx").behavior(.restrict).simpleSerialize(), "DROP INDEX `planets_name_idx`")
+        XCTAssertEqual(self.db.drop(table: "planets").cascade().simpleSerialize()                   , "DROP TABLE `planets`")
+        XCTAssertEqual(self.db.drop(index: "planets_name_idx").cascade().simpleSerialize()          , "DROP INDEX `planets_name_idx`")
+        XCTAssertEqual(self.db.drop(table: "planets").restrict().simpleSerialize()                  , "DROP TABLE `planets`")
+        XCTAssertEqual(self.db.drop(index: "planets_name_idx").restrict().simpleSerialize()         , "DROP INDEX `planets_name_idx`")
 
         self.db._dialect.supportsDropBehavior = true
-        XCTAssertEqual(try self.db.drop(table: "planets").simpleSerialize()                             , "DROP TABLE `planets` RESTRICT")
-        XCTAssertEqual(try self.db.drop(index: "planets_name_idx").simpleSerialize()                    , "DROP INDEX `planets_name_idx` RESTRICT")
-        XCTAssertEqual(try self.db.drop(table: "planets").behavior(.cascade).simpleSerialize()          , "DROP TABLE `planets` CASCADE")
-        XCTAssertEqual(try self.db.drop(index: "planets_name_idx").behavior(.cascade).simpleSerialize() , "DROP INDEX `planets_name_idx` CASCADE")
-        XCTAssertEqual(try self.db.drop(table: "planets").behavior(.restrict).simpleSerialize()         , "DROP TABLE `planets` RESTRICT")
-        XCTAssertEqual(try self.db.drop(index: "planets_name_idx").behavior(.restrict).simpleSerialize(), "DROP INDEX `planets_name_idx` RESTRICT")
-        XCTAssertEqual(try self.db.drop(table: "planets").cascade().simpleSerialize()                   , "DROP TABLE `planets` CASCADE")
-        XCTAssertEqual(try self.db.drop(index: "planets_name_idx").cascade().simpleSerialize()          , "DROP INDEX `planets_name_idx` CASCADE")
-        XCTAssertEqual(try self.db.drop(table: "planets").restrict().simpleSerialize()                  , "DROP TABLE `planets` RESTRICT")
-        XCTAssertEqual(try self.db.drop(index: "planets_name_idx").restrict().simpleSerialize()         , "DROP INDEX `planets_name_idx` RESTRICT")
+        XCTAssertEqual(self.db.drop(table: "planets").simpleSerialize()                             , "DROP TABLE `planets` RESTRICT")
+        XCTAssertEqual(self.db.drop(index: "planets_name_idx").simpleSerialize()                    , "DROP INDEX `planets_name_idx` RESTRICT")
+        XCTAssertEqual(self.db.drop(table: "planets").behavior(.cascade).simpleSerialize()          , "DROP TABLE `planets` CASCADE")
+        XCTAssertEqual(self.db.drop(index: "planets_name_idx").behavior(.cascade).simpleSerialize() , "DROP INDEX `planets_name_idx` CASCADE")
+        XCTAssertEqual(self.db.drop(table: "planets").behavior(.restrict).simpleSerialize()         , "DROP TABLE `planets` RESTRICT")
+        XCTAssertEqual(self.db.drop(index: "planets_name_idx").behavior(.restrict).simpleSerialize(), "DROP INDEX `planets_name_idx` RESTRICT")
+        XCTAssertEqual(self.db.drop(table: "planets").cascade().simpleSerialize()                   , "DROP TABLE `planets` CASCADE")
+        XCTAssertEqual(self.db.drop(index: "planets_name_idx").cascade().simpleSerialize()          , "DROP INDEX `planets_name_idx` CASCADE")
+        XCTAssertEqual(self.db.drop(table: "planets").restrict().simpleSerialize()                  , "DROP TABLE `planets` RESTRICT")
+        XCTAssertEqual(self.db.drop(index: "planets_name_idx").restrict().simpleSerialize()         , "DROP INDEX `planets_name_idx` RESTRICT")
     }
     
     func testDropTemporary() {
-        XCTAssertEqual(try self.db.drop(table: "normalized_planet_names").temporary().simpleSerialize(), "DROP TEMPORARY TABLE `normalized_planet_names`")
+        XCTAssertEqual(self.db.drop(table: "normalized_planet_names").temporary().simpleSerialize(), "DROP TEMPORARY TABLE `normalized_planet_names`")
     }
     
     func testOwnerObjectsForDropIndex() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .drop(index: "some_crummy_mysql_index")
             .on("some_darn_mysql_table")
             .simpleSerialize(),
@@ -231,19 +231,19 @@ final class SQLKitTests: XCTestCase {
 
     func testAltering() {
         // SINGLE
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .alter(table: "alterable")
             .column("hello", type: .text)
             .simpleSerialize(),
             "ALTER TABLE `alterable` ADD `hello` TEXT"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .alter(table: "alterable")
             .dropColumn("hello")
             .simpleSerialize(),
             "ALTER TABLE `alterable` DROP `hello`"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .alter(table: "alterable")
             .modifyColumn("hello", type: .text)
             .simpleSerialize(),
@@ -251,21 +251,21 @@ final class SQLKitTests: XCTestCase {
         )
 
         // BATCH
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .alter(table: "alterable")
             .column("hello", type: .text)
             .column("there", type: .text)
             .simpleSerialize(),
             "ALTER TABLE `alterable` ADD `hello` TEXT , ADD `there` TEXT"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .alter(table: "alterable")
             .dropColumn("hello")
             .dropColumn("there")
             .simpleSerialize(),
             "ALTER TABLE `alterable` DROP `hello` , DROP `there`"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .alter(table: "alterable")
             .update(column: "hello", type: .text)
             .update(column: "there", type: .text)
@@ -274,7 +274,7 @@ final class SQLKitTests: XCTestCase {
         )
 
         // MIXED
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .alter(table: "alterable")
             .column("hello", type: .text)
             .dropColumn("there")
@@ -284,7 +284,7 @@ final class SQLKitTests: XCTestCase {
         )
 
         // Table renaming
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .alter(table: "alterable")
             .rename(to: "new_alterable")
             .simpleSerialize(),
@@ -295,7 +295,7 @@ final class SQLKitTests: XCTestCase {
     // MARK: Distinct
     
     func testDistinct() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("*")
             .from("planets")
@@ -308,7 +308,7 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testDistinctColumns() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .distinct(on: "name", "color")
             .from("planets")
@@ -318,7 +318,7 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testDistinctExpression() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column(SQLFunction("COUNT", args: SQLDistinct("name", "color")))
             .from("planets")
@@ -330,7 +330,7 @@ final class SQLKitTests: XCTestCase {
     // MARK: Joins
     
     func testSimpleJoin() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("*")
             .from("planets")
@@ -341,7 +341,7 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testMessyJoin() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("*")
             .from("planets")
@@ -362,7 +362,7 @@ final class SQLKitTests: XCTestCase {
     // MARK: Operators
     
     func testBinaryOperators() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .update("planets")
             .set(SQLIdentifier("moons"),
                  to: SQLBinaryExpression(
@@ -382,7 +382,7 @@ final class SQLKitTests: XCTestCase {
             builder.values(Array(values))
         }
         
-        let output = XCTAssertNoThrowWithResult(try weird(
+        let output = XCTAssertNoThrowWithResult(weird(
                 self.db.insert(into: "planets").columns("name"),
                 values: ["Jupiter"]
             )
@@ -395,7 +395,7 @@ final class SQLKitTests: XCTestCase {
     // MARK: Returning
 
     func testReturning() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .insert(into: "planets")
             .columns("name")
             .values("Jupiter")
@@ -404,7 +404,7 @@ final class SQLKitTests: XCTestCase {
             "INSERT INTO `planets` (`name`) VALUES (?) RETURNING `id`, `name`"
         )
 
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .update("planets")
             .set("name", to: "Jupiter")
             .returning(SQLColumn("name", table: "planets"))
@@ -412,7 +412,7 @@ final class SQLKitTests: XCTestCase {
             "UPDATE `planets` SET `name` = ? RETURNING `planets`.`name`"
         )
 
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .delete(from: "planets")
             .returning("*")
             .simpleSerialize(),
@@ -430,15 +430,15 @@ final class SQLKitTests: XCTestCase {
         let vals = { (s: String) -> [any SQLExpression] in [SQLLiteral.default, SQLBind(UUID()), SQLBind(1), SQLBind(s)] }
         
         XCTAssertEqual(
-            try self.db.insert(into: "jumpgates").columns(cols).values(vals("calibration")).simpleSerialize(),
+            self.db.insert(into: "jumpgates").columns(cols).values(vals("calibration")).simpleSerialize(),
             "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (DEFAULT, ?, ?, ?)"
         )
         XCTAssertEqual(
-            try self.db.insert(into: "jumpgates").columns(cols).values(vals("unicorn dust application")).ignoringConflicts().simpleSerialize(),
+            self.db.insert(into: "jumpgates").columns(cols).values(vals("unicorn dust application")).ignoringConflicts().simpleSerialize(),
             "INSERT IGNORE INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (DEFAULT, ?, ?, ?)"
         )
         XCTAssertEqual(
-            try self.db.insert(into: "jumpgates").columns(cols).values(vals("planet-size snake oil jar purchasing"))
+            self.db.insert(into: "jumpgates").columns(cols).values(vals("planet-size snake oil jar purchasing"))
             .onConflict() { $0
                 .set("last_known_status", to: "Hooloovoo engineer refraction")
                 .set(excludedValueOf: "serial_number")
@@ -451,23 +451,23 @@ final class SQLKitTests: XCTestCase {
         db._dialect.upsertSyntax = .standard
         
         XCTAssertEqual(
-            try self.db.insert(into: "jumpgates").columns(cols).values(vals("calibration")).simpleSerialize(),
+            self.db.insert(into: "jumpgates").columns(cols).values(vals("calibration")).simpleSerialize(),
             "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (DEFAULT, ?, ?, ?)"
         )
         
         XCTAssertEqual(
-            try self.db.insert(into: "jumpgates").columns(cols).values(vals("unicorn dust application")).ignoringConflicts().simpleSerialize(),
+            self.db.insert(into: "jumpgates").columns(cols).values(vals("unicorn dust application")).ignoringConflicts().simpleSerialize(),
             "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (DEFAULT, ?, ?, ?) ON CONFLICT DO NOTHING"
         )
         XCTAssertEqual(
-            try self.db
+            self.db
                 .insert(into: "jumpgates").columns(cols).values(vals("Vorlon pinching"))
                 .ignoringConflicts(with: ["serial_number", "star_id"])
                 .simpleSerialize(),
             "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (DEFAULT, ?, ?, ?) ON CONFLICT (`serial_number`, `star_id`) DO NOTHING"
         )
         XCTAssertEqual(
-            try self.db
+            self.db
                 .insert(into: "jumpgates").columns(cols).values(vals("planet-size snake oil jar purchasing"))
                 .onConflict() { $0
                     .set("last_known_status", to: "Hooloovoo engineer refraction").set(excludedValueOf: "serial_number")
@@ -476,7 +476,7 @@ final class SQLKitTests: XCTestCase {
             "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (DEFAULT, ?, ?, ?) ON CONFLICT DO UPDATE SET `last_known_status` = ?, `serial_number` = EXCLUDED.`serial_number`"
         )
         XCTAssertEqual(
-            try self.db
+            self.db
                 .insert(into: "jumpgates").columns(cols).values(vals("slashfic writing"))
                 .onConflict(with: ["serial_number"]) { $0
                     .set("last_known_status", to: "tachyon antitelephone dialing the").set(excludedValueOf: "star_id")
@@ -485,7 +485,7 @@ final class SQLKitTests: XCTestCase {
             "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (DEFAULT, ?, ?, ?) ON CONFLICT (`serial_number`) DO UPDATE SET `last_known_status` = ?, `star_id` = EXCLUDED.`star_id`"
         )
         XCTAssertEqual(
-            try self.db
+            self.db
                 .insert(into: "jumpgates").columns(cols).values(vals("protection racket payoff"))
                 .onConflict(with: ["id"]) { $0
                     .set("last_known_status", to: "insurance fraud planning")
@@ -499,7 +499,7 @@ final class SQLKitTests: XCTestCase {
     // MARK: Table Creation
 
     func testColumnConstraints() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets")
             .column("id", type: .bigint, .primaryKey)
             .column("name", type: .text, .default("unnamed"))
@@ -525,7 +525,7 @@ final class SQLKitTests: XCTestCase {
     }
 
     func testMultipleColumnConstraintsPerRow() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets")
             .column("id", type: .bigint, .notNull, .primaryKey)
             .simpleSerialize(),
@@ -534,13 +534,13 @@ final class SQLKitTests: XCTestCase {
     }
 
     func testPrimaryKeyColumnConstraintVariants() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets1")
             .column("id", type: .bigint, .primaryKey)
             .simpleSerialize(),
             "CREATE TABLE `planets1`(`id` BIGINT PRIMARY KEY AUTOINCREMENT)"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets2")
             .column("id", type: .bigint, .primaryKey(autoIncrement: false))
             .simpleSerialize(),
@@ -551,13 +551,13 @@ final class SQLKitTests: XCTestCase {
     func testPrimaryKeyAutoIncrementVariants() {
         self.db._dialect.supportsAutoIncrement = false
 
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets1")
             .column("id", type: .bigint, .primaryKey)
             .simpleSerialize(),
             "CREATE TABLE `planets1`(`id` BIGINT PRIMARY KEY)"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets2")
             .column("id", type: .bigint, .primaryKey(autoIncrement: false))
             .simpleSerialize(),
@@ -566,13 +566,13 @@ final class SQLKitTests: XCTestCase {
 
         self.db._dialect.supportsAutoIncrement = true
 
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets3")
             .column("id", type: .bigint, .primaryKey)
             .simpleSerialize(),
             "CREATE TABLE `planets3`(`id` BIGINT PRIMARY KEY AUTOINCREMENT)"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets4")
             .column("id", type: .bigint, .primaryKey(autoIncrement: false))
             .simpleSerialize(),
@@ -582,13 +582,13 @@ final class SQLKitTests: XCTestCase {
         self.db._dialect.supportsAutoIncrement = true
         self.db._dialect.autoIncrementFunction = SQLRaw("NEXTUNIQUE")
 
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets5")
             .column("id", type: .bigint, .primaryKey)
             .simpleSerialize(),
             "CREATE TABLE `planets5`(`id` BIGINT DEFAULT NEXTUNIQUE PRIMARY KEY)"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets6")
             .column("id", type: .bigint, .primaryKey(autoIncrement: false))
             .simpleSerialize(),
@@ -597,31 +597,31 @@ final class SQLKitTests: XCTestCase {
     }
 
     func testDefaultColumnConstraintVariants() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets1")
             .column("name", type: .text, .default("unnamed"))
             .simpleSerialize(),
             "CREATE TABLE `planets1`(`name` TEXT DEFAULT 'unnamed')"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets2")
             .column("diameter", type: .int, .default(10))
             .simpleSerialize(),
             "CREATE TABLE `planets2`(`diameter` INTEGER DEFAULT 10)"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets3")
             .column("diameter", type: .real, .default(11.5))
             .simpleSerialize(),
             "CREATE TABLE `planets3`(`diameter` REAL DEFAULT 11.5)"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets4")
             .column("current", type: .custom(SQLRaw("BOOLEAN")), .default(false))
             .simpleSerialize(),
             "CREATE TABLE `planets4`(`current` BOOLEAN DEFAULT false)"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets5")
             .column("current", type: .custom(SQLRaw("BOOLEAN")), .default(SQLLiteral.boolean(true)))
             .simpleSerialize(),
@@ -630,13 +630,13 @@ final class SQLKitTests: XCTestCase {
     }
 
     func testForeignKeyColumnConstraintVariants() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets1")
             .column("galaxy_id", type: .bigint, .references("galaxies", "id"))
             .simpleSerialize(),
             "CREATE TABLE `planets1`(`galaxy_id` BIGINT REFERENCES `galaxies` (`id`))"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets2")
             .column("galaxy_id", type: .bigint, .references("galaxies", "id", onDelete: .cascade, onUpdate: .restrict))
             .simpleSerialize(),
@@ -645,7 +645,7 @@ final class SQLKitTests: XCTestCase {
     }
 
     func testTableConstraints() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets")
             .column("id", type: .bigint)
             .column("name", type: .text)
@@ -668,7 +668,7 @@ final class SQLKitTests: XCTestCase {
     }
 
     func testCompositePrimaryKeyTableConstraint() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets1")
             .column("id1", type: .bigint)
             .column("id2", type: .bigint)
@@ -679,7 +679,7 @@ final class SQLKitTests: XCTestCase {
     }
 
     func testCompositeUniqueTableConstraint() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets1")
             .column("id1", type: .bigint)
             .column("id2", type: .bigint)
@@ -690,7 +690,7 @@ final class SQLKitTests: XCTestCase {
     }
 
     func testPrimaryKeyTableConstraintVariants() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets1")
             .column("galaxy_name", type: .text)
             .column("galaxy_id", type: .bigint)
@@ -702,7 +702,7 @@ final class SQLKitTests: XCTestCase {
             .simpleSerialize(),
             "CREATE TABLE `planets1`(`galaxy_name` TEXT, `galaxy_id` BIGINT, FOREIGN KEY (`galaxy_id`, `galaxy_name`) REFERENCES `galaxies` (`id`, `name`))"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets2")
             .column("galaxy_id", type: .bigint)
             .foreignKey(
@@ -713,7 +713,7 @@ final class SQLKitTests: XCTestCase {
             .simpleSerialize(),
             "CREATE TABLE `planets2`(`galaxy_id` BIGINT, FOREIGN KEY (`galaxy_id`) REFERENCES `galaxies` (`id`))"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "planets3")
             .column("galaxy_id", type: .bigint)
             .foreignKey(
@@ -729,7 +729,7 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testCreateTableAsSelectQuery() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .create(table: "normalized_planet_names")
             .column("id", type: .bigint, .primaryKey(autoIncrement: false), .notNull)
             .column("name", type: .text, .unique, .notNull)
@@ -750,37 +750,37 @@ final class SQLKitTests: XCTestCase {
     func testUnions() {
         // Check that queries are explicitly malformed without the feature flags
         self.db._dialect.unionFeatures = []
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("id").from("t1").union(distinct: { $0.column("id").from("t2") })
             .simpleSerialize(),
             "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("id").from("t1").union(all: { $0.column("id").from("t2") })
             .simpleSerialize(),
             "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("id").from("t1").intersect(distinct: { $0.column("id").from("t2") })
             .simpleSerialize(),
             "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("id").from("t1").intersect(all: { $0.column("id").from("t2") })
             .simpleSerialize(),
             "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("id").from("t1").except(distinct: { $0.column("id").from("t2") })
             .simpleSerialize(),
             "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("id").from("t1").except(all: { $0.column("id").from("t2") })
             .simpleSerialize(),
@@ -789,37 +789,37 @@ final class SQLKitTests: XCTestCase {
 
         // Test that queries are correctly formed with the feature flags
         self.db._dialect.unionFeatures.formUnion([.union, .unionAll, .intersect, .intersectAll, .except, .exceptAll])
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("id").from("t1").union(distinct: { $0.column("id").from("t2") })
             .simpleSerialize(),
             "SELECT `id` FROM `t1` UNION SELECT `id` FROM `t2`"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("id").from("t1").union(all: { $0.column("id").from("t2") })
             .simpleSerialize(),
             "SELECT `id` FROM `t1` UNION ALL SELECT `id` FROM `t2`"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("id").from("t1").intersect(distinct: { $0.column("id").from("t2") })
             .simpleSerialize(),
             "SELECT `id` FROM `t1` INTERSECT SELECT `id` FROM `t2`"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("id").from("t1").intersect(all: { $0.column("id").from("t2") })
             .simpleSerialize(),
             "SELECT `id` FROM `t1` INTERSECT ALL SELECT `id` FROM `t2`"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("id").from("t1").except(distinct: { $0.column("id").from("t2") })
             .simpleSerialize(),
             "SELECT `id` FROM `t1` EXCEPT SELECT `id` FROM `t2`"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("id").from("t1").except(all: { $0.column("id").from("t2") })
             .simpleSerialize(),
@@ -828,19 +828,19 @@ final class SQLKitTests: XCTestCase {
         
         // Test that the explicit distinct flag is respected
         self.db._dialect.unionFeatures.insert(.explicitDistinct)
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("id").from("t1").union(distinct: { $0.column("id").from("t2") })
             .simpleSerialize(),
             "SELECT `id` FROM `t1` UNION DISTINCT SELECT `id` FROM `t2`"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("id").from("t1").intersect(distinct: { $0.column("id").from("t2") })
             .simpleSerialize(),
             "SELECT `id` FROM `t1` INTERSECT DISTINCT SELECT `id` FROM `t2`"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("id").from("t1").except(distinct: { $0.column("id").from("t2") })
             .simpleSerialize(),
@@ -849,13 +849,13 @@ final class SQLKitTests: XCTestCase {
 
         // Test that the parenthesized subqueries flag does as expected, including for multiple unions
         self.db._dialect.unionFeatures.formSymmetricDifference([.explicitDistinct, .parenthesizedSubqueries])
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("id").from("t1").union(distinct: { $0.column("id").from("t2") })
             .simpleSerialize(),
             "(SELECT `id` FROM `t1`) UNION (SELECT `id` FROM `t2`)"
         )
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("id")
             .from("t1")
@@ -867,7 +867,7 @@ final class SQLKitTests: XCTestCase {
 
         // Test that chaining and mixing multiple union types works
         self.db._dialect.unionFeatures.insert(.explicitDistinct)
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("id").from("t1")
               .union(distinct:     { $0.column("id").from("t2") })
@@ -881,7 +881,7 @@ final class SQLKitTests: XCTestCase {
         )
         
         // Test that having a single entry in the union just executes that entry
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .union { select in
                 select.column("id").from("t1")
             }
@@ -891,7 +891,7 @@ final class SQLKitTests: XCTestCase {
 
         // Test LIMIT, OFFSET, and ORDERBY
         self.db._dialect.unionFeatures.remove(.explicitDistinct)
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("id").from("t1")
             .union({
@@ -906,7 +906,7 @@ final class SQLKitTests: XCTestCase {
         
         // Test multiple ORDERBY statements
         self.db._dialect.unionFeatures.remove(.explicitDistinct)
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column("*").from("t1")
             .union({
@@ -922,7 +922,7 @@ final class SQLKitTests: XCTestCase {
     // MARK: JSON paths
 
     func testJSONPaths() {
-        XCTAssertEqual(try self.db
+        XCTAssertEqual(self.db
             .select()
             .column(SQLNestedSubpathExpression(column: "json", path: ["a"]))
             .column(SQLNestedSubpathExpression(column: "json", path: ["a", "b"]))

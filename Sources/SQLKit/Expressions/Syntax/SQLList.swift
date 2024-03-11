@@ -34,11 +34,12 @@ public struct SQLList: SQLExpression {
 
     // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
-        /// N.B.: Both `first` and `dropFirst()` are `O(1)` for `Array`.
-        self.expressions.first?.serialize(to: &serializer)
-        self.expressions.dropFirst().forEach {
+        var iter = self.expressions.makeIterator()
+        
+        iter.next()?.serialize(to: &serializer)
+        while let item = iter.next() {
             self.separator.serialize(to: &serializer)
-            $0.serialize(to: &serializer)
+            item.serialize(to: &serializer)
         }
     }
 }
