@@ -1,4 +1,4 @@
-import SQLKit
+@testable import SQLKit
 import XCTest
 
 final class SQLCodingTests: XCTestCase {
@@ -24,8 +24,8 @@ final class SQLCodingTests: XCTestCase {
 
         XCTAssertEqual(output?.sql, "INSERT INTO `gasses` (`name`, `color`) VALUES (?, ?)")
         XCTAssertEqual(output?.binds.count, 2)
-        XCTAssertEqual(output?.binds[0] as? String, "iodine")
-        XCTAssertEqual(output?.binds[1] as? String, "purple")
+        XCTAssertEqual((output?.binds[0] as? FakeSendable<String>)?.value, "iodine")
+        XCTAssertEqual((output?.binds[1] as? FakeSendable<String>)?.value, "purple")
     }
 
     func testCodableWithNillableColumnWithNilValueWithoutNilEncodingStrategy() throws {
@@ -37,7 +37,7 @@ final class SQLCodingTests: XCTestCase {
 
         XCTAssertEqual(output?.sql, "INSERT INTO `gasses` (`name`) VALUES (?)")
         XCTAssertEqual(output?.binds.count, 1)
-        XCTAssertEqual(output?.binds[0] as? String, "oxygen")
+        XCTAssertEqual((output?.binds[0] as? FakeSendable<String>)?.value, "oxygen")
     }
 
     func testCodableWithNillableColumnWithNilValueAndNilEncodingStrategy() throws {
@@ -49,7 +49,7 @@ final class SQLCodingTests: XCTestCase {
 
         XCTAssertEqual(output?.sql, "INSERT INTO `gasses` (`name`, `color`) VALUES (?, NULL)")
         XCTAssertEqual(output?.binds.count, 1)
-        XCTAssertEqual(output?.binds[0] as? String, "oxygen")
+        XCTAssertEqual((output?.binds[0] as? FakeSendable<String>)?.value, "oxygen")
     }
 
     // MARK: Row Decoder
