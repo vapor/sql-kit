@@ -113,6 +113,21 @@ public protocol SQLDatabase: Sendable {
         sql query: any SQLExpression,
         _ onRow: @escaping @Sendable (any SQLRow) -> ()
     ) -> EventLoopFuture<Void>
+
+    /// Requests that the given generic SQL query be serialized and executed on the database, and that
+    /// the `onRow` closure be invoked once for each result row the query returns (if any).
+    ///
+    /// If a concrete type conforming to ``SQLDatabase`` can provide a more efficient Concurrency-based implementation
+    /// than forwarding the invocation through the legacy `EventLoopFuture`-based API, it should override this method
+    /// in order to do so.
+    ///
+    /// - Parameters:
+    ///   - query: An ``SQLExpression`` representing a complete query to execute.
+    ///   - onRow: A closure which is invoked once for each result row returned by the query (if any).
+    func execute(
+        sql query: any SQLExpression,
+        _ onRow: @escaping @Sendable (any SQLRow) -> ()
+    ) async throws
 }
 
 extension SQLDatabase {
