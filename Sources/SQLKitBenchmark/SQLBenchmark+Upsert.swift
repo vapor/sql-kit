@@ -2,14 +2,14 @@ import XCTest
 import SQLKit
 
 extension SQLBenchmarker {
-    public func testUpserts() throws {
+    public func testUpserts() async throws {
         guard self.database.dialect.upsertSyntax != .unsupported else { return }
         
-        try self.testUpserts_createSchema()
-        try self.testUpserts_ignoreAction()
-        try self.testUpserts_simpleUpdate()
-        try self.testUpserts_predicateUpdate()
-        try self.testUpserts_cleanupSchema()
+        try await self.testUpserts_createSchema()
+        try await self.testUpserts_ignoreAction()
+        try await self.testUpserts_simpleUpdate()
+        try await self.testUpserts_predicateUpdate()
+        try await self.testUpserts_cleanupSchema()
     }
     
     // the test table name
@@ -61,37 +61,36 @@ extension SQLBenchmarker {
         file: StaticString = #filePath,
         line: UInt = #line,
         _ moreConfig: (SQLInsertBuilder) -> SQLInsertBuilder = { $0 }
-    ) {
+    ) async {
         if !ok {
-            XCTAssertThrowsError(
-                try moreConfig(database.insert(into: Self.testSchema).columns(Self.testCols).values(vals)).run().wait(),
+            await XCTAssertThrowsErrorAsync(
+                try await moreConfig(database.insert(into: Self.testSchema).columns(Self.testCols).values(vals)).run(),
                 file: file, line: line
             ) { error in
                 // TODO: Add a common error info protocol so we can validate that the error is a constraint violation
             }
         } else {
-            XCTAssertNoThrow(
-                try moreConfig(database.insert(into: Self.testSchema).columns(Self.testCols).values(vals)).run().wait(),
+            await XCTAssertNoThrowAsync(
+                try await moreConfig(database.insert(into: Self.testSchema).columns(Self.testCols).values(vals)).run(),
                 file: file, line: line
             )
         }
     }
 
     // retrieve a count of all rows matching the criteria by the predicate, with the caller configuring the predicate
-    private func testCount(on database: any SQLDatabase, _ predicate: (SQLSelectBuilder) -> SQLSelectBuilder) throws -> Int {
-        try predicate(database
+    private func testCount(on database: any SQLDatabase, _ predicate: (SQLSelectBuilder) -> SQLSelectBuilder) async throws -> Int {
+        let rows = try await predicate(database
             .select()
             .column(SQLFunction("COUNT", args: SQLLiteral.all))
             .from(Self.testSchema)
         )
         .all()
-        .flatMapThrowing { try $0[0].decode(column: $0[0].allColumns[0], as: Int.self) }
-        .wait()
+        return try rows[0].decode(column: rows[0].allColumns[0], as: Int.self)
     }
     
     /// Sets up tables and indexes used for testing.
-    public func testUpserts_createSchema() throws {
-        try self.runTest {
+    public func testUpserts_createSchema() async throws {
+        try await self.runTest {
             let testValues: [Double?] = [
                 /// 𝑐 - speed of light in a vacuum (cleaner)
                 299_792_458.0,
@@ -107,14 +106,14 @@ extension SQLBenchmarker {
                 6.62607015,
             ]
 
-            try $0.drop(table: Self.testSchema)
+            try await $0.drop(table: Self.testSchema)
                 .ifExists()
-                .run().wait()
-            try $0.create(table: Self.testSchema)
+                .run()
+            try await $0.create(table: Self.testSchema)
                 .column(definitions: Self.testColDefs)
                 .unique(["planet_id", "point_of_origin"])
-                .run().wait()
-            try $0.insert(into: Self.testSchema)
+                .run()
+            try await $0.insert(into: Self.testSchema)
                 .columns(Self.testCols)
                 .values(Self.testVals(planet: 1, poi: "A", setting: testValues[0], start: Date() - (31_557_600 * 1.8)))
                 .values(Self.testVals(planet: 1, poi: "B", setting: testValues[1], start: Date() - 8_640_000.0, finish: Date.distantFuture))
@@ -122,35 +121,35 @@ extension SQLBenchmarker {
                 .values(Self.testVals(planet: 3, poi: "D", setting: testValues[3], start: Date.distantPast))
                 .values(Self.testVals(planet: 4, poi: "E", setting: testValues[4], start: Date())) // Date.bigBang sadly isn't a thing
                 .values(Self.testVals(planet: 4, poi: "F", setting: testValues[5], start: Date(timeIntervalSinceReferenceDate: Date.timeIntervalSinceReferenceDate.nextUp)))
-                .run().wait()
+                .run()
         }
     }
     
     /// Tests the "ignore conflicts" functionality. (Technically part of upserts.)
-    public func testUpserts_ignoreAction() throws {
-        self.runTest {
-            self.testInsert(ok: true,  Self.testVals(id: 1, planet: 5, poi: "0"), on: $0) { $0.ignoringConflicts(with: ["id"]) }
+    public func testUpserts_ignoreAction() async throws {
+        await self.runTest {
+            await self.testInsert(ok: true,  Self.testVals(id: 1, planet: 5, poi: "0"), on: $0) { $0.ignoringConflicts(with: ["id"]) }
             guard $0.dialect.upsertSyntax != .mysqlLike else { return }
-            self.testInsert(ok: false, Self.testVals(id: 1, planet: 5, poi: "0"), on: $0) { $0.ignoringConflicts(with: ["planet_id"]) }
+            await self.testInsert(ok: false, Self.testVals(id: 1, planet: 5, poi: "0"), on: $0) { $0.ignoringConflicts(with: ["planet_id"]) }
         }
     }
     
     /// Tests upserts with simple updates.
-    public func testUpserts_simpleUpdate() throws {
-        try self.runTest {
-            self.testInsert(ok: true, Self.testVals(id: 1, planet: 1, poi: "0"), on: $0) {
+    public func testUpserts_simpleUpdate() async throws {
+        try await self.runTest {
+            await self.testInsert(ok: true, Self.testVals(id: 1, planet: 1, poi: "0"), on: $0) {
                 $0.onConflict(with: ["id"]) {
                     $0.set("last_status_update", to: Date().timeIntervalSince1970)
                 }
             }
-            XCTAssertEqual(try self.testCount(on: $0) { $0.where("last_status_update", .isNot, SQLLiteral.null) }, 1)
+            await XCTAssertEqualAsync(try await self.testCount(on: $0) { $0.where("last_status_update", .isNot, SQLLiteral.null) }, 1)
                 
-            self.testInsert(ok: true, Self.testVals(planet: 2, poi: "C", update: Date()), on: $0) {
+            await self.testInsert(ok: true, Self.testVals(planet: 2, poi: "C", update: Date()), on: $0) {
                 $0.onConflict(with: ["planet_id", "point_of_origin"]) {
                     $0.set(excludedValueOf: "last_status_update")
                 }
             }
-            XCTAssertEqual(try self.testCount(on: $0) { $0.where("planet_id", .equal, 2).where("point_of_origin", .equal, "C").where("last_status_update", .isNot, SQLLiteral.null) }, 1)
+            await XCTAssertEqualAsync(try await self.testCount(on: $0) { $0.where("planet_id", .equal, 2).where("point_of_origin", .equal, "C").where("last_status_update", .isNot, SQLLiteral.null) }, 1)
                 
             /// Lots of other cases need verification - collisions with multiple uniques in the same row and different
             /// rows, updates of multiple rows, etc.
@@ -158,24 +157,24 @@ extension SQLBenchmarker {
     }
     
     /// Tests upserts with updates using predicates (when supported).
-    public func testUpserts_predicateUpdate() throws {
-        try self.runTest {
+    public func testUpserts_predicateUpdate() async throws {
+        try await self.runTest {
             guard $0.dialect.upsertSyntax != .mysqlLike else { return } // not supported by MySQL syntax
             
-            self.testInsert(ok: true, Self.testVals(planet: 4, poi: "F", update: Date()), on: $0) {
+            await self.testInsert(ok: true, Self.testVals(planet: 4, poi: "F", update: Date()), on: $0) {
                 $0.onConflict(with: ["planet_id", "point_of_origin"]) { $0
                     .set(excludedValueOf: "last_status_update")
                     .where(SQLExcludedColumn("last_status_update"), .is, SQLLiteral.null)
                 }
             }
-            XCTAssertEqual(try self.testCount(on: $0) { $0.where("planet_id", .equal, 4).where("point_of_origin", .equal, "F").where("last_status_update", .isNot, SQLLiteral.null) }, 0)
+            await XCTAssertEqualAsync(try await self.testCount(on: $0) { $0.where("planet_id", .equal, 4).where("point_of_origin", .equal, "F").where("last_status_update", .isNot, SQLLiteral.null) }, 0)
         }
     }
     
     /// Remove tables used by these tests.
-    public func testUpserts_cleanupSchema() throws {
-        try self.runTest {
-            try $0.drop(table: Self.testSchema).run().wait()
+    public func testUpserts_cleanupSchema() async throws {
+        try await self.runTest {
+            try await $0.drop(table: Self.testSchema).run()
         }
     }
 }
