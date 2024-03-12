@@ -96,7 +96,7 @@ final class SQLCodingTests: XCTestCase {
             "foo": 42,
             "bar": Double?.none,
             "baz": "vapor",
-            "waldo_fred_ID": 2015,
+            "waldo_fred_iD": 2015,
         ])
 
         if let foo = XCTAssertNoThrowWithResult(try row.decode(model: Foo.self, keyDecodingStrategy: .convertFromSnakeCase)) {
@@ -104,7 +104,7 @@ final class SQLCodingTests: XCTestCase {
             XCTAssertEqual(foo.foo,         row.data["foo"] as? Int)
             XCTAssertEqual(foo.bar,         row.data["bar"] as? Double?)
             XCTAssertEqual(foo.baz,         row.data["baz"] as? String)
-            XCTAssertEqual(foo.waldoFredID, row.data["waldo_fred_ID"] as? Int)
+            XCTAssertEqual(foo.waldoFredID, row.data["waldo_fred_iD"] as? Int)
         }
     }
     
@@ -118,13 +118,13 @@ final class SQLCodingTests: XCTestCase {
         ])
 
         @Sendable
-        func decode_IdToID(_ keys: [any CodingKey]) -> any CodingKey {
+        func decodeIDTo_Id(_ keys: [any CodingKey]) -> any CodingKey {
             let keyString = keys.last!.stringValue
 
-            return keyString.hasSuffix("_Id") ? SomeCodingKey(stringValue: keyString.dropLast("_Id".count) + "ID") : keys.last!
+            return keyString.hasSuffix("ID") ? SomeCodingKey(stringValue: keyString.dropLast("ID".count) + "_Id") : keys.last!
         }
         
-        if let foo = XCTAssertNoThrowWithResult(try row.decode(model: Foo.self, keyDecodingStrategy: .custom(decode_IdToID))) {
+        if let foo = XCTAssertNoThrowWithResult(try row.decode(model: Foo.self, keyDecodingStrategy: .custom(decodeIDTo_Id))) {
             XCTAssertEqual(foo.id,          row.data["id"] as? UUID)
             XCTAssertEqual(foo.foo,         row.data["foo"] as? Int)
             XCTAssertEqual(foo.bar,         row.data["bar"] as? Double?)

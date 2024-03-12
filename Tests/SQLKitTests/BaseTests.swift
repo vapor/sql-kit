@@ -16,9 +16,10 @@ final class SQLKitTests: XCTestCase {
     
     // MARK: SQLBenchmark
 
-    func testBenchmark() throws {
+    func testBenchmark() async throws {
         let benchmarker = SQLBenchmarker(on: db)
-        try benchmarker.run()
+        
+        try await benchmarker.runAll()
     }
     
     // MARK: Basic Queries
@@ -204,8 +205,8 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual(self.db.drop(index: "planets_name_idx").restrict().simpleSerialize()         , "DROP INDEX `planets_name_idx`")
 
         self.db._dialect.supportsDropBehavior = true
-        XCTAssertEqual(self.db.drop(table: "planets").simpleSerialize()                             , "DROP TABLE `planets` RESTRICT")
-        XCTAssertEqual(self.db.drop(index: "planets_name_idx").simpleSerialize()                    , "DROP INDEX `planets_name_idx` RESTRICT")
+        XCTAssertEqual(self.db.drop(table: "planets").simpleSerialize()                             , "DROP TABLE `planets`")
+        XCTAssertEqual(self.db.drop(index: "planets_name_idx").simpleSerialize()                    , "DROP INDEX `planets_name_idx`")
         XCTAssertEqual(self.db.drop(table: "planets").behavior(.cascade).simpleSerialize()          , "DROP TABLE `planets` CASCADE")
         XCTAssertEqual(self.db.drop(index: "planets_name_idx").behavior(.cascade).simpleSerialize() , "DROP INDEX `planets_name_idx` CASCADE")
         XCTAssertEqual(self.db.drop(table: "planets").behavior(.restrict).simpleSerialize()         , "DROP TABLE `planets` RESTRICT")
@@ -323,7 +324,7 @@ final class SQLKitTests: XCTestCase {
             .column(SQLFunction("COUNT", args: SQLDistinct("name", "color")))
             .from("planets")
             .simpleSerialize(),
-            "SELECT COUNT(DISTINCT(`name`, `color`)) FROM `planets`"
+            "SELECT COUNT(DISTINCT `name`, `color`) FROM `planets`"
         )
     }
     
@@ -511,7 +512,7 @@ final class SQLKitTests: XCTestCase {
             .column("collated", type: .text, .collate(name: "default"))
             .simpleSerialize(),
             """
-            CREATE TABLE `planets`(`id` BIGINT PRIMARY KEY AUTOINCREMENT, `name` TEXT DEFAULT 'unnamed', `galaxy_id` BIGINT REFERENCES `galaxies` (`id`), `diameter` INTEGER CHECK (diameter > 0), `important` TEXT NOT NULL, `special` TEXT UNIQUE, `automatic` TEXT GENERATED ALWAYS AS (CONCAT(name, special)) STORED, `collated` TEXT COLLATE `default`)
+            CREATE TABLE `planets` (`id` BIGINT PRIMARY KEY AUTOINCREMENT, `name` TEXT DEFAULT 'unnamed', `galaxy_id` BIGINT REFERENCES `galaxies` (`id`), `diameter` INTEGER CHECK (diameter > 0), `important` TEXT NOT NULL, `special` TEXT UNIQUE, `automatic` TEXT GENERATED ALWAYS AS (CONCAT(name, special)) STORED, `collated` TEXT COLLATE `default`)
             """
        )
     }
@@ -529,7 +530,7 @@ final class SQLKitTests: XCTestCase {
             .create(table: "planets")
             .column("id", type: .bigint, .notNull, .primaryKey)
             .simpleSerialize(),
-            "CREATE TABLE `planets`(`id` BIGINT NOT NULL PRIMARY KEY AUTOINCREMENT)"
+            "CREATE TABLE `planets` (`id` BIGINT NOT NULL PRIMARY KEY AUTOINCREMENT)"
         )
     }
 
@@ -538,13 +539,13 @@ final class SQLKitTests: XCTestCase {
             .create(table: "planets1")
             .column("id", type: .bigint, .primaryKey)
             .simpleSerialize(),
-            "CREATE TABLE `planets1`(`id` BIGINT PRIMARY KEY AUTOINCREMENT)"
+            "CREATE TABLE `planets1` (`id` BIGINT PRIMARY KEY AUTOINCREMENT)"
         )
         XCTAssertEqual(self.db
             .create(table: "planets2")
             .column("id", type: .bigint, .primaryKey(autoIncrement: false))
             .simpleSerialize(),
-            "CREATE TABLE `planets2`(`id` BIGINT PRIMARY KEY)"
+            "CREATE TABLE `planets2` (`id` BIGINT PRIMARY KEY)"
         )
     }
 
@@ -555,13 +556,13 @@ final class SQLKitTests: XCTestCase {
             .create(table: "planets1")
             .column("id", type: .bigint, .primaryKey)
             .simpleSerialize(),
-            "CREATE TABLE `planets1`(`id` BIGINT PRIMARY KEY)"
+            "CREATE TABLE `planets1` (`id` BIGINT PRIMARY KEY)"
         )
         XCTAssertEqual(self.db
             .create(table: "planets2")
             .column("id", type: .bigint, .primaryKey(autoIncrement: false))
             .simpleSerialize(),
-            "CREATE TABLE `planets2`(`id` BIGINT PRIMARY KEY)"
+            "CREATE TABLE `planets2` (`id` BIGINT PRIMARY KEY)"
         )
 
         self.db._dialect.supportsAutoIncrement = true
@@ -570,13 +571,13 @@ final class SQLKitTests: XCTestCase {
             .create(table: "planets3")
             .column("id", type: .bigint, .primaryKey)
             .simpleSerialize(),
-            "CREATE TABLE `planets3`(`id` BIGINT PRIMARY KEY AUTOINCREMENT)"
+            "CREATE TABLE `planets3` (`id` BIGINT PRIMARY KEY AUTOINCREMENT)"
         )
         XCTAssertEqual(self.db
             .create(table: "planets4")
             .column("id", type: .bigint, .primaryKey(autoIncrement: false))
             .simpleSerialize(),
-            "CREATE TABLE `planets4`(`id` BIGINT PRIMARY KEY)"
+            "CREATE TABLE `planets4` (`id` BIGINT PRIMARY KEY)"
         )
         
         self.db._dialect.supportsAutoIncrement = true
@@ -586,13 +587,13 @@ final class SQLKitTests: XCTestCase {
             .create(table: "planets5")
             .column("id", type: .bigint, .primaryKey)
             .simpleSerialize(),
-            "CREATE TABLE `planets5`(`id` BIGINT DEFAULT NEXTUNIQUE PRIMARY KEY)"
+            "CREATE TABLE `planets5` (`id` BIGINT DEFAULT NEXTUNIQUE PRIMARY KEY)"
         )
         XCTAssertEqual(self.db
             .create(table: "planets6")
             .column("id", type: .bigint, .primaryKey(autoIncrement: false))
             .simpleSerialize(),
-            "CREATE TABLE `planets6`(`id` BIGINT PRIMARY KEY)"
+            "CREATE TABLE `planets6` (`id` BIGINT PRIMARY KEY)"
         )
     }
 
@@ -601,31 +602,31 @@ final class SQLKitTests: XCTestCase {
             .create(table: "planets1")
             .column("name", type: .text, .default("unnamed"))
             .simpleSerialize(),
-            "CREATE TABLE `planets1`(`name` TEXT DEFAULT 'unnamed')"
+            "CREATE TABLE `planets1` (`name` TEXT DEFAULT 'unnamed')"
         )
         XCTAssertEqual(self.db
             .create(table: "planets2")
             .column("diameter", type: .int, .default(10))
             .simpleSerialize(),
-            "CREATE TABLE `planets2`(`diameter` INTEGER DEFAULT 10)"
+            "CREATE TABLE `planets2` (`diameter` INTEGER DEFAULT 10)"
         )
         XCTAssertEqual(self.db
             .create(table: "planets3")
             .column("diameter", type: .real, .default(11.5))
             .simpleSerialize(),
-            "CREATE TABLE `planets3`(`diameter` REAL DEFAULT 11.5)"
+            "CREATE TABLE `planets3` (`diameter` REAL DEFAULT 11.5)"
         )
         XCTAssertEqual(self.db
             .create(table: "planets4")
             .column("current", type: .custom(SQLRaw("BOOLEAN")), .default(false))
             .simpleSerialize(),
-            "CREATE TABLE `planets4`(`current` BOOLEAN DEFAULT false)"
+            "CREATE TABLE `planets4` (`current` BOOLEAN DEFAULT false)"
         )
         XCTAssertEqual(self.db
             .create(table: "planets5")
             .column("current", type: .custom(SQLRaw("BOOLEAN")), .default(SQLLiteral.boolean(true)))
             .simpleSerialize(),
-            "CREATE TABLE `planets5`(`current` BOOLEAN DEFAULT true)"
+            "CREATE TABLE `planets5` (`current` BOOLEAN DEFAULT true)"
         )
     }
 
@@ -634,13 +635,13 @@ final class SQLKitTests: XCTestCase {
             .create(table: "planets1")
             .column("galaxy_id", type: .bigint, .references("galaxies", "id"))
             .simpleSerialize(),
-            "CREATE TABLE `planets1`(`galaxy_id` BIGINT REFERENCES `galaxies` (`id`))"
+            "CREATE TABLE `planets1` (`galaxy_id` BIGINT REFERENCES `galaxies` (`id`))"
         )
         XCTAssertEqual(self.db
             .create(table: "planets2")
             .column("galaxy_id", type: .bigint, .references("galaxies", "id", onDelete: .cascade, onUpdate: .restrict))
             .simpleSerialize(),
-            "CREATE TABLE `planets2`(`galaxy_id` BIGINT REFERENCES `galaxies` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT)"
+            "CREATE TABLE `planets2` (`galaxy_id` BIGINT REFERENCES `galaxies` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT)"
         )
     }
 
@@ -662,7 +663,7 @@ final class SQLKitTests: XCTestCase {
             )
             .simpleSerialize(),
             """
-            CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_name` TEXT, `galaxy_id` BIGINT, PRIMARY KEY (`id`), UNIQUE (`name`), CONSTRAINT `non-zero-diameter` CHECK (diameter > 0), FOREIGN KEY (`galaxy_id`, `galaxy_name`) REFERENCES `galaxies` (`id`, `name`))
+            CREATE TABLE `planets` (`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_name` TEXT, `galaxy_id` BIGINT, PRIMARY KEY (`id`), UNIQUE (`name`), CONSTRAINT `non-zero-diameter` CHECK (diameter > 0), FOREIGN KEY (`galaxy_id`, `galaxy_name`) REFERENCES `galaxies` (`id`, `name`))
             """
         )
     }
@@ -674,7 +675,7 @@ final class SQLKitTests: XCTestCase {
             .column("id2", type: .bigint)
             .primaryKey("id1", "id2")
             .simpleSerialize(),
-            "CREATE TABLE `planets1`(`id1` BIGINT, `id2` BIGINT, PRIMARY KEY (`id1`, `id2`))"
+            "CREATE TABLE `planets1` (`id1` BIGINT, `id2` BIGINT, PRIMARY KEY (`id1`, `id2`))"
         )
     }
 
@@ -685,7 +686,7 @@ final class SQLKitTests: XCTestCase {
             .column("id2", type: .bigint)
             .unique("id1", "id2")
             .simpleSerialize(),
-            "CREATE TABLE `planets1`(`id1` BIGINT, `id2` BIGINT, UNIQUE (`id1`, `id2`))"
+            "CREATE TABLE `planets1` (`id1` BIGINT, `id2` BIGINT, UNIQUE (`id1`, `id2`))"
         )
     }
 
@@ -700,7 +701,7 @@ final class SQLKitTests: XCTestCase {
                 ["id", "name"]
             )
             .simpleSerialize(),
-            "CREATE TABLE `planets1`(`galaxy_name` TEXT, `galaxy_id` BIGINT, FOREIGN KEY (`galaxy_id`, `galaxy_name`) REFERENCES `galaxies` (`id`, `name`))"
+            "CREATE TABLE `planets1` (`galaxy_name` TEXT, `galaxy_id` BIGINT, FOREIGN KEY (`galaxy_id`, `galaxy_name`) REFERENCES `galaxies` (`id`, `name`))"
         )
         XCTAssertEqual(self.db
             .create(table: "planets2")
@@ -711,7 +712,7 @@ final class SQLKitTests: XCTestCase {
                 ["id"]
             )
             .simpleSerialize(),
-            "CREATE TABLE `planets2`(`galaxy_id` BIGINT, FOREIGN KEY (`galaxy_id`) REFERENCES `galaxies` (`id`))"
+            "CREATE TABLE `planets2` (`galaxy_id` BIGINT, FOREIGN KEY (`galaxy_id`) REFERENCES `galaxies` (`id`))"
         )
         XCTAssertEqual(self.db
             .create(table: "planets3")
@@ -724,7 +725,7 @@ final class SQLKitTests: XCTestCase {
                 onUpdate: .cascade
             )
             .simpleSerialize(),
-            "CREATE TABLE `planets3`(`galaxy_id` BIGINT, FOREIGN KEY (`galaxy_id`) REFERENCES `galaxies` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE)"
+            "CREATE TABLE `planets3` (`galaxy_id` BIGINT, FOREIGN KEY (`galaxy_id`) REFERENCES `galaxies` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE)"
         )
     }
     
@@ -741,7 +742,7 @@ final class SQLKitTests: XCTestCase {
                 .where("galaxy_id", .equal, SQLBind(1))
             }
             .simpleSerialize(),
-            "CREATE TABLE `normalized_planet_names`(`id` BIGINT PRIMARY KEY NOT NULL, `name` TEXT UNIQUE NOT NULL) AS SELECT DISTINCT `id` AS `id`, LOWER(`name`) AS `name` FROM `planets` WHERE `galaxy_id` = ?"
+            "CREATE TABLE `normalized_planet_names` (`id` BIGINT PRIMARY KEY NOT NULL, `name` TEXT UNIQUE NOT NULL) AS SELECT DISTINCT `id` AS `id`, LOWER(`name`) AS `name` FROM `planets` WHERE `galaxy_id` = ?"
         )
     }
 
@@ -754,37 +755,37 @@ final class SQLKitTests: XCTestCase {
             .select()
             .column("id").from("t1").union(distinct: { $0.column("id").from("t2") })
             .simpleSerialize(),
-            "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`"
+            "SELECT `id` FROM `t1` SELECT `id` FROM `t2`"
         )
         XCTAssertEqual(self.db
             .select()
             .column("id").from("t1").union(all: { $0.column("id").from("t2") })
             .simpleSerialize(),
-            "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`"
+            "SELECT `id` FROM `t1` SELECT `id` FROM `t2`"
         )
         XCTAssertEqual(self.db
             .select()
             .column("id").from("t1").intersect(distinct: { $0.column("id").from("t2") })
             .simpleSerialize(),
-            "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`"
+            "SELECT `id` FROM `t1` SELECT `id` FROM `t2`"
         )
         XCTAssertEqual(self.db
             .select()
             .column("id").from("t1").intersect(all: { $0.column("id").from("t2") })
             .simpleSerialize(),
-            "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`"
+            "SELECT `id` FROM `t1` SELECT `id` FROM `t2`"
         )
         XCTAssertEqual(self.db
             .select()
             .column("id").from("t1").except(distinct: { $0.column("id").from("t2") })
             .simpleSerialize(),
-            "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`"
+            "SELECT `id` FROM `t1` SELECT `id` FROM `t2`"
         )
         XCTAssertEqual(self.db
             .select()
             .column("id").from("t1").except(all: { $0.column("id").from("t2") })
             .simpleSerialize(),
-            "SELECT `id` FROM `t1`  SELECT `id` FROM `t2`"
+            "SELECT `id` FROM `t1` SELECT `id` FROM `t2`"
         )
 
         // Test that queries are correctly formed with the feature flags
