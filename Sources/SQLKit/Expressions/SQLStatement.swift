@@ -115,8 +115,13 @@ public struct SQLStatement: SQLExpression {
         
         iter.next()?.serialize(to: &serializer)
         while let part = iter.next() {
-            serializer.write(" ")
-            part.serialize(to: &serializer)
+            var temp = SQLSerializer(database: serializer.database)
+            
+            part.serialize(to: &temp)
+            if !temp.sql.isEmpty {
+                serializer.sql += " \(temp.sql)"
+            }
+            serializer.binds.append(contentsOf: temp.binds)                
         }
     }
 

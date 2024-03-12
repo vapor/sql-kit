@@ -27,6 +27,19 @@ extension SQLPredicateBuilder {
         self.where(SQLColumn(lhs), op, SQLBind(rhs))
     }
 
+    /// Adds a column to encodable array comparison to this builder's `WHERE` clause by `AND`ing.
+    ///
+    ///     builder.where("name", .equal, ["Earth", "Mars"])
+    ///
+    /// The encodable values supplied will be bound to the query as parameters.
+    ///
+    ///     SELECT * FROM "planets" WHERE "name" IN ($0, $1) ["Earth", "Mars"]
+    @inlinable
+    @discardableResult
+    public func `where`(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: [some Encodable & Sendable]) -> Self {
+        self.where(SQLColumn(lhs), op, SQLBind.group(rhs))
+    }
+
     /// Adds a column to encodable comparison to this builder's `WHERE` clause by `AND`ing.
     ///
     ///     builder.where("name", .equal, "Earth")
@@ -134,7 +147,7 @@ extension SQLPredicateBuilder {
     
     /// Adds a column to encodable comparison to this builder's `WHERE` clause by `OR`ing.
     ///
-    ///     builder.where("name", .equal, "Earth")
+    ///     builder.orWhere("name", .equal, "Earth")
     ///
     /// The encodable value supplied will be bound to the query as a parameter.
     ///
@@ -143,6 +156,19 @@ extension SQLPredicateBuilder {
     @discardableResult
     public func orWhere(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: some Encodable & Sendable) -> Self {
         self.orWhere(SQLColumn(lhs), op, SQLBind(rhs))
+    }
+
+    /// Adds a column to encodable array comparison to this builder's `WHERE` clause by `OR`ing.
+    ///
+    ///     builder.orWhere("name", .equal, ["Earth", "Mars"])
+    ///
+    /// The encodable values supplied will be bound to the query as parameters.
+    ///
+    ///     SELECT * FROM "planets" WHERE "name" IN ($0, $1) ["Earth", "Mars"]
+    @inlinable
+    @discardableResult
+    public func orWhere(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: [some Encodable & Sendable]) -> Self {
+        self.orWhere(SQLColumn(lhs), op, SQLBind.group(rhs))
     }
 
     /// Adds a column to encodable comparison to this builder's `WHERE` clause by `OR`ing.

@@ -22,11 +22,10 @@ public struct SQLColumn: SQLExpression {
     // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
-        serializer.statement {
-            if let table = self.table {
-                $0.append(table, ".")
-            }
-            $0.append(self.name)
+        if let table = self.table {
+            table.serialize(to: &serializer)
+            serializer.write(".")
         }
+        self.name.serialize(to: &serializer)
     }
 }
