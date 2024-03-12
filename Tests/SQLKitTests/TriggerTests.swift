@@ -20,14 +20,15 @@ final class SQLKitTriggerTests: XCTestCase {
     }
 
     func testDropTriggerOptions() throws {
+        self.db._dialect.supportsDropBehavior = true
         self.db._dialect.triggerSyntax = .init(drop: [.supportsCascade, .supportsTableName])
         XCTAssertEqual(
             self.db.drop(trigger: "foo").table("planets").simpleSerialize(),
-            "DROP TRIGGER `foo` ON `planets`"
+            "DROP TRIGGER `foo` ON `planets` RESTRICT"
         )
         XCTAssertEqual(
             self.db.drop(trigger: "foo").table("planets").ifExists().simpleSerialize(),
-            "DROP TRIGGER IF EXISTS `foo` ON `planets`"
+            "DROP TRIGGER IF EXISTS `foo` ON `planets` RESTRICT"
         )
         XCTAssertEqual(
             self.db.drop(trigger: "foo").table("planets").ifExists().cascade().simpleSerialize(),
@@ -37,13 +38,13 @@ final class SQLKitTriggerTests: XCTestCase {
         self.db._dialect.supportsIfExists = false
         XCTAssertEqual(
             self.db.drop(trigger: "foo").table("planets").ifExists().simpleSerialize(),
-            "DROP TRIGGER `foo` ON `planets`"
+            "DROP TRIGGER `foo` ON `planets` RESTRICT"
         )
 
         self.db._dialect.triggerSyntax.drop = .supportsCascade
         XCTAssertEqual(
             self.db.drop(trigger: "foo").table("planets").simpleSerialize(),
-            "DROP TRIGGER `foo`"
+            "DROP TRIGGER `foo` RESTRICT"
         )
 
         self.db._dialect.triggerSyntax.drop = []
@@ -86,7 +87,7 @@ final class SQLKitTriggerTests: XCTestCase {
             .procedure("qwer")
             .referencedTable(SQLIdentifier("galaxies"))
             .simpleSerialize(),
-            "CREATE CONSTRAINT TRIGGER `foo` AFTER INSERT ON `planet` FROM `galaxies` INITIALLY DEFERRED FOR EACH ROW WHEN (`foo` = `bar`) EXECUTE PROCEDURE `qwer`"
+            "CREATE CONSTRAINT TRIGGER `foo` AFTER INSERT ON `planet` FROM `galaxies` DEFERRABLE INITIALLY DEFERRED FOR EACH ROW WHEN (`foo` = `bar`) EXECUTE PROCEDURE `qwer`"
         )
     }
 }

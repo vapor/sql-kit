@@ -46,6 +46,7 @@ final class SQLQueryStringTests: XCTestCase {
     }
     
     func testAllQueryStringInterpolationTypes() {
+        self.db._dialect.supportsDropBehavior = true
         XCTAssertEqual(self.db
             .raw("""
                 Query string embeds:
