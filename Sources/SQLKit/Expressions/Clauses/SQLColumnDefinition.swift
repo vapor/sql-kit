@@ -51,7 +51,10 @@ public struct SQLColumnDefinition: SQLExpression {
     // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {
-            $0.append(self.column, self.dataType, SQLList(self.constraints, separator: SQLRaw(" ")))
+            $0.append(self.column, self.dataType)
+            if !self.constraints.isEmpty {
+                $0.append(SQLList(self.constraints, separator: SQLRaw(" ")))
+            }
         }
     }
 }

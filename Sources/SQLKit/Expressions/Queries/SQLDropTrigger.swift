@@ -34,18 +34,16 @@ public struct SQLDropTrigger: SQLExpression {
 
     // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
-        let dialect = serializer.dialect
-        
         serializer.statement {
             $0.append("DROP TRIGGER")
-            if self.ifExists && dialect.supportsIfExists {
+            if self.ifExists && $0.dialect.supportsIfExists {
                 $0.append("IF EXISTS")
             }
             $0.append(self.name)
-            if let table = self.table, dialect.triggerSyntax.drop.contains(.supportsTableName) {
+            if let table = self.table, $0.dialect.triggerSyntax.drop.contains(.supportsTableName) {
                 $0.append("ON", table)
             }
-            if dialect.triggerSyntax.drop.contains(.supportsCascade) {
+            if $0.dialect.triggerSyntax.drop.contains(.supportsCascade) {
                 $0.append(self.dropBehavior)
             }
         }
