@@ -12,13 +12,6 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
         self.alterTable
     }
 
-    /// The set of column alteration expressions.
-    @inlinable
-    public var columns: [any SQLExpression] {
-        get { self.alterTable.addColumns }
-        set { self.alterTable.addColumns = newValue }
-    }
-
     /// Create a new ``SQLAlterTableBuilder``.
     @inlinable
     public init(_ alterTable: SQLAlterTable, on database: any SQLDatabase) {
