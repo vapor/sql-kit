@@ -72,9 +72,10 @@ public struct SQLCreateTable: SQLExpression {
             if self.ifNotExists, $0.dialect.supportsIfExists {
                 $0.append("IF NOT EXISTS")
             }
+            $0.append(self.table)
             if !self.columns.isEmpty || !self.tableConstraints.isEmpty {
                 /// Don't add empty parenthesis `()` unless there's at least one column or constraint.
-                $0.append(self.table, SQLGroupExpression(self.columns + self.tableConstraints))
+                $0.append(SQLGroupExpression(self.columns + self.tableConstraints))
             }
             if let asQuery = self.asQuery {
                 $0.append("AS", asQuery)
