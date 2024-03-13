@@ -145,7 +145,7 @@ public struct SQLCreateTrigger: SQLExpression {
         if syntax.contains(.postgreSQLChecks) {
             assert(when != .instead || event != .update || self.columns == nil, "INSTEAD OF UPDATE events do not support lists of columns")
             assert(when != .instead || each == .row, "INSTEAD OF triggers must be FOR EACH ROW")
-            assert(!syntax.contains(.supportsUpdateColumns) || (columns?.isEmpty ?? true) || event != .update, "Only UPDATE triggers may specify a list of columns.")
+            assert(!syntax.contains(.supportsUpdateColumns) || (columns?.isEmpty ?? true) || event == .update, "Only UPDATE triggers may specify a list of columns.")
             assert(!syntax.contains(.supportsCondition) || when != .instead || self.condition == nil, "INSTEAD OF triggers do not support WHEN conditions.")
             if syntax.contains(.supportsConstraints) {
                 assert(!self.isConstraint || when == .after, "CONSTRAINT triggers may only be SQLTriggerWhen.after")
