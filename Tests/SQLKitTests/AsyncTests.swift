@@ -1,17 +1,11 @@
 import SQLKit
-import SQLKitBenchmark
 import XCTest
 
 final class AsyncSQLKitTests: XCTestCase {
-    var db: TestDatabase!
+    var db = TestDatabase()
 
     override class func setUp() {
         XCTAssert(isLoggingConfigured)
-    }
-    
-    override func setUp() async throws {
-        try await super.setUp()
-        self.db = TestDatabase()
     }
     
     func testSQLDatabaseAsync() async throws {

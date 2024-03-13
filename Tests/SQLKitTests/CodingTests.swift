@@ -2,15 +2,10 @@
 import XCTest
 
 final class SQLCodingTests: XCTestCase {
-    var db: TestDatabase!
+    var db = TestDatabase()
     
     override class func setUp() {
         XCTAssert(isLoggingConfigured)
-    }
-    
-    override func setUp() {
-        super.setUp()
-        self.db = .init()
     }
 
     // MARK: Query encoder

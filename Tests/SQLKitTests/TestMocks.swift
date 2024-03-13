@@ -109,10 +109,10 @@ struct GenericDialect: SQLDialect {
     var supportsReturning = true
     var identifierQuote: any SQLExpression = SQLRaw("`")
     var literalStringQuote: any SQLExpression = SQLRaw("'")
-    var enumSyntax = SQLEnumSyntax.inline
+    var enumSyntax = SQLEnumSyntax.typeName
     var autoIncrementClause: any SQLExpression = SQLRaw("AUTOINCREMENT")
     var autoIncrementFunction: (any SQLExpression)? = nil
-    var supportsDropBehavior = false
+    var supportsDropBehavior = true
     var triggerSyntax = SQLTriggerSyntax(create: [], drop: [])
     var alterTableSyntax = SQLAlterTableSyntax(alterColumnDefinitionClause: SQLRaw("MODIFY"), alterColumnDefinitionTypeKeyword: nil)
     var upsertSyntax = SQLUpsertSyntax.standard
