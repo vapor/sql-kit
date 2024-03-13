@@ -1,4 +1,5 @@
 import Logging
+import SQLKit
 import XCTest
 
 func XCTAssertNoThrowWithResult<T>(
@@ -10,6 +11,14 @@ func XCTAssertNoThrowWithResult<T>(
     
     XCTAssertNoThrow(result = try expression(), message(), file: file, line: line)
     return result
+}
+
+func XCTAssertSerialization(
+    of queryBuilder: @autoclosure () throws -> some SQLQueryBuilder,
+    is serialization: @autoclosure() throws -> String,
+    message: @autoclosure () -> String = "", file: StaticString = #filePath, line: UInt = #line
+) {
+    XCTAssertEqual(try queryBuilder().simpleSerialize(), try serialization(), message(), file: file, line: line)
 }
 
 let isLoggingConfigured: Bool = {
