@@ -29,8 +29,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     @inlinable
     @discardableResult
     public func each(_ value: SQLCreateTrigger.EachSpecifier) -> Self {
-        self.createTrigger.each = value
-        return self
+        self.each(value as any SQLExpression)
     }
 
     /// Identifies whether the trigger applies to each row or each statement.
@@ -70,8 +69,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     @inlinable
     @discardableResult
     public func timing(_ value: SQLCreateTrigger.TimingSpecifier) -> Self {
-        self.createTrigger.timing = value
-        return self
+        self.timing(value as any SQLExpression)
     }
 
     /// Specify the trigger's timing.

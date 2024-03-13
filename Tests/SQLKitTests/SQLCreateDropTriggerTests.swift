@@ -1,7 +1,7 @@
 import SQLKit
 import XCTest
 
-final class SQLKitTriggerTests: XCTestCase {
+final class SQLCreateDropTriggerTests: XCTestCase {
     private let body = [
         "IF NEW.amount < 0 THEN",
         "SET NEW.amount = 0;",
@@ -14,10 +14,11 @@ final class SQLKitTriggerTests: XCTestCase {
         XCTAssert(isLoggingConfigured)
     }
 
-    func testDropTriggerOptions() throws {
+    func testDropTriggerOptions() {
         self.db._dialect.triggerSyntax = .init(drop: [.supportsCascade, .supportsTableName])
         XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets"), is: "DROP TRIGGER `foo` ON `planets` RESTRICT")
         XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists(), is: "DROP TRIGGER IF EXISTS `foo` ON `planets` RESTRICT")
+        XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists().restrict(), is: "DROP TRIGGER IF EXISTS `foo` ON `planets` RESTRICT")
         XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists().cascade(), is: "DROP TRIGGER IF EXISTS `foo` ON `planets` CASCADE")
         
         self.db._dialect.supportsIfExists = false
@@ -27,10 +28,11 @@ final class SQLKitTriggerTests: XCTestCase {
         XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets"), is: "DROP TRIGGER `foo` RESTRICT")
 
         self.db._dialect.triggerSyntax.drop = []
+        XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists().restrict(), is: "DROP TRIGGER `foo`")
         XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists().cascade(), is: "DROP TRIGGER `foo`")
     }
 
-    func testMySqlTriggerCreates() throws {
+    func testMySqlTriggerCreates() {
         self.db._dialect.triggerSyntax = .init(create: [.supportsBody, .requiresForEachRow, .supportsOrder])
         XCTAssertSerialization(
             of: self.db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
@@ -40,7 +42,7 @@ final class SQLKitTriggerTests: XCTestCase {
         )
     }
 
-    func testSqliteTriggerCreates() throws {
+    func testSqliteTriggerCreates() {
         self.db._dialect.triggerSyntax = .init(create: [.supportsBody, .supportsCondition])
         XCTAssertSerialization(
             of: self.db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
@@ -50,7 +52,7 @@ final class SQLKitTriggerTests: XCTestCase {
         )
     }
 
-    func testPostgreSqlTriggerCreates() throws {
+    func testPostgreSqlTriggerCreates() {
         self.db._dialect.triggerSyntax = .init(create: [.supportsForEach, .postgreSQLChecks, .supportsCondition, .conditionRequiresParentheses, .supportsConstraints])
         XCTAssertSerialization(
             of: self.db.create(trigger: "foo", table: "planet", when: .after, event: .insert)
@@ -59,8 +61,21 @@ final class SQLKitTriggerTests: XCTestCase {
                 .timing(.deferredByDefault)
                 .condition("\(ident: "foo") = \(ident: "bar")" as SQLQueryString)
                 .procedure("qwer")
-                .referencedTable(SQLIdentifier("galaxies")),
+                .referencedTable("galaxies"),
             is: "CREATE CONSTRAINT TRIGGER `foo` AFTER INSERT ON `planet` FROM `galaxies` DEFERRABLE INITIALLY DEFERRED FOR EACH ROW WHEN (`foo` = `bar`) EXECUTE PROCEDURE `qwer`"
+        )
+    }
+    
+    func testPostgreSqlTriggerCreateWithColumns() {
+        self.db._dialect.triggerSyntax = .init(create: [.supportsForEach, .postgreSQLChecks, .supportsCondition, .conditionRequiresParentheses, .supportsConstraints, .supportsUpdateColumns])
+        XCTAssertSerialization(
+            of: self.db.create(trigger: "foo", table: "planet", when: .after, event: .update)
+                .each(.row)
+                .columns(["foo"])
+                .condition("\(ident: "foo") = \(ident: "bar")" as SQLQueryString)
+                .procedure("qwer")
+                .referencedTable("galaxies"),
+            is: "CREATE TRIGGER `foo` AFTER UPDATE OF `foo` ON `planet` FROM `galaxies` FOR EACH ROW WHEN (`foo` = `bar`) EXECUTE PROCEDURE `qwer`"
         )
     }
 }
