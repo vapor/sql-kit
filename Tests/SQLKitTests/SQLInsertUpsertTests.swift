@@ -1,14 +1,48 @@
 @testable import SQLKit
 import XCTest
 
-final class SQLUpsertTests: XCTestCase {
+final class SQLInsertUpsertTests: XCTestCase {
     var db = TestDatabase()
 
     override class func setUp() {
         XCTAssert(isLoggingConfigured)
     }
     
-    // MARK: Upsert
+    // MARK: - Insert
+    
+    func testInsert() {
+        XCTAssertSerialization(
+            of: self.db.insert(into: "planets")
+                .columns("id", "name")
+                .values(SQLLiteral.default, SQLBind("hello")),
+            is: "INSERT INTO `planets` (`id`, `name`) VALUES (DEFAULT, ?)"
+        )
+        
+        XCTAssertSerialization(
+            of: self.db.insert(into: "planets")
+                .columns(SQLIdentifier("id"), SQLIdentifier("name"))
+                .values(SQLLiteral.default, SQLBind("hello")),
+            is: "INSERT INTO `planets` (`id`, `name`) VALUES (DEFAULT, ?)"
+        )
+
+        let builder = self.db.insert(into: "planets")
+        builder.returning = .init(.init("id"))
+        XCTAssertNotNil(builder.returning)
+    }
+    
+    func testInsertSelect() {
+        XCTAssertSerialization(
+            of: self.db.insert(into: "planets")
+                .columns("id", "name")
+                .select { $0
+                    .columns("id", "name")
+                    .from("other_planets")
+                },
+            is: "INSERT INTO `planets` (`id`, `name`) SELECT `id`, `name` FROM `other_planets`"
+        )
+    }
+    
+    // MARK: - Upsert
     
     func testMySQLLikeUpsert() {
         let cols = ["id", "serial_number", "star_id", "last_known_status"]
@@ -77,7 +111,7 @@ final class SQLUpsertTests: XCTestCase {
         XCTAssertSerialization(
             of: self.db.insert(into: "jumpgates")
                 .columns(cols).values(vals("protection racket payoff"))
-                .onConflict(with: ["id"]) { $0
+                .onConflict(with: "id") { $0
                     .set("last_known_status", to: "insurance fraud planning")
                     .where("last_known_status", .notEqual, "evidence disposal")
                 },
@@ -85,7 +119,9 @@ final class SQLUpsertTests: XCTestCase {
         )
     }
     
-    func testUpsertWithEncodableModels() {
+    // MARK: - Models
+    
+    func testInsertWithEncodableModel() {
         struct TestModelPlain: Codable {
             var id: Int?
             var serial_number: UUID
@@ -104,10 +140,12 @@ final class SQLUpsertTests: XCTestCase {
             var StarId: Int
             var LastKnownStatus: String
         }
+        
         @Sendable
         func handleSuperCase(_ path: [any CodingKey]) -> any CodingKey {
             SomeCodingKey(stringValue: path.last!.stringValue.decapitalized.convertedToSnakeCase)
         }
+        
         let snakeEncoder = SQLQueryEncoder(keyEncodingStrategy: .convertToSnakeCase, nilEncodingStrategy: .asNil)
         let superEncoder = SQLQueryEncoder(prefix: "p_", keyEncodingStrategy: .custom({ handleSuperCase($0) }), nilEncodingStrategy: .asNil)
         
@@ -163,5 +201,36 @@ final class SQLUpsertTests: XCTestCase {
                 },
             is: "INSERT INTO `jumpgates` (`p_id`, `p_serial_number`, `p_star_id`, `p_last_known_status`) VALUES (NULL, ?, ?, ?) ON CONFLICT (`p_star_id`) DO UPDATE SET `p_id` = EXCLUDED.`p_id`, `p_serial_number` = EXCLUDED.`p_serial_number`, `p_star_id` = EXCLUDED.`p_star_id`, `p_last_known_status` = EXCLUDED.`p_last_known_status`"
         )
+    }
+
+    func testInsertWithEncodableModels() {
+        struct TestModel: Codable, Equatable {
+            var id: Int?
+            var serial_number: UUID
+            var star_id: Int
+            var last_known_status: String
+        }
+
+        XCTAssertSerialization(
+            of: try self.db.insert(into: "jumpgates")
+                .models([
+                    TestModel(serial_number: .init(), star_id: 0, last_known_status: ""),
+                    TestModel(serial_number: .init(), star_id: 1, last_known_status: ""),
+                ]),
+            is: "INSERT INTO `jumpgates` (`serial_number`, `star_id`, `last_known_status`) VALUES (?, ?, ?), (?, ?, ?)"
+        )
+        
+        let models = [
+            TestModel(id: 0, serial_number: .init(), star_id: 0, last_known_status: ""),
+            TestModel(serial_number: .init(), star_id: 1, last_known_status: ""),
+        ]
+        
+        XCTAssertThrowsError(try self.db.insert(into: "jumpgates").models(models)) {
+            guard case let .invalidValue(value, context) = $0 as? EncodingError else {
+                return XCTFail("Expected EncodingError.invalidValue, but got \(String(reflecting: $0))")
+            }
+            XCTAssertEqual(value as? TestModel, models[1])
+            XCTAssert(context.codingPath.isEmpty)
+        }
     }
 }

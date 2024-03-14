@@ -1,7 +1,7 @@
 import SQLKit
 import XCTest
 
-final class SQLKitTriggerTests: XCTestCase {
+final class SQLCreateDropTriggerTests: XCTestCase {
     private let body = [
         "IF NEW.amount < 0 THEN",
         "SET NEW.amount = 0;",
@@ -18,6 +18,7 @@ final class SQLKitTriggerTests: XCTestCase {
         self.db._dialect.triggerSyntax = .init(drop: [.supportsCascade, .supportsTableName])
         XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets"), is: "DROP TRIGGER `foo` ON `planets` RESTRICT")
         XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists(), is: "DROP TRIGGER IF EXISTS `foo` ON `planets` RESTRICT")
+        XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists().restrict(), is: "DROP TRIGGER IF EXISTS `foo` ON `planets` RESTRICT")
         XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists().cascade(), is: "DROP TRIGGER IF EXISTS `foo` ON `planets` CASCADE")
         
         self.db._dialect.supportsIfExists = false
@@ -27,6 +28,7 @@ final class SQLKitTriggerTests: XCTestCase {
         XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets"), is: "DROP TRIGGER `foo` RESTRICT")
 
         self.db._dialect.triggerSyntax.drop = []
+        XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists().restrict(), is: "DROP TRIGGER `foo`")
         XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists().cascade(), is: "DROP TRIGGER `foo`")
     }
 

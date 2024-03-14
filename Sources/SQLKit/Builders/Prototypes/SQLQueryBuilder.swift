@@ -12,9 +12,13 @@ public protocol SQLQueryBuilder: AnyObject {
 
     /// Execute the query on the connection, ignoring any results.
     ///
-    /// > Note: This method should not be a protocol requirement of ``SQLQueryBuilder``; it should be
-    /// > present only as an extension method. It remains in place due to source compatibility concerns.
+    /// Although it is a protocol requirement for historical reasons, this is considered a legacy interface
+    /// thanks to its reliance on `EventLoopFuture`. Users should call ``run()-3tldd`` whenever possible.
     func run() -> EventLoopFuture<Void>
+    
+    /// Execute the query on the connection, ignoring any results.
+    func run() async throws
+
 }
 
 extension SQLQueryBuilder {

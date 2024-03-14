@@ -8,80 +8,110 @@ final class BasicQueryTests: XCTestCase {
         XCTAssert(isLoggingConfigured)
     }
         
-    // MARK: Basic Queries
+    // MARK: Select
     
     func testSelect_tableAllCols() {
         XCTAssertSerialization(
-            of: self.db.select()
-                .column(SQLColumn(SQLLiteral.all, table: SQLIdentifier("planets")))
-                .from("planets")
-                .where("name", .equal, SQLBind("Earth")),
+            of: self.db.select().column(SQLColumn(SQLLiteral.all, table: SQLIdentifier("planets"))).from("planets").where("name", .equal, SQLBind("Earth")),
             is: "SELECT `planets`.* FROM `planets` WHERE `name` = ?"
         )
     }
     
     func testSelect_whereEncodable() {
         XCTAssertSerialization(
-            of: self.db.select()
-                .column("*")
-                .from("planets")
-                .where("name", .equal, "Earth")
-                .orWhere("name", .equal, "Mars"),
+            of: self.db.select().column("*").from("planets").where("name", .equal, "Earth").orWhere("name", .equal, "Mars"),
             is: "SELECT * FROM `planets` WHERE `name` = ? OR `name` = ?"
         )
     }
     
     func testSelect_whereArrayEncodableWithString() {
         XCTAssertSerialization(
-            of: self.db.select()
-                .column("*")
-                .from("planets")
-                .where("name", .in, ["Earth", "Mars"])
-                .orWhere("name", .in, ["Venus", "Mercury"]),
+            of: self.db.select().column("*").from("planets").where("name", .in, ["Earth", "Mars"]).orWhere("name", .in, ["Venus", "Mercury"]),
             is: "SELECT * FROM `planets` WHERE `name` IN (?, ?) OR `name` IN (?, ?)"
         )
     }
 
     func testSelect_whereArrayEncodableWithIdentifier() {
         XCTAssertSerialization(
-            of: self.db.select()
-                .column("*")
-                .from("planets")
-                .where(SQLIdentifier("name"), .in, ["Earth", "Mars"])
-                .orWhere(SQLIdentifier("name"), .in, ["Venus", "Mercury"]),
+            of: self.db.select().column("*").from("planets").where(SQLIdentifier("name"), .in, ["Earth", "Mars"]).orWhere(SQLIdentifier("name"), .in, ["Venus", "Mercury"]),
             is: "SELECT * FROM `planets` WHERE `name` IN (?, ?) OR `name` IN (?, ?)"
         )
     }
 
     func testSelect_whereGroup() {
         XCTAssertSerialization(
-            of: self.db.select()
-                .column("*")
-                .from("planets")
-                .where { $0
-                    .where("name", .equal, "Earth")
-                    .orWhere("name", .equal, "Mars")
-                }
+            of: self.db.select().column("*").from("planets")
+                .where { $0.where("name", .equal, "Earth").orWhere("name", .equal, "Mars") }
+                .orWhere { $0.where("color", .notEqual, "yellow") }
                 .where("color", .equal, "blue"),
-            is: "SELECT * FROM `planets` WHERE (`name` = ? OR `name` = ?) AND `color` = ?"
+            is: "SELECT * FROM `planets` WHERE (`name` = ? OR `name` = ?) OR (`color` <> ?) AND `color` = ?"
         )
     }
     
+    func testSelect_whereEmptyGroup() {
+        XCTAssertSerialization(
+            of: self.db.select().column("*").from("planets").where { $0 }.orWhere { $0 }.where("color", .equal, "blue"),
+            is: "SELECT * FROM `planets` WHERE `color` = ?"
+        )
+    }
+    
+    
     func testSelect_whereColumn() {
         XCTAssertSerialization(
-            of: self.db.select()
-                .column("*")
-                .from("planets")
-                .where("name", .notEqual, column: "color")
-                .orWhere("name", .equal, column: "greekName"),
+            of: self.db.select().column("*").from("planets").where("name", .notEqual, column: "color").orWhere("name", .equal, column: "greekName"),
             is: "SELECT * FROM `planets` WHERE `name` <> `color` OR `name` = `greekName`"
         )
 	}
-	
+
+    func testSelect_havingEncodable() {
+        XCTAssertSerialization(
+            of: self.db.select().column("*").from("planets").having("name", .equal, "Earth").orHaving("name", .equal, "Mars"),
+            is: "SELECT * FROM `planets` HAVING `name` = ? OR `name` = ?"
+        )
+    }
+    
+    func testSelect_havingArrayEncodableWithString() {
+        XCTAssertSerialization(
+            of: self.db.select().column("*").from("planets").having("name", .in, ["Earth", "Mars"]).orHaving("name", .in, ["Venus", "Mercury"]),
+            is: "SELECT * FROM `planets` HAVING `name` IN (?, ?) OR `name` IN (?, ?)"
+        )
+    }
+
+    func testSelect_havingArrayEncodableWithIdentifier() {
+        XCTAssertSerialization(
+            of: self.db.select().column("*").from("planets").having(SQLIdentifier("name"), .in, ["Earth", "Mars"]).orHaving(SQLIdentifier("name"), .in, ["Venus", "Mercury"]),
+            is: "SELECT * FROM `planets` HAVING `name` IN (?, ?) OR `name` IN (?, ?)"
+        )
+    }
+
+    func testSelect_havingGroup() {
+        XCTAssertSerialization(
+            of: self.db.select().column("*").from("planets")
+                .having { $0.having("name", .equal, "Earth").orHaving("name", .equal, "Mars") }
+                .orHaving { $0.having("color", .notEqual, "yellow") }
+                .having("color", .equal, "blue"),
+            is: "SELECT * FROM `planets` HAVING (`name` = ? OR `name` = ?) OR (`color` <> ?) AND `color` = ?"
+        )
+    }
+    
+    func testSelect_havingEmptyGroup() {
+        XCTAssertSerialization(
+            of: self.db.select().column("*").from("planets").having { $0 }.orHaving { $0 }.having("color", .equal, "blue"),
+            is: "SELECT * FROM `planets` HAVING `color` = ?"
+        )
+    }
+    
+    
+    func testSelect_havingColumn() {
+        XCTAssertSerialization(
+            of: self.db.select().column("*").from("planets").having("name", .notEqual, column: "color").orHaving("name", .equal, column: "greekName"),
+            is: "SELECT * FROM `planets` HAVING `name` <> `color` OR `name` = `greekName`"
+        )
+	}
+
     func testSelect_withoutFrom() {
         XCTAssertSerialization(
-            of: self.db.select()
-                .column(SQLAlias.init(SQLFunction("LAST_INSERT_ID"), as: SQLIdentifier.init("id"))),
+            of: self.db.select().column(SQLAlias.init(SQLFunction("LAST_INSERT_ID"), as: SQLIdentifier.init("id"))),
             is: "SELECT LAST_INSERT_ID() AS `id`"
         )
     }
@@ -98,6 +128,8 @@ final class BasicQueryTests: XCTestCase {
         )
     }
     
+    // MARK: Update/delete
+    
     func testUpdate() {
         XCTAssertSerialization(
             of: self.db.update("planets")
@@ -105,6 +137,10 @@ final class BasicQueryTests: XCTestCase {
                 .set("name", to: "Jupiter"),
             is: "UPDATE `planets` SET `name` = ? WHERE `name` = ?"
         )
+
+        let builder = self.db.update("planets")
+        builder.returning = .init(.init("id"))
+        XCTAssertNotNil(builder.returning)
     }
 
     func testDelete() {
@@ -113,6 +149,10 @@ final class BasicQueryTests: XCTestCase {
                 .where("name", .equal, "Jupiter"),
             is: "DELETE FROM `planets` WHERE `name` = ?"
         )
+        
+        let builder = self.db.delete(from: "planets")
+        builder.returning = .init(.init("id"))
+        XCTAssertNotNil(builder.returning)
     }
     
     // MARK: Locking Clauses
@@ -221,6 +261,15 @@ final class BasicQueryTests: XCTestCase {
                 )
                 .where(SQLLiteral.null),
             is: "SELECT * FROM `planets` INNER JOIN (SELECT `name` FROM `stars` WHERE `orion` = `please space`) AS `star` ON `moons`.`planet_id` IS NOT %%%%%% WHERE NULL"
+        )
+    }
+    
+    // MARK: - Subquery
+    
+    func testBasicSubquery() {
+        XCTAssertSerialization(
+            of: self.db.select().column(SQLSubquery.select { $0.column("foo").from("bar").limit(1) }),
+            is: "SELECT (SELECT `foo` FROM `bar` LIMIT 1)"
         )
     }
 }
