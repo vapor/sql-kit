@@ -8,7 +8,7 @@ final class SQLCodingTests: XCTestCase {
         XCTAssert(isLoggingConfigured)
     }
 
-    // MARK: Query encoder
+    // MARK: - Query encoder
 
     func testCodableWithNillableColumnWithSomeValue() {
         let output = XCTAssertNoThrowWithResult(try self.db
@@ -19,8 +19,8 @@ final class SQLCodingTests: XCTestCase {
 
         XCTAssertEqual(output?.sql, "INSERT INTO `gasses` (`name`, `color`) VALUES (?, ?)")
         XCTAssertEqual(output?.binds.count, 2)
-        XCTAssertEqual((output?.binds[0] as? FakeSendable<String>)?.value, "iodine")
-        XCTAssertEqual((output?.binds[1] as? FakeSendable<String>)?.value, "purple")
+        XCTAssertEqual(output?.binds[0] as? String, "iodine")
+        XCTAssertEqual(output?.binds[1] as? String, "purple")
     }
 
     func testCodableWithNillableColumnWithNilValueWithoutNilEncodingStrategy() throws {
@@ -32,7 +32,7 @@ final class SQLCodingTests: XCTestCase {
 
         XCTAssertEqual(output?.sql, "INSERT INTO `gasses` (`name`) VALUES (?)")
         XCTAssertEqual(output?.binds.count, 1)
-        XCTAssertEqual((output?.binds[0] as? FakeSendable<String>)?.value, "oxygen")
+        XCTAssertEqual(output?.binds[0] as? String, "oxygen")
     }
 
     func testCodableWithNillableColumnWithNilValueAndNilEncodingStrategy() throws {
@@ -44,10 +44,10 @@ final class SQLCodingTests: XCTestCase {
 
         XCTAssertEqual(output?.sql, "INSERT INTO `gasses` (`name`, `color`) VALUES (?, NULL)")
         XCTAssertEqual(output?.binds.count, 1)
-        XCTAssertEqual((output?.binds[0] as? FakeSendable<String>)?.value, "oxygen")
+        XCTAssertEqual(output?.binds[0] as? String, "oxygen")
     }
 
-    // MARK: Row Decoder
+    // MARK: - Row Decoder
     
     func testSQLRowDecoderPlain() {
         let row = TestRow(data: [
@@ -125,6 +125,121 @@ final class SQLCodingTests: XCTestCase {
             XCTAssertEqual(foo.bar,         row.data["bar"] as? Double?)
             XCTAssertEqual(foo.baz,         row.data["baz"] as? String)
             XCTAssertEqual(foo.waldoFredID, row.data["waldoFred_Id"] as? Int)
+        }
+    }
+    
+    // MARK: - Models
+    
+    func testInsertWithEncodableModel() {
+        struct TestModelPlain: Codable {
+            var id: Int?
+            var serial_number: UUID
+            var star_id: Int
+            var last_known_status: String
+        }
+        struct TestModelSnakeCase: Codable {
+            var id: Int?
+            var serialNumber: UUID
+            var starId: Int
+            var lastKnownStatus: String
+        }
+        struct TestModelSuperCase: Codable {
+            var Id: Int?
+            var SerialNumber: UUID
+            var StarId: Int
+            var LastKnownStatus: String
+        }
+        
+        @Sendable
+        func handleSuperCase(_ path: [any CodingKey]) -> any CodingKey {
+            SomeCodingKey(stringValue: path.last!.stringValue.decapitalized.convertedToSnakeCase)
+        }
+        
+        let snakeEncoder = SQLQueryEncoder(keyEncodingStrategy: .convertToSnakeCase, nilEncodingStrategy: .asNil)
+        let superEncoder = SQLQueryEncoder(prefix: "p_", keyEncodingStrategy: .custom({ handleSuperCase($0) }), nilEncodingStrategy: .asNil)
+        
+        db._dialect.upsertSyntax = .standard
+
+        XCTAssertSerialization(
+            of: try self.db.insert(into: "jumpgates").model(TestModelPlain(serial_number: .init(), star_id: 0, last_known_status: ""), nilEncodingStrategy: .asNil),
+            is: "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (NULL, ?, ?, ?)"
+        )
+        XCTAssertSerialization(
+            of: try self.db.insert(into: "jumpgates").model(TestModelSnakeCase(serialNumber: .init(), starId: 0, lastKnownStatus: ""), with: snakeEncoder),
+            is: "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (NULL, ?, ?, ?)"
+        )
+        XCTAssertSerialization(
+            of: try self.db.insert(into: "jumpgates").model(TestModelSuperCase(SerialNumber: .init(), StarId: 0, LastKnownStatus: ""), with: superEncoder),
+            is: "INSERT INTO `jumpgates` (`p_id`, `p_serial_number`, `p_star_id`, `p_last_known_status`) VALUES (NULL, ?, ?, ?)"
+        )
+
+        XCTAssertSerialization(
+            of: try self.db.insert(into: "jumpgates").model(TestModelPlain(serial_number: .init(), star_id: 0, last_known_status: ""), nilEncodingStrategy: .asNil).ignoringConflicts(with: "star_id"),
+            is: "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (NULL, ?, ?, ?) ON CONFLICT (`star_id`) DO NOTHING"
+        )
+        XCTAssertSerialization(
+            of: try self.db.insert(into: "jumpgates").model(TestModelSnakeCase(serialNumber: .init(), starId: 0, lastKnownStatus: ""), with: snakeEncoder).ignoringConflicts(with: "star_id"),
+            is: "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (NULL, ?, ?, ?) ON CONFLICT (`star_id`) DO NOTHING"
+        )
+        XCTAssertSerialization(
+            of: try self.db.insert(into: "jumpgates").model(TestModelSuperCase(SerialNumber: .init(), StarId: 0, LastKnownStatus: ""), with: superEncoder).ignoringConflicts(with: "star_id"),
+            is: "INSERT INTO `jumpgates` (`p_id`, `p_serial_number`, `p_star_id`, `p_last_known_status`) VALUES (NULL, ?, ?, ?) ON CONFLICT (`star_id`) DO NOTHING"
+        )
+
+        XCTAssertSerialization(
+            of: try self.db.insert(into: "jumpgates")
+                .model(TestModelPlain(serial_number: .init(), star_id: 0, last_known_status: ""), nilEncodingStrategy: .asNil)
+                .onConflict(with: ["star_id"]) { try $0
+                    .set(excludedContentOf: TestModelPlain(serial_number: .init(), star_id: 0, last_known_status: ""), nilEncodingStrategy: .asNil)
+                },
+            is: "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (NULL, ?, ?, ?) ON CONFLICT (`star_id`) DO UPDATE SET `id` = EXCLUDED.`id`, `serial_number` = EXCLUDED.`serial_number`, `star_id` = EXCLUDED.`star_id`, `last_known_status` = EXCLUDED.`last_known_status`"
+        )
+        XCTAssertSerialization(
+            of: try self.db.insert(into: "jumpgates")
+                .model(TestModelSnakeCase(serialNumber: .init(), starId: 0, lastKnownStatus: ""), with: snakeEncoder)
+                .onConflict(with: ["star_id"]) { try $0
+                    .set(excludedContentOf: TestModelSnakeCase(serialNumber: .init(), starId: 0, lastKnownStatus: ""), with: snakeEncoder)
+                },
+            is: "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (NULL, ?, ?, ?) ON CONFLICT (`star_id`) DO UPDATE SET `id` = EXCLUDED.`id`, `serial_number` = EXCLUDED.`serial_number`, `star_id` = EXCLUDED.`star_id`, `last_known_status` = EXCLUDED.`last_known_status`"
+        )
+        XCTAssertSerialization(
+            of: try self.db.insert(into: "jumpgates")
+                .model(TestModelSuperCase(SerialNumber: .init(), StarId: 0, LastKnownStatus: ""), with: superEncoder)
+                .onConflict(with: ["p_star_id"]) { try $0
+                    .set(excludedContentOf: TestModelSuperCase(SerialNumber: .init(), StarId: 0, LastKnownStatus: ""), with: superEncoder)
+                },
+            is: "INSERT INTO `jumpgates` (`p_id`, `p_serial_number`, `p_star_id`, `p_last_known_status`) VALUES (NULL, ?, ?, ?) ON CONFLICT (`p_star_id`) DO UPDATE SET `p_id` = EXCLUDED.`p_id`, `p_serial_number` = EXCLUDED.`p_serial_number`, `p_star_id` = EXCLUDED.`p_star_id`, `p_last_known_status` = EXCLUDED.`p_last_known_status`"
+        )
+    }
+
+    func testInsertWithEncodableModels() {
+        struct TestModel: Codable, Equatable {
+            var id: Int?
+            var serial_number: UUID
+            var star_id: Int
+            var last_known_status: String
+        }
+
+        XCTAssertSerialization(
+            of: try self.db.insert(into: "jumpgates")
+                .models([
+                    TestModel(serial_number: .init(), star_id: 0, last_known_status: ""),
+                    TestModel(serial_number: .init(), star_id: 1, last_known_status: ""),
+                ]),
+            is: "INSERT INTO `jumpgates` (`serial_number`, `star_id`, `last_known_status`) VALUES (?, ?, ?), (?, ?, ?)"
+        )
+        
+        let models = [
+            TestModel(id: 0, serial_number: .init(), star_id: 0, last_known_status: ""),
+            TestModel(serial_number: .init(), star_id: 1, last_known_status: ""),
+        ]
+        
+        XCTAssertThrowsError(try self.db.insert(into: "jumpgates").models(models)) {
+            guard case let .invalidValue(value, context) = $0 as? EncodingError else {
+                return XCTFail("Expected EncodingError.invalidValue, but got \(String(reflecting: $0))")
+            }
+            XCTAssertEqual(value as? TestModel, models[1])
+            XCTAssert(context.codingPath.isEmpty)
         }
     }
 }
