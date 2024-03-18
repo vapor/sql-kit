@@ -242,6 +242,33 @@ final class SQLCodingTests: XCTestCase {
             XCTAssert(context.codingPath.isEmpty)
         }
     }
+    
+    func testHandleCodeCoverageCompleteness() {
+        /// There are certain code paths which can never be executed under any meaningful circumstances, but the
+        /// compiler cannot determine this statically. This test performs deliberately pointless operations in order
+        /// to mark those paths as covered by tests.
+        XCTAssertNil(NeverKey.init(stringValue: ""))
+        XCTAssertNil(NeverKey.init(intValue: 0))
+        XCTAssert(FailureEncoder(SQLCodingError.unsupportedOperation("", codingPath: [])).codingPath.isEmpty)
+        XCTAssert(FailureEncoder(SQLCodingError.unsupportedOperation("", codingPath: [])).userInfo.isEmpty)
+        XCTAssertEqual(FailureEncoder(SQLCodingError.unsupportedOperation("", codingPath: [])).count, 0)
+        XCTAssertThrowsError(try FailureEncoder(SQLCodingError.unsupportedOperation("", codingPath: [])).encodeNil())
+        XCTAssertThrowsError(try FailureEncoder<SomeCodingKey>(SQLCodingError.unsupportedOperation("", codingPath: [])).encodeNil(forKey: .init(stringValue: "")))
+        XCTAssertNotNil(FailureEncoder(SQLCodingError.unsupportedOperation("", codingPath: [])).superEncoder())
+        XCTAssertNotNil(FailureEncoder<SomeCodingKey>(SQLCodingError.unsupportedOperation("", codingPath: [])).superEncoder(forKey: .init(stringValue: "")))
+        XCTAssertNotNil(FailureEncoder(SQLCodingError.unsupportedOperation("", codingPath: [])).unkeyedContainer())
+        XCTAssertNotNil(FailureEncoder(SQLCodingError.unsupportedOperation("", codingPath: [])).nestedUnkeyedContainer())
+        XCTAssertNotNil(FailureEncoder<SomeCodingKey>(SQLCodingError.unsupportedOperation("", codingPath: [])).nestedUnkeyedContainer(forKey: .init(stringValue: "")))
+        XCTAssertNotNil(FailureEncoder(SQLCodingError.unsupportedOperation("", codingPath: [])).container(keyedBy: NeverKey.self))
+        XCTAssertNotNil(FailureEncoder(SQLCodingError.unsupportedOperation("", codingPath: [])).nestedContainer(keyedBy: NeverKey.self))
+        XCTAssertNotNil(FailureEncoder<SomeCodingKey>(SQLCodingError.unsupportedOperation("", codingPath: [])).nestedContainer(keyedBy: NeverKey.self, forKey: .init(stringValue: "")))
+        XCTAssertNotNil(DecodingError.dataCorrupted(.init(codingPath: [], debugDescription: "")).under(path: []))
+        XCTAssertNotNil(DecodingError.typeMismatch(Void.self, .init(codingPath: [], debugDescription: "")).under(path: []))
+        XCTAssertNotNil(DecodingError.keyNotFound(SomeCodingKey(stringValue: ""), .init(codingPath: [], debugDescription: "")).under(path: []))
+        XCTAssertNoThrow(try JSONEncoder().encode(FakeSendable(true)))
+        XCTAssertFalse(SQLCodingError.unsupportedOperation("", codingPath: [SomeCodingKey(stringValue: "")]).description.isEmpty)
+        XCTAssertEqual(SomeCodingKey(intValue: 0).intValue, 0)
+    }
 }
 
 struct Gas: Codable {
@@ -255,4 +282,25 @@ struct Foo: Codable {
     let bar: Double?
     let baz: String
     let waldoFredID: Int?
+}
+
+func superCase(_ path: [any CodingKey]) -> any CodingKey {
+    SomeCodingKey(stringValue: path.last!.stringValue.encapitalized)
+}
+
+extension SQLLiteral: Equatable {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        switch (lhs, rhs) {
+        case (.all, .all), (.`default`, .`default`), (.null, .null):          return true
+        case (.boolean(let lbool), .boolean(let rbool)) where lbool == rbool: return true
+        case (.numeric(let lnum),  .numeric(let rnum))  where lnum == rnum:   return true
+        case (.string(let lstr),   .string(let rstr))   where lstr == rstr:   return true
+        default: return false
+        }
+    }
+}
+
+extension SQLBind: Equatable {
+    // Don't do this. This is horrible.
+    public static func == (lhs: Self, rhs: Self) -> Bool { (try? JSONEncoder().encode(lhs.encodable) == JSONEncoder().encode(rhs.encodable)) ?? false }
 }
