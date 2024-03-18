@@ -12,12 +12,8 @@ extension StringProtocol where Self: RangeReplaceableCollection, Self.Element: E
             var index = result.firstIndex(of: search.first!) ?? result.endIndex
             
             while index < result.index(result.endIndex, offsetBy: -(search.count - 1)) {
-                if result[index...].hasPrefix(search) {
-                    result.replaceSubrange(index ..< result.index(index, offsetBy: search.count), with: replacement)
-                    result.formIndex(&index, offsetBy: replacement.count)
-                } else {
-                    result.formIndex(after: &index)
-                }
+                result.replaceSubrange(index ..< result.index(index, offsetBy: search.count), with: replacement)
+                result.formIndex(&index, offsetBy: replacement.count)
                 index = result[index...].firstIndex(of: search.first!) ?? result.endIndex
             }
             return result
