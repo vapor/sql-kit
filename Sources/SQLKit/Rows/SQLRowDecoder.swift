@@ -326,15 +326,23 @@ public struct SQLRowDecoder: Sendable {
             
             // See `SingleValueDecodingContainer.decodeNil()`.
             func decodeNil() -> Bool {
-                /// We would much prefer to be able to throw an error from here when the coding path is empty, but
-                /// ironically, while we _can_ throw from the equivalent encoding method, this is one of the only
-                /// places in the decoding infrastructure from which we cannot. By returning false we at least ensure
-                /// that the overwhelmingly most common way to reach this path - the [`Decodable` conformance of
-                /// `Optional`](optionaldecodable) - will be forced to fallback to `decode(_:)`, which will throw the
-                /// error we would have thrown here.
-                ///
-                /// [optionaldecodable]: https://github.com/apple/swift/blob/6a86bf34646a18cf7eb74f7bf7e1ae815bd97739/stdlib/public/core/Codable.swift#L5397
-                false
+                if let key = self.codingPath.last {
+                    /// This is the same path as the one described for the identical branch in `decode<T>(_:)`
+                    /// immediately below; refer to that discussion for details about this logic, with the additional
+                    /// remark that, as with the `else` branch, our inability to throw errors from this method forces
+                    /// us to always assume non-`nil` and force calling code into a branch where we _can_ throw.
+                    return (try? self.decoder.row.decodeNil(column: self.decoder.column(for: key.stringValue))) ?? false
+                } else {
+                    /// We would much prefer to be able to throw an error from here when the coding path is empty, but
+                    /// ironically, while we _can_ throw from the equivalent encoding method, this is one of the only
+                    /// places in the decoding infrastructure from which we cannot. By returning false we at least ensure
+                    /// that the overwhelmingly most common way to reach this path - the [`Decodable` conformance of
+                    /// `Optional`](optionaldecodable) - will be forced to fallback to `decode(_:)`, which will throw the
+                    /// error we would have thrown here.
+                    ///
+                    /// [optionaldecodable]: https://github.com/apple/swift/blob/6a86bf34646a18cf7eb74f7bf7e1ae815bd97739/stdlib/public/core/Codable.swift#L5397
+                    return false
+                }
             }
             
             // See `SingleValueDecodingContainer.decode(_:)`.
@@ -348,9 +356,12 @@ public struct SQLRowDecoder: Sendable {
                 /// support is a separate problem that does not concern SQLKit; this logic is here because it is
                 /// technically required for a fully correct Codable implementation.)
                 if let key = self.codingPath.last {
-                    return try self.decoder.row.decode(column:
-                        self.decoder.configuration.keyDecodingStrategy.apply(to: key.stringValue.drop(prefix: self.decoder.configuration.prefix))
-                    )
+                    do {
+                        return try self.decoder.row.decode(column: self.decoder.column(for: key.stringValue))
+                    } catch let error as DecodingError {
+                        /// Ensure that errors contain complete coding paths.
+                        throw error.under(path: self.codingPath + [key])
+                    }
                 }
                 /// Otherwise, we reached this point via the top-level decoder's `singleValueContainer()`, and we want
                 /// to recurse back into our own logic without triggering the "can't decode single values" failure

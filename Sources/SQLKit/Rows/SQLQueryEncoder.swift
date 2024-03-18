@@ -254,6 +254,11 @@ public struct SQLQueryEncoder: Sendable {
                 self.encoder.codingPath
             }
             
+            /// Trivial helper to shorten the expression which checks the nil encoding strategy.
+            var nils: Bool {
+                self.encoder.configuration.nilEncodingStrategy == .asNil
+            }
+            
             /// The encoder which created this container.
             let encoder: SQLQueryEncoderImpl
             
@@ -267,40 +272,53 @@ public struct SQLQueryEncoder: Sendable {
                 self.encoder.set(SQLLiteral.null, forKey: key)
             }
             
+            /// We must provide the fourteen fundamental type overloads in order to elide the need for the
+            /// `FakeSendable` wrapper for those values, which saves a significant amount of unnecessary overhead.
+            
+            // See `KeyedEncodingContainerProtocol.encode(_:forKey:)`.
+            mutating func encode(_ value: Bool,   forKey key: Key) throws { self.encoder.set(SQLBind(value), forKey: key) }
+            mutating func encode(_ value: String, forKey key: Key) throws { self.encoder.set(SQLBind(value), forKey: key) }
+            mutating func encode(_ value: Double, forKey key: Key) throws { self.encoder.set(SQLBind(value), forKey: key) }
+            mutating func encode(_ value: Float,  forKey key: Key) throws { self.encoder.set(SQLBind(value), forKey: key) }
+            mutating func encode(_ value: Int,    forKey key: Key) throws { self.encoder.set(SQLBind(value), forKey: key) }
+            mutating func encode(_ value: Int8,   forKey key: Key) throws { self.encoder.set(SQLBind(value), forKey: key) }
+            mutating func encode(_ value: Int16,  forKey key: Key) throws { self.encoder.set(SQLBind(value), forKey: key) }
+            mutating func encode(_ value: Int32,  forKey key: Key) throws { self.encoder.set(SQLBind(value), forKey: key) }
+            mutating func encode(_ value: Int64,  forKey key: Key) throws { self.encoder.set(SQLBind(value), forKey: key) }
+            mutating func encode(_ value: UInt,   forKey key: Key) throws { self.encoder.set(SQLBind(value), forKey: key) }
+            mutating func encode(_ value: UInt8,  forKey key: Key) throws { self.encoder.set(SQLBind(value), forKey: key) }
+            mutating func encode(_ value: UInt16, forKey key: Key) throws { self.encoder.set(SQLBind(value), forKey: key) }
+            mutating func encode(_ value: UInt32, forKey key: Key) throws { self.encoder.set(SQLBind(value), forKey: key) }
+            mutating func encode(_ value: UInt64, forKey key: Key) throws { self.encoder.set(SQLBind(value), forKey: key) }
+
             // See `KeyedEncodingContainerProtocol.encode(_:forKey:)`.
             mutating func encode(_ value: some Encodable, forKey key: Key) throws {
+                /// For generic `Encodable` values, we must forcibly silence the `Sendable` warning from ``SQLBind``.
                 self.encoder.set(SQLBind(FakeSendable(value)), forKey: key)
-            }
-            
-            /// A helper utility which checks for a `nil` input value and applies the encoder's configured
-            /// ``SQLQueryEncoder/nilEncodingStrategy-swift.property`` accordingly.
-            private mutating func encodeOptional(_ value: (some Encodable)?, forKey key: Key) throws {
-                if let value {
-                    try self.encode(value, forKey: key)
-                } else if self.encoder.configuration.nilEncodingStrategy == .asNil {
-                    try self.encodeNil(forKey: key)
-                }
             }
             
             /// Because each `encodeIfPresent(_:forKey:)` method is given a default implementation by the
             /// `KeyedEncodingContainerProtocol` protocol, all fourteen overloads must be overridden in order to
-            /// provide the desired semantics.
+            /// provide the desired semantics. The content of each overload also cannot be generalized in a generic
+            /// method because we need concrete dispatch for the fundamental types in order to avoid excess usage
+            /// of the `FakeSendable` wrapper.
             
             // See `KeyedEncodingContainerProtocol.encodeIfPresent(_:forKey:)`.
-            mutating func encodeIfPresent(_ value: Bool?,   forKey key: Key) throws { try self.encodeOptional(value, forKey: key) }
-            mutating func encodeIfPresent(_ value: String?, forKey key: Key) throws { try self.encodeOptional(value, forKey: key) }
-            mutating func encodeIfPresent(_ value: Double?, forKey key: Key) throws { try self.encodeOptional(value, forKey: key) }
-            mutating func encodeIfPresent(_ value: Float?,  forKey key: Key) throws { try self.encodeOptional(value, forKey: key) }
-            mutating func encodeIfPresent(_ value: Int?,    forKey key: Key) throws { try self.encodeOptional(value, forKey: key) }
-            mutating func encodeIfPresent(_ value: Int8?,   forKey key: Key) throws { try self.encodeOptional(value, forKey: key) }
-            mutating func encodeIfPresent(_ value: Int16?,  forKey key: Key) throws { try self.encodeOptional(value, forKey: key) }
-            mutating func encodeIfPresent(_ value: Int32?,  forKey key: Key) throws { try self.encodeOptional(value, forKey: key) }
-            mutating func encodeIfPresent(_ value: Int64?,  forKey key: Key) throws { try self.encodeOptional(value, forKey: key) }
-            mutating func encodeIfPresent(_ value: UInt?,   forKey key: Key) throws { try self.encodeOptional(value, forKey: key) }
-            mutating func encodeIfPresent(_ value: UInt16?, forKey key: Key) throws { try self.encodeOptional(value, forKey: key) }
-            mutating func encodeIfPresent(_ value: UInt32?, forKey key: Key) throws { try self.encodeOptional(value, forKey: key) }
-            mutating func encodeIfPresent(_ value: UInt64?, forKey key: Key) throws { try self.encodeOptional(value, forKey: key) }
-            mutating func encodeIfPresent(_ value: (some Encodable)?, forKey key: Key) throws { try self.encodeOptional(value, forKey: key) }
+            mutating func encodeIfPresent(_ val: Bool?,   forKey key: Key) throws { if let val { try self.encode(val, forKey: key) } else if self.nils { try self.encodeNil(forKey: key) } }
+            mutating func encodeIfPresent(_ val: String?, forKey key: Key) throws { if let val { try self.encode(val, forKey: key) } else if self.nils { try self.encodeNil(forKey: key) } }
+            mutating func encodeIfPresent(_ val: Double?, forKey key: Key) throws { if let val { try self.encode(val, forKey: key) } else if self.nils { try self.encodeNil(forKey: key) } }
+            mutating func encodeIfPresent(_ val: Float?,  forKey key: Key) throws { if let val { try self.encode(val, forKey: key) } else if self.nils { try self.encodeNil(forKey: key) } }
+            mutating func encodeIfPresent(_ val: Int?,    forKey key: Key) throws { if let val { try self.encode(val, forKey: key) } else if self.nils { try self.encodeNil(forKey: key) } }
+            mutating func encodeIfPresent(_ val: Int8?,   forKey key: Key) throws { if let val { try self.encode(val, forKey: key) } else if self.nils { try self.encodeNil(forKey: key) } }
+            mutating func encodeIfPresent(_ val: Int16?,  forKey key: Key) throws { if let val { try self.encode(val, forKey: key) } else if self.nils { try self.encodeNil(forKey: key) } }
+            mutating func encodeIfPresent(_ val: Int32?,  forKey key: Key) throws { if let val { try self.encode(val, forKey: key) } else if self.nils { try self.encodeNil(forKey: key) } }
+            mutating func encodeIfPresent(_ val: Int64?,  forKey key: Key) throws { if let val { try self.encode(val, forKey: key) } else if self.nils { try self.encodeNil(forKey: key) } }
+            mutating func encodeIfPresent(_ val: UInt?,   forKey key: Key) throws { if let val { try self.encode(val, forKey: key) } else if self.nils { try self.encodeNil(forKey: key) } }
+            mutating func encodeIfPresent(_ val: UInt8?,  forKey key: Key) throws { if let val { try self.encode(val, forKey: key) } else if self.nils { try self.encodeNil(forKey: key) } }
+            mutating func encodeIfPresent(_ val: UInt16?, forKey key: Key) throws { if let val { try self.encode(val, forKey: key) } else if self.nils { try self.encodeNil(forKey: key) } }
+            mutating func encodeIfPresent(_ val: UInt32?, forKey key: Key) throws { if let val { try self.encode(val, forKey: key) } else if self.nils { try self.encodeNil(forKey: key) } }
+            mutating func encodeIfPresent(_ val: UInt64?, forKey key: Key) throws { if let val { try self.encode(val, forKey: key) } else if self.nils { try self.encodeNil(forKey: key) } }
+            mutating func encodeIfPresent(_ val: (some Encodable)?, forKey key: Key) throws { if let val { try self.encode(val, forKey: key) } else if self.nils { try self.encodeNil(forKey: key) } }
 
             // See `KeyedEncodingContainerProtocol.superEncoder(forKey:)`.
             mutating func superEncoder(forKey key: Key) -> any Encoder {
@@ -392,20 +410,20 @@ public struct SQLQueryEncoder: Sendable {
             /// See `encode<T>(_:)` above for why these are here.
             
             // See `SingleValueEncodingContainer.encode(_:)`.
-            func encode(_: Bool.Type) throws -> Bool     { throw .invalid(at: self.codingPath) }
-            func encode(_: String.Type) throws -> String { throw .invalid(at: self.codingPath) }
-            func encode(_: Float.Type) throws -> Float   { throw .invalid(at: self.codingPath) }
-            func encode(_: Double.Type) throws -> Double { throw .invalid(at: self.codingPath) }
-            func encode(_: Int.Type) throws -> Int       { throw .invalid(at: self.codingPath) }
-            func encode(_: Int8.Type) throws -> Int8     { throw .invalid(at: self.codingPath) }
-            func encode(_: Int16.Type) throws -> Int16   { throw .invalid(at: self.codingPath) }
-            func encode(_: Int32.Type) throws -> Int32   { throw .invalid(at: self.codingPath) }
-            func encode(_: Int64.Type) throws -> Int64   { throw .invalid(at: self.codingPath) }
-            func encode(_: UInt.Type) throws -> UInt     { throw .invalid(at: self.codingPath) }
-            func encode(_: UInt8.Type) throws -> UInt8   { throw .invalid(at: self.codingPath) }
-            func encode(_: UInt16.Type) throws -> UInt16 { throw .invalid(at: self.codingPath) }
-            func encode(_: UInt32.Type) throws -> UInt32 { throw .invalid(at: self.codingPath) }
-            func encode(_: UInt64.Type) throws -> UInt64 { throw .invalid(at: self.codingPath) }
+            mutating func encode(_: Bool) throws   { throw .invalid(at: self.codingPath) }
+            mutating func encode(_: String) throws { throw .invalid(at: self.codingPath) }
+            mutating func encode(_: Float) throws  { throw .invalid(at: self.codingPath) }
+            mutating func encode(_: Double) throws { throw .invalid(at: self.codingPath) }
+            mutating func encode(_: Int) throws    { throw .invalid(at: self.codingPath) }
+            mutating func encode(_: Int8) throws   { throw .invalid(at: self.codingPath) }
+            mutating func encode(_: Int16) throws  { throw .invalid(at: self.codingPath) }
+            mutating func encode(_: Int32) throws  { throw .invalid(at: self.codingPath) }
+            mutating func encode(_: Int64) throws  { throw .invalid(at: self.codingPath) }
+            mutating func encode(_: UInt) throws   { throw .invalid(at: self.codingPath) }
+            mutating func encode(_: UInt8) throws  { throw .invalid(at: self.codingPath) }
+            mutating func encode(_: UInt16) throws { throw .invalid(at: self.codingPath) }
+            mutating func encode(_: UInt32) throws { throw .invalid(at: self.codingPath) }
+            mutating func encode(_: UInt64) throws { throw .invalid(at: self.codingPath) }
         }
     }
 }
