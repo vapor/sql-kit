@@ -17,7 +17,7 @@ final class SQLCodingTests: XCTestCase {
             .advancedSerialize()
         )
 
-        XCTAssertEqual(output?.sql, "INSERT INTO `gasses` (`name`, `color`) VALUES (?, ?)")
+        XCTAssertEqual(output?.sql, "INSERT INTO ``gasses`` (``name``, ``color``) VALUES (&1, &2)")
         XCTAssertEqual(output?.binds.count, 2)
         XCTAssertEqual(output?.binds[0] as? String, "iodine")
         XCTAssertEqual(output?.binds[1] as? String, "purple")
@@ -30,7 +30,7 @@ final class SQLCodingTests: XCTestCase {
             .advancedSerialize()
         )
 
-        XCTAssertEqual(output?.sql, "INSERT INTO `gasses` (`name`) VALUES (?)")
+        XCTAssertEqual(output?.sql, "INSERT INTO ``gasses`` (``name``) VALUES (&1)")
         XCTAssertEqual(output?.binds.count, 1)
         XCTAssertEqual(output?.binds[0] as? String, "oxygen")
     }
@@ -42,7 +42,7 @@ final class SQLCodingTests: XCTestCase {
             .advancedSerialize()
         )
 
-        XCTAssertEqual(output?.sql, "INSERT INTO `gasses` (`name`, `color`) VALUES (?, NULL)")
+        XCTAssertEqual(output?.sql, "INSERT INTO ``gasses`` (``name``, ``color``) VALUES (&1, NULL)")
         XCTAssertEqual(output?.binds.count, 1)
         XCTAssertEqual(output?.binds[0] as? String, "oxygen")
     }
@@ -162,28 +162,28 @@ final class SQLCodingTests: XCTestCase {
 
         XCTAssertSerialization(
             of: try self.db.insert(into: "jumpgates").model(TestModelPlain(serial_number: .init(), star_id: 0, last_known_status: ""), nilEncodingStrategy: .asNil),
-            is: "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (NULL, ?, ?, ?)"
+            is: "INSERT INTO ``jumpgates`` (``id``, ``serial_number``, ``star_id``, ``last_known_status``) VALUES (NULL, &1, &2, &3)"
         )
         XCTAssertSerialization(
             of: try self.db.insert(into: "jumpgates").model(TestModelSnakeCase(serialNumber: .init(), starId: 0, lastKnownStatus: ""), with: snakeEncoder),
-            is: "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (NULL, ?, ?, ?)"
+            is: "INSERT INTO ``jumpgates`` (``id``, ``serial_number``, ``star_id``, ``last_known_status``) VALUES (NULL, &1, &2, &3)"
         )
         XCTAssertSerialization(
             of: try self.db.insert(into: "jumpgates").model(TestModelSuperCase(SerialNumber: .init(), StarId: 0, LastKnownStatus: ""), with: superEncoder),
-            is: "INSERT INTO `jumpgates` (`p_id`, `p_serial_number`, `p_star_id`, `p_last_known_status`) VALUES (NULL, ?, ?, ?)"
+            is: "INSERT INTO ``jumpgates`` (``p_id``, ``p_serial_number``, ``p_star_id``, ``p_last_known_status``) VALUES (NULL, &1, &2, &3)"
         )
 
         XCTAssertSerialization(
             of: try self.db.insert(into: "jumpgates").model(TestModelPlain(serial_number: .init(), star_id: 0, last_known_status: ""), nilEncodingStrategy: .asNil).ignoringConflicts(with: "star_id"),
-            is: "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (NULL, ?, ?, ?) ON CONFLICT (`star_id`) DO NOTHING"
+            is: "INSERT INTO ``jumpgates`` (``id``, ``serial_number``, ``star_id``, ``last_known_status``) VALUES (NULL, &1, &2, &3) ON CONFLICT (``star_id``) DO NOTHING"
         )
         XCTAssertSerialization(
             of: try self.db.insert(into: "jumpgates").model(TestModelSnakeCase(serialNumber: .init(), starId: 0, lastKnownStatus: ""), with: snakeEncoder).ignoringConflicts(with: "star_id"),
-            is: "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (NULL, ?, ?, ?) ON CONFLICT (`star_id`) DO NOTHING"
+            is: "INSERT INTO ``jumpgates`` (``id``, ``serial_number``, ``star_id``, ``last_known_status``) VALUES (NULL, &1, &2, &3) ON CONFLICT (``star_id``) DO NOTHING"
         )
         XCTAssertSerialization(
             of: try self.db.insert(into: "jumpgates").model(TestModelSuperCase(SerialNumber: .init(), StarId: 0, LastKnownStatus: ""), with: superEncoder).ignoringConflicts(with: "star_id"),
-            is: "INSERT INTO `jumpgates` (`p_id`, `p_serial_number`, `p_star_id`, `p_last_known_status`) VALUES (NULL, ?, ?, ?) ON CONFLICT (`star_id`) DO NOTHING"
+            is: "INSERT INTO ``jumpgates`` (``p_id``, ``p_serial_number``, ``p_star_id``, ``p_last_known_status``) VALUES (NULL, &1, &2, &3) ON CONFLICT (``star_id``) DO NOTHING"
         )
 
         XCTAssertSerialization(
@@ -192,7 +192,7 @@ final class SQLCodingTests: XCTestCase {
                 .onConflict(with: ["star_id"]) { try $0
                     .set(excludedContentOf: TestModelPlain(serial_number: .init(), star_id: 0, last_known_status: ""), nilEncodingStrategy: .asNil)
                 },
-            is: "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (NULL, ?, ?, ?) ON CONFLICT (`star_id`) DO UPDATE SET `id` = EXCLUDED.`id`, `serial_number` = EXCLUDED.`serial_number`, `star_id` = EXCLUDED.`star_id`, `last_known_status` = EXCLUDED.`last_known_status`"
+            is: "INSERT INTO ``jumpgates`` (``id``, ``serial_number``, ``star_id``, ``last_known_status``) VALUES (NULL, &1, &2, &3) ON CONFLICT (``star_id``) DO UPDATE SET ``id`` = EXCLUDED.``id``, ``serial_number`` = EXCLUDED.``serial_number``, ``star_id`` = EXCLUDED.``star_id``, ``last_known_status`` = EXCLUDED.``last_known_status``"
         )
         XCTAssertSerialization(
             of: try self.db.insert(into: "jumpgates")
@@ -200,7 +200,7 @@ final class SQLCodingTests: XCTestCase {
                 .onConflict(with: ["star_id"]) { try $0
                     .set(excludedContentOf: TestModelSnakeCase(serialNumber: .init(), starId: 0, lastKnownStatus: ""), with: snakeEncoder)
                 },
-            is: "INSERT INTO `jumpgates` (`id`, `serial_number`, `star_id`, `last_known_status`) VALUES (NULL, ?, ?, ?) ON CONFLICT (`star_id`) DO UPDATE SET `id` = EXCLUDED.`id`, `serial_number` = EXCLUDED.`serial_number`, `star_id` = EXCLUDED.`star_id`, `last_known_status` = EXCLUDED.`last_known_status`"
+            is: "INSERT INTO ``jumpgates`` (``id``, ``serial_number``, ``star_id``, ``last_known_status``) VALUES (NULL, &1, &2, &3) ON CONFLICT (``star_id``) DO UPDATE SET ``id`` = EXCLUDED.``id``, ``serial_number`` = EXCLUDED.``serial_number``, ``star_id`` = EXCLUDED.``star_id``, ``last_known_status`` = EXCLUDED.``last_known_status``"
         )
         XCTAssertSerialization(
             of: try self.db.insert(into: "jumpgates")
@@ -208,7 +208,7 @@ final class SQLCodingTests: XCTestCase {
                 .onConflict(with: ["p_star_id"]) { try $0
                     .set(excludedContentOf: TestModelSuperCase(SerialNumber: .init(), StarId: 0, LastKnownStatus: ""), with: superEncoder)
                 },
-            is: "INSERT INTO `jumpgates` (`p_id`, `p_serial_number`, `p_star_id`, `p_last_known_status`) VALUES (NULL, ?, ?, ?) ON CONFLICT (`p_star_id`) DO UPDATE SET `p_id` = EXCLUDED.`p_id`, `p_serial_number` = EXCLUDED.`p_serial_number`, `p_star_id` = EXCLUDED.`p_star_id`, `p_last_known_status` = EXCLUDED.`p_last_known_status`"
+            is: "INSERT INTO ``jumpgates`` (``p_id``, ``p_serial_number``, ``p_star_id``, ``p_last_known_status``) VALUES (NULL, &1, &2, &3) ON CONFLICT (``p_star_id``) DO UPDATE SET ``p_id`` = EXCLUDED.``p_id``, ``p_serial_number`` = EXCLUDED.``p_serial_number``, ``p_star_id`` = EXCLUDED.``p_star_id``, ``p_last_known_status`` = EXCLUDED.``p_last_known_status``"
         )
     }
 
@@ -226,7 +226,7 @@ final class SQLCodingTests: XCTestCase {
                     TestModel(serial_number: .init(), star_id: 0, last_known_status: ""),
                     TestModel(serial_number: .init(), star_id: 1, last_known_status: ""),
                 ]),
-            is: "INSERT INTO `jumpgates` (`serial_number`, `star_id`, `last_known_status`) VALUES (?, ?, ?), (?, ?, ?)"
+            is: "INSERT INTO ``jumpgates`` (``serial_number``, ``star_id``, ``last_known_status``) VALUES (&1, &2, &3), (&4, &5, &6)"
         )
         
         let models = [

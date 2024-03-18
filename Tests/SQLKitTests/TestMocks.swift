@@ -1,3 +1,4 @@
+import OrderedCollections
 import SQLKit
 import NIOCore
 import Logging
@@ -55,9 +56,9 @@ final class TestDatabase: SQLDatabase, @unchecked Sendable {
     }
 }
 
-/// A minimal but surprisingly complete mock `SQLRow` which corrctly implements all required methods.
+/// A minimal but surprisingly complete mock `SQLRow` which correctly implements all required methods.
 struct TestRow: SQLRow {
-    var data: [String: (any Encodable & Sendable)?]
+    var data: OrderedDictionary<String, (any Codable & Sendable)?>
 
     var allColumns: [String] {
         .init(self.data.keys)
@@ -102,12 +103,12 @@ struct TestRow: SQLRow {
 struct GenericDialect: SQLDialect {
     var name: String { "generic" }
 
-    func bindPlaceholder(at position: Int) -> any SQLExpression { SQLRaw("?") }
+    func bindPlaceholder(at position: Int) -> any SQLExpression { SQLRaw("&\(position)") }
     func literalBoolean(_ value: Bool) -> any SQLExpression { SQLRaw("\(value)") }
     var supportsAutoIncrement = true
     var supportsIfExists = true
     var supportsReturning = true
-    var identifierQuote: any SQLExpression = SQLRaw("`")
+    var identifierQuote: any SQLExpression = SQLRaw("``")
     var literalStringQuote: any SQLExpression = SQLRaw("'")
     var enumSyntax = SQLEnumSyntax.typeName
     var autoIncrementClause: any SQLExpression = SQLRaw("AUTOINCREMENT")

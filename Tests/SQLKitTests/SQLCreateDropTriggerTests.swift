@@ -16,20 +16,20 @@ final class SQLCreateDropTriggerTests: XCTestCase {
 
     func testDropTriggerOptions() {
         self.db._dialect.triggerSyntax = .init(drop: [.supportsCascade, .supportsTableName])
-        XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets"), is: "DROP TRIGGER `foo` ON `planets` RESTRICT")
-        XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists(), is: "DROP TRIGGER IF EXISTS `foo` ON `planets` RESTRICT")
-        XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists().restrict(), is: "DROP TRIGGER IF EXISTS `foo` ON `planets` RESTRICT")
-        XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists().cascade(), is: "DROP TRIGGER IF EXISTS `foo` ON `planets` CASCADE")
+        XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets"), is: "DROP TRIGGER ``foo`` ON ``planets`` RESTRICT")
+        XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists(), is: "DROP TRIGGER IF EXISTS ``foo`` ON ``planets`` RESTRICT")
+        XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists().restrict(), is: "DROP TRIGGER IF EXISTS ``foo`` ON ``planets`` RESTRICT")
+        XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists().cascade(), is: "DROP TRIGGER IF EXISTS ``foo`` ON ``planets`` CASCADE")
         
         self.db._dialect.supportsIfExists = false
-        XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists(), is: "DROP TRIGGER `foo` ON `planets` RESTRICT")
+        XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists(), is: "DROP TRIGGER ``foo`` ON ``planets`` RESTRICT")
 
         self.db._dialect.triggerSyntax.drop = .supportsCascade
-        XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets"), is: "DROP TRIGGER `foo` RESTRICT")
+        XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets"), is: "DROP TRIGGER ``foo`` RESTRICT")
 
         self.db._dialect.triggerSyntax.drop = []
-        XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists().restrict(), is: "DROP TRIGGER `foo`")
-        XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists().cascade(), is: "DROP TRIGGER `foo`")
+        XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists().restrict(), is: "DROP TRIGGER ``foo``")
+        XCTAssertSerialization(of: self.db.drop(trigger: "foo").table("planets").ifExists().cascade(), is: "DROP TRIGGER ``foo``")
     }
 
     func testMySqlTriggerCreates() {
@@ -38,7 +38,7 @@ final class SQLCreateDropTriggerTests: XCTestCase {
             of: self.db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
                 .body(self.body.map { SQLRaw($0) })
                 .order(precedence: .precedes, otherTriggerName: "other"),
-            is: "CREATE TRIGGER `foo` BEFORE INSERT ON `planet` FOR EACH ROW PRECEDES `other` BEGIN \(self.body.joined(separator: " ")) END;"
+            is: "CREATE TRIGGER ``foo`` BEFORE INSERT ON ``planet`` FOR EACH ROW PRECEDES ``other`` BEGIN \(self.body.joined(separator: " ")) END;"
         )
     }
 
@@ -48,7 +48,7 @@ final class SQLCreateDropTriggerTests: XCTestCase {
             of: self.db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
                 .body(self.body.map { SQLRaw($0) })
                 .condition("\(ident: "foo") = \(ident: "bar")" as SQLQueryString),
-            is: "CREATE TRIGGER `foo` BEFORE INSERT ON `planet` WHEN `foo` = `bar` BEGIN \(self.body.joined(separator: " ")) END;"
+            is: "CREATE TRIGGER ``foo`` BEFORE INSERT ON ``planet`` WHEN ``foo`` = ``bar`` BEGIN \(self.body.joined(separator: " ")) END;"
         )
     }
 
@@ -62,7 +62,7 @@ final class SQLCreateDropTriggerTests: XCTestCase {
                 .condition("\(ident: "foo") = \(ident: "bar")" as SQLQueryString)
                 .procedure("qwer")
                 .referencedTable("galaxies"),
-            is: "CREATE CONSTRAINT TRIGGER `foo` AFTER INSERT ON `planet` FROM `galaxies` DEFERRABLE INITIALLY DEFERRED FOR EACH ROW WHEN (`foo` = `bar`) EXECUTE PROCEDURE `qwer`"
+            is: "CREATE CONSTRAINT TRIGGER ``foo`` AFTER INSERT ON ``planet`` FROM ``galaxies`` DEFERRABLE INITIALLY DEFERRED FOR EACH ROW WHEN (``foo`` = ``bar``) EXECUTE PROCEDURE ``qwer``"
         )
     }
     
@@ -75,7 +75,7 @@ final class SQLCreateDropTriggerTests: XCTestCase {
                 .condition("\(ident: "foo") = \(ident: "bar")" as SQLQueryString)
                 .procedure("qwer")
                 .referencedTable("galaxies"),
-            is: "CREATE TRIGGER `foo` AFTER UPDATE OF `foo` ON `planet` FROM `galaxies` FOR EACH ROW WHEN (`foo` = `bar`) EXECUTE PROCEDURE `qwer`"
+            is: "CREATE TRIGGER ``foo`` AFTER UPDATE OF ``foo`` ON ``planet`` FROM ``galaxies`` FOR EACH ROW WHEN (``foo`` = ``bar``) EXECUTE PROCEDURE ``qwer``"
         )
     }
 }

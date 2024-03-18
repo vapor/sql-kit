@@ -17,7 +17,7 @@ final class SQLQueryStringTests: XCTestCase {
         let (table, planet) = ("planets", "Earth")
         let output = XCTAssertNoThrowWithResult(self.db.raw("SELECT * FROM \(ident: table) WHERE name = \(bind: planet)").advancedSerialize())
         
-        XCTAssertEqual(output?.sql, "SELECT * FROM `planets` WHERE name = ?")
+        XCTAssertEqual(output?.sql, "SELECT * FROM ``planets`` WHERE name = &1")
         XCTAssertEqual(output?.binds.first as? String, planet)
     }
     
@@ -36,7 +36,7 @@ final class SQLQueryStringTests: XCTestCase {
 
     func testMakeQueryStringWithoutRawBuilder() {
         let queryString = SQLQueryString("query with \(ident: "identifier") and stuff")
-        XCTAssertSerialization(of: self.db.raw(queryString), is: "query with `identifier` and stuff")
+        XCTAssertSerialization(of: self.db.raw(queryString), is: "query with ``identifier`` and stuff")
     }
     
     func testAllQueryStringInterpolationTypes() {
@@ -58,14 +58,14 @@ final class SQLQueryStringTests: XCTestCase {
             is: """
                 Query string embeds:
                     plain string embed
-                    ?
-                    ?, ?
+                    &1
+                    &2, &3
                     numeric literal embed 1
                     boolean literal embeds true and false
                     'string literal embed'
                     'multi-literal embed one' || 'multi-literal embed two'
-                    `string identifier embed`
-                    `multi-ident embed one` + `multi-ident embed two`
+                    ``string identifier embed``
+                    ``multi-ident embed one`` + ``multi-ident embed two``
                     expression embeds: RESTRICT and CASCADE
                 """
         )
@@ -78,7 +78,7 @@ final class SQLQueryStringTests: XCTestCase {
                 "(\(idents: ["col1", "col2", "col3"], joinedBy: ",")) " as SQLQueryString +
                 "VALUES (\(binds: [1, 2, 3]))" as SQLQueryString
             ),
-            is: "INSERT INTO `anything` (`col1`,`col2`,`col3`) VALUES (?, ?, ?)"
+            is: "INSERT INTO ``anything`` (``col1``,``col2``,``col3``) VALUES (&1, &2, &3)"
         )
     }
     
@@ -87,7 +87,7 @@ final class SQLQueryStringTests: XCTestCase {
         query += "(\(idents: ["col1", "col2", "col3"], joinedBy: ",")) " as SQLQueryString
         query += "VALUES (\(binds: [1, 2, 3]))" as SQLQueryString
         
-        XCTAssertSerialization(of: self.db.raw(query), is: "INSERT INTO `anything` (`col1`,`col2`,`col3`) VALUES (?, ?, ?)")
+        XCTAssertSerialization(of: self.db.raw(query), is: "INSERT INTO ``anything`` (``col1``,``col2``,``col3``) VALUES (&1, &2, &3)")
     }
     
     func testQueryStringArrayJoin() {
@@ -96,7 +96,7 @@ final class SQLQueryStringTests: XCTestCase {
                 "INSERT INTO \(ident: "anything") " as SQLQueryString +
                 ((0..<5).map { "\(literal: "\($0)")" as SQLQueryString }).joined(separator: "..")
             ),
-            is: "INSERT INTO `anything` '0'..'1'..'2'..'3'..'4'"
+            is: "INSERT INTO ``anything`` '0'..'1'..'2'..'3'..'4'"
         )
     }
 }
