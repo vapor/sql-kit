@@ -1,7 +1,7 @@
 import SQLKit
 import XCTest
 
-final class DialectFeatureTests: XCTestCase {
+final class SQLDialectFeatureTests: XCTestCase {
     var db = TestDatabase()
 
     override class func setUp() {
