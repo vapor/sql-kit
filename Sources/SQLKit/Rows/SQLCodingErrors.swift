@@ -45,14 +45,10 @@ extension Error where Self == SQLCodingError {
 /// Used as a placeholder by ``FailureEncoder``.
 struct NeverKey: CodingKey {
     // See `CodingKey.stringValue`.
-    var stringValue: String {
-        ""
-    }
+    let stringValue: String = ""
     
     // See `CodingKey.intValue`.
-    var intValue: Int? {
-        nil
-    }
+    let intValue: Int? = nil
     
     // See `CodingKey.init(stringValue:)`.
     init?(stringValue: String) {
@@ -113,14 +109,6 @@ extension KeyedEncodingContainer {
 extension UnkeyedEncodingContainer where Self == FailureEncoder<NeverKey> {
     /// Yield a ``FailureEncoder`` which throws ``SQLCodingError/unsupportedOperation(_:codingPath:)`` from a context
     /// which expects an `UnkeyedEncodingContainer`.
-    static func invalid(_ f: String = #function, at: [any CodingKey]) -> Self {
-        .init(.invalid(f, at: at))
-    }
-}
-
-extension SingleValueEncodingContainer where Self == FailureEncoder<NeverKey> {
-    /// Yield a ``FailureEncoder`` which throws ``SQLCodingError/unsupportedOperation(_:codingPath:)`` from a context
-    /// which expects a `SingleValueEncodingContainer`.
     static func invalid(_ f: String = #function, at: [any CodingKey]) -> Self {
         .init(.invalid(f, at: at))
     }
