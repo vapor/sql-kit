@@ -16,11 +16,11 @@ final class SQLUnionTests: XCTestCase {
 
         XCTAssertSerialization(
             of: self.db.select().column("id").from("t1").union(distinct: { $0.column("id").from("t2") }),
-            is: "SELECT `id` FROM `t1` SELECT `id` FROM `t2`"
+            is: "SELECT ``id`` FROM ``t1`` SELECT ``id`` FROM ``t2``"
         )
         XCTAssertSerialization(
             of: self.db.select().column("id").from("t1").union(all: { $0.column("id").from("t2") }),
-            is: "SELECT `id` FROM `t1` SELECT `id` FROM `t2`"
+            is: "SELECT ``id`` FROM ``t1`` SELECT ``id`` FROM ``t2``"
         )
 
         // Test that queries are correctly formed with the feature flags
@@ -28,18 +28,18 @@ final class SQLUnionTests: XCTestCase {
 
         XCTAssertSerialization(
             of: self.db.select().column("id").from("t1").union(distinct: { $0.column("id").from("t2") }),
-            is: "SELECT `id` FROM `t1` UNION SELECT `id` FROM `t2`"
+            is: "SELECT ``id`` FROM ``t1`` UNION SELECT ``id`` FROM ``t2``"
         )
         XCTAssertSerialization(
             of: self.db.select().column("id").from("t1").union(all: { $0.column("id").from("t2") }),
-            is: "SELECT `id` FROM `t1` UNION ALL SELECT `id` FROM `t2`"
+            is: "SELECT ``id`` FROM ``t1`` UNION ALL SELECT ``id`` FROM ``t2``"
         )
 
         // Test that the explicit distinct flag is respected
         self.db._dialect.unionFeatures.insert(.explicitDistinct)
         XCTAssertSerialization(
             of: self.db.select().column("id").from("t1").union(distinct: { $0.column("id").from("t2") }),
-            is: "SELECT `id` FROM `t1` UNION DISTINCT SELECT `id` FROM `t2`"
+            is: "SELECT ``id`` FROM ``t1`` UNION DISTINCT SELECT ``id`` FROM ``t2``"
         )
     }
     
@@ -49,11 +49,11 @@ final class SQLUnionTests: XCTestCase {
 
         XCTAssertSerialization(
             of: self.db.select().column("id").from("t1").intersect(distinct: { $0.column("id").from("t2") }),
-            is: "SELECT `id` FROM `t1` SELECT `id` FROM `t2`"
+            is: "SELECT ``id`` FROM ``t1`` SELECT ``id`` FROM ``t2``"
         )
         XCTAssertSerialization(
             of: self.db.select().column("id").from("t1").intersect(all: { $0.column("id").from("t2") }),
-            is: "SELECT `id` FROM `t1` SELECT `id` FROM `t2`"
+            is: "SELECT ``id`` FROM ``t1`` SELECT ``id`` FROM ``t2``"
         )
 
         // Test that queries are correctly formed with the feature flags
@@ -61,11 +61,11 @@ final class SQLUnionTests: XCTestCase {
 
         XCTAssertSerialization(
             of: self.db.select().column("id").from("t1").intersect(distinct: { $0.column("id").from("t2") }),
-            is: "SELECT `id` FROM `t1` INTERSECT SELECT `id` FROM `t2`"
+            is: "SELECT ``id`` FROM ``t1`` INTERSECT SELECT ``id`` FROM ``t2``"
         )
         XCTAssertSerialization(
             of: self.db.select().column("id").from("t1").intersect(all: { $0.column("id").from("t2") }),
-            is: "SELECT `id` FROM `t1` INTERSECT ALL SELECT `id` FROM `t2`"
+            is: "SELECT ``id`` FROM ``t1`` INTERSECT ALL SELECT ``id`` FROM ``t2``"
         )
 
         // Test that the explicit distinct flag is respected
@@ -73,7 +73,7 @@ final class SQLUnionTests: XCTestCase {
 
         XCTAssertSerialization(
             of: self.db.select().column("id").from("t1").intersect(distinct: { $0.column("id").from("t2") }),
-            is: "SELECT `id` FROM `t1` INTERSECT DISTINCT SELECT `id` FROM `t2`"
+            is: "SELECT ``id`` FROM ``t1`` INTERSECT DISTINCT SELECT ``id`` FROM ``t2``"
         )
     }
     
@@ -83,11 +83,11 @@ final class SQLUnionTests: XCTestCase {
 
         XCTAssertSerialization(
             of: self.db.select().column("id").from("t1").except(distinct: { $0.column("id").from("t2") }),
-            is: "SELECT `id` FROM `t1` SELECT `id` FROM `t2`"
+            is: "SELECT ``id`` FROM ``t1`` SELECT ``id`` FROM ``t2``"
         )
         XCTAssertSerialization(
             of: self.db.select().column("id").from("t1").except(all: { $0.column("id").from("t2") }),
-            is: "SELECT `id` FROM `t1` SELECT `id` FROM `t2`"
+            is: "SELECT ``id`` FROM ``t1`` SELECT ``id`` FROM ``t2``"
         )
 
         // Test that queries are correctly formed with the feature flags
@@ -95,11 +95,11 @@ final class SQLUnionTests: XCTestCase {
 
         XCTAssertSerialization(
             of: self.db.select().column("id").from("t1").except(distinct: { $0.column("id").from("t2") }),
-            is: "SELECT `id` FROM `t1` EXCEPT SELECT `id` FROM `t2`"
+            is: "SELECT ``id`` FROM ``t1`` EXCEPT SELECT ``id`` FROM ``t2``"
         )
         XCTAssertSerialization(
             of: self.db.select().column("id").from("t1").except(all: { $0.column("id").from("t2") }),
-            is: "SELECT `id` FROM `t1` EXCEPT ALL SELECT `id` FROM `t2`"
+            is: "SELECT ``id`` FROM ``t1`` EXCEPT ALL SELECT ``id`` FROM ``t2``"
         )
         
         // Test that the explicit distinct flag is respected
@@ -107,7 +107,7 @@ final class SQLUnionTests: XCTestCase {
 
         XCTAssertSerialization(
             of: self.db.select().column("id").from("t1").except(distinct: { $0.column("id").from("t2") }),
-            is: "SELECT `id` FROM `t1` EXCEPT DISTINCT SELECT `id` FROM `t2`"
+            is: "SELECT ``id`` FROM ``t1`` EXCEPT DISTINCT SELECT ``id`` FROM ``t2``"
         )
     }
     
@@ -116,11 +116,11 @@ final class SQLUnionTests: XCTestCase {
         self.db._dialect.unionFeatures = [.union, .unionAll, .parenthesizedSubqueries]
         XCTAssertSerialization(
             of: self.db.select().column("id").from("t1").union(distinct: { $0.column("id").from("t2") }),
-            is: "(SELECT `id` FROM `t1`) UNION (SELECT `id` FROM `t2`)"
+            is: "(SELECT ``id`` FROM ``t1``) UNION (SELECT ``id`` FROM ``t2``)"
         )
         XCTAssertSerialization(
             of: self.db.select().column("id").from("t1").union(distinct: { $0.column("id").from("t2") }).union(distinct: { $0.column("id").from("t3") }),
-            is: "(SELECT `id` FROM `t1`) UNION (SELECT `id` FROM `t2`) UNION (SELECT `id` FROM `t3`)"
+            is: "(SELECT ``id`` FROM ``t1``) UNION (SELECT ``id`` FROM ``t2``) UNION (SELECT ``id`` FROM ``t3``)"
         )
     }
     
@@ -138,7 +138,7 @@ final class SQLUnionTests: XCTestCase {
                 .except(distinct:    { $0.column("id").from("t6") })
                 .except(all:         { $0.column("id").from("t7") })
                 .except(             { $0.column("id").from("t67") }),
-            is: "(SELECT `id` FROM `t1`) UNION DISTINCT (SELECT `id` FROM `t2`) UNION ALL (SELECT `id` FROM `t3`) UNION DISTINCT (SELECT `id` FROM `t23`) INTERSECT DISTINCT (SELECT `id` FROM `t4`) INTERSECT ALL (SELECT `id` FROM `t5`) INTERSECT DISTINCT (SELECT `id` FROM `t45`) EXCEPT DISTINCT (SELECT `id` FROM `t6`) EXCEPT ALL (SELECT `id` FROM `t7`) EXCEPT DISTINCT (SELECT `id` FROM `t67`)"
+            is: "(SELECT ``id`` FROM ``t1``) UNION DISTINCT (SELECT ``id`` FROM ``t2``) UNION ALL (SELECT ``id`` FROM ``t3``) UNION DISTINCT (SELECT ``id`` FROM ``t23``) INTERSECT DISTINCT (SELECT ``id`` FROM ``t4``) INTERSECT ALL (SELECT ``id`` FROM ``t5``) INTERSECT DISTINCT (SELECT ``id`` FROM ``t45``) EXCEPT DISTINCT (SELECT ``id`` FROM ``t6``) EXCEPT ALL (SELECT ``id`` FROM ``t7``) EXCEPT DISTINCT (SELECT ``id`` FROM ``t67``)"
         )
     }
     
@@ -146,7 +146,7 @@ final class SQLUnionTests: XCTestCase {
         // Test that having a single entry in the union just executes that entry
         XCTAssertSerialization(
             of: self.db.union { $0.column("id").from("t1") },
-            is: "SELECT `id` FROM `t1`"
+            is: "SELECT ``id`` FROM ``t1``"
         )
     }
     
@@ -154,17 +154,17 @@ final class SQLUnionTests: XCTestCase {
         self.db._dialect.unionFeatures = [.union, .unionAll, .intersect, .intersectAll, .except, .exceptAll, .parenthesizedSubqueries]
         XCTAssertSerialization(
             of: self.db.select().column("id").from("t1").union({ $0.column("id").from("t2") }),
-            is: "(SELECT `id` FROM `t1`) UNION (SELECT `id` FROM `t2`)"
+            is: "(SELECT ``id`` FROM ``t1``) UNION (SELECT ``id`` FROM ``t2``)"
         )
 
         XCTAssertSerialization(
             of: self.db.select().column("id").from("t1").intersect({ $0.column("id").from("t2") }),
-            is: "(SELECT `id` FROM `t1`) INTERSECT (SELECT `id` FROM `t2`)"
+            is: "(SELECT ``id`` FROM ``t1``) INTERSECT (SELECT ``id`` FROM ``t2``)"
         )
 
         XCTAssertSerialization(
             of: self.db.select().column("id").from("t1").except({ $0.column("id").from("t2") }),
-            is: "(SELECT `id` FROM `t1`) EXCEPT (SELECT `id` FROM `t2`)"
+            is: "(SELECT ``id`` FROM ``t1``) EXCEPT (SELECT ``id`` FROM ``t2``)"
         )
     }
     
@@ -173,7 +173,7 @@ final class SQLUnionTests: XCTestCase {
         self.db._dialect.unionFeatures = [.union, .unionAll, .intersect, .intersectAll, .except, .exceptAll, .parenthesizedSubqueries]
         XCTAssertSerialization(
             of: self.db.select().column("id").from("t1").union({ $0.column("id").from("t2") }).limit(3).offset(5),
-            is: "(SELECT `id` FROM `t1`) UNION (SELECT `id` FROM `t2`) LIMIT 3 OFFSET 5"
+            is: "(SELECT ``id`` FROM ``t1``) UNION (SELECT ``id`` FROM ``t2``) LIMIT 3 OFFSET 5"
         )
         
         // Cover the property getters
@@ -184,7 +184,7 @@ final class SQLUnionTests: XCTestCase {
         // Test multiple ORDER BY statements
         XCTAssertSerialization(
             of: self.db.select().column("*").from("t1").union({ $0.column("*").from("t2") }).orderBy("id").orderBy("name", .descending),
-            is: "(SELECT * FROM `t1`) UNION (SELECT * FROM `t2`) ORDER BY `id` ASC, `name` DESC"
+            is: "(SELECT * FROM ``t1``) UNION (SELECT * FROM ``t2``) ORDER BY ``id`` ASC, ``name`` DESC"
         )
     }
 }

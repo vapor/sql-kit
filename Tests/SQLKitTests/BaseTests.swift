@@ -1,4 +1,4 @@
-import SQLKit
+@testable import SQLKit
 import SQLKitBenchmark
 import XCTest
 
@@ -28,7 +28,7 @@ final class SQLKitTests: XCTestCase {
                     right: SQLLiteral.numeric("1")
                 ))
                 .where("best_at_space", .greaterThanOrEqual, "yes"),
-            is: "UPDATE `planets` SET `moons` = `moons` + 1 WHERE `best_at_space` >= ?"
+            is: "UPDATE ``planets`` SET ``moons`` = ``moons`` + 1 WHERE ``best_at_space`` >= &1"
         )
     }
     
@@ -43,7 +43,7 @@ final class SQLKitTests: XCTestCase {
             )
             .advancedSerialize()
         )
-        XCTAssertEqual(output?.sql, "INSERT INTO `planets` (`name`) VALUES (?)")
+        XCTAssertEqual(output?.sql, "INSERT INTO ``planets`` (``name``) VALUES (&1)")
         XCTAssertEqual(output?.binds as? [String], ["Jupiter"]) // instead of [["Jupiter"]]
     }
 
@@ -56,7 +56,7 @@ final class SQLKitTests: XCTestCase {
                 .column(SQLNestedSubpathExpression(column: "json", path: ["a", "b"]))
                 .column(SQLNestedSubpathExpression(column: "json", path: ["a", "b", "c"]))
                 .column(SQLNestedSubpathExpression(column: SQLColumn("json", table: "table"), path: ["a", "b"])),
-            is: "SELECT (`json`->>'a'), (`json`->'a'->>'b'), (`json`->'a'->'b'->>'c'), (`table`.`json`->'a'->>'b')"
+            is: "SELECT (``json``->>'a'), (``json``->'a'->>'b'), (``json``->'a'->'b'->>'c'), (``table``.``json``->'a'->>'b')"
         )
     }
 }
