@@ -1,23 +1,45 @@
 extension StringProtocol where Self: RangeReplaceableCollection, Self.Element: Equatable {
-    /// Provides a version of `Substring.replacing(_:with:)` which is guaranteed to be available on
+    /// Provides a version of `StringProtocol.firstRange(of:)` which is guaranteed to be available on
     /// pre-Ventura Apple platforms.
-    @usableFromInline
-    internal func sqlkit_replacing(_ search: some StringProtocol, with replacement: some StringProtocol) -> String {
-        if #available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
-            return .init(self.replacing(search, with: replacement))
-        } else {
-            guard !self.isEmpty, !search.isEmpty, self.count >= search.count else { return .init(self) }
-            
-            var result = String(self)
-            var index = result.firstIndex(of: search.first!) ?? result.endIndex
-            
-            while index < result.index(result.endIndex, offsetBy: -(search.count - 1)) {
-                result.replaceSubrange(index ..< result.index(index, offsetBy: search.count), with: replacement)
-                result.formIndex(&index, offsetBy: replacement.count)
-                index = result[index...].firstIndex(of: search.first!) ?? result.endIndex
+    @inlinable
+    func sqlkit_firstRange(of other: some StringProtocol) -> Range<Self.Index>? {
+        /// N.B.: This implementation is apparently some 650% faster than `firstRange(of:)`, at least on macOS...
+        guard self.count >= other.count, let starter = other.first else { return nil }
+        var index = self.startIndex
+        let lastIndex = self.index(self.endIndex, offsetBy: -other.count)
+        
+        while index <= lastIndex, let start = self[index...].firstIndex(of: starter) {
+            guard let upperIndex = self.index(start, offsetBy: other.count, limitedBy: self.endIndex) else {
+                return nil
             }
-            return result
+
+            if self[start ..< upperIndex] == other {
+                return start ..< upperIndex
+            }
+            index = self.index(after: start)
         }
+        return nil
+    }
+
+    /// Provides a version of `StringProtocol.replacing(_:with:)` which is guaranteed to be available on
+    /// pre-Ventura Apple platforms.
+    @inlinable
+    func sqlkit_replacing(_ search: some StringProtocol, with replacement: some StringProtocol) -> String {
+        /// N.B.: Even on Ventura/Sonoma, the handwritten implementation is orders of magnitude faster than
+        /// `replacing(_:with:)`, at least as of the time of this writing. Thus we use the handwritten version
+        /// unconditionally. It's still 4x slower than Foundation's version, but that's a lot better than 25x.
+        guard !self.isEmpty, !search.isEmpty, self.count >= search.count else { return .init(self) }
+        
+        var result = "", prevIndex = self.startIndex
+        
+        result.reserveCapacity(self.count + replacement.count)
+        while let range = self[prevIndex...].sqlkit_firstRange(of: search) {
+            result.append(contentsOf: self[prevIndex ..< range.lowerBound])
+            result.append(contentsOf: replacement)
+            prevIndex = range.upperBound
+        }
+        result.append(contentsOf: self[prevIndex...])
+        return result
     }
 
     /// Returns the string with its first character lowercased.
@@ -36,6 +58,8 @@ extension StringProtocol where Self: RangeReplaceableCollection, Self.Element: E
     ///
     /// This is a modified version of Foundation's implementation:
     /// https://github.com/apple/swift-foundation/blob/8010dfe6b1c38cdf363c8d3d3b43d7d4f4c9987b/Sources/FoundationEssentials/JSON/JSONDecoder.swift
+    ///
+    /// > Note: This method is _not_ idempotent with respect to `convertedToSnakeCase` for all inputs.
     var convertedFromSnakeCase: String {
         guard !self.isEmpty, let firstNonUnderscore = self.firstIndex(where: { $0 != "_" }) else {
             return .init(self)
@@ -61,6 +85,8 @@ extension StringProtocol where Self: RangeReplaceableCollection, Self.Element: E
     ///
     /// This is a modified version of Foundation's implementation:
     /// https://github.com/apple/swift-foundation/blob/8010dfe6b1c38cdf363c8d3d3b43d7d4f4c9987b/Sources/FoundationEssentials/JSON/JSONEncoder.swift
+    ///
+    /// > Note: This method is _not_ idempotent with respect to `convertedFromSnakeCase` for all inputs.
     var convertedToSnakeCase: String {
         guard !self.isEmpty else {
             return .init(self)
