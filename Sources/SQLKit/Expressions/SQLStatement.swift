@@ -116,12 +116,13 @@ public struct SQLStatement: SQLExpression {
         iter.next()?.serialize(to: &serializer)
         while let part = iter.next() {
             var temp = SQLSerializer(database: serializer.database)
+            temp.binds = serializer.binds
             
             part.serialize(to: &temp)
             if !temp.sql.isEmpty {
                 serializer.sql += " \(temp.sql)"
             }
-            serializer.binds.append(contentsOf: temp.binds)                
+            serializer.binds = temp.binds//.append(contentsOf: temp.binds) // Can't just append because we need to keep numbers in sync
         }
     }
 
