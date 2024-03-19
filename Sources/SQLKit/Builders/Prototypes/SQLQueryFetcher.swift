@@ -405,7 +405,11 @@ extension SQLQueryFetcher {
 
 // MARK: - Utility
 
+#if swift(<5.10)
+
 /// A simple helper type for working with a mutable value capture across concurrency domains.
+///
+/// Only used before Swift 5.10.
 @usableFromInline
 final class RowsBox: @unchecked Sendable {
     @usableFromInline
@@ -414,3 +418,5 @@ final class RowsBox: @unchecked Sendable {
     @usableFromInline
     init() {}
 }
+
+#endif
