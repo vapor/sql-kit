@@ -6,10 +6,10 @@ import Dispatch
 
 /// An extremely incorrect implementation of the bare minimum of the `EventLoop` protocol, 'cause we have to have
 /// _something_ for a database's event loop property despite never doing anything async.
-final class FakeEventLoop: EventLoop {
+final class FakeEventLoop: EventLoop, @unchecked Sendable {
     func shutdownGracefully(queue: DispatchQueue, _: @escaping @Sendable ((any Error)?) -> Void) {}
-    var inEventLoop: Bool { false }
-    func execute(_: @escaping @Sendable () -> Void) {}
+    var inEventLoop: Bool = false
+    func execute(_ work: @escaping @Sendable () -> Void) { self.inEventLoop = true; work(); self.inEventLoop = false }
     @discardableResult func scheduleTask<T>(deadline: NIODeadline, _: @escaping @Sendable () throws -> T) -> Scheduled<T> { fatalError() }
     @discardableResult func scheduleTask<T>(in: TimeAmount, _: @escaping @Sendable () throws -> T) -> Scheduled<T> { fatalError() }
 }
@@ -37,6 +37,7 @@ final class TestDatabase: SQLDatabase, @unchecked Sendable {
     let eventLoop: any EventLoop = FakeEventLoop()
     var results: [String] = []
     var bindResults: [[any Encodable & Sendable]] = []
+    var outputs: [any SQLRow] = []
     var dialect: any SQLDialect { self._dialect }
     var _dialect: GenericDialect = .init()
     
@@ -45,6 +46,9 @@ final class TestDatabase: SQLDatabase, @unchecked Sendable {
 
         self.results.append(sql)
         self.bindResults.append(binds)
+        while let row = self.outputs.popLast() {
+            onRow(row)
+        }
         return self.eventLoop.makeSucceededFuture(())
     }
 
@@ -53,6 +57,9 @@ final class TestDatabase: SQLDatabase, @unchecked Sendable {
 
         self.results.append(sql)
         self.bindResults.append(binds)
+        while let row = self.outputs.popLast() {
+            onRow(row)
+        }
     }
 }
 

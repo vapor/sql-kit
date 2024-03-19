@@ -1,4 +1,6 @@
 @testable import SQLKit
+import protocol NIOCore.EventLoop
+import class NIOCore.EventLoopFuture
 import SQLKitBenchmark
 import XCTest
 
@@ -59,6 +61,8 @@ final class SQLKitTests: XCTestCase {
             is: "SELECT (``json``->>'a'), (``json``->'a'->>'b'), (``json``->'a'->'b'->>'c'), (``table``.``json``->'a'->>'b')"
         )
     }
+    
+    // MARK: Misc
     
     func testQuoting() {
         XCTAssertSerialization(of: SQLRawBuilder("\(ident: "foo``bar``") \(literal: "foo'bar'")", on: self.db), is: "``foo````bar`````` 'foo''bar'''")
@@ -133,5 +137,78 @@ final class SQLKitTests: XCTestCase {
         XCTAssertEqual("abcdef".drop(prefix: "abc"), "def")
         XCTAssertEqual("acbdef".drop(prefix: "abc"), "acbdef")
         XCTAssertEqual("abcdef".drop(prefix: String?.none), "abcdef")
+    }
+    
+    func testDatabaseDefaultProperties() {
+        XCTAssertNil(self.db.version)
+        XCTAssertEqual(self.db.queryLogLevel, .debug)
+    }
+    
+    func testDatabaseLoggerDatabase() async throws {
+        let db = self.db.logging(to: .init(label: "l"))
+        
+        XCTAssertNotNil(db.eventLoop)
+        XCTAssertNil(db.version)
+        XCTAssertEqual(db.dialect.name, self.db.dialect.name)
+        XCTAssertEqual(db.queryLogLevel, self.db.queryLogLevel)
+        await XCTAssertNotNilAsync(try await db.execute(sql: SQLRaw("TEST"), { _ in }))
+        await XCTAssertNotNilAsync(try await db.execute(sql: SQLRaw("TEST"), { _ in }).get())
+    }
+    
+    func testDatabaseDefaultAsyncImpl() async throws {
+        struct TestNoAsyncDatabase: SQLDatabase {
+            func execute(sql query: any SQLExpression, _ onRow: @escaping @Sendable (any SQLRow) -> ()) -> EventLoopFuture<Void> { self.eventLoop.makeSucceededVoidFuture() }
+            var logger: Logging.Logger { .init(label: "l") }
+            var eventLoop: any EventLoop { FakeEventLoop() }
+            var dialect: any SQLDialect { GenericDialect() }
+        }
+        await XCTAssertNotNilAsync(try await TestNoAsyncDatabase().execute(sql: SQLRaw("TEST"), { _ in }))
+    }
+
+    func testDatabaseVersion() {
+        struct TestVersion: SQLDatabaseReportedVersion {
+            let stringValue: String
+            
+            func isEqual(to otherVersion: any SQLDatabaseReportedVersion) -> Bool { self.stringValue == otherVersion.stringValue }
+            func isOlder(than otherVersion: any SQLDatabaseReportedVersion) -> Bool { self.stringValue.lexicographicallyPrecedes(otherVersion.stringValue) }
+        }
+        
+        XCTAssert(TestVersion(stringValue: "a") == TestVersion(stringValue: "a"))
+        XCTAssert(TestVersion(stringValue: "a") != TestVersion(stringValue: "b"))
+        XCTAssert(TestVersion(stringValue: "a") < TestVersion(stringValue: "b"))
+        XCTAssert(TestVersion(stringValue: "a") <= TestVersion(stringValue: "a"))
+        XCTAssert(TestVersion(stringValue: "b") > TestVersion(stringValue: "a"))
+        XCTAssert(TestVersion(stringValue: "a") >= TestVersion(stringValue: "a"))
+    }
+    
+    func testDialectDefaultImpls() {
+        struct TestDialect: SQLDialect {
+            var name: String { "test" }
+            var identifierQuote: any SQLExpression { SQLRaw("`") }
+            var supportsAutoIncrement: Bool { false }
+            var autoIncrementClause: any SQLExpression { SQLRaw("") }
+            func bindPlaceholder(at position: Int) -> any SQLExpression { SQLLiteral.numeric("\(position)") }
+            func literalBoolean(_ value: Bool) -> any SQLExpression { SQLRaw("\(value)") }
+        }
+        
+        XCTAssertEqual((TestDialect().literalStringQuote as? SQLRaw)?.sql, "'")
+        XCTAssertNil(TestDialect().autoIncrementFunction)
+        XCTAssertEqual((TestDialect().literalDefault as? SQLRaw)?.sql, "DEFAULT")
+        XCTAssert(TestDialect().supportsIfExists)
+        XCTAssertEqual(TestDialect().enumSyntax, .unsupported)
+        XCTAssertFalse(TestDialect().supportsDropBehavior)
+        XCTAssertFalse(TestDialect().supportsReturning)
+        XCTAssertEqual(TestDialect().triggerSyntax.create, [])
+        XCTAssertEqual(TestDialect().triggerSyntax.drop, [])
+        XCTAssertNil(TestDialect().alterTableSyntax.alterColumnDefinitionClause)
+        XCTAssertNil(TestDialect().alterTableSyntax.alterColumnDefinitionTypeKeyword)
+        XCTAssert(TestDialect().alterTableSyntax.allowsBatch)
+        XCTAssertNil(TestDialect().customDataType(for: .int))
+        XCTAssertEqual((TestDialect().normalizeSQLConstraint(identifier: SQLRaw("")) as? SQLRaw)?.sql, "")
+        XCTAssertEqual(TestDialect().upsertSyntax, .unsupported)
+        XCTAssertEqual(TestDialect().unionFeatures, [.union, .unionAll])
+        XCTAssertNil(TestDialect().sharedSelectLockExpression)
+        XCTAssertNil(TestDialect().exclusiveSelectLockExpression)
+        XCTAssertNil(TestDialect().nestedSubpathExpression(in: SQLRaw(""), for: [""]))
     }
 }

@@ -223,32 +223,6 @@ struct TestEncNestedSingleValueContainer: Encodable {
     }
 }
 
-func XCTAssertEncoding(
-    _ model: @autoclosure() throws -> any Encodable,
-    using encoder: @autoclosure () throws -> SQLQueryEncoder,
-    outputs columns: @autoclosure () throws -> [String],
-    _ values: @autoclosure () throws -> [any SQLExpression],
-    _ message: @autoclosure() -> String = "", file: StaticString = #filePath, line: UInt = #line
-) {
-    guard let columns = XCTAssertNoThrowWithResult(try columns(), message(), file: file, line: line),
-          let values = XCTAssertNoThrowWithResult(try values(), message(), file: file, line: line),
-          let model = XCTAssertNoThrowWithResult(try model(), message(), file: file, line: line),
-          let encoder = XCTAssertNoThrowWithResult(try encoder(), message(), file: file, line: line),
-          let encodedData = XCTAssertNoThrowWithResult(try encoder.encode(model), message(), file: file, line: line)
-    else { return }
-    let encodedColumns = encodedData.map(\.0), encodedValues = encodedData.map(\.1)
-    
-    XCTAssertEqual(columns, encodedColumns, message(), file: file, line: line)
-    XCTAssertEqual(values.count, encodedValues.count, message(), file: file, line: line)
-    for (value, encValue) in zip(values, encodedValues) {
-        switch (value, encValue) {
-        case (let value as SQLLiteral, let encValue as SQLLiteral): XCTAssertEqual(value, encValue, message(), file: file, line: line)
-        case (let value as SQLBind, let encValue as SQLBind):       XCTAssertEqual(value, encValue, message(), file: file, line: line)
-        default: XCTFail("Unexpected output (expected \(String(reflecting: value)), got \(String(reflecting: encValue))) \(message())", file: file, line: line)
-        }
-    }
-}
-
 struct BasicEncModel: Codable {
     var boolValue: Bool,     optBoolValue: Bool?,       stringValue: String, optStringValue: String?
     var doubleValue: Double, optDoubleValue: Double?,   floatValue: Float,   optFloatValue: Float?
