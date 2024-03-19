@@ -63,7 +63,7 @@ final class SQLKitTests: XCTestCase {
     }
     
     // MARK: Misc
-    
+        
     func testQuoting() {
         XCTAssertSerialization(of: SQLRawBuilder("\(ident: "foo``bar``") \(literal: "foo'bar'")", on: self.db), is: "``foo````bar`````` 'foo''bar'''")
     }
@@ -210,5 +210,17 @@ final class SQLKitTests: XCTestCase {
         XCTAssertNil(TestDialect().sharedSelectLockExpression)
         XCTAssertNil(TestDialect().exclusiveSelectLockExpression)
         XCTAssertNil(TestDialect().nestedSubpathExpression(in: SQLRaw(""), for: [""]))
+    }
+    
+    func testAdditionalStatementAPI() {
+        var serializer = SQLSerializer(database: self.db)
+        serializer.statement {
+            $0.append("a", "b")
+            $0.append("a", "b", "c")
+            $0.append(SQLRaw("a"), "b", "c")
+            $0.append("a", "b", SQLRaw("c"))
+            $0.append(SQLRaw("a"), SQLRaw("b"), SQLRaw("c"))
+        }
+        XCTAssertEqual(serializer.sql, "a b a b c a b c a b c a b c")
     }
 }

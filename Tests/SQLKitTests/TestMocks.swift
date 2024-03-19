@@ -1,5 +1,5 @@
 import OrderedCollections
-import SQLKit
+@testable import SQLKit
 import NIOCore
 import Logging
 import Dispatch
@@ -131,5 +131,22 @@ struct GenericDialect: SQLDialect {
         precondition(!path.isEmpty)
         let descender = SQLList([column] + path.dropLast().map(SQLLiteral.string(_:)), separator: SQLRaw("->"))
         return SQLGroupExpression(SQLList([descender, SQLLiteral.string(path.last!)], separator: SQLRaw("->>")))
+    }
+    func customDataType(for dataType: SQLDataType) -> (any SQLExpression)? {
+        dataType == .custom(SQLRaw("STANDARD")) ? SQLRaw("CUSTOM") : nil
+    }
+}
+
+extension SQLDataType: Equatable {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        switch (lhs, rhs) {
+            case (.bigint, .bigint), (.blob, .blob), (.int, .int), (.real, .real),
+                 (.smallint, .smallint), (.text, .text):
+                return true
+            case (.custom(let lhs as SQLRaw), .custom(let rhs as SQLRaw)) where lhs.sql == rhs.sql:
+                return true
+            default:
+                return false
+        }
     }
 }

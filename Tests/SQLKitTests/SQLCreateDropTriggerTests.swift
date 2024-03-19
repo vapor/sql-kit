@@ -33,12 +33,16 @@ final class SQLCreateDropTriggerTests: XCTestCase {
     }
 
     func testMySqlTriggerCreates() {
-        self.db._dialect.triggerSyntax = .init(create: [.supportsBody, .requiresForEachRow, .supportsOrder])
-        XCTAssertSerialization(
-            of: self.db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
+        self.db._dialect.triggerSyntax = .init(create: [.supportsBody, .supportsOrder, .supportsDefiner, .requiresForEachRow])
+
+        let builder = self.db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
                 .body(self.body.map { SQLRaw($0) })
-                .order(precedence: .precedes, otherTriggerName: "other"),
-            is: "CREATE TRIGGER ``foo`` BEFORE INSERT ON ``planet`` FOR EACH ROW PRECEDES ``other`` BEGIN \(self.body.joined(separator: " ")) END;"
+                .order(precedence: .precedes, otherTriggerName: "other")
+        builder.createTrigger.definer = SQLLiteral.string("foo@bar")
+        
+        XCTAssertSerialization(
+            of: builder,
+            is: "CREATE DEFINER = 'foo@bar' TRIGGER ``foo`` BEFORE INSERT ON ``planet`` FOR EACH ROW PRECEDES ``other`` BEGIN \(self.body.joined(separator: " ")) END;"
         )
     }
 
@@ -77,5 +81,13 @@ final class SQLCreateDropTriggerTests: XCTestCase {
                 .referencedTable("galaxies"),
             is: "CREATE TRIGGER ``foo`` AFTER UPDATE OF ``foo`` ON ``planet`` FROM ``galaxies`` FOR EACH ROW WHEN (``foo`` = ``bar``) EXECUTE PROCEDURE ``qwer``"
         )
+    }
+    
+    func testAdditionalInitializer() {
+        self.db._dialect.triggerSyntax = .init(create: [.supportsBody, .supportsCondition])
+        var query = SQLCreateTrigger(trigger: "t", table: "tab", when: .after, event: .delete)
+        query.body = self.body.map { SQLRaw($0) }
+
+        XCTAssertSerialization(of: self.db.raw("\(query)"), is: "CREATE TRIGGER ``t`` AFTER DELETE ON ``tab`` BEGIN IF NEW.amount < 0 THEN SET NEW.amount = 0; END IF; END;")
     }
 }
