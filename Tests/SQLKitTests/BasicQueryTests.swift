@@ -10,7 +10,24 @@ final class BasicQueryTests: XCTestCase {
         
     // MARK: Select
     
+    func testSelect_fromAliasing() {
+        XCTAssertSerialization(
+            of: self.db.select()
+                .from("planets", as: "p"),
+            is: "SELECT FROM ``planets`` AS ``p``"
+        )
+        XCTAssertSerialization(
+            of: self.db.select()
+                .from(SQLIdentifier("planets"), as: SQLIdentifier("p")),
+            is: "SELECT FROM ``planets`` AS ``p``"
+        )
+    }
+    
     func testSelect_tableAllCols() {
+        XCTAssertSerialization(
+            of: self.db.select().columns(["*"]).from("planets").where("name", .equal, SQLBind("Earth")),
+            is: "SELECT * FROM ``planets`` WHERE ``name`` = &1"
+        )
         XCTAssertSerialization(
             of: self.db.select().column(SQLColumn(SQLLiteral.all, table: SQLIdentifier("planets"))).from("planets").where("name", .equal, SQLBind("Earth")),
             is: "SELECT ``planets``.* FROM ``planets`` WHERE ``name`` = &1"
@@ -63,6 +80,48 @@ final class BasicQueryTests: XCTestCase {
         )
 	}
 
+    func testSelect_otherWheres() {
+        XCTAssertSerialization(
+            of: self.db.select()
+                .column("*")
+                .from("planets")
+                .where("name", .notEqual, SQLBind("color"))
+                .orWhere("name", .notEqual, SQLBind("color")),
+            is: "SELECT * FROM ``planets`` WHERE ``name`` <> &1 OR ``name`` <> &2"
+        )
+        XCTAssertSerialization(
+            of: self.db.select()
+                .column("*")
+                .from("planets")
+                .where(SQLIdentifier("name"), .notEqual, column: SQLIdentifier("color"))
+                .orWhere(SQLIdentifier("name"), .equal, column: SQLIdentifier("greekName")),
+            is: "SELECT * FROM ``planets`` WHERE ``name`` <> ``color`` OR ``name`` = ``greekName``"
+        )
+        XCTAssertSerialization(
+            of: self.db.select()
+                .column("*")
+                .from("planets")
+                .where(SQLIdentifier("name"), .notEqual, "color")
+                .orWhere(SQLIdentifier("name"), .equal, "greekName"),
+            is: "SELECT * FROM ``planets`` WHERE ``name`` <> &1 OR ``name`` = &2"
+        )
+        XCTAssertSerialization(
+            of: self.db.select()
+                .column("*")
+                .from("planets")
+                .where(SQLIdentifier("name"), .notEqual, SQLBind("color"))
+                .orWhere(SQLIdentifier("name"), .equal, SQLBind("greekName")),
+            is: "SELECT * FROM ``planets`` WHERE ``name`` <> &1 OR ``name`` = &2"
+        )
+        XCTAssertSerialization(
+            of: self.db.select()
+                .column("*")
+                .from("planets")
+                .orWhere(SQLIdentifier("name"), .equal, SQLBind("greekName")),
+            is: "SELECT * FROM ``planets`` WHERE ``name`` = &1"
+        )
+	}
+
     func testSelect_havingEncodable() {
         XCTAssertSerialization(
             of: self.db.select().column("*").from("planets").having("name", .equal, "Earth").orHaving("name", .equal, "Mars"),
@@ -109,6 +168,48 @@ final class BasicQueryTests: XCTestCase {
         )
 	}
 
+    func testSelect_otherHavings() {
+        XCTAssertSerialization(
+            of: self.db.select()
+                .column("*")
+                .from("planets")
+                .having("name", .notEqual, SQLBind("color"))
+                .orHaving("name", .notEqual, SQLBind("color")),
+            is: "SELECT * FROM ``planets`` HAVING ``name`` <> &1 OR ``name`` <> &2"
+        )
+        XCTAssertSerialization(
+            of: self.db.select()
+                .column("*")
+                .from("planets")
+                .having(SQLIdentifier("name"), .notEqual, column: SQLIdentifier("color"))
+                .orHaving(SQLIdentifier("name"), .equal, column: SQLIdentifier("greekName")),
+            is: "SELECT * FROM ``planets`` HAVING ``name`` <> ``color`` OR ``name`` = ``greekName``"
+        )
+        XCTAssertSerialization(
+            of: self.db.select()
+                .column("*")
+                .from("planets")
+                .having(SQLIdentifier("name"), .notEqual, "color")
+                .orHaving(SQLIdentifier("name"), .equal, "greekName"),
+            is: "SELECT * FROM ``planets`` HAVING ``name`` <> &1 OR ``name`` = &2"
+        )
+        XCTAssertSerialization(
+            of: self.db.select()
+                .column("*")
+                .from("planets")
+                .having(SQLIdentifier("name"), .notEqual, SQLBind("color"))
+                .orHaving(SQLIdentifier("name"), .equal, SQLBind("greekName")),
+            is: "SELECT * FROM ``planets`` HAVING ``name`` <> &1 OR ``name`` = &2"
+        )
+        XCTAssertSerialization(
+            of: self.db.select()
+                .column("*")
+                .from("planets")
+                .orHaving(SQLIdentifier("name"), .equal, SQLBind("greekName")),
+            is: "SELECT * FROM ``planets`` HAVING ``name`` = &1"
+        )
+	}
+
     func testSelect_withoutFrom() {
         XCTAssertSerialization(
             of: self.db.select().column(SQLAlias.init(SQLFunction("LAST_INSERT_ID"), as: SQLIdentifier.init("id"))),
@@ -126,6 +227,10 @@ final class BasicQueryTests: XCTestCase {
                 .orderBy("name"),
             is: "SELECT * FROM ``planets`` ORDER BY ``name`` ASC LIMIT 3 OFFSET 5"
         )
+
+        let builder = self.db.select().where(SQLLiteral.boolean(true)).limit(1).offset(2)
+        XCTAssertEqual(builder.limit, 1)
+        XCTAssertEqual(builder.offset, 2)
     }
     
     // MARK: Update/delete
@@ -134,8 +239,10 @@ final class BasicQueryTests: XCTestCase {
         XCTAssertSerialization(
             of: self.db.update("planets")
                 .where("name", .equal, "Jpuiter")
-                .set("name", to: "Jupiter"),
-            is: "UPDATE ``planets`` SET ``name`` = &1 WHERE ``name`` = &2"
+                .set("name", to: "Jupiter")
+                .set(SQLIdentifier("name"), to: "Jupiter")
+                .set("name", to: SQLBind("Jupiter")),
+            is: "UPDATE ``planets`` SET ``name`` = &1, ``name`` = &2, ``name`` = &3 WHERE ``name`` = &4"
         )
 
         let builder = self.db.update("planets")
@@ -224,6 +331,12 @@ final class BasicQueryTests: XCTestCase {
                 .from("planets"),
             is: "SELECT DISTINCT ``name``, ``color`` FROM ``planets``"
         )
+        XCTAssertSerialization(
+            of: self.db.select()
+                .distinct(on: SQLIdentifier("name"), SQLIdentifier("color"))
+                .from("planets"),
+            is: "SELECT DISTINCT ``name``, ``color`` FROM ``planets``"
+        )
     }
     
     func testDistinctExpression() {
@@ -242,11 +355,21 @@ final class BasicQueryTests: XCTestCase {
             of: self.db.select()
                 .column("*")
                 .from("planets")
+                .join("moons", on: SQLColumn("planet_id", table: "moons"), .equal, SQLColumn("id", table: "planets")),
+            is: "SELECT * FROM ``planets`` INNER JOIN ``moons`` ON ``moons``.``planet_id`` = ``planets``.``id``"
+        )
+    }
+    
+    func testSimpleJoinWithSingleExpr() {
+        XCTAssertSerialization(
+            of: self.db.select()
+                .column("*")
+                .from("planets")
                 .join("moons", on: "\(ident: "moons").\(ident: "planet_id")=\(ident: "planets").\(ident: "id")" as SQLQueryString),
             is: "SELECT * FROM ``planets`` INNER JOIN ``moons`` ON ``moons``.``planet_id``=``planets``.``id``"
         )
     }
-    
+
     func testMessyJoin() {
         XCTAssertSerialization(
             of: self.db.select()
@@ -261,6 +384,16 @@ final class BasicQueryTests: XCTestCase {
                 )
                 .where(SQLLiteral.null),
             is: "SELECT * FROM ``planets`` INNER JOIN (SELECT ``name`` FROM ``stars`` WHERE ``orion`` = ``please space``) AS ``star`` ON ``moons``.``planet_id`` IS NOT %%%%%% WHERE NULL"
+        )
+    }
+    
+    func testJoinWithUsingClause() {
+        XCTAssertSerialization(
+            of: self.db.select()
+                .column("*")
+                .from("stars")
+                .join(SQLIdentifier("black_holes"), using: SQLIdentifier("galaxy_id")),
+            is: "SELECT * FROM ``stars`` INNER JOIN ``black_holes`` USING (``galaxy_id``)"
         )
     }
     

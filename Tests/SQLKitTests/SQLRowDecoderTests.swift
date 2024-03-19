@@ -237,22 +237,6 @@ struct TestDecNestedSingleValueContainer: Decodable {
     }
 }
 
-func XCTAssertDecoding<D: Decodable & Sendable & Equatable>(
-    _: D.Type,
-    from row: @autoclosure () throws -> some SQLRow,
-    using decoder: @autoclosure () throws -> SQLRowDecoder,
-    outputs model: @autoclosure () throws -> D,
-    _ message: @autoclosure() -> String = "", file: StaticString = #filePath, line: UInt = #line
-) {
-    guard let row = XCTAssertNoThrowWithResult(try row(), message(), file: file, line: line),
-          let decoder = XCTAssertNoThrowWithResult(try decoder(), message(), file: file, line: line),
-          let model = XCTAssertNoThrowWithResult(try model(), message(), file: file, line: line),
-          let decodedModel = XCTAssertNoThrowWithResult(try decoder.decode(D.self, from: row), message(), file: file, line: line)
-    else { return }
-    
-    XCTAssertEqual(model, decodedModel, message(), file: file, line: line)
-}
-
 struct BasicDecModel: Codable, Equatable {
     var boolValue: Bool,     optBoolValue: Bool?,       stringValue: String, optStringValue: String?
     var doubleValue: Double, optDoubleValue: Double?,   floatValue: Float,   optFloatValue: Float?
