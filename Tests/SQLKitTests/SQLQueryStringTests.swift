@@ -8,6 +8,10 @@ final class SQLQueryStringTests: XCTestCase {
         XCTAssert(isLoggingConfigured)
     }
     
+    func testWithLiteralString() {
+        XCTAssertSerialization(of: self.db.raw("TEST"), is: "TEST")
+    }
+    
     func testRawCustomStringConvertible() {
         let field = "name"
         XCTAssertSerialization(of: self.db.raw("SELECT \(unsafeRaw: field) FROM users"), is: "SELECT name FROM users")
@@ -47,6 +51,7 @@ final class SQLQueryStringTests: XCTestCase {
                     \(bind: "single bind embed")
                     \(binds: ["multi-bind embed one", "multi-bind embed two"])
                     numeric literal embed \(literal: 1)
+                    numeric float literal embed \(literal: 1.0)
                     boolean literal embeds \(true) and \(false)
                     \(literal: "string literal embed")
                     \(literals: ["multi-literal embed one", "multi-literal embed two"], joinedBy: " || ")
@@ -61,6 +66,7 @@ final class SQLQueryStringTests: XCTestCase {
                     &1
                     &2, &3
                     numeric literal embed 1
+                    numeric float literal embed 1.0
                     boolean literal embeds true and false
                     'string literal embed'
                     'multi-literal embed one' || 'multi-literal embed two'
@@ -98,5 +104,6 @@ final class SQLQueryStringTests: XCTestCase {
             ),
             is: "INSERT INTO ``anything`` '0'..'1'..'2'..'3'..'4'"
         )
+        XCTAssertSerialization(of: self.db.raw(Array<SQLQueryString>().joined()), is: "")
     }
 }

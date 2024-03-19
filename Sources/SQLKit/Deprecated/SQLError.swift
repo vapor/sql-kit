@@ -14,7 +14,7 @@ public protocol SQLError: Error {
 /// This type is deprecated; it has never been used by SQLKit or any of its drivers or dependents,
 /// and serves no useful purpose.
 @available(*, deprecated, message: "SQLKit does not support or use this type; it will be removed in a future version.")
-public struct SQLErrorType: Equatable {
+public struct SQLErrorType: Equatable, Sendable {
     /// An IO error occured during database query.
     public static var io: SQLErrorType { .init(code: .io) }
     
@@ -32,7 +32,7 @@ public struct SQLErrorType: Equatable {
     
     // MARK: Private
     
-    private enum Code {
+    private enum Code: Sendable {
         case io
         case constraint
         case permission

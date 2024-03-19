@@ -10,6 +10,19 @@ final class BasicQueryTests: XCTestCase {
         
     // MARK: Select
     
+    func testSelect_columnAliasing() {
+        XCTAssertSerialization(
+            of: self.db.select()
+                .column("name", as: "n")
+                .column(SQLIdentifier("name"), as: "n")
+                .column(SQLIdentifier("name"), as: SQLIdentifier("n"))
+                .column(SQLAlias("name", as: "n"))
+                .column(SQLAlias(SQLIdentifier("name"), as: "n"))
+                .column(SQLAlias(SQLIdentifier("name"), as: SQLIdentifier("n"))),
+            is: "SELECT ``name`` AS ``n``, ``name`` AS ``n``, ``name`` AS ``n``, ``name`` AS ``n``, ``name`` AS ``n``, ``name`` AS ``n``"
+        )
+    }
+    
     func testSelect_fromAliasing() {
         XCTAssertSerialization(
             of: self.db.select()
@@ -212,7 +225,7 @@ final class BasicQueryTests: XCTestCase {
 
     func testSelect_withoutFrom() {
         XCTAssertSerialization(
-            of: self.db.select().column(SQLAlias.init(SQLFunction("LAST_INSERT_ID"), as: SQLIdentifier.init("id"))),
+            of: self.db.select().column(SQLAlias(SQLFunction("LAST_INSERT_ID"), as: SQLIdentifier("id"))),
             is: "SELECT LAST_INSERT_ID() AS ``id``"
         )
     }

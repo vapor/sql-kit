@@ -187,4 +187,16 @@ final class SQLUnionTests: XCTestCase {
             is: "(SELECT * FROM ``t1``) UNION (SELECT * FROM ``t2``) ORDER BY ``id`` ASC, ``name`` DESC"
         )
     }
+    
+    func testUnionAddMethod() {
+        var query = SQLUnion(initialQuery: self.db.select().columns("*").select)
+        query.add(self.db.select().columns("*").select, all: true)
+        query.add(self.db.select().columns("*").select, all: false)
+        
+        self.db._dialect.unionFeatures = []
+        XCTAssertSerialization(of: self.db.raw("\(query)"), is: "SELECT * SELECT * SELECT *")
+
+        self.db._dialect.unionFeatures = [.union, .unionAll]
+        XCTAssertSerialization(of: self.db.raw("\(query)"), is: "SELECT * UNION ALL SELECT * UNION SELECT *")
+    }
 }

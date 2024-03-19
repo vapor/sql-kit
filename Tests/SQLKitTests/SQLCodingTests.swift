@@ -207,6 +207,14 @@ final class SQLCodingTests: XCTestCase {
             is: "UPDATE ``jumpgates`` SET ``p_id`` = NULL, ``p_serial_number`` = &1, ``p_star_id`` = &2, ``p_last_known_status`` = &3"
         )
     }
+    
+    func testRowModelDecode() {
+        struct Foo: Codable, Equatable {
+            let a: String
+        }
+        let row = TestRow(data: ["a": "b"])
+        XCTAssertEqual(try row.decode(model: Foo.self, keyDecodingStrategy: .useDefaultKeys), Foo(a: "b"))
+    }
 
     func testHandleCodeCoverageCompleteness() {
         /// There are certain code paths which can never be executed under any meaningful circumstances, but the
