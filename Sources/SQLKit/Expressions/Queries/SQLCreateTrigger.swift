@@ -162,10 +162,10 @@ public struct SQLCreateTrigger: SQLExpression {
             if syntax.contains(.supportsConstraints), self.isConstraint {
                 $0.append("CONSTRAINT")
             }
-            $0.append("TRIGGER", self.name)
             if let definer = self.definer, syntax.contains(.supportsDefiner) {
-                $0.append("DEFINER = ", definer)
+                $0.append("DEFINER =", definer)
             }
+            $0.append("TRIGGER", self.name)
             $0.append(self.when, self.event)
             if let columns = self.columns, !columns.isEmpty, syntax.contains(.supportsUpdateColumns) {
                 $0.append("OF", SQLList(columns))
