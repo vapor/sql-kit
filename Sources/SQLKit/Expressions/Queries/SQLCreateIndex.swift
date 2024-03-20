@@ -56,7 +56,8 @@ public struct SQLCreateIndex: SQLExpression {
     // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {
-            $0.append("CREATE", self.modifier, "INDEX")
+            $0.append("CREATE", self.modifier)
+            $0.append("INDEX", self.name)
             $0.append("ON", self.table)
             $0.append(SQLGroupExpression(self.columns))
             if let predicate = self.predicate {

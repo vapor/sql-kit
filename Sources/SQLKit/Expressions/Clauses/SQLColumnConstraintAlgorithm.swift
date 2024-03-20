@@ -175,9 +175,6 @@ public enum SQLColumnConstraintAlgorithm: SQLExpression {
                         $0.append("PRIMARY KEY", $0.dialect.autoIncrementClause)
                     }
                 } else {
-                    if autoIncrement {
-                        $0.logger.debug("Autoincrement requested but not supported, ignoring")
-                    }
                     $0.append("PRIMARY KEY")
                 }
             case .notNull:

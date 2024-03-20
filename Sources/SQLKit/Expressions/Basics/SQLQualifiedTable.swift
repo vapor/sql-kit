@@ -24,11 +24,10 @@ public struct SQLQualifiedTable: SQLExpression {
     
     // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
-        serializer.statement {
-            if let space = self.space {
-                $0.append(space, ".")
-            }
-            $0.append(self.table)
+        if let space = self.space {
+            space.serialize(to: &serializer)
+            serializer.write(".")
         }
+        self.table.serialize(to: &serializer)
     }
 }
