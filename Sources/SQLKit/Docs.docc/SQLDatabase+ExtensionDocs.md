@@ -1,9 +1,5 @@
 # ``SQLKit/SQLDatabase``
 
-The core of an SQLKit driver. This common interface is the access point of both SQLKit itself and
-SQLKit clients to all of the information and behaviors necessary to provide and leverage the
-package's functionality.
-
 ## Topics
 
 ### Properties
@@ -16,6 +12,7 @@ package's functionality.
 
 ### Query interface
 
+- ``SQLDatabase/execute(sql:_:)-4eg19``
 - ``SQLDatabase/execute(sql:_:)-7trgm``
 
 ### DML queries

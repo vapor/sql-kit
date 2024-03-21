@@ -2,9 +2,10 @@ import protocol NIOCore.EventLoop
 import class NIOCore.EventLoopFuture
 import struct Logging.Logger
 
-/// The core of an SQLKit driver. This common interface is the access point of both SQLKit itself and
-/// SQLKit clients to all of the information and behaviors necessary to provide and leverage the
-/// package's functionality.
+/// The common interface to SQLKit for both drivers and client code.
+///
+/// ``SQLDatabase`` is the core of an SQLKit driver and the primary entry point for user code. This common interface
+/// provides the information and behaviors necessary to define and leverage the package's functionality.
 ///
 /// Conformances to ``SQLDatabase`` are typically provided by an external database-specific driver
 /// package, alongside several wrapper types for handling connection logic and other details.
@@ -13,10 +14,10 @@ import struct Logging.Logger
 ///
 /// The API described by the base ``SQLDatabase`` protocol is low-level, meant for SQLKit drivers to
 /// implement; most users will not need to interact with these APIs directly. The high-level starting point
-/// for SQLKit is ``SQLQueryBuilder``; various concrete query builders provide extension methods on
-/// ``SQLDatabase`` which are the intended public interface.
+/// for SQLKit is ``SQLQueryBuilder``; the various query builders provide extension methods on ``SQLDatabase``
+/// which are the intended public interface.
 ///
-/// Here is an example of using ``SQLDatabase`` directly, without any query builders:
+/// For comparison, this is an example of using ``SQLDatabase`` and ``SQLExpression``s directly:
 ///
 /// ```swift
 /// let database: SQLDatabase = ...
@@ -31,21 +32,25 @@ import struct Logging.Logger
 ///     right: SQLLiteral.numeric("1")
 /// )
 ///
-/// var resultRows: [SQLRow] = []
+/// nonisolated(unsafe) var resultRows: [SQLRow] = []
 ///
-/// try await database.execute(sql: select, resultRows.append(_:))
-/// // Executed query: SELECT x FROM y WHERE z = 1, as represented in the database's SQL dialect.
+/// try await database.execute(sql: select, { resultRows.append($0) })
+/// // Executed query: SELECT x FROM y WHERE z = 1
+///
+/// var resultValues: [Int] = try resultRows.map {
+///     try $0.decode(column: "x", as: Int.self)
+/// }
 /// ```
 ///
-/// For comparison, this is how the same example can be written _with_ query builders:
+/// And this is the same example, written to make use of ``SQLSelectBuilder``:
 ///
 /// ```swift
 /// let database: SQLDatabase = ...
-/// let resultRows = try await database.select()
+/// let resultValues: [Int] = try await database.select()
 ///     .column("x")
 ///     .from("y")
 ///     .where("z", .equal, 1)
-///     .all()
+///     .all(decodingColumn: "x", as: Int.self)
 /// ```
 public protocol SQLDatabase: Sendable {
     /// The `Logger` used for logging all operations relating to a given database.
@@ -180,12 +185,7 @@ extension SQLDatabase {
 }
 
 extension SQLDatabase {
-    /// Requests that the given generic SQL query be serialized and executed on the database, and that
-    /// the `onRow` closure be invoked once for each result row the query returns (if any).
-    ///
-    /// If a concrete type conforming to ``SQLDatabase`` can provide a more efficient Concurrency-based implementation
-    /// than forwarding the invocation through the legacy `EventLoopFuture`-based API, it should override this method
-    /// in order to do so.
+    /// The default implementation for ``execute(sql:_:)-4eg19``.
     @inlinable
     public func execute(
         sql query: any SQLExpression,
@@ -198,25 +198,33 @@ extension SQLDatabase {
 /// Replaces the `Logger` of an existing ``SQLDatabase`` while forwarding all other properties and methods
 /// to the original.
 private struct CustomLoggerSQLDatabase<D: SQLDatabase>: SQLDatabase {
+    /// The underlying database.
     let database: D
-    let logger: Logger
 
+    // See `SQLDatabase.logger`.
+    let logger: Logger
+    
+    // See `SQLDatabase.eventLoop`.
     var eventLoop: any EventLoop {
         self.database.eventLoop
     }
 
+    // See `SQLDatabase.version`.
     var version: (any SQLDatabaseReportedVersion)? {
         self.database.version
     }
 
+    // See `SQLDatabase.dialect`.
     var dialect: any SQLDialect {
         self.database.dialect
     }
 
+    // See `SQLDatabase.queryLogLevel`.
     var queryLogLevel: Logger.Level? {
         self.database.queryLogLevel
     }
     
+    // See `SQLDatabase.execut(sql:_:)`.
     func execute(
         sql query: any SQLExpression,
         _ onRow: @escaping @Sendable (any SQLRow) -> ()
@@ -224,6 +232,7 @@ private struct CustomLoggerSQLDatabase<D: SQLDatabase>: SQLDatabase {
         self.database.execute(sql: query, onRow)
     }
 
+    // See `SQLDatabase.execut(sql:_:)`.
     func execute(
         sql query: any SQLExpression,
         _ onRow: @escaping @Sendable (any SQLRow) -> ()
