@@ -19,16 +19,12 @@ public final class SQLBenchmarker: Sendable {
         }
     }
     
-    public func runAll() async throws {
-        try await self.runAllTests()
-    }
-
-    @available(*, deprecated, renamed: "runAllTests()", message: "Use `runAllTests()`, which is async, instead.")
+    @available(*, deprecated, renamed: "runAllTests()", message: "Use `runAllTests()` instead.")
     public func testAll() throws {
         try database.eventLoop.makeFutureWithTask { try await self.runAllTests() }.wait()
     }
     
-    @available(*, deprecated, renamed: "runAll()", message: "Use `runAll()`, which is async, instead.")
+    @available(*, deprecated, renamed: "runAllTests()", message: "Use `runAllTests()` instead.")
     public func run() throws {
         try self.testAll()
     }

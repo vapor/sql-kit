@@ -16,7 +16,7 @@ final class SQLKitTests: XCTestCase {
     func testBenchmark() async throws {
         let benchmarker = SQLBenchmarker(on: db)
         
-        try await benchmarker.runAll()
+        try await benchmarker.runAllTests()
     }
     
     // MARK: Operators
