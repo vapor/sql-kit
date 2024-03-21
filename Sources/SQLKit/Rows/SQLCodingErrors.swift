@@ -126,8 +126,7 @@ extension DecodingError {
             return .typeMismatch(type, context.with(prefix: path))
         case let .keyNotFound(key, context):
             return .keyNotFound(key, context.with(prefix: path))
-        @unknown default:
-            return self
+        @unknown default: return self
         }
     }
 }

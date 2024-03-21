@@ -143,19 +143,19 @@ public struct SQLCreateTrigger: SQLExpression {
         let when = self.when as? WhenSpecifier, event = self.event as? EventSpecifier, each = self.each as? EachSpecifier
         
         if syntax.contains(.postgreSQLChecks) {
-            assert(when != .instead || event != .update || self.columns == nil, "INSTEAD OF UPDATE events do not support lists of columns")
-            assert(when != .instead || each == .row, "INSTEAD OF triggers must be FOR EACH ROW")
-            assert(!syntax.contains(.supportsUpdateColumns) || (columns?.isEmpty ?? true) || event == .update, "Only UPDATE triggers may specify a list of columns.")
-            assert(!syntax.contains(.supportsCondition) || when != .instead || self.condition == nil, "INSTEAD OF triggers do not support WHEN conditions.")
+            if !(when != .instead || event != .update || (self.columns?.isEmpty ?? true)) { serializer.database.logger.warning("INSTEAD OF UPDATE events do not support lists of columns") }
+            if !(when != .instead || each == .row) { serializer.database.logger.warning("INSTEAD OF triggers must be FOR EACH ROW") }
+            if !(!syntax.contains(.supportsUpdateColumns) || (self.columns?.isEmpty ?? true) || event == .update) { serializer.database.logger.warning("Only UPDATE triggers may specify a list of columns.") }
+            if !(!syntax.contains(.supportsCondition) || when != .instead || self.condition == nil) { serializer.database.logger.warning("INSTEAD OF triggers do not support WHEN conditions.") }
             if syntax.contains(.supportsConstraints) {
-                assert(!self.isConstraint || when == .after, "CONSTRAINT triggers may only be SQLTriggerWhen.after")
-                assert(!self.isConstraint || each == .row, "CONSTRAINT triggers may only be specified FOR EACH ROW")
-                assert(self.isConstraint || self.timing == nil, "May only specify SQLTriggerTiming on CONSTRAINT triggers.")
+                if !(!self.isConstraint || when == .after) { serializer.database.logger.warning("CONSTRAINT triggers may only be SQLTriggerWhen.after") }
+                if !(!self.isConstraint || each == .row) { serializer.database.logger.warning("CONSTRAINT triggers may only be specified FOR EACH ROW") }
+                if !(self.isConstraint || self.timing == nil) { serializer.database.logger.warning("May only specify SQLTriggerTiming on CONSTRAINT triggers.") }
             }
         }
-        assert(syntax.contains(.supportsDefiner) || self.definer == nil, "Must not specify a definer when dialect does not support it.")
-        assert(!syntax.contains(.supportsBody) || self.body != nil, "Must define a trigger body.")
-        assert(syntax.contains(.supportsBody) || self.procedure != nil, "Must define a trigger procedure.")
+        if !(syntax.contains(.supportsDefiner) || self.definer == nil) { serializer.database.logger.warning("Must not specify a definer when dialect does not support it.") }
+        if !(!syntax.contains(.supportsBody) || self.body != nil) { serializer.database.logger.warning("Must define a trigger body.") }
+        if !(syntax.contains(.supportsBody) || self.procedure != nil) { serializer.database.logger.warning("Must define a trigger procedure.") }
 
         serializer.statement {
             $0.append("CREATE")
