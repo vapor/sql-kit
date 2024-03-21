@@ -49,8 +49,13 @@ final class SQLExpressionTests: XCTestCase {
     }
     
     func testAlterColumnDefinitionType() {
+        self.db._dialect.alterTableSyntax.alterColumnDefinitionTypeKeyword = nil
         XCTAssertSerialization(of: self.db.raw("\(SQLAlterColumnDefinitionType(column: .init("a"), dataType: .int))"), is: "``a`` INTEGER")
         XCTAssertSerialization(of: self.db.raw("\(SQLAlterColumnDefinitionType(column: SQLRaw("a"), dataType: SQLDataType.int))"), is: "a INTEGER")
+        
+        self.db._dialect.alterTableSyntax.alterColumnDefinitionTypeKeyword = SQLRaw("SET TYPE")
+        XCTAssertSerialization(of: self.db.raw("\(SQLAlterColumnDefinitionType(column: .init("a"), dataType: .int))"), is: "``a`` SET TYPE INTEGER")
+        XCTAssertSerialization(of: self.db.raw("\(SQLAlterColumnDefinitionType(column: SQLRaw("a"), dataType: SQLDataType.int))"), is: "a SET TYPE INTEGER")
     }
     
     func testColumnAssignment() {
@@ -241,6 +246,13 @@ final class SQLExpressionTests: XCTestCase {
         XCTAssertSerialization(of: self.db.raw("\(SQLBinaryOperator.subtract)"), is: "-")
         XCTAssertSerialization(of: self.db.raw("\(SQLBinaryOperator.is)"), is: "IS")
         XCTAssertSerialization(of: self.db.raw("\(SQLBinaryOperator.isNot)"), is: "IS NOT")
+    }
+    
+    func testFunctionInitializers() {
+        XCTAssertSerialization(of: self.db.raw("\(SQLFunction("test", args: "a", "b"))"), is: "test(``a``, ``b``)")
+        XCTAssertSerialization(of: self.db.raw("\(SQLFunction("test", args: ["a", "b"]))"), is: "test(``a``, ``b``)")
+        XCTAssertSerialization(of: self.db.raw("\(SQLFunction("test", args: SQLIdentifier("a"), SQLIdentifier("b")))"), is: "test(``a``, ``b``)")
+        XCTAssertSerialization(of: self.db.raw("\(SQLFunction("test", args: [SQLIdentifier("a"), SQLIdentifier("b")]))"), is: "test(``a``, ``b``)")
     }
     
     func testCoalesceFunction() {

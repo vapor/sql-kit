@@ -9,6 +9,10 @@ final class SQLDeprecatedTests: XCTestCase {
         XCTAssert(isLoggingConfigured)
     }
     
+    func testConcatOperator() {
+        XCTAssertSerialization(of: self.db.raw("\(SQLBinaryOperator.concatenate)"), is: "")
+    }
+    
     func testSQLError() {
         struct RidiculousError: SQLError {
             var sqlErrorType: SQLErrorType
@@ -92,7 +96,7 @@ final class SQLDeprecatedTests: XCTestCase {
     
     func testAlterTableBuilderColumns() {
         XCTAssertNotNil(self.db.alter(table: "foo").column("a", type: .bigint).columns.first)
-        var builder = self.db.alter(table: "foo").column("a", type: .bigint)
+        let builder = self.db.alter(table: "foo").column("a", type: .bigint)
         builder.columns = [SQLColumnDefinition("a", dataType: .blob)]
     }
     
