@@ -68,6 +68,18 @@ final class SQLCreateDropTriggerTests: XCTestCase {
                 .referencedTable("galaxies"),
             is: "CREATE CONSTRAINT TRIGGER ``foo`` AFTER INSERT ON ``planet`` FROM ``galaxies`` DEFERRABLE INITIALLY DEFERRED FOR EACH ROW WHEN (``foo`` = ``bar``) EXECUTE PROCEDURE ``qwer``"
         )
+        XCTAssertSerialization(
+            of: self.db.create(trigger: "foo", table: "planet", when: .instead, event: .insert)
+                .each(.row)
+                .procedure("qwer"),
+            is: "CREATE TRIGGER ``foo`` INSTEAD OF INSERT ON ``planet`` FOR EACH ROW EXECUTE PROCEDURE ``qwer``"
+        )
+        XCTAssertSerialization(
+            of: self.db.create(trigger: "foo", table: "planet", when: .instead, event: .update)
+                .each(.row)
+                .procedure("qwer"),
+            is: "CREATE TRIGGER ``foo`` INSTEAD OF UPDATE ON ``planet`` FOR EACH ROW EXECUTE PROCEDURE ``qwer``"
+        )
     }
     
     func testPostgreSqlTriggerCreateWithColumns() {
@@ -81,6 +93,12 @@ final class SQLCreateDropTriggerTests: XCTestCase {
                 .referencedTable("galaxies"),
             is: "CREATE TRIGGER ``foo`` AFTER UPDATE OF ``foo`` ON ``planet`` FROM ``galaxies`` FOR EACH ROW WHEN (``foo`` = ``bar``) EXECUTE PROCEDURE ``qwer``"
         )
+        XCTAssertSerialization(
+            of: self.db.create(trigger: "foo", table: "planet", when: .after, event: .insert)
+                .each(.row)
+                .procedure("qwer"),
+            is: "CREATE TRIGGER ``foo`` AFTER INSERT ON ``planet`` FOR EACH ROW EXECUTE PROCEDURE ``qwer``"
+        )
     }
     
     func testAdditionalInitializer() {
@@ -89,5 +107,37 @@ final class SQLCreateDropTriggerTests: XCTestCase {
         query.body = self.body.map { SQLRaw($0) }
 
         XCTAssertSerialization(of: self.db.raw("\(query)"), is: "CREATE TRIGGER ``t`` AFTER DELETE ON ``tab`` BEGIN IF NEW.amount < 0 THEN SET NEW.amount = 0; END IF; END;")
+    }
+    
+    func testInvalidTriggerCreates() {
+        self.db._dialect.triggerSyntax = .init(create: [.postgreSQLChecks, .supportsUpdateColumns, .supportsCondition, .supportsConstraints], drop: [])
+        XCTAssertSerialization(
+            of: self.db.create(trigger: "foo", table: "planet", when: .instead, event: .update).columns(["foo"]).timing(.deferrable),
+            is: "CREATE TRIGGER ``foo`` INSTEAD OF UPDATE OF ``foo`` ON ``planet`` DEFERRABLE INITIALLY IMMEDIATE"
+        )
+        XCTAssertSerialization(
+            of: self.db.create(trigger: "foo", table: "planet", when: .instead, event: .insert).columns(["foo"]).condition(SQLLiteral.boolean(true)),
+            is: "CREATE TRIGGER ``foo`` INSTEAD OF INSERT OF ``foo`` ON ``planet`` WHEN true"
+        )
+        XCTAssertSerialization(
+            of: self.db.create(trigger: "foo", table: "planet", when: .before, event: .update).isConstraint().each(.statement),
+            is: "CREATE CONSTRAINT TRIGGER ``foo`` BEFORE UPDATE ON ``planet``"
+        )
+
+        let builder = self.db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
+                .body(self.body.map { SQLRaw($0) })
+                .order(precedence: .precedes, otherTriggerName: "other")
+        builder.createTrigger.definer = SQLLiteral.string("foo@bar")
+        
+        XCTAssertSerialization(
+            of: builder,
+            is: "CREATE TRIGGER ``foo`` BEFORE INSERT ON ``planet``"
+        )
+        
+        self.db._dialect.triggerSyntax.create.insert(.supportsBody)
+        XCTAssertSerialization(
+            of: self.db.create(trigger: "foo", table: "planet", when: .before, event: .update).isConstraint().each(.statement).procedure("foo"),
+            is: "CREATE CONSTRAINT TRIGGER ``foo`` BEFORE UPDATE ON ``planet`` EXECUTE PROCEDURE ``foo``"
+        )
     }
 }

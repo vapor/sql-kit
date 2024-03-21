@@ -161,7 +161,7 @@ public struct SQLUnionJoiner: SQLExpression {
         serializer.statement { statement in
             func write(keyword: String, if flag: SQLUnionFeatures, uniqued: Bool) {
                 if !statement.dialect.unionFeatures.contains(flag) {
-                    return statement.logger.debug("WARNING: The \(statement.dialect.name) dialect does not support \(keyword)\(uniqued ? " ALL" : "").")
+                    return statement.logger.warning("The \(statement.dialect.name) dialect does not support \(keyword)\(uniqued ? " ALL" : "").")
                 }
                 statement.append(keyword)
                 if !uniqued {

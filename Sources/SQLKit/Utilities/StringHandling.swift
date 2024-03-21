@@ -115,11 +115,12 @@ extension StringProtocol where Self: RangeReplaceableCollection, Self.Element: E
     /// A necessarily inelegant polyfill for conformance to `CodingKeyRepresentable`, due to availability problems.
     @inlinable
     var codingKeyValue: any CodingKey {
+        #if !DEBUG
         if #available(macOS 12.3, iOS 15.4, watchOS 8.5, tvOS 15.4, *) {
             return String(self).codingKey
-        } else {
-            return SomeCodingKey(stringValue: .init(self))
         }
+        #endif
+        return SomeCodingKey(stringValue: .init(self))
     }
     
     /// Remove the given optional prefix from the string, if present.
@@ -128,13 +129,14 @@ extension StringProtocol where Self: RangeReplaceableCollection, Self.Element: E
     /// - Returns: The string with the prefix removed, if it exists. The string unmodified if not,
     ///   or if `prefix` is `nil`.
     func drop(prefix: (some StringProtocol)?) -> Self.SubSequence {
+        #if !DEBUG
         if #available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
             return prefix.map(self.trimmingPrefix(_:)) ?? self[...]
-        } else {
-            guard let prefix, self.starts(with: prefix) else {
-                return self[...]
-            }
-            return self.dropFirst(prefix.count)
         }
+        #endif
+        guard let prefix, self.starts(with: prefix) else {
+            return self[self.startIndex ..< self.endIndex]
+        }
+        return self.dropFirst(prefix.count)
     }
 }

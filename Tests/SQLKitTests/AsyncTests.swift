@@ -17,9 +17,11 @@ final class AsyncSQLKitTests: XCTestCase {
     }
     
     func testSQLQueryBuilderAsyncAndFutures() async throws {
+        self.db.outputs = [TestRow(data: [:])]
         try await self.db.update("a").set("b", to: "c").run().get()
         XCTAssertEqual(self.db.results[0], "UPDATE ``a`` SET ``b`` = &1")
 
+        self.db.outputs = [TestRow(data: [:])]
         try await self.db.update("a").set("b", to: "c").run()
         XCTAssertEqual(self.db.results[1], "UPDATE ``a`` SET ``b`` = &1")
     }
