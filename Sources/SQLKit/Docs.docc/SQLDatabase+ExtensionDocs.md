@@ -13,7 +13,7 @@
 ### Query interface
 
 - ``SQLDatabase/execute(sql:_:)-4eg19``
-- ``SQLDatabase/execute(sql:_:)-7trgm``
+- ``SQLDatabase/withSession(_:)-9b68j``
 
 ### DML queries
 
