@@ -133,6 +133,21 @@ public protocol SQLDatabase: Sendable {
         sql query: any SQLExpression,
         _ onRow: @escaping @Sendable (any SQLRow) -> ()
     ) async throws
+    
+    /// Requests the provided closure be called with a database which is guaranteed to represent a single
+    /// "session", suitable for e.g. executing a series of queries representing a transaction.
+    ///
+    /// This method is provided for the benefit of SQLKit drivers which vend concrete database objects which may not
+    /// necessarily always execute consecutive queries in the same remote context, such as in the case of connection
+    /// pooling or multiplexing. The default implementation simply passes `self` to the closure; it is the
+    /// responsibility of individual drivers to do otherwise as needed.
+    ///
+    /// - Parameter closure: A closure to invoke. The single parameter shall be an implementation of ``SQLDatabase``
+    ///   which represents a single "session". Implementations may pass the same database on which this method was
+    ///   originally invoked.
+    func withSession<R>(
+        _ closure: @escaping @Sendable (any SQLDatabase) async throws -> R
+    ) async throws -> R
 }
 
 extension SQLDatabase {
@@ -192,6 +207,14 @@ extension SQLDatabase {
         _ onRow: @escaping @Sendable (any SQLRow) -> ()
     ) async throws {
         try await self.execute(sql: query, onRow).get()
+    }
+    
+    /// The default implementation for ``withSession(_:)-9b68j``.
+    @inlinable
+    public func withSession<R>(
+        _ closure: @escaping @Sendable (any SQLDatabase) async throws -> R
+    ) async throws -> R {
+        try await closure(self)
     }
 }
 

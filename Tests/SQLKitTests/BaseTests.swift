@@ -1,4 +1,5 @@
 @testable import SQLKit
+import struct Logging.Logger
 import protocol NIOCore.EventLoop
 import class NIOCore.EventLoopFuture
 import SQLKitBenchmark
@@ -158,7 +159,7 @@ final class SQLKitTests: XCTestCase {
     func testDatabaseDefaultAsyncImpl() async throws {
         struct TestNoAsyncDatabase: SQLDatabase {
             func execute(sql query: any SQLExpression, _ onRow: @escaping @Sendable (any SQLRow) -> ()) -> EventLoopFuture<Void> { self.eventLoop.makeSucceededVoidFuture() }
-            var logger: Logging.Logger { .init(label: "l") }
+            var logger: Logger { .init(label: "l") }
             var eventLoop: any EventLoop { FakeEventLoop() }
             var dialect: any SQLDialect { GenericDialect() }
         }
@@ -168,17 +169,26 @@ final class SQLKitTests: XCTestCase {
     func testDatabaseVersion() {
         struct TestVersion: SQLDatabaseReportedVersion {
             let stringValue: String
-            
-            func isEqual(to otherVersion: any SQLDatabaseReportedVersion) -> Bool { self.stringValue == otherVersion.stringValue }
-            func isOlder(than otherVersion: any SQLDatabaseReportedVersion) -> Bool { self.stringValue.lexicographicallyPrecedes(otherVersion.stringValue) }
+        }
+        struct AnotherTestVersion: SQLDatabaseReportedVersion {
+            let stringValue: String
         }
         
         XCTAssert(TestVersion(stringValue: "a") == TestVersion(stringValue: "a"))
+        XCTAssertFalse(TestVersion(stringValue: "a").isEqual(to: AnotherTestVersion(stringValue: "a")))
         XCTAssert(TestVersion(stringValue: "a") != TestVersion(stringValue: "b"))
         XCTAssert(TestVersion(stringValue: "a") < TestVersion(stringValue: "b"))
+        XCTAssertFalse(TestVersion(stringValue: "a").isOlder(than: AnotherTestVersion(stringValue: "a")))
         XCTAssert(TestVersion(stringValue: "a") <= TestVersion(stringValue: "a"))
         XCTAssert(TestVersion(stringValue: "b") > TestVersion(stringValue: "a"))
         XCTAssert(TestVersion(stringValue: "a") >= TestVersion(stringValue: "a"))
+    }
+    
+    func testDatabaseWithSession() async {
+        await XCTAssertAsync(try await self.db.withSession {
+            XCTAssertNotNil($0)
+            return true
+        })
     }
     
     func testDialectDefaultImpls() {
