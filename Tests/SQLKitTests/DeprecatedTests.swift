@@ -107,4 +107,27 @@ final class SQLDeprecatedTests: XCTestCase {
     func testJoinBuilderMethod() {
         XCTAssertNotNil(self.db.select().join("a", method: .inner, on: "a"))
     }
+    
+    func testObsoleteVersionComparators() {
+        struct TestVersion: SQLDatabaseReportedVersion { let stringValue: String }
+        struct AnotherTestVersion: SQLDatabaseReportedVersion { let stringValue: String }
+
+        /// `>`
+        XCTAssert(TestVersion(stringValue: "b").isNewer(than: TestVersion(stringValue: "a")))
+        XCTAssertFalse(TestVersion(stringValue: "b").isNewer(than: AnotherTestVersion(stringValue: "a")))
+        
+        /// `<=`
+        XCTAssert(TestVersion(stringValue: "a").isNotNewer(than: TestVersion(stringValue: "b")))
+        XCTAssert(TestVersion(stringValue: "a").isNotNewer(than: TestVersion(stringValue: "a")))
+        XCTAssertFalse(TestVersion(stringValue: "a").isNotNewer(than: AnotherTestVersion(stringValue: "a")))
+        
+        /// `<`
+        XCTAssert(TestVersion(stringValue: "a").isOlder(than: TestVersion(stringValue: "b")))
+        XCTAssertFalse(TestVersion(stringValue: "a").isOlder(than: AnotherTestVersion(stringValue: "b")))
+        
+        /// `>=`
+        XCTAssert(TestVersion(stringValue: "b").isNotOlder(than: TestVersion(stringValue: "a")))
+        XCTAssert(TestVersion(stringValue: "a").isNotOlder(than: TestVersion(stringValue: "a")))
+        XCTAssertFalse(TestVersion(stringValue: "b").isNotOlder(than: AnotherTestVersion(stringValue: "a")))
+    }
 }
