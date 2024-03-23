@@ -65,7 +65,13 @@ extension SQLQueryFetcher {
     @inlinable
     public func first() -> EventLoopFuture<(any SQLRow)?> {
         (self as? any SQLPartialResultBuilder)?.limit(1)
-        return self.all().map(\.first)
+        #if swift(>=5.10)
+        nonisolated(unsafe) var rows = [any SQLRow]()
+        return self.run { if rows.isEmpty { rows.append($0) } }.map { rows.first }
+        #else
+        let rows = RowsBox()
+        return self.run { if rows.all.isEmpty { rows.all.append($0) } }.map { rows.all.first }
+        #endif
     }
 }
 
@@ -131,7 +137,15 @@ extension SQLQueryFetcher {
     @inlinable
     public func first() async throws -> (any SQLRow)? {
         (self as? any SQLPartialResultBuilder)?.limit(1)
-        return try await self.all().first
+        #if swift(>=5.10)
+        nonisolated(unsafe) var rows = [any SQLRow]()
+        try await self.run { if rows.isEmpty { rows.append($0) } }
+        return rows.first
+        #else
+        let rows = RowsBox()
+        try await self.run { if rows.all.isEmpty { rows.all.append($0) } }
+        return rows.all.first
+        #endif
     }
 }
 
