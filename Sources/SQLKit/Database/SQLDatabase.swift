@@ -147,7 +147,7 @@ public protocol SQLDatabase: Sendable {
     ///   originally invoked.
     func withSession<R>(
         _ closure: @escaping @Sendable (any SQLDatabase) async throws -> R
-    ) async rethrows -> R
+    ) async throws -> R
 }
 
 extension SQLDatabase {
@@ -213,7 +213,7 @@ extension SQLDatabase {
     @inlinable
     public func withSession<R>(
         _ closure: @escaping @Sendable (any SQLDatabase) async throws -> R
-    ) async rethrows -> R {
+    ) async throws -> R {
         try await closure(self)
     }
 }

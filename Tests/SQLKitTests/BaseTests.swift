@@ -185,7 +185,7 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testDatabaseWithSession() async {
-        await XCTAssertAsync(await self.db.withSession {
+        await XCTAssertAsync(try await self.db.withSession {
             XCTAssertNotNil($0)
             return true
         })
