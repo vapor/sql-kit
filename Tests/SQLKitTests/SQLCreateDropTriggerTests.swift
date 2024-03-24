@@ -117,7 +117,7 @@ final class SQLCreateDropTriggerTests: XCTestCase {
         )
         XCTAssertSerialization(
             of: self.db.create(trigger: "foo", table: "planet", when: .instead, event: .insert).columns(["foo"]).condition(SQLLiteral.boolean(true)),
-            is: "CREATE TRIGGER ``foo`` INSTEAD OF INSERT OF ``foo`` ON ``planet`` WHEN true"
+            is: "CREATE TRIGGER ``foo`` INSTEAD OF INSERT OF ``foo`` ON ``planet`` WHEN TROO"
         )
         XCTAssertSerialization(
             of: self.db.create(trigger: "foo", table: "planet", when: .before, event: .update).isConstraint().each(.statement),

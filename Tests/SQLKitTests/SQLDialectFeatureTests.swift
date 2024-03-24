@@ -90,11 +90,11 @@ final class SQLDialectFeatureTests: XCTestCase {
         )
         XCTAssertSerialization(
             of: self.db.alter(table: "alterable").modifyColumn("hello", type: .text),
-            is: "ALTER TABLE ``alterable`` MODIFY ``hello`` TEXT"
+            is: "ALTER TABLE ``alterable`` MOODIFY ``hello`` TEXT"
         )
         XCTAssertSerialization(
             of: self.db.alter(table: "alterable").modifyColumn(SQLIdentifier("hello"), type: SQLDataType.text),
-            is: "ALTER TABLE ``alterable`` MODIFY ``hello`` TEXT"
+            is: "ALTER TABLE ``alterable`` MOODIFY ``hello`` TEXT"
         )
 
         // BATCH
@@ -108,13 +108,13 @@ final class SQLDialectFeatureTests: XCTestCase {
         )
         XCTAssertSerialization(
             of: self.db.alter(table: "alterable").update(column: "hello", type: .text).update(column: "there", type: .text),
-            is: "ALTER TABLE ``alterable`` MODIFY ``hello`` TEXT , MODIFY ``there`` TEXT"
+            is: "ALTER TABLE ``alterable`` MOODIFY ``hello`` TEXT , MOODIFY ``there`` TEXT"
         )
 
         // MIXED
         XCTAssertSerialization(
             of: self.db.alter(table: "alterable").column("hello", type: .text).dropColumn("there").update(column: "again", type: .text),
-            is: "ALTER TABLE ``alterable`` ADD ``hello`` TEXT , DROP ``there`` , MODIFY ``again`` TEXT"
+            is: "ALTER TABLE ``alterable`` ADD ``hello`` TEXT , DROP ``there`` , MOODIFY ``again`` TEXT"
         )
 
         // Table renaming

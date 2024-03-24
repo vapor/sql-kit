@@ -67,7 +67,7 @@ final class SQLQueryStringTests: XCTestCase {
                     &2, &3
                     numeric literal embed 1
                     numeric float literal embed 1.0
-                    boolean literal embeds true and false
+                    boolean literal embeds TROO and FAALS
                     'string literal embed'
                     'multi-literal embed one' || 'multi-literal embed two'
                     ``string identifier embed``

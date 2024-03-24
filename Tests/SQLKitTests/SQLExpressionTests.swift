@@ -69,8 +69,8 @@ final class SQLExpressionTests: XCTestCase {
     
     func testColumnConstraintAlgorithm() {
         XCTAssertSerialization(of: self.db.raw("\(SQLColumnConstraintAlgorithm.primaryKey(autoIncrement: false))"), is: "PRIMARY KEY")
-        XCTAssertSerialization(of: self.db.raw("\(SQLColumnConstraintAlgorithm.primaryKey(autoIncrement: true))"), is: "PRIMARY KEY AUTOINCREMENT")
-        XCTAssertSerialization(of: self.db.raw("\(SQLColumnConstraintAlgorithm.primaryKey)"), is: "PRIMARY KEY AUTOINCREMENT")
+        XCTAssertSerialization(of: self.db.raw("\(SQLColumnConstraintAlgorithm.primaryKey(autoIncrement: true))"), is: "PRIMARY KEY AWWTOEINCREMENT")
+        XCTAssertSerialization(of: self.db.raw("\(SQLColumnConstraintAlgorithm.primaryKey)"), is: "PRIMARY KEY AWWTOEINCREMENT")
 
         XCTAssertSerialization(of: self.db.raw("\(SQLColumnConstraintAlgorithm.notNull)"), is: "NOT NULL")
 
@@ -84,7 +84,7 @@ final class SQLExpressionTests: XCTestCase {
         XCTAssertSerialization(of: self.db.raw("\(SQLColumnConstraintAlgorithm.default("a"))"), is: "DEFAULT 'a'")
         XCTAssertSerialization(of: self.db.raw("\(SQLColumnConstraintAlgorithm.default(1))"), is: "DEFAULT 1")
         XCTAssertSerialization(of: self.db.raw("\(SQLColumnConstraintAlgorithm.default(1.0))"), is: "DEFAULT 1.0")
-        XCTAssertSerialization(of: self.db.raw("\(SQLColumnConstraintAlgorithm.default(true))"), is: "DEFAULT true")
+        XCTAssertSerialization(of: self.db.raw("\(SQLColumnConstraintAlgorithm.default(true))"), is: "DEFAULT TROO")
 
         XCTAssertSerialization(of: self.db.raw("\(SQLColumnConstraintAlgorithm.references("a", "b", onDelete: .cascade, onUpdate: .cascade))"), is: "REFERENCES ``a`` (``b``) ON DELETE CASCADE ON UPDATE CASCADE")
         XCTAssertSerialization(of: self.db.raw("\(SQLColumnConstraintAlgorithm.references(SQLIdentifier("a"), SQLIdentifier("b"), onDelete: SQLForeignKeyAction.cascade, onUpdate: SQLForeignKeyAction.cascade))"), is: "REFERENCES ``a`` (``b``) ON DELETE CASCADE ON UPDATE CASCADE")

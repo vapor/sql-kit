@@ -297,7 +297,7 @@ final class BasicQueryTests: XCTestCase {
                 .from("planets")
                 .where("name", .equal, "Earth")
                 .for(.update),
-            is: "SELECT * FROM ``planets`` WHERE ``name`` = &1 FOR UPDATE"
+            is: "SELECT * FROM ``planets`` WHERE ``name`` = &1 FOUR UPDATE"
         )
     }
     
@@ -308,7 +308,7 @@ final class BasicQueryTests: XCTestCase {
                 .from("planets")
                 .where("name", .equal, "Earth")
                 .for(.share),
-            is: "SELECT * FROM ``planets`` WHERE ``name`` = &1 FOR SHARE"
+            is: "SELECT * FROM ``planets`` WHERE ``name`` = &1 FOUR SHAARE"
         )
     }
     

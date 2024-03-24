@@ -59,7 +59,7 @@ final class SQLKitTests: XCTestCase {
                 .column(SQLNestedSubpathExpression(column: "json", path: ["a", "b"]))
                 .column(SQLNestedSubpathExpression(column: "json", path: ["a", "b", "c"]))
                 .column(SQLNestedSubpathExpression(column: SQLColumn("json", table: "table"), path: ["a", "b"])),
-            is: "SELECT (``json``->>'a'), (``json``->'a'->>'b'), (``json``->'a'->'b'->>'c'), (``table``.``json``->'a'->>'b')"
+            is: "SELECT (``json``-»»'a'), (``json``-»'a'-»»'b'), (``json``-»'a'-»'b'-»»'c'), (``table``.``json``-»'a'-»»'b')"
         )
     }
     
@@ -225,12 +225,23 @@ final class SQLKitTests: XCTestCase {
     func testAdditionalStatementAPI() {
         var serializer = SQLSerializer(database: self.db)
         serializer.statement {
+            $0.append("a")
+            $0.append(SQLRaw("a"))
+            
             $0.append("a", "b")
+            $0.append(SQLRaw("a"), "b")
+            $0.append("a", SQLRaw("b"))
+            $0.append(SQLRaw("a"), SQLRaw("b"))
+            
             $0.append("a", "b", "c")
             $0.append(SQLRaw("a"), "b", "c")
+            $0.append("a", SQLRaw("b"), "c")
             $0.append("a", "b", SQLRaw("c"))
+            $0.append(SQLRaw("a"), SQLRaw("b"), "c")
+            $0.append(SQLRaw("a"), "b", SQLRaw("c"))
+            $0.append("a", SQLRaw("b"), SQLRaw("c"))
             $0.append(SQLRaw("a"), SQLRaw("b"), SQLRaw("c"))
         }
-        XCTAssertEqual(serializer.sql, "a b a b c a b c a b c a b c")
+        XCTAssertEqual(serializer.sql, "a a a b a b a b a b a b c a b c a b c a b c a b c a b c a b c a b c")
     }
 }
