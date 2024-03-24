@@ -9,6 +9,11 @@ extension SQLBenchmarker {
             try await $0.drop(table: "galaxies")
                 .ifExists()
                 .run()
+            if $0.dialect.enumSyntax == .typeName {
+                try await $0.drop(enum: "planet_type")
+                    .ifExists()
+                    .run()
+            }
 
             // setup sql data type for enum
             let planetType: SQLDataType

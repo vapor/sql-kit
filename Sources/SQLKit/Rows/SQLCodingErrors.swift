@@ -152,6 +152,8 @@ struct FakeSendable<E: Encodable>: Encodable, @unchecked Sendable {
     }
 
     func encode(to encoder: any Encoder) throws {
-        try self.value.encode(to: encoder)
+        var container = encoder.singleValueContainer()
+        
+        try container.encode(self.value)
     }
 }

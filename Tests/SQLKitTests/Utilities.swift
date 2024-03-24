@@ -42,6 +42,7 @@ func XCTAssertEncoding(
         switch (value, encValue) {
         case (let value as SQLLiteral, let encValue as SQLLiteral): XCTAssertEqual(value, encValue, message(), file: file, line: line)
         case (let value as SQLBind, let encValue as SQLBind):       XCTAssertEqual(value, encValue, message(), file: file, line: line)
+        case (let value as TestEncExpr.Enm, let encValue as TestEncExpr.Enm): XCTAssertEqual(value, encValue, message(), file: file, line: line)
         default: XCTFail("Unexpected output (expected \(String(reflecting: value)), got \(String(reflecting: encValue))) \(message())", file: file, line: line)
         }
     }

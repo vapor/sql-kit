@@ -161,6 +161,22 @@ final class SQLQueryEncoderTests: XCTestCase {
         XCTAssertNoThrow(try SQLQueryEncoder(nilEncodingStrategy: .asNil).encode(TestEncNestedSingleValueContainer(foo: nil)))
         XCTAssertThrowsError(try SQLQueryEncoder().encode(TestEncEnum.foo(bar: true))) { XCTAssert($0 is SQLCodingError, "Expected SQLCodingError, got \(String(reflecting: $0))") }
     }
+    
+    func testEncodeOfDirectlyCodableSQLExpression() {
+        XCTAssertEncoding(TestEncExpr(value: .foo), using: .init(), outputs: ["value"], [TestEncExpr.Enm.foo])
+    }
+}
+
+struct TestEncExpr: Codable {
+    enum Enm: Codable, SQLExpression, Equatable {
+        case foo
+        
+        func serialize(to serializer: inout SQLSerializer) {
+            serializer.write("FOO")
+        }
+    }
+
+    let value: Enm
 }
 
 enum TestEncEnum: Codable {
