@@ -294,7 +294,7 @@ public struct SQLQueryEncoder: Sendable {
             // See `KeyedEncodingContainerProtocol.encode(_:forKey:)`.
             mutating func encode(_ value: some Encodable, forKey key: Key) throws {
                 /// For generic `Encodable` values, we must forcibly silence the `Sendable` warning from ``SQLBind``.
-                self.encoder.set(SQLBind(FakeSendable(value)), forKey: key)
+                self.encoder.set((value as? any SQLExpression) ?? SQLBind(FakeSendable(value)), forKey: key)
             }
             
             /// Because each `encodeIfPresent(_:forKey:)` method is given a default implementation by the
