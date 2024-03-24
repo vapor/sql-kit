@@ -170,7 +170,7 @@ public enum SQLColumnConstraintAlgorithm: SQLExpression {
             case .primaryKey(let autoIncrement):
                 if autoIncrement, $0.dialect.supportsAutoIncrement {
                     if let function = $0.dialect.autoIncrementFunction {
-                        $0.append($0.dialect.literalDefault, function, "PRIMARY KEY")
+                        $0.append("DEFAULT", function, "PRIMARY KEY")
                     } else {
                         $0.append("PRIMARY KEY", $0.dialect.autoIncrementClause)
                     }
@@ -186,8 +186,7 @@ public enum SQLColumnConstraintAlgorithm: SQLExpression {
             case .collate(name: let collate):
                 $0.append("COLLATE", collate)
             case .default(let expression):
-                $0.append($0.dialect.literalDefault)
-                $0.append(expression)
+                $0.append("DEFAULT", expression)
             case .foreignKey(let foreignKey):
                 $0.append(foreignKey)
             case .generated(let expression):

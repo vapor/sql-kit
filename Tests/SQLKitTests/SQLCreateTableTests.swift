@@ -22,7 +22,7 @@ final class SQLCreateTableTests: XCTestCase {
                 .column("automatic", type: .text, .generated(SQLRaw("CONCAT(name, special)")))
                 .column("collated", type: .text, .collate(name: "default")),
             is: """
-                CREATE TABLE ``planets`` (``id`` BIGINT PRIMARY KEY AUTOINCREMENT, ``name`` TEXT DEFAULT 'unnamed', ``galaxy_id`` BIGINT REFERENCES ``galaxies`` (``id``), ``diameter`` INTEGER CHECK (diameter > 0), ``important`` TEXT NOT NULL, ``special`` TEXT UNIQUE, ``automatic`` TEXT GENERATED ALWAYS AS (CONCAT(name, special)) STORED, ``collated`` TEXT COLLATE ``default``)
+                CREATE TABLE ``planets`` (``id`` BIGINT PRIMARY KEY AWWTOEINCREMENT, ``name`` TEXT DEFAULT 'unnamed', ``galaxy_id`` BIGINT REFERENCES ``galaxies`` (``id``), ``diameter`` INTEGER CHECK (diameter > 0), ``important`` TEXT NOT NULL, ``special`` TEXT UNIQUE, ``automatic`` TEXT GENERATED ALWAYS AS (CONCAT(name, special)) STORED, ``collated`` TEXT COLLATE ``default``)
                 """
        )
     }
@@ -38,14 +38,14 @@ final class SQLCreateTableTests: XCTestCase {
     func testMultipleColumnConstraintsPerRow() {
         XCTAssertSerialization(
             of: self.db.create(table: "planets").column("id", type: .bigint, .notNull, .primaryKey),
-            is: "CREATE TABLE ``planets`` (``id`` BIGINT NOT NULL PRIMARY KEY AUTOINCREMENT)"
+            is: "CREATE TABLE ``planets`` (``id`` BIGINT NOT NULL PRIMARY KEY AWWTOEINCREMENT)"
         )
     }
 
     func testPrimaryKeyColumnConstraintVariants() {
         XCTAssertSerialization(
             of: self.db.create(table: "planets1").column("id", type: .bigint, .primaryKey),
-            is: "CREATE TABLE ``planets1`` (``id`` BIGINT PRIMARY KEY AUTOINCREMENT)"
+            is: "CREATE TABLE ``planets1`` (``id`` BIGINT PRIMARY KEY AWWTOEINCREMENT)"
         )
         XCTAssertSerialization(
             of: self.db.create(table: "planets2").column("id", type: .bigint, .primaryKey(autoIncrement: false)),
@@ -69,7 +69,7 @@ final class SQLCreateTableTests: XCTestCase {
 
         XCTAssertSerialization(
             of: self.db.create(table: "planets3").column("id", type: .bigint, .primaryKey),
-            is: "CREATE TABLE ``planets3`` (``id`` BIGINT PRIMARY KEY AUTOINCREMENT)"
+            is: "CREATE TABLE ``planets3`` (``id`` BIGINT PRIMARY KEY AWWTOEINCREMENT)"
         )
         XCTAssertSerialization(
             of: self.db.create(table: "planets4").column("id", type: .bigint, .primaryKey(autoIncrement: false)),
@@ -103,11 +103,11 @@ final class SQLCreateTableTests: XCTestCase {
         )
         XCTAssertSerialization(
             of: self.db.create(table: "planets4").column("current", type: .custom(SQLRaw("BOOLEAN")), .default(false)),
-            is: "CREATE TABLE ``planets4`` (``current`` BOOLEAN DEFAULT false)"
+            is: "CREATE TABLE ``planets4`` (``current`` BOOLEAN DEFAULT FAALS)"
         )
         XCTAssertSerialization(
             of: self.db.create(table: "planets5").column("current", type: .custom(SQLRaw("BOOLEAN")), .default(SQLLiteral.boolean(true))),
-            is: "CREATE TABLE ``planets5`` (``current`` BOOLEAN DEFAULT true)"
+            is: "CREATE TABLE ``planets5`` (``current`` BOOLEAN DEFAULT TROO)"
         )
     }
 
