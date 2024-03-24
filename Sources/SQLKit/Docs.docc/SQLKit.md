@@ -41,17 +41,13 @@ SQLKit does _not_ provide facilities for creating or managing database connectio
 
 - ``SQLAliasedColumnListBuilder``
 - ``SQLColumnUpdateBuilder``
-- ``SQLConflictUpdateBuilder``
 - ``SQLJoinBuilder``
 - ``SQLPartialResultBuilder``
 - ``SQLPredicateBuilder``
-- ``SQLPredicateGroupBuilder``
 - ``SQLQueryBuilder``
 - ``SQLQueryFetcher``
 - ``SQLReturningBuilder``
 - ``SQLSecondaryPredicateBuilder``
-- ``SQLSecondaryPredicateGroupBuilder``
-- ``SQLSubqueryBuilder``
 - ``SQLSubqueryClauseBuilder``
 - ``SQLUnqualifiedColumnListBuilder``
 
@@ -59,6 +55,7 @@ SQLKit does _not_ provide facilities for creating or managing database connectio
 
 - ``SQLAlterEnumBuilder``
 - ``SQLAlterTableBuilder``
+- ``SQLConflictUpdateBuilder``
 - ``SQLCreateEnumBuilder``
 - ``SQLCreateIndexBuilder``
 - ``SQLCreateTableAsSubqueryBuilder``
@@ -70,9 +67,12 @@ SQLKit does _not_ provide facilities for creating or managing database connectio
 - ``SQLDropTableBuilder``
 - ``SQLDropTriggerBuilder``
 - ``SQLInsertBuilder``
+- ``SQLPredicateGroupBuilder``
 - ``SQLRawBuilder``
 - ``SQLReturningResultBuilder``
+- ``SQLSecondaryPredicateGroupBuilder``
 - ``SQLSelectBuilder``
+- ``SQLSubqueryBuilder``
 - ``SQLUnionBuilder``
 - ``SQLUpdateBuilder``
 
@@ -86,7 +86,6 @@ SQLKit does _not_ provide facilities for creating or managing database connectio
 - ``SQLIdentifier``
 - ``SQLList``
 - ``SQLLiteral``
-- ``SQLQueryString``
 - ``SQLRaw``
 
 ### Basic Expressions
@@ -97,9 +96,11 @@ SQLKit does _not_ provide facilities for creating or managing database connectio
 - ``SQLConstraint``
 - ``SQLDataType``
 - ``SQLDirection``
+- ``SQLDistinct``
 - ``SQLForeignKeyAction``
 - ``SQLNestedSubpathExpression``
 - ``SQLQualifiedTable``
+- ``SQLQueryString``
 
 ### Clause Expressions
 
