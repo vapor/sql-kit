@@ -33,7 +33,7 @@ extension SQLReturningBuilder {
 
 /// A builder returned from the methods of ``SQLReturningBuilder``; this builder wraps the original
 /// builder with one which provides ``SQLQueryFetcher`` conformance. As such, the
-/// ``SQLReturningBuilder/returning(_:)-84avj`` methods always be the last ones in any call chain.
+/// ``SQLReturningBuilder/returning(_:)-84avj`` methods must always be the last ones in any call chain.
 ///
 /// Example:
 ///
