@@ -1,4 +1,4 @@
-@testable import SQLKit
+@testable @_spi(CodableUtilities) import SQLKit
 import XCTest
 
 final class SQLQueryEncoderTests: XCTestCase {

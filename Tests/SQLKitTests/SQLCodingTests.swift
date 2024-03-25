@@ -1,4 +1,4 @@
-@testable import SQLKit
+@testable @_spi(CodableUtilities) import SQLKit
 import XCTest
 
 final class SQLCodingTests: XCTestCase {
@@ -238,7 +238,11 @@ final class SQLCodingTests: XCTestCase {
         XCTAssertNotNil(DecodingError.dataCorrupted(.init(codingPath: [], debugDescription: "")).under(path: []))
         XCTAssertNotNil(DecodingError.typeMismatch(Void.self, .init(codingPath: [], debugDescription: "")).under(path: []))
         XCTAssertNotNil(DecodingError.keyNotFound(SomeCodingKey(stringValue: ""), .init(codingPath: [], debugDescription: "")).under(path: []))
-        XCTAssertNoThrow(try JSONEncoder().encode(FakeSendable(true)))
+        XCTAssertNoThrow(try JSONDecoder().decode(FakeSendableCodable<Bool>.self, from: JSONEncoder().encode(FakeSendableCodable(true))))
+        XCTAssertNotEqual(FakeSendableCodable(true), FakeSendableCodable(false))
+        XCTAssertFalse(Set([FakeSendableCodable(true)]).isEmpty)
+        XCTAssertEqual(FakeSendableCodable(true).description, true.description)
+        XCTAssertEqual(FakeSendableCodable("").debugDescription, "".debugDescription)
         XCTAssertFalse(SQLCodingError.unsupportedOperation("", codingPath: [SomeCodingKey(stringValue: "")]).description.isEmpty)
         XCTAssertEqual(SomeCodingKey(intValue: 0).intValue, 0)
     }

@@ -294,7 +294,7 @@ public struct SQLQueryEncoder: Sendable {
             // See `KeyedEncodingContainerProtocol.encode(_:forKey:)`.
             mutating func encode(_ value: some Encodable, forKey key: Key) throws {
                 /// For generic `Encodable` values, we must forcibly silence the `Sendable` warning from ``SQLBind``.
-                self.encoder.set((value as? any SQLExpression) ?? SQLBind(FakeSendable(value)), forKey: key)
+                self.encoder.set((value as? any SQLExpression) ?? SQLBind(FakeSendableCodable(value)), forKey: key)
             }
             
             /// Because each `encodeIfPresent(_:forKey:)` method is given a default implementation by the
@@ -392,7 +392,7 @@ public struct SQLQueryEncoder: Sendable {
                 /// support is a separate problem that does not concern SQLKit; this logic is here because it is
                 /// technically required for a fully correct Codable implementation.)
                 if let key = self.codingPath.last {
-                    self.encoder.set(SQLBind(FakeSendable(value)), forKey: key)
+                    self.encoder.set(SQLBind(FakeSendableCodable(value)), forKey: key)
                 }
                 /// Otherwise, we reached this point via the top-level encoder's `singleValueContainer()`, and we want
                 /// to recurse back into our own logic without triggering the "can't encode single values" failure
