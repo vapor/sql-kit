@@ -1,7 +1,6 @@
 import SQLKit
 import XCTest
 
-@available(*, deprecated, message: "Contains tests of deprecated functionality")
 final class SQLDeprecatedTests: XCTestCase {
     var db = TestDatabase()
 
@@ -9,10 +8,12 @@ final class SQLDeprecatedTests: XCTestCase {
         XCTAssert(isLoggingConfigured)
     }
     
+    @available(*, deprecated, message: "Contains tests of deprecated functionality")
     func testConcatOperator() {
         XCTAssertSerialization(of: self.db.raw("\(SQLBinaryOperator.concatenate)"), is: "")
     }
     
+    @available(*, deprecated, message: "Contains tests of deprecated functionality")
     func testSQLError() {
         struct RidiculousError: SQLError {
             var sqlErrorType: SQLErrorType
@@ -24,15 +25,18 @@ final class SQLDeprecatedTests: XCTestCase {
         XCTAssertThrowsError(try { throw RidiculousError(sqlErrorType: .unknown) }()) { XCTAssertEqual(($0 as? any SQLError)?.sqlErrorType, .unknown) }
     }
     
+    @available(*, deprecated, message: "Contains tests of deprecated functionality")
     func testOldTriggerTimingSpecifiers() {
         XCTAssertEqual(SQLCreateTrigger.TimingSpecifier.initiallyImmediate, .deferrable)
         XCTAssertEqual(SQLCreateTrigger.TimingSpecifier.initiallyDeferred, .deferredByDefault)
     }
     
+    @available(*, deprecated, message: "Contains tests of deprecated functionality")
     func testDataTypeType() {
         XCTAssertSerialization(of: self.db.raw("\(SQLDataType.type("FOO"))"), is: "``FOO``")
     }
     
+    @available(*, deprecated, message: "Contains tests of deprecated functionality")
     func testOldCascadeProperties() {
         var dropEnum = SQLDropEnum(name: SQLIdentifier("enum"))
         
@@ -53,10 +57,12 @@ final class SQLDeprecatedTests: XCTestCase {
         XCTAssertEqual(dropTrigger.cascade, true)
     }
     
+    @available(*, deprecated, message: "Contains tests of deprecated functionality")
     func testOldQueryStringInterpolations() {
         XCTAssertSerialization(of: self.db.raw("\(raw: "X") \("x")"), is: "X x")
     }
     
+    @available(*, deprecated, message: "Contains tests of deprecated functionality")
     func testRawBinds() {
         let raw = SQLRaw("SQL", ["a", "b"])
         XCTAssertEqual(raw.sql, "SQL")
@@ -64,6 +70,7 @@ final class SQLDeprecatedTests: XCTestCase {
         XCTAssertEqual(raw.binds[1] as? String, "b")
     }
     
+    @available(*, deprecated, message: "Contains tests of deprecated functionality")
     func testOldUnionJoiner() {
         XCTAssertEqual(SQLUnionJoiner(all: true).type, .unionAll)
         XCTAssertEqual(SQLUnionJoiner(all: false).type, .union)
@@ -90,24 +97,29 @@ final class SQLDeprecatedTests: XCTestCase {
         XCTAssertEqual(joiner3.type, .except)
     }
     
+    @available(*, deprecated, message: "Contains tests of deprecated functionality")
     func testColumnWithTable() {
         XCTAssertSerialization(of: self.db.select().column(table: "a", column: "b"), is: "SELECT ``a``.``b``")
     }
     
+    @available(*, deprecated, message: "Contains tests of deprecated functionality")
     func testAlterTableBuilderColumns() {
         XCTAssertNotNil(self.db.alter(table: "foo").column("a", type: .bigint).columns.first)
         let builder = self.db.alter(table: "foo").column("a", type: .bigint)
         builder.columns = [SQLColumnDefinition("a", dataType: .blob)]
     }
     
+    @available(*, deprecated, message: "Contains tests of deprecated functionality")
     func testCreateTriggerBuilderMethods() {
         XCTAssertNotNil(self.db.create(trigger: "a", table: "b", when: .after, event: .delete).condition("a").body(["b"]))
     }
     
+    @available(*, deprecated, message: "Contains tests of deprecated functionality")
     func testJoinBuilderMethod() {
         XCTAssertNotNil(self.db.select().join("a", method: .inner, on: "a"))
     }
     
+    @available(*, deprecated, message: "Contains tests of deprecated functionality")
     func testObsoleteVersionComparators() {
         struct TestVersion: SQLDatabaseReportedVersion { let stringValue: String }
         struct AnotherTestVersion: SQLDatabaseReportedVersion { let stringValue: String }
