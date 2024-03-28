@@ -7,11 +7,11 @@
 /// of implementation-specific details.
 ///
 /// The most common uses for database version information are disabling or enabling feature
-/// suport in ``SQLDialect`` by version, tracking usage metrics by version, logging versions,
+/// support in ``SQLDialect`` by version, tracking usage metrics by version, logging versions,
 /// and recording versions for debugging.
 ///
 /// Each type implementing ``SQLDatabaseReportedVersion`` is responsible for providing
-/// defintions of equality and ordering semantics between versions which are meaningful
+/// definitions of equality and ordering semantics between versions which are meaningful
 /// in the versioning scheme of the underlying database.
 public protocol SQLDatabaseReportedVersion: Comparable, Sendable {
     /// The version represented as a `String`.

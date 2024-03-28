@@ -102,7 +102,7 @@ public typealias SQLTriggerEach = SQLCreateTrigger.EachSpecifier
 public typealias SQLTriggerOrder = SQLCreateTrigger.OrderSpecifier
 
 extension SQLUnionJoiner {
-    @available(*, deprecated, message: "Use .type` instead.")
+    @available(*, deprecated, message: "Use `.type` instead.")
     @inlinable
     public var all: Bool {
         get { [.unionAll, .intersectAll, .exceptAll].contains(self.type) }
@@ -117,7 +117,7 @@ extension SQLUnionJoiner {
         } }
     }
     
-    @available(*, deprecated, message: "Use .init(type:)` instead.")
+    @available(*, deprecated, message: "Use `.init(type:)` instead.")
     @inlinable
     public init(all: Bool) {
         self.init(type: all ? .unionAll : .union)
