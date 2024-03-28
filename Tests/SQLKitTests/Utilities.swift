@@ -1,100 +1,76 @@
-import SQLKit
-import NIOCore
-import NIOEmbedded
 import Logging
+import SQLKit
+import XCTest
 
-final class TestDatabase: SQLDatabase {
-    let logger: Logger
-    let eventLoop: any EventLoop
-    var results: [String]
-    var bindResults: [[any Encodable]]
-    var dialect: any SQLDialect { self._dialect }
-    var _dialect: GenericDialect
+func XCTAssertNoThrowWithResult<T>(
+    _ expression: @autoclosure () throws -> T,
+    _ message: @autoclosure () -> String = "",
+    file: StaticString = #filePath, line: UInt = #line
+) -> T? {
+    var result: T?
     
-    init() {
-        self.logger = .init(label: "codes.vapor.sql.test")
-        self.eventLoop = EmbeddedEventLoop()
-        self.results = []
-        self.bindResults = []
-        self._dialect = GenericDialect()
-    }
-    
-    func execute(sql query: any SQLExpression, _ onRow: @escaping (any SQLRow) -> ()) -> EventLoopFuture<Void> {
-        var serializer = SQLSerializer(database: self)
-        query.serialize(to: &serializer)
-        results.append(serializer.sql)
-        bindResults.append(serializer.binds)
-        return self.eventLoop.makeSucceededFuture(())
-    }
+    XCTAssertNoThrow(result = try expression(), message(), file: file, line: line)
+    return result
 }
 
-struct TestRow: SQLRow {
-    enum Datum { // yes, this is just Optional by another name
-        case some(any Encodable)
-        case none
-    }
+func XCTAssertSerialization(
+    of queryBuilder: @autoclosure () throws -> some SQLQueryBuilder,
+    is serialization: @autoclosure() throws -> String,
+    message: @autoclosure () -> String = "", file: StaticString = #filePath, line: UInt = #line
+) {
+    XCTAssertEqual(try queryBuilder().simpleSerialize(), try serialization(), message(), file: file, line: line)
+}
+
+func XCTAssertEncoding(
+    _ model: @autoclosure() throws -> any Encodable,
+    using encoder: @autoclosure () throws -> SQLQueryEncoder,
+    outputs columns: @autoclosure () throws -> [String],
+    _ values: @autoclosure () throws -> [any SQLExpression],
+    _ message: @autoclosure() -> String = "", file: StaticString = #filePath, line: UInt = #line
+) {
+    guard let columns = XCTAssertNoThrowWithResult(try columns(), message(), file: file, line: line),
+          let values = XCTAssertNoThrowWithResult(try values(), message(), file: file, line: line),
+          let model = XCTAssertNoThrowWithResult(try model(), message(), file: file, line: line),
+          let encoder = XCTAssertNoThrowWithResult(try encoder(), message(), file: file, line: line),
+          let encodedData = XCTAssertNoThrowWithResult(try encoder.encode(model), message(), file: file, line: line)
+    else { return }
+    let encodedColumns = encodedData.map(\.0), encodedValues = encodedData.map(\.1)
     
-    var data: [String: Datum]
-
-    enum _Error: Error {
-        case missingColumn(String)
-        case typeMismatch(Any, Any.Type)
-    }
-
-    var allColumns: [String] {
-        .init(self.data.keys)
-    }
-
-    func contains(column: String) -> Bool {
-        self.data.keys.contains(column)
-    }
-
-    func decodeNil(column: String) throws -> Bool {
-        if case .some(.none) = self.data[column] { return true }
-        return false
-    }
-
-    func decode<D>(column: String, as type: D.Type) throws -> D
-        where D : Decodable
-    {
-        guard case let .some(.some(value)) = self.data[column] else {
-            throw _Error.missingColumn(column)
+    XCTAssertEqual(columns, encodedColumns, message(), file: file, line: line)
+    XCTAssertEqual(values.count, encodedValues.count, message(), file: file, line: line)
+    for (value, encValue) in zip(values, encodedValues) {
+        switch (value, encValue) {
+        case (let value as SQLLiteral, let encValue as SQLLiteral): XCTAssertEqual(value, encValue, message(), file: file, line: line)
+        case (let value as SQLBind, let encValue as SQLBind):       XCTAssertEqual(value, encValue, message(), file: file, line: line)
+        case (let value as TestEncExpr.Enm, let encValue as TestEncExpr.Enm): XCTAssertEqual(value, encValue, message(), file: file, line: line)
+        default: XCTFail("Unexpected output (expected \(String(reflecting: value)), got \(String(reflecting: encValue))) \(message())", file: file, line: line)
         }
-        guard let cast = value as? D else {
-            throw _Error.typeMismatch(value, D.self)
-        }
-        return cast
     }
 }
 
-struct GenericDialect: SQLDialect {
-    var name: String { "generic" }
-
-    func bindPlaceholder(at position: Int) -> any SQLExpression { SQLRaw("?") }
-    func literalBoolean(_ value: Bool) -> any SQLExpression { SQLRaw("\(value)") }
-    var supportsAutoIncrement: Bool = true
-    var supportsIfExists: Bool = true
-    var supportsReturning: Bool = true
-    var identifierQuote: any SQLExpression = SQLRaw("`")
-    var literalStringQuote: any SQLExpression = SQLRaw("'")
-    var enumSyntax: SQLEnumSyntax = .inline
-    var autoIncrementClause: any SQLExpression = SQLRaw("AUTOINCREMENT")
-    var autoIncrementFunction: (any SQLExpression)? = nil
-    var supportsDropBehavior: Bool = false
-    var triggerSyntax = SQLTriggerSyntax(create: [], drop: [])
-    var alterTableSyntax = SQLAlterTableSyntax(alterColumnDefinitionClause: SQLRaw("MODIFY"), alterColumnDefinitionTypeKeyword: nil)
-    var upsertSyntax: SQLUpsertSyntax = .standard
-    var unionFeatures: SQLUnionFeatures = []
-    var sharedSelectLockExpression: (any SQLExpression)? { SQLRaw("FOR SHARE") }
-    var exclusiveSelectLockExpression: (any SQLExpression)? { SQLRaw("FOR UPDATE") }
-    func nestedSubpathExpression(in column: SQLExpression, for path: [String]) -> (SQLExpression)? {
-        precondition(!path.isEmpty)
-        let descender = SQLList([column] + path.dropLast().map(SQLLiteral.string(_:)), separator: SQLRaw("->"))
-        return SQLGroupExpression(SQLList([descender, SQLLiteral.string(path.last!)], separator: SQLRaw("->>")))
-    }
-
-    mutating func setTriggerSyntax(create: SQLTriggerSyntax.Create = [], drop: SQLTriggerSyntax.Drop = []) {
-        self.triggerSyntax.create = create
-        self.triggerSyntax.drop = drop
-    }
+func XCTAssertDecoding<D: Decodable & Sendable & Equatable>(
+    _: D.Type,
+    from row: @autoclosure () throws -> some SQLRow,
+    using decoder: @autoclosure () throws -> SQLRowDecoder,
+    outputs model: @autoclosure () throws -> D,
+    _ message: @autoclosure() -> String = "", file: StaticString = #filePath, line: UInt = #line
+) {
+    guard let row = XCTAssertNoThrowWithResult(try row(), message(), file: file, line: line),
+          let decoder = XCTAssertNoThrowWithResult(try decoder(), message(), file: file, line: line),
+          let model = XCTAssertNoThrowWithResult(try model(), message(), file: file, line: line),
+          let decodedModel = XCTAssertNoThrowWithResult(try decoder.decode(D.self, from: row), message(), file: file, line: line)
+    else { return }
+    
+    XCTAssertEqual(model, decodedModel, message(), file: file, line: line)
 }
+
+let isLoggingConfigured: Bool = {
+    LoggingSystem.bootstrap { label in
+        var handler = StreamLogHandler.standardOutput(label: label)
+        
+        handler.logLevel = ProcessInfo.processInfo.environment["LOG_LEVEL"].flatMap(Logger.Level.init(rawValue:)) ?? .info
+        return handler
+    }
+    return true
+}()
+

@@ -1,0 +1,37 @@
+codecov:
+  notify:
+    after_n_builds: 1
+    wait_for_ci: false
+  require_ci_to_pass: false
+comment:
+  behavior: default
+  layout: diff, files
+  require_changes: true
+coverage:
+  status:
+    patch:
+      default:
+        branches:
+        - ^main$
+        informational: true
+        only_pulls: false
+        paths:
+        - ^Sources.*
+        target: auto
+    project:
+      default:
+        branches:
+        - ^main$
+        informational: true
+        only_pulls: false
+        paths:
+        - ^Sources.*
+        target: auto
+github_checks:
+  annotations: true
+ignore:
+- ^Sources/SQLKitBenchmark/.*
+- ^Tests/.*
+- ^.build/.*
+slack_app: false
+
