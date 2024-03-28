@@ -247,7 +247,7 @@ private struct CustomLoggerSQLDatabase<D: SQLDatabase>: SQLDatabase {
         self.database.queryLogLevel
     }
     
-    // See `SQLDatabase.execut(sql:_:)`.
+    // See `SQLDatabase.execute(sql:_:)`.
     func execute(
         sql query: any SQLExpression,
         _ onRow: @escaping @Sendable (any SQLRow) -> ()
@@ -255,7 +255,7 @@ private struct CustomLoggerSQLDatabase<D: SQLDatabase>: SQLDatabase {
         self.database.execute(sql: query, onRow)
     }
 
-    // See `SQLDatabase.execut(sql:_:)`.
+    // See `SQLDatabase.execute(sql:_:)`.
     func execute(
         sql query: any SQLExpression,
         _ onRow: @escaping @Sendable (any SQLRow) -> ()

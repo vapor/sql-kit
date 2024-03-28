@@ -1,6 +1,6 @@
-/// Describes a ordering direction for a given sorting key.
+/// Describes an ordering direction for a given sorting key.
 public enum SQLDirection: SQLExpression {
-    /// Ascending order (minumum to maximum), as defined by the sorting key's data type.
+    /// Ascending order (minimum to maximum), as defined by the sorting key's data type.
     case ascending
 
     /// Descending order (maximum to minimum), as defined by the sorting key's data type.

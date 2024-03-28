@@ -1,7 +1,7 @@
 /// Builds ``SQLInsert`` queries.
 ///
 /// > Note: Although in the strictest sense, this builder could conform to ``SQLUnqualifiedColumnListBuilder``, doing
-/// > so would be semantically inappropriate. the protocol documents its `columns()` methods as being additive, but
+/// > so would be semantically inappropriate. The protocol documents its `columns()` methods as being additive, but
 /// > ``SQLInsertBuilder``'s otherwise-identical public APIs overwrite the effects of any previous invocation. It
 /// > would ideally be preferable to change ``SQLInsertBuilder``'s semantics in this regard, but this would be a
 /// > significant breaking change in the API's behavior, and must therefore wait for a major version bump.

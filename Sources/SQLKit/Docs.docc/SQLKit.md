@@ -4,9 +4,9 @@
     @TitleHeading(Package)
 }
 
-SQLKit is an library for building and serializing SQL queries in Swift.
+SQLKit is a library for building and serializing SQL queries in Swift.
 
-SQLKit's query construction facilities provide mappings between Swift types and database field types, and a direct interface to executing SQL queries. It attempts to abstract away the many differences between the various dialects of SQL whenever practical, allowing users to construct queries for use with any of the supported database systems. Custom SQL can be directly specified as needed, such as when abstraction of syntax is not possible or unimplemented.
+SQLKit's query construction facilities provide mappings between Swift types and database field types, and a direct interface for executing SQL queries. It attempts to abstract away the many differences between the various dialects of SQL whenever practical, allowing users to construct queries for use with any of the supported database systems. Custom SQL can be directly specified as needed, such as when abstraction of syntax is not possible or unimplemented.
 
 > Note: Having been originally designed as a low-level "construction kit" for the Fluent ORM, the current incarnation of SQLKit is often excessively verbose, and offers relatively few user-friendly APIs. A future major release of Fluent is expected to replace both packages with an API designed around the same concepts as SQLKit, except targeted for both high-level and low-level use.  
 
