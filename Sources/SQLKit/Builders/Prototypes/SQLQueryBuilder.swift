@@ -1,4 +1,4 @@
-import NIOCore
+import class NIOCore.EventLoopFuture
 
 /// Base definitions for builders which set up queries and executes them on a connection.
 public protocol SQLQueryBuilder: AnyObject {

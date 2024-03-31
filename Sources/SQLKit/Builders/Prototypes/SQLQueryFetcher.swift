@@ -1,4 +1,4 @@
-import NIOCore
+import class NIOCore.EventLoopFuture
 
 /// Common definitions for ``SQLQueryBuilder``s which support decoding results.
 public protocol SQLQueryFetcher: SQLQueryBuilder {}

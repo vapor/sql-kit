@@ -29,14 +29,14 @@ let package = Package(
             name: "SQLKit",
             dependencies: [
                 .product(name: "Logging", package: "swift-log"),
-                .product(name: "NIO", package: "swift-nio"),
+                .product(name: "NIOCore", package: "swift-nio"),
             ],
             swiftSettings: swiftSettings
         ),
         .target(
             name: "SQLKitBenchmark",
             dependencies: [
-                .target(name: "SQLKit")
+                .target(name: "SQLKit"),
             ],
             swiftSettings: swiftSettings
         ),
