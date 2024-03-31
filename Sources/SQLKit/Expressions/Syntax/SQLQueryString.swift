@@ -4,8 +4,8 @@ public struct SQLQueryString {
     
     /// Create a query string from a plain string containing raw SQL.
     @inlinable
-    public init<S: StringProtocol>(_ string: S) {
-        self.fragments = [SQLRaw(string.description)]
+    public init(_ string: some StringProtocol) {
+        self.fragments = [SQLRaw(.init(string))]
     }
 }
 
@@ -30,28 +30,38 @@ extension SQLQueryString: StringInterpolationProtocol {
     @inlinable
     public init(literalCapacity: Int, interpolationCount: Int) {
         self.fragments = []
+        self.fragments.reserveCapacity(literalCapacity + interpolationCount)
     }
     
     /// Adds raw SQL to the string. Despite the use of the term "literal" dictated by the
     /// interpolation protocol, this produces ``SQLRaw`` content, _not_ SQL string literals.
     @inlinable
-    public mutating func appendLiteral(_ literal: String) {
-        self.fragments.append(SQLRaw(literal))
-    }    
-    
-    /// Adds an interpolated string of raw SQL. Despite the use of the term "literal" dictated by the interpolation
-    /// protocol, this produces `SQLRaw` content, _not_ SQL string literals.
-    @available(*, deprecated, message: "Use 'raw' label")
-    @inlinable
-    public mutating func appendInterpolation(_ literal: String) {
-        self.fragments.append(SQLRaw(literal))
+    public mutating func appendLiteral(_ literal: some StringProtocol) {
+        self.fragments.append(SQLRaw(.init(literal)))
     }
     
-    /// Adds an interpolated string of raw SQL. Despite the use of the term "literal" dictated by the interpolation
-    /// protocol, this produces `SQLRaw` content, _not_ SQL string literals.
+    /// A legacy alias of ``appendLiteral(_:)``.
+    public mutating func appendInterpolation(_ literal: some StringProtocol) {
+        self.appendInterpolation(unsafeRaw: literal)
+    }
+
+    /// Adds an interpolated string of raw SQL, potentially including associated parameter bindings.
+    ///
+    /// > Warning: This interpolation is inherently unsafe. It provides no protection whatsoever against SQL
+    ///   injection attacks and has no awareness of dialects or syntactical constraints. Use a more specific
+    ///   type of expression if at all possible.
     @inlinable
+    public mutating func appendInterpolation(unsafeRaw value: some StringProtocol) {
+        self.fragments.append(SQLRaw(.init(value)))
+    }
+
+    /// [DEPRECATED] Adds an interpolated string of raw SQL.
+    ///
+    /// > Important: This is a deprecated legacy alias of ``appendInterpolation(unsafeRaw:)``. Update your
+    ///   code to use that method, or better yet to not use raw interpolation at all.
+    @available(*, deprecated, renamed: "appendInterpolation(unsafeRaw:)")
     public mutating func appendInterpolation(raw value: String) {
-        self.fragments.append(SQLRaw(value.description))
+        self.appendInterpolation(unsafeRaw: value)
     }
     
     /// Embed an `Encodable` value as a binding in the SQL query.
@@ -70,7 +80,7 @@ extension SQLQueryString: StringInterpolationProtocol {
     /// Embed an integer as a literal value, as if via ``SQLLiteral/numeric(_:)``
     /// Use this preferentially to ensure values are appropriately represented in the database's dialect.
     @inlinable
-    public mutating func appendInterpolation<I: BinaryInteger>(literal: I) {
+    public mutating func appendInterpolation(literal: some BinaryInteger) {
         self.fragments.append(SQLLiteral.numeric("\(literal)"))
     }
 
@@ -85,8 +95,8 @@ extension SQLQueryString: StringInterpolationProtocol {
     /// Use this preferentially to ensure string values are appropriately represented in the
     /// database's dialect.
     @inlinable
-    public mutating func appendInterpolation(literal: String) {
-        self.fragments.append(SQLLiteral.string(literal))
+    public mutating func appendInterpolation(literal: some StringProtocol) {
+        self.fragments.append(SQLLiteral.string(.init(literal)))
     }
 
     /// Embed an array of `String`s as a list of literal values, using the `joiner` to separate them.
@@ -99,16 +109,16 @@ extension SQLQueryString: StringInterpolationProtocol {
     ///
     ///     SELECT 'a'||'b'||'c'||'d' FROM nowhere
     @inlinable
-    public mutating func appendInterpolation(literals: [String], joinedBy joiner: String) {
-        self.fragments.append(SQLList(literals.map(SQLLiteral.string(_:)), separator: SQLRaw(joiner)))
+    public mutating func appendInterpolation(literals: [some StringProtocol], joinedBy joiner: some StringProtocol) {
+        self.fragments.append(SQLList(literals.map { SQLLiteral.string(.init($0)) }, separator: SQLRaw(.init(joiner))))
     }
 
     /// Embed a `String` as an SQL identifier, as if with ``SQLIdentifier``
     /// Use this preferentially to ensure table names, column names, and other non-keyword identifiers
     /// are appropriately represented in the database's dialect.
     @inlinable
-    public mutating func appendInterpolation(ident: String) {
-        self.fragments.append(SQLIdentifier(ident))
+    public mutating func appendInterpolation(ident: some StringProtocol) {
+        self.fragments.append(SQLIdentifier(.init(ident)))
     }
 
     /// Embed an array of `String`s as a list of SQL identifiers, using the `joiner` to separate them.
@@ -123,8 +133,8 @@ extension SQLQueryString: StringInterpolationProtocol {
     ///
     ///     SELECT "a", "b", "c", "d" FROM "nowhere"
     @inlinable
-    public mutating func appendInterpolation(idents: [String], joinedBy joiner: String) {
-        self.fragments.append(SQLList(idents.map(SQLIdentifier.init(_:)), separator: SQLRaw(joiner)))
+    public mutating func appendInterpolation(idents: [some StringProtocol], joinedBy joiner: some StringProtocol) {
+        self.fragments.append(SQLList(idents.map { SQLIdentifier(.init($0)) }, separator: SQLRaw(.init(joiner))))
     }
 
     /// Embed any ``SQLExpression`` into the string, to be serialized according to its type.
@@ -137,7 +147,7 @@ extension SQLQueryString: StringInterpolationProtocol {
 extension SQLQueryString {
     @inlinable
     public static func +(lhs: SQLQueryString, rhs: SQLQueryString) -> SQLQueryString {
-        return "\(lhs)\(rhs)"
+        "\(lhs)\(rhs)"
     }
     
     @inlinable
@@ -146,10 +156,10 @@ extension SQLQueryString {
     }
 }
 
-extension Array where Element == SQLQueryString {
+extension Array<SQLQueryString> {
     @inlinable
-    public func joined(separator: String) -> SQLQueryString {
-        let separator = "\(raw: separator)" as SQLQueryString
+    public func joined(separator: some StringProtocol) -> SQLQueryString {
+        let separator = "\(unsafeRaw: separator)" as SQLQueryString
         return self.first.map { self.dropFirst().lazy.reduce($0) { $0 + separator + $1 } } ?? ""
     }
 }
