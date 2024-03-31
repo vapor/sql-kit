@@ -400,7 +400,7 @@ final class SQLKitTests: XCTestCase {
         db._dialect.upsertSyntax = .mysqlLike
         
         let cols = ["id", "serial_number", "star_id", "last_known_status"]
-        let vals = { (s: String) -> [SQLExpression] in [SQLLiteral.default, SQLBind(UUID()), SQLBind(1), SQLBind(s)] }
+        let vals = { (s: String) -> [any SQLExpression] in [SQLLiteral.default, SQLBind(UUID()), SQLBind(1), SQLBind(s)] }
         
         try db.insert(into: "jumpgates").columns(cols).values(vals("calibration"))
             .run().wait()
@@ -843,7 +843,7 @@ CREATE TABLE `planets`(`id` BIGINT, `name` TEXT, `diameter` INTEGER, `galaxy_nam
                 }
             }
 
-            func decodeIdToID(_ keys: [CodingKey]) -> CodingKey {
+            func decodeIdToID(_ keys: [any CodingKey]) -> any CodingKey {
                 let keyString = keys.last!.stringValue
 
                 if let range = keyString.range(of: "Id", options: [.anchored, .backwards]) {

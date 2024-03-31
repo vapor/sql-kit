@@ -9,7 +9,7 @@ public struct SQLRowDecoder {
         self.keyDecodingStrategy = keyDecodingStrategy
     }
 
-    func decode<T>(_ type: T.Type, from row: SQLRow) throws -> T
+    func decode<T>(_ type: T.Type, from row: any SQLRow) throws -> T
         where T: Decodable
     {
         return try T.init(from: _Decoder(row: row, options: options))
@@ -18,7 +18,7 @@ public struct SQLRowDecoder {
     public enum KeyDecodingStrategy {
         case useDefaultKeys
         case convertFromSnakeCase
-        case custom(([CodingKey]) -> CodingKey)
+        case custom(([any CodingKey]) -> any CodingKey)
     }
 
     fileprivate struct _Options {
@@ -39,13 +39,13 @@ public struct SQLRowDecoder {
 
     struct _Decoder: Decoder {
         fileprivate let options: SQLRowDecoder._Options
-        let row: SQLRow
-        var codingPath: [CodingKey] = []
+        let row: any SQLRow
+        var codingPath: [any CodingKey] = []
         var userInfo: [CodingUserInfoKey : Any] {
             [:]
         }
 
-        fileprivate init(row: SQLRow, codingPath: [CodingKey] = [], options: _Options) {
+        fileprivate init(row: any SQLRow, codingPath: [any CodingKey] = [], options: _Options) {
             self.options = options
             self.row = row
             self.codingPath = codingPath
@@ -57,11 +57,11 @@ public struct SQLRowDecoder {
             .init(_KeyedDecoder(referencing: self, row: self.row, codingPath: self.codingPath))
         }
 
-        func unkeyedContainer() throws -> UnkeyedDecodingContainer {
+        func unkeyedContainer() throws -> any UnkeyedDecodingContainer {
             throw _Error.unkeyedContainer
         }
 
-        func singleValueContainer() throws -> SingleValueDecodingContainer {
+        func singleValueContainer() throws -> any SingleValueDecodingContainer {
             throw _Error.singleValueContainer
         }
     }
@@ -71,15 +71,15 @@ public struct SQLRowDecoder {
     {
         /// A reference to the decoder we're reading from.
         private let decoder: _Decoder
-        let row: SQLRow
-        var codingPath: [CodingKey] = []
+        let row: any SQLRow
+        var codingPath: [any CodingKey] = []
         var allKeys: [Key] {
             self.row.allColumns.compactMap {
                 Key.init(stringValue: $0)
             }
         }
 
-        fileprivate init(referencing decoder: _Decoder, row: SQLRow, codingPath: [CodingKey] = []) {
+        fileprivate init(referencing decoder: _Decoder, row: any SQLRow, codingPath: [any CodingKey] = []) {
             self.decoder = decoder
             self.row = row
         }
@@ -125,15 +125,15 @@ public struct SQLRowDecoder {
             throw _Error.nesting
         }
 
-        func nestedUnkeyedContainer(forKey key: Key) throws -> UnkeyedDecodingContainer {
+        func nestedUnkeyedContainer(forKey key: Key) throws -> any UnkeyedDecodingContainer {
             throw _Error.nesting
         }
 
-        func superDecoder() throws -> Decoder {
+        func superDecoder() throws -> any Decoder {
             _Decoder(row: self.row, codingPath: self.codingPath, options: self.decoder.options)
         }
 
-        func superDecoder(forKey key: Key) throws -> Decoder {
+        func superDecoder(forKey key: Key) throws -> any Decoder {
             throw _Error.nesting
         }
     }

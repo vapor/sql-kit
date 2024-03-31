@@ -87,7 +87,7 @@ struct GenericDialect: SQLDialect {
     var unionFeatures: SQLUnionFeatures = []
     var sharedSelectLockExpression: (any SQLExpression)? { SQLRaw("FOR SHARE") }
     var exclusiveSelectLockExpression: (any SQLExpression)? { SQLRaw("FOR UPDATE") }
-    func nestedSubpathExpression(in column: SQLExpression, for path: [String]) -> (SQLExpression)? {
+    func nestedSubpathExpression(in column: any SQLExpression, for path: [String]) -> (any SQLExpression)? {
         precondition(!path.isEmpty)
         let descender = SQLList([column] + path.dropLast().map(SQLLiteral.string(_:)), separator: SQLRaw("->"))
         return SQLGroupExpression(SQLList([descender, SQLLiteral.string(path.last!)], separator: SQLRaw("->>")))

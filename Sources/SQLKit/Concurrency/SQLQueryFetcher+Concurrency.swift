@@ -17,7 +17,7 @@ public extension SQLQueryFetcher {
         try await self.all().get()
     }
     
-    func run<D>(decoding: D.Type, _ handler: @escaping @Sendable (Result<D, Error>) -> ()) async throws -> Void where D: Decodable {
+    func run<D>(decoding: D.Type, _ handler: @escaping @Sendable (Result<D, any Error>) -> ()) async throws -> Void where D: Decodable {
         try await self.run(decoding: D.self, handler).get()
     }
     

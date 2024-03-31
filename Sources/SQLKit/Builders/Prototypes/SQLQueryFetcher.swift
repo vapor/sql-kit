@@ -44,7 +44,7 @@ extension SQLQueryFetcher {
     // MARK: Run
 
     /// Executes the query, decoding each output row as a given type and calling a provided handler with the result.
-    public func run<D: Decodable>(decoding: D.Type, _ handler: @escaping (Result<D, Error>) -> ()) -> EventLoopFuture<Void> {
+    public func run<D: Decodable>(decoding: D.Type, _ handler: @escaping (Result<D, any Error>) -> ()) -> EventLoopFuture<Void> {
         self.run { row in handler(Result { try row.decode(model: D.self) }) }
     }
     

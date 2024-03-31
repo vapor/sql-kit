@@ -39,8 +39,8 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder {
     ///   - nilEncodingStrategy: See ``SQLQueryEncoder/NilEncodingStrategy-swift.enum``.
     @inlinable
     @discardableResult
-    public func model<E: Encodable>(
-        _ model: E, // TODO: When we start requiring Swift 5.7+, use `some Encodable` here.
+    public func model(
+        _ model: some Encodable,
         prefix: String? = nil,
         keyEncodingStrategy: SQLQueryEncoder.KeyEncodingStrategy = .useDefaultKeys,
         nilEncodingStrategy: SQLQueryEncoder.NilEncodingStrategy = .default
@@ -60,8 +60,8 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder {
     ///   - keyEncodingStrategy: See ``SQLQueryEncoder/KeyEncodingStrategy-swift.enum``.
     ///   - nilEncodingStrategy: See ``SQLQueryEncoder/NilEncodingStrategy-swift.enum``.
     @discardableResult
-    public func models<E: Encodable>(
-        _ models: [E], // TODO: When we start requiring Swift 5.7+, use `some Encodable` here.
+    public func models(
+        _ models: [some Encodable],
         prefix: String? = nil,
         keyEncodingStrategy: SQLQueryEncoder.KeyEncodingStrategy = .useDefaultKeys,
         nilEncodingStrategy: SQLQueryEncoder.NilEncodingStrategy = .default
@@ -121,14 +121,14 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder {
     @inlinable
     @discardableResult
     @_disfavoredOverload
-    public func values(_ values: any Encodable...) -> Self { // TODO: When we require Swift 5.7+, use `some Encodable` here.
+    public func values(_ values: any Encodable...) -> Self {
         self.values(values)
     }
     
     /// Add a set of values to be inserted as a single row.
     @inlinable
     @discardableResult
-    public func values(_ values: [any Encodable]) -> Self { // TODO: When we require Swift 5.7+, use `some Encodable` here.
+    public func values(_ values: [any Encodable]) -> Self {
         self.values(values.map(SQLBind.init(_:)))
     }
     

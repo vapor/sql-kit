@@ -92,7 +92,7 @@ extension SQLDatabase {
     /// original release. As such, we must provide a default value so that drivers which haven't been
     /// updated don't lose source compatibility. Conveniently, a value of `nil` represents "database
     /// version is unknown", an obvious choice for this scenario.
-    public var version: SQLDatabaseReportedVersion? { nil }
+    public var version: (any SQLDatabaseReportedVersion)? { nil }
     
     /// Drivers which do not provide the ``queryLogLevel-991s4`` property must be given the automatic default
     /// of `.debug`. It would be preferable not to provide a default conformance, but this is unfortunately
