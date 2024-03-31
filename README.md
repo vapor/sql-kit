@@ -1,8 +1,8 @@
 <p align="center">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/vapor/sql-kit/assets/1130717/f1b62cf3-759f-41a9-bf3e-9492b347e4a0">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/vapor/sql-kit/assets/1130717/940cbed4-e31d-4c6e-a03d-c44190aaef39">
-  <img src="https://github.com/vapor/sql-kit/assets/1130717/940cbed4-e31d-4c6e-a03d-c44190aaef39" height="96" alt="SQLKit">
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/vapor/sql-kit/assets/1130717/b5828634-c1a1-4d91-b25d-20e033b77269">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/vapor/sql-kit/assets/1130717/f45e4b01-0579-4011-8b06-0f159e0d386f">
+  <img src="https://github.com/vapor/sql-kit/assets/1130717/f45e4b01-0579-4011-8b06-0f159e0d386f" height="96" alt="SQLKit">
 </picture> 
 <br>
 <br>
@@ -11,7 +11,7 @@
 <a href="LICENSE"><img src="https://design.vapor.codes/images/mitlicense.svg" alt="MIT License"></a>
 <a href="https://github.com/vapor/sql-kit/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/vapor/sql-kit/test.yml?event=push&style=plastic&logo=github&label=tests&logoColor=%23ccc" alt="Continuous Integration"></a>
 <a href="https://codecov.io/github/vapor/sql-kit"><img src="https://img.shields.io/codecov/c/github/vapor/sql-kit?style=plastic&logo=codecov&label=codecov"></a>
-<a href="https://swift.org"><img src="https://design.vapor.codes/images/swift57up.svg" alt="Swift 5.7+"></a>
+<a href="https://swift.org"><img src="https://design.vapor.codes/images/swift58up.svg" alt="Swift 5.8+"></a>
 </p>
 
 <br>

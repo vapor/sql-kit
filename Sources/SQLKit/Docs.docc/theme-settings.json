@@ -1,11 +1,11 @@
 {
   "theme": {
-    "aside": { "border-radius": "6px", "border-style": "double", "border-width": "3px" },
+    "aside": { "border-radius": "16px", "border-style": "double", "border-width": "3px" },
     "border-radius": "0",
     "button": { "border-radius": "16px", "border-width": "1px", "border-style": "solid" },
     "code":   { "border-radius": "16px", "border-width": "1px", "border-style": "solid" },
     "color": {
-      "sqlkit": "hsl(34, 55%, 57%)",
+      "sqlkit": { "dark": "hsl(32, 77%, 63%)", "light": "hsl(32, 80%, 60%)" },
       "documentation-intro-fill": "radial-gradient(circle at top, var(--color-sqlkit) 30%, #000 100%)",
       "documentation-intro-accent": "var(--color-sqlkit)",
       "logo-base":  { "dark": "#fff", "light": "#000" },
