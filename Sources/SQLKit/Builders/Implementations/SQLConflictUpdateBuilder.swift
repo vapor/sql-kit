@@ -31,12 +31,12 @@ public final class SQLConflictUpdateBuilder: SQLColumnUpdateBuilder, SQLPredicat
         return self
     }
     
-    /// Encodes the given ``Encodable`` value to a sequence of key-value pairs and adds an assignment
+    /// Encodes the given `Encodable` value to a sequence of key-value pairs and adds an assignment
     /// for each pair which uses the values each column was given in the original `INSERT` query's
     /// `VALUES` list. See ``SQLExcludedColumn``.
     @inlinable
     @discardableResult
-    public func set<E>(excludedContentOf model: E) throws -> Self where E: Encodable {
+    public func set(excludedContentOf model: some Encodable & Sendable) throws -> Self {
         try SQLQueryEncoder().encode(model).reduce(self) { $0.set(excludedValueOf: $1.0) }
     }
 }

@@ -1,4 +1,4 @@
-///// `JOIN` clause.
+/// `JOIN` clause.
 public struct SQLJoin: SQLExpression {
     public var method: any SQLExpression
 

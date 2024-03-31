@@ -21,7 +21,7 @@ public protocol SQLDatabaseReportedVersion {
     
     /// Returns `true` if the provided version is the same version as `self`.
     ///
-    /// Corresponds to ``Swift/Equatable/==(_:_:)``.
+    /// Corresponds to `==`.
     ///
     /// - Parameters:
     ///   - otherVersion: The version to compare against. `type(of: self)` must be the same as `type(of: otherVersion)`.
@@ -30,7 +30,7 @@ public protocol SQLDatabaseReportedVersion {
     
     /// Check whether the current version (i.e. `self`) is older than the one given.
     ///
-    /// Corresponds to ``Swift/Comparable/<(_:_:)``.
+    /// Corresponds to `<`.
     ///
     /// - Parameters:
     ///   - otherVersion: The version to compare against. `type(of: self)` must be the same as `type(of: otherVersion)`.
@@ -41,7 +41,7 @@ public protocol SQLDatabaseReportedVersion {
 extension SQLDatabaseReportedVersion {
     /// Check whether the current version (i.e. `self`) is older than or equal to the one given.
     ///
-    /// Corresponds to ``Swift/Comparable/<=(_:_:)``.
+    /// Corresponds to `<=`.
     ///
     /// - Parameters:
     ///   - otherVersion: The version to compare against. `type(of: self)` must be the same as `type(of: otherVersion)`.
@@ -53,7 +53,7 @@ extension SQLDatabaseReportedVersion {
 
     /// Check whether the current version (i.e. `self`) is newer than the one given.
     ///
-    /// Corresponds to ``Swift/Comparable/>(_:_:)``.
+    /// Corresponds to `>`.
     ///
     /// - Parameters:
     ///   - otherVersion: The version to compare against. `type(of: self)` must be the same as `type(of: otherVersion)`.
@@ -65,7 +65,7 @@ extension SQLDatabaseReportedVersion {
 
     /// Check whether the current version (i.e. `self`) is newer than or equal to the one given.
     ///
-    /// Corresponds to ``Swift/Comparable/>=(_:_:)``.
+    /// Corresponds to `>=`.
     ///
     /// - Parameters:
     ///   - otherVersion: The version to compare against. `type(of: self)` must be the same as `type(of: otherVersion)`.

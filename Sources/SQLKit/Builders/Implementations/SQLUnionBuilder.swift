@@ -130,7 +130,7 @@ extension SQLUnionBuilder {
         try self.intersect(all: predicate(.init(on: self.database)).select)
     }
 
-    /// Alias ``intersect(distinct:)-3t74e`` so it acts as the "default".
+    /// Alias ``intersect(distinct:)-1i7fc`` so it acts as the "default".
     @inlinable
     public func intersect(_ predicate: (SQLSelectBuilder) throws -> SQLSelectBuilder) rethrows -> Self {
         try self.intersect(distinct: predicate)
@@ -148,7 +148,7 @@ extension SQLUnionBuilder {
         try self.except(all: predicate(.init(on: self.database)).select)
     }
 
-    /// Alias ``except(distinct:)-2xe8f`` so it acts as the "default".
+    /// Alias ``except(distinct:)-8pdro`` so it acts as the "default".
     @inlinable
     public func except(_ predicate: (SQLSelectBuilder) throws -> SQLSelectBuilder) rethrows -> Self {
         try self.except(distinct: predicate)

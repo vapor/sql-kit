@@ -9,7 +9,7 @@ public protocol SQLRow {
     /// Must return `true` if the given column name is missing from the row **or** if it exists but has a
     /// value equivalent to an SQL `NULL`, or `false` if the column name exists with a non-`NULL` value.
     ///
-    /// - Note: This deliberately matches the semantics of ``Swift/KeyedDecodingContainer/decodeNil(forKey:)``
+    /// - Note: This deliberately matches the semantics of `KeyedDecodingContainer.decodeNil(forKey:)`
     ///   as regards the treatment of "missing" keys.
     func decodeNil(column: String) throws -> Bool
     
