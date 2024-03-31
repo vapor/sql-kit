@@ -384,19 +384,51 @@ public struct SQLUnionFeatures: OptionSet {
 /// so as to avoid breaking all existing dialects every time a new requirement is added to the
 /// protocol and allow gradual adoption of new capabilities.
 extension SQLDialect {
-    public var literalDefault: any SQLExpression { SQLRaw("DEFAULT") }
+    @inlinable
     public var literalStringQuote: any SQLExpression { SQLRaw("'") }
-    public var supportsIfExists: Bool { true }
+
+    @inlinable
     public var autoIncrementFunction: (any SQLExpression)? { nil }
+
+    @inlinable
+    public var literalDefault: any SQLExpression { SQLRaw("DEFAULT") }
+
+    @inlinable
+    public var supportsIfExists: Bool { true }
+
+    @inlinable
+    public var enumSyntax: SQLEnumSyntax { .unsupported }
+    
+    @inlinable
     public var supportsDropBehavior: Bool { false }
+
+    @inlinable
     public var supportsReturning: Bool { false }
-    public var alterTableSyntax: SQLAlterTableSyntax { .init() }
+
+    @inlinable
     public var triggerSyntax: SQLTriggerSyntax { .init() }
-    public func customDataType(for dataType: SQLDataType) -> (any SQLExpression)? { nil }
+
+    @inlinable
+    public var alterTableSyntax: SQLAlterTableSyntax { .init() }
+
+    @inlinable
+    public func customDataType(for: SQLDataType) -> (any SQLExpression)? { nil }
+
+    @inlinable
     public func normalizeSQLConstraint(identifier: any SQLExpression) -> any SQLExpression { identifier }
+
+    @inlinable
     public var upsertSyntax: SQLUpsertSyntax { .unsupported }
+
+    @inlinable
     public var unionFeatures: SQLUnionFeatures { [.union, .unionAll] }
+
+    @inlinable
     public var sharedSelectLockExpression: (any SQLExpression)? { nil }
+
+    @inlinable
     public var exclusiveSelectLockExpression: (any SQLExpression)? { nil }
-    public func nestedSubpathExpression(in column: any SQLExpression, for path: [String]) -> (any SQLExpression)? { nil }
+
+    @inlinable
+    public func nestedSubpathExpression(in: any SQLExpression, for: [String]) -> (any SQLExpression)? { nil }
 }

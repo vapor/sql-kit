@@ -21,8 +21,4 @@ public struct SomeCodingKey: CodingKey, Hashable {
         self.stringValue = "\(intValue)"
         self.intValue = intValue
     }
-    
-    public var description: String {
-        "SomeCodingKey(\"\(self.stringValue)\"\(self.intValue.map { ", int: \($0)" } ?? ""))"
-    }
 }
