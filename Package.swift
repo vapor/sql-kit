@@ -26,6 +26,7 @@ let package = Package(
             .target(name: "SQLKit")
         ]),
         .testTarget(name: "SQLKitTests", dependencies: [
+            .product(name: "NIOEmbedded", package: "swift-nio"),
             .target(name: "SQLKit"),
             .target(name: "SQLKitBenchmark"),
         ]),

@@ -5,6 +5,10 @@ import XCTest
 final class AsyncSQLKitTests: XCTestCase {
     var db: TestDatabase!
 
+    override class func setUp() {
+        XCTAssert(isLoggingConfigured)
+    }
+    
     override func setUp() async throws {
         try await super.setUp()
         self.db = TestDatabase()
@@ -475,7 +479,7 @@ final class AsyncSQLKitTests: XCTestCase {
     func testRawCustomStringConvertible() async throws {
         let field = "name"
         let db = TestDatabase()
-        _ = try await db.raw("SELECT \(raw: field) FROM users").all()
+        _ = try await db.raw("SELECT \(unsafeRaw: field) FROM users").all()
         XCTAssertEqual(db.results[0], "SELECT name FROM users")
     }
 

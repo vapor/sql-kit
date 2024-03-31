@@ -1,6 +1,6 @@
 import SQLKit
 import NIOCore
-import NIOEmbedded
+@_implementationOnly import NIOEmbedded
 import Logging
 
 final class TestDatabase: SQLDatabase {
@@ -98,3 +98,12 @@ struct GenericDialect: SQLDialect {
         self.triggerSyntax.drop = drop
     }
 }
+
+let isLoggingConfigured: Bool = {
+    LoggingSystem.bootstrap { label in
+        var handler = StreamLogHandler.standardOutput(label: label)
+        handler.logLevel = ProcessInfo.processInfo.environment["LOG_LEVEL"].flatMap { Logger.Level(rawValue: $0) } ?? .info
+        return handler
+    }
+    return true
+}()
