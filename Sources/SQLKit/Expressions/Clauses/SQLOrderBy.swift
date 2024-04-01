@@ -11,6 +11,7 @@ public struct SQLOrderBy: SQLExpression {
         self.direction = direction
     }
     
+    // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         self.expression.serialize(to: &serializer)

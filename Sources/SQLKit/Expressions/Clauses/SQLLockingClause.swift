@@ -11,7 +11,7 @@ public enum SQLLockingClause: SQLExpression {
     /// Request a shared "reader" lock.
     case share
     
-    /// See ``SQLExpression/serialize(to:)``.
+    // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {

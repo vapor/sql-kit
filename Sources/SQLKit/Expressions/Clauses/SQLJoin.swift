@@ -14,6 +14,7 @@ public struct SQLJoin: SQLExpression {
         self.expression = expression
     }
 
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         self.method.serialize(to: &serializer)
         serializer.write(" JOIN ")

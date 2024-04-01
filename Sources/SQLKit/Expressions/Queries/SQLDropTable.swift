@@ -27,7 +27,7 @@ public struct SQLDropTable: SQLExpression {
         self.temporary = false
     }
     
-    /// See ``SQLExpression/serialize(to:)``.
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {
             $0.append("DROP")

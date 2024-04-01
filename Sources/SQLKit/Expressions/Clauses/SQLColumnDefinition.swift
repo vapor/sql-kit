@@ -16,6 +16,7 @@ public struct SQLColumnDefinition: SQLExpression {
         self.constraints = constraints
     }
     
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         self.column.serialize(to: &serializer)
         serializer.write(" ")

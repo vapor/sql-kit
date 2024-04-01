@@ -16,6 +16,7 @@ public struct SQLConstraint: SQLExpression {
         self.algorithm = algorithm
     }
 
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         if let name = self.name {
             serializer.write("CONSTRAINT ")

@@ -12,6 +12,7 @@ public enum SQLTableConstraintAlgorithm: SQLExpression {
     /// `FOREIGN KEY` table constraint.
     case foreignKey(columns: [any SQLExpression], references: any SQLExpression)
 
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         switch self {
         case .primaryKey(columns: let columns):

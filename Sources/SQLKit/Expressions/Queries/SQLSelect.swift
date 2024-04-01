@@ -29,7 +29,7 @@ public struct SQLSelect: SQLExpression {
     ///
     ///     SELECT ... FOR UPDATE
     ///
-    /// See ``SQLSelectBuilder/for(_:)`` and ``SQLLockingClause``.
+    /// See ``SQLSubqueryClauseBuilder/for(_:)`` and ``SQLLockingClause``.
     public var lockingClause: (any SQLExpression)?
     
     /// Creates a new ``SQLSelect``.
@@ -47,6 +47,7 @@ public struct SQLSelect: SQLExpression {
         self.orderBy = []
     }
     
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.write("SELECT ")
         if self.isDistinct {

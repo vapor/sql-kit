@@ -96,7 +96,8 @@ public enum SQLColumnConstraintAlgorithm: SQLExpression {
             )
         )
     }
-
+    
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         switch self {
         case .primaryKey(let autoIncrement):

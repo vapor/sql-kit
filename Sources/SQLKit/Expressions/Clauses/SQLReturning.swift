@@ -14,6 +14,7 @@ public struct SQLReturning: SQLExpression {
         self.columns = columns
     }
 
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         guard serializer.dialect.supportsReturning else {
             serializer.database.logger.warning("\(serializer.dialect.name) does not support 'RETURNING' clause, skipping.")

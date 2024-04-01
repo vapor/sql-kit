@@ -22,7 +22,7 @@ public struct SQLDropEnum: SQLExpression {
         self.cascade = false
     }
 
-    /// See `SQLExpression`.
+    // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {

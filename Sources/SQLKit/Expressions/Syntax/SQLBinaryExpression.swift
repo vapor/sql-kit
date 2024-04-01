@@ -10,6 +10,7 @@ public struct SQLBinaryExpression: SQLExpression {
         self.right = right
     }
     
+    // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {

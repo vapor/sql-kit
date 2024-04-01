@@ -21,6 +21,7 @@ public struct SQLCreateIndex: SQLExpression {
         self.columns = []
     }
     
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.write("CREATE")
         if let modifier = self.modifier {

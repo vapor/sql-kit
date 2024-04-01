@@ -16,6 +16,7 @@ public struct SQLDistinct: SQLExpression {
         self.args = args
     }
 
+    // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         guard !args.isEmpty else { return }

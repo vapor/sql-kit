@@ -6,6 +6,7 @@ public enum SQLDirection: SQLExpression {
     /// Order in which NOT NULL values come first.
     case notNull
     
+    // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         switch self {

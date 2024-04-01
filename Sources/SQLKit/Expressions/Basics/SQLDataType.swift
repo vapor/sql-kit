@@ -14,6 +14,7 @@ public enum SQLDataType: SQLExpression {
         .custom(SQLIdentifier(string))
     }
     
+    // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         let sql: any SQLExpression

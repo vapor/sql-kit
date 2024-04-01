@@ -30,6 +30,7 @@ public struct SQLUnion: SQLExpression {
         self.unions.append((joiner, query))
     }
 
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         guard !self.unions.isEmpty else {
             return initialQuery.serialize(to: &serializer)
@@ -103,6 +104,7 @@ public struct SQLUnionJoiner: SQLExpression {
         self.type = type
     }
     
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         func serialize(keyword: String, if flag: SQLUnionFeatures, uniqued: Bool, to statement: inout SQLStatement) {
             if !statement.dialect.unionFeatures.contains(flag) {

@@ -3,7 +3,7 @@ public struct SQLIdentifier: SQLExpression {
     /// String value.
     public var string: String
     
-    /// Creates a new `SQLIdentifier`.
+    /// Create a new ``SQLIdentifier``.
     @inlinable
     public init(_ string: String) {
         self.string = string

@@ -215,7 +215,7 @@ extension StringProtocol {
 }
 
 extension DecodingError.Context {
-    /// Return a context identical to self, except with the given coding path prepended.
+    /// Return a context identical to `self`, except with the given coding path prepended.
     @inlinable
     func with(prefix: [any CodingKey]) -> Self {
         .init(
@@ -227,7 +227,7 @@ extension DecodingError.Context {
 }
 
 extension EncodingError.Context {
-    /// Return a context identical to self, except with the given coding path prepended.
+    /// Return a context identical to `self`, except with the given coding path prepended.
     @inlinable
     func with(prefix: [any CodingKey]) -> Self {
         .init(

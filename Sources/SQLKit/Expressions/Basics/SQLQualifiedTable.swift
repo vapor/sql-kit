@@ -11,6 +11,7 @@ public struct SQLQualifiedTable: SQLExpression {
         self.space = space
     }
     
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         if let space = self.space {
             space.serialize(to: &serializer)

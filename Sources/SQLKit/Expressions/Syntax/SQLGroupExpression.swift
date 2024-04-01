@@ -11,6 +11,7 @@ public struct SQLGroupExpression: SQLExpression {
         self.expressions = expressions
     }
     
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.write("(")
         SQLList(self.expressions).serialize(to: &serializer)

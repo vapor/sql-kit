@@ -118,11 +118,6 @@ SQLKit does _not_ provide facilities for creating or managing database connectio
 - ``SQLOrderBy``
 - ``SQLReturning``
 - ``SQLTableConstraintAlgorithm``
-- ``SQLTriggerEach``
-- ``SQLTriggerEvent``
-- ``SQLTriggerOrder``
-- ``SQLTriggerTiming``
-- ``SQLTriggerWhen``
 - ``SQLUnionJoiner``
 
 ### Query Expressions

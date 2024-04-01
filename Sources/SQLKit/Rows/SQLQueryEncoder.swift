@@ -30,19 +30,20 @@ public struct SQLQueryEncoder {
         /// For example, `oneTwoThree` becomes `one_two_three`. `_oneTwoThree_` becomes `_one_two_three_`.
         ///
         /// > Note: Using a key encoding strategy has a nominal performance cost, as each string key has
-        ///   to be converted.
+        /// > to be converted.
         case convertToSnakeCase
 
         /// Provide a custom conversion to the key in the encoded row from the keys specified by the
         /// encoded types.
-
+        ///
         /// The full path to the current encoding position is provided for context (in case you need to
         /// locate this key within the payload). The returned key is used in place of the last component
         /// in the coding path before encoding.
         ///
         /// If the result of the conversion is a duplicate key, then only one value will be present in
         /// the result.
-        @preconcurrency case custom(@Sendable (_ codingPath: [any CodingKey]) -> any CodingKey)
+        @preconcurrency
+        case custom(@Sendable (_ codingPath: [any CodingKey]) -> any CodingKey)
     }
     
     /// A prefix to be added to keys when encoding column names.
@@ -73,11 +74,7 @@ public struct SQLQueryEncoder {
         set { self.configuration.userInfo = newValue }
     }
 
-    /// Create an `SQLQueryEncoder` with default settings.
-    @inlinable
-    public init() {}
-    
-    /// Create an `SQLQueryEncoder`, specifying some or all settings.
+    /// Create a ``SQLQueryEncoder``, specifying no, some, or all settings.
     @inlinable
     public init(
         prefix: String? = nil,
@@ -97,6 +94,7 @@ public struct SQLQueryEncoder {
     /// providing to an ``SQLInsertBuilder``.
     public func encode(_ encodable: some Encodable) throws -> [(String, any SQLExpression)] {
         let encoder = SQLQueryEncoderImpl(configuration: self.configuration)
+        
         try encodable.encode(to: encoder)
         return encoder.row
     }

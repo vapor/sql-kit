@@ -49,7 +49,7 @@ public struct SQLColumnAssignment: SQLExpression {
         self.init(setting: column, to: SQLExcludedColumn(column))
     }
     
-    /// See `SQLExpression.serialize(to:)`.
+    // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {

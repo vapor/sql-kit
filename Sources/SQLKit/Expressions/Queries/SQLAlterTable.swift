@@ -29,6 +29,7 @@ public struct SQLAlterTable: SQLExpression {
         self.dropTableConstraints = []
     }
     
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         let syntax = serializer.dialect.alterTableSyntax
         

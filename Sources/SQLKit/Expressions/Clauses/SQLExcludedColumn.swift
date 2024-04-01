@@ -25,6 +25,7 @@ public struct SQLExcludedColumn: SQLExpression {
         self.name = name
     }
     
+    // See `SQLExpression.serialize(to:)`.
     @inlinable
     public func serialize(to serializer: inout SQLSerializer) {
         switch serializer.dialect.upsertSyntax {

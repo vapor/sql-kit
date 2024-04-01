@@ -25,7 +25,7 @@ public struct SQLDropIndex: SQLExpression {
         self.ifExists = false
     }
     
-    /// See `SQLExpression`.
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {
             $0.append("DROP INDEX")

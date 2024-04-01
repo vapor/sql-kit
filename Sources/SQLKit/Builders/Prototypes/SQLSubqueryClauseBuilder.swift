@@ -11,7 +11,7 @@
 ///   to construct `SELECT` queries without specifying a database or providing the
 ///   ``SQLQueryBuilder`` and ``SQLQueryFetcher`` methods in inappropriate contexts.
 public protocol SQLSubqueryClauseBuilder: SQLJoinBuilder, SQLPredicateBuilder, SQLSecondaryPredicateBuilder, SQLPartialResultBuilder {
-    /// The ``SQLSelect`` query being built.
+    /// The ``SQLSelect`` query under construction.
     var select: SQLSelect { get set }
 }
 
