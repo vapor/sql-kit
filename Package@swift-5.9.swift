@@ -1,12 +1,5 @@
-// swift-tools-version:5.8
+// swift-tools-version:5.9
 import PackageDescription
-
-let swiftSettings: [SwiftSetting] = [
-    .enableUpcomingFeature("ExistentialAny"),
-    .enableUpcomingFeature("ConciseMagicFile"),
-    .enableUpcomingFeature("ForwardTrailingClosures"),
-    .enableExperimentalFeature("StrictConcurrency=complete"),
-]
 
 let package = Package(
     name: "sql-kit",
@@ -21,8 +14,10 @@ let package = Package(
         .library(name: "SQLKitBenchmark", targets: ["SQLKitBenchmark"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-nio.git", from: "2.59.0"),
-        .package(url: "https://github.com/apple/swift-log.git", from: "1.5.3"),
+        .package(url: "https://github.com/apple/swift-nio.git", from: "2.63.0"),
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.5.4"),
+        .package(url: "https://github.com/apple/swift-algorithms.git", from: "1.2.0"),
+        .package(url: "https://github.com/apple/swift-docc-plugin.git", from: "1.3.0"),
     ],
     targets: [
         .target(
@@ -30,6 +25,7 @@ let package = Package(
             dependencies: [
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "NIOCore", package: "swift-nio"),
+                .product(name: "Algorithms", package: "swift-algorithms"),
             ],
             swiftSettings: swiftSettings
         ),
@@ -43,7 +39,6 @@ let package = Package(
         .testTarget(
             name: "SQLKitTests",
             dependencies: [
-                .product(name: "NIOEmbedded", package: "swift-nio"),
                 .target(name: "SQLKit"),
                 .target(name: "SQLKitBenchmark"),
             ],
@@ -51,3 +46,12 @@ let package = Package(
         ),
     ]
 )
+
+var swiftSettings: [SwiftSetting] { [
+    .enableUpcomingFeature("ExistentialAny"),
+    .enableUpcomingFeature("ConciseMagicFile"),
+    .enableUpcomingFeature("ForwardTrailingClosures"),
+    .enableUpcomingFeature("DisableOutwardActorInference"),
+    .enableUpcomingFeature("StrictConcurrency"),
+    .enableExperimentalFeature("StrictConcurrency=complete"),
+] }
