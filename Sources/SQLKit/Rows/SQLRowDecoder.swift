@@ -152,6 +152,7 @@ public struct SQLRowDecoder: Sendable {
     public init(
         prefix: String? = nil,
         keyDecodingStrategy: KeyDecodingStrategy = .useDefaultKeys,
+        userInfo: [CodingUserInfoKey: any Sendable] = [:]
     ) {
         self.prefix = prefix
         self.keyDecodingStrategy = keyDecodingStrategy
