@@ -22,7 +22,7 @@ extension SQLSerializer {
     ///         SQLGroupExpression(self.cases).serialize(to: &serializer)
     ///     default:
     ///         SQLDataType.text.serialize(to: &serializer)
-    ///         serializer.database.logger.warning("Database does not support inline enums. Storing as TEXT instead.")
+    ///         serializer.database.logger.debug("Database does not support inline enums. Storing as TEXT instead.")
     ///     }
     /// }
     /// ```
@@ -37,7 +37,7 @@ extension SQLSerializer {
     ///             $0.append("ENUM", SQLGroupExpression(self.cases))
     ///         default:
     ///             $0.append(SQLDataType.text)
-    ///             $0.logger.warning("Database does not support inline enums. Storing as TEXT instead.")
+    ///             $0.logger.debug("Database does not support inline enums. Storing as TEXT instead.")
     ///         }
     ///     }
     /// }

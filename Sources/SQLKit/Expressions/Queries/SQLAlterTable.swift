@@ -51,12 +51,12 @@ public struct SQLAlterTable: SQLExpression {
         if !syntax.allowsBatch,
            [self.addColumns, self.modifyColumns, self.dropColumns, self.addTableConstraints, self.dropTableConstraints].map(\.count).reduce(0, +) > 1
         {
-            serializer.database.logger.warning("Database does not support multiple table operation per statement; perform multiple queries with one alteration each instead.")
+            serializer.database.logger.debug("Database does not support multiple table operation per statement; perform multiple queries with one alteration each instead.")
             // Emit the query anyway so the error will propagate when the database rejects it.
         }
 
         if syntax.alterColumnDefinitionClause == nil, !self.modifyColumns.isEmpty {
-            serializer.database.logger.warning("Database does not support column modifications.")
+            serializer.database.logger.debug("Database does not support column modifications.")
             // Emit the query anyway so the error will propagate when the database rejects it.
         }
 

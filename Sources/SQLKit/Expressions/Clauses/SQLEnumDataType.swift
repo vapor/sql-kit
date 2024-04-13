@@ -33,7 +33,7 @@ public struct SQLEnumDataType: SQLExpression {
             case .inline:
                 $0.append("ENUM", SQLGroupExpression(self.cases))
             case .typeName:
-                $0.logger.warning("SQLEnumDataType is not intended for use with PostgreSQL-style enum syntax.")
+                $0.logger.debug("SQLEnumDataType is not intended for use with PostgreSQL-style enum syntax.")
                 fallthrough
             case .unsupported:
                 // Do not warn for this case; just transparently fall back to text.

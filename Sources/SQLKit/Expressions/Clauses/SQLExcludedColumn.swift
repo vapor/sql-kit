@@ -13,7 +13,7 @@
 /// > If this affects your usage, use a raw query or manually construct the necessary expressions
 /// > to specify and use the alias for now.
 public struct SQLExcludedColumn: SQLExpression {
-    /// The excluded colmn's name.
+    /// The excluded column's name.
     public var name: any SQLExpression
     
     /// Create an excluded column specifier.

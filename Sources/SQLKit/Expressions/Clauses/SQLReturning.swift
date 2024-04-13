@@ -30,7 +30,7 @@ public struct SQLReturning: SQLExpression {
     public func serialize(to serializer: inout SQLSerializer) {
         guard serializer.dialect.supportsReturning else {
             /// This logging can be a bit noisy for MySQL users, elide it for now.
-            //serializer.database.logger.warning("\(serializer.dialect.name) does not support 'RETURNING' clause, skipping.")
+            //serializer.database.logger.debug("\(serializer.dialect.name) does not support 'RETURNING' clause, skipping.")
             return
         }
 
