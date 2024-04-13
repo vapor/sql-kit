@@ -1,16 +1,13 @@
 /// Builds raw SQL queries.
-///
-///     db.raw("SELECT \(SQLLiteral.all) FROM \(ident: "planets") WHERE \(ident: "name") = \(bind: "Earth")")
-///         .all(decoding: Planet.self)
 public final class SQLRawBuilder: SQLQueryBuilder, SQLQueryFetcher {
     /// Raw query being built.
     @usableFromInline
     var sql: SQLQueryString
 
-    /// See ``SQLQueryBuilder/database``.
+    // See `SQLQueryBuilder.database`.
     public var database: any SQLDatabase
 
-    /// See ``SQLQueryBuilder/query``.
+    // See `SQLQueryBuilder.query`.
     @inlinable
     public var query: any SQLExpression {
         self.sql
@@ -26,6 +23,7 @@ public final class SQLRawBuilder: SQLQueryBuilder, SQLQueryFetcher {
 
 extension SQLDatabase {
     /// Create a new ``SQLRawBuilder``.
+    @inlinable
     public func raw(_ sql: SQLQueryString) -> SQLRawBuilder {
         .init(sql, on: self)
     }

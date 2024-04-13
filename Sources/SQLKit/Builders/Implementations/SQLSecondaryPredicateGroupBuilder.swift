@@ -1,6 +1,6 @@
 /// Nested ``SQLSecondaryPredicateBuilder`` for building expression groups.
 public final class SQLSecondaryPredicateGroupBuilder: SQLSecondaryPredicateBuilder {
-    /// See ``SQLSecondaryPredicateBuilder/secondaryPredicate``.
+    // See `SQLSecondaryPredicateBuilder.secondaryPredicate`.
     public var secondaryPredicate: (any SQLExpression)?
     
     /// Create a new ``SQLSecondaryPredicateGroupBuilder``.
@@ -30,7 +30,7 @@ extension SQLSecondaryPredicateBuilder {
         }
     }
     
-    /// Builds a grouped `HAVING` expression by disjunction ('OR').
+    /// Builds a grouped `HAVING` expression by inclusive disjunction ('OR').
     ///
     ///     builder.having("name", .equal, "Jupiter").orHaving {
     ///         $0.having("name", .equal, "Earth").having("type", .equal, PlanetType.smallRocky)

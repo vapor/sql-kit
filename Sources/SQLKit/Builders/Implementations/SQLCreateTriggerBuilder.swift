@@ -3,10 +3,10 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     /// ``SQLCreateTrigger`` query being built.
     public var createTrigger: SQLCreateTrigger
 
-    /// See ``SQLQueryBuilder/database``.
+    // See `SQLQueryBuilder.database`.
     public var database: any SQLDatabase
 
-    /// See ``SQLQueryBuilder/query``.
+    // See `SQLQueryBuilder.query`.
     @inlinable
     public var query: any SQLExpression {
         self.createTrigger
@@ -14,7 +14,13 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
 
     /// Create a new ``SQLCreateTriggerBuilder``.
     @usableFromInline
-    init(trigger: any SQLExpression, table: any SQLExpression, when: any SQLExpression, event: any SQLExpression, on database: any SQLDatabase) {
+    init(
+        trigger: any SQLExpression,
+        table: any SQLExpression,
+        when: any SQLExpression,
+        event: any SQLExpression,
+        on database: any SQLDatabase
+    ) {
         self.createTrigger = .init(trigger: trigger, table: table, when: when, event: event)
         self.database = database
     }
@@ -22,9 +28,8 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     /// Identifies whether the trigger applies to each row or each statement.
     @inlinable
     @discardableResult
-    public func each(_ value: SQLTriggerEach) -> Self {
-        self.createTrigger.each = value
-        return self
+    public func each(_ value: SQLCreateTrigger.EachSpecifier) -> Self {
+        self.each(value as any SQLExpression)
     }
 
     /// Identifies whether the trigger applies to each row or each statement.
@@ -60,30 +65,21 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
 
     /// Specify the trigger's timing.
     ///
-    /// - Note: Only applies to constraint triggers.
+    /// > Note: Only applies to constraint triggers.
     @inlinable
     @discardableResult
-    public func timing(_ value: SQLTriggerTiming) -> Self {
-        self.createTrigger.timing = value
-        return self
+    public func timing(_ value: SQLCreateTrigger.TimingSpecifier) -> Self {
+        self.timing(value as any SQLExpression)
     }
 
     /// Specify the trigger's timing.
     ///
-    /// - Note: Only applies to constraint triggers.
+    /// > Note: Only applies to constraint triggers.
     @inlinable
     @discardableResult
     public func timing(_ value: any SQLExpression) -> Self {
         self.createTrigger.timing = value
         return self
-    }
-
-    /// Specify a conditional expression which determines whether the trigger is actually executed.
-    @available(*, deprecated, message: "Specifying conditions as raw strings is unsafe. Use `SQLBinaryExpression` etc. instead.")
-    @inlinable
-    @discardableResult
-    public func condition(_ value: String) -> Self {
-        self.condition(SQLRaw(value))
     }
 
     /// Specify a conditional expression which determines whether the trigger is actually executed.
@@ -98,7 +94,7 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     ///
     /// To specify a schema-qualified table, use ``SQLQualifiedTable``.
     ///
-    /// - Note: This option is used for foreign key constraints and is not recommended for general use. Only applies to constraint triggers.
+    /// > Note: This option is used for foreign key constraints and is not recommended for general use. Only applies to constraint triggers.
     @inlinable
     @discardableResult
     public func referencedTable(_ value: String) -> Self {
@@ -109,20 +105,12 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     ///
     /// To specify a schema-qualified table, use ``SQLQualifiedTable``.
     ///
-    /// - Note: This option is used for foreign key constraints and is not recommended for general use. Only applies to constraint triggers.
+    /// > Note: This option is used for foreign key constraints and is not recommended for general use. Only applies to constraint triggers.
     @inlinable
     @discardableResult
     public func referencedTable(_ value: any SQLExpression) -> Self {
         self.createTrigger.referencedTable = value
         return self
-    }
-
-    /// Specify a body for the trigger.
-    @available(*, deprecated, message: "Specifying SQL statements as raw strings is unsafe. Use `SQLQueryString` or `SQLRaw` explicitly.")
-    @inlinable
-    @discardableResult
-    public func body(_ statements: [String]) -> Self {
-        self.body(statements.map { SQLRaw($0) })
     }
 
     /// Specify a body for the trigger.
@@ -151,14 +139,14 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
     /// Specify whether this trigger precedes or follows a referenced trigger.
     @inlinable
     @discardableResult
-    public func order(precedence: SQLTriggerOrder, otherTriggerName: String) -> Self {
+    public func order(precedence: SQLCreateTrigger.OrderSpecifier, otherTriggerName: String) -> Self {
         self.order(precedence: precedence, otherTriggerName: SQLIdentifier(otherTriggerName))
     }
 
     /// Specify whether this trigger precedes or follows a referenced trigger.
     @inlinable
     @discardableResult
-    public func order(precedence: SQLTriggerOrder, otherTriggerName: any SQLExpression) -> Self {
+    public func order(precedence: SQLCreateTrigger.OrderSpecifier, otherTriggerName: any SQLExpression) -> Self {
         self.order(precedence: precedence as any SQLExpression, otherTriggerName: otherTriggerName)
     }
 
@@ -175,14 +163,23 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
 extension SQLDatabase {
     /// Create a new ``SQLCreateTriggerBuilder``.
     @inlinable
-    public func create(trigger: String, table: String, when: SQLTriggerWhen, event: SQLTriggerEvent) -> SQLCreateTriggerBuilder {
+    public func create(
+        trigger: String,
+        table: String,
+        when: SQLCreateTrigger.WhenSpecifier,
+        event: SQLCreateTrigger.EventSpecifier
+    ) -> SQLCreateTriggerBuilder {
         self.create(trigger: SQLIdentifier(trigger), table: SQLIdentifier(table), when: when, event: event)
     }
 
     /// Create a new ``SQLCreateTriggerBuilder``.
     @inlinable
-    public func create(trigger: any SQLExpression, table: any SQLExpression, when: any SQLExpression, event: any SQLExpression) -> SQLCreateTriggerBuilder {
+    public func create(
+        trigger: any SQLExpression,
+        table: any SQLExpression,
+        when: any SQLExpression,
+        event: any SQLExpression
+    ) -> SQLCreateTriggerBuilder {
         .init(trigger: trigger, table: table, when: when, event: event, on: self)
     }
 }
-

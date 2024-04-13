@@ -33,7 +33,7 @@ extension SQLReturningBuilder {
 
 /// A builder returned from the methods of ``SQLReturningBuilder``; this builder wraps the original
 /// builder with one which provides ``SQLQueryFetcher`` conformance. As such, the
-/// ``SQLReturningBuilder/returning(_:)-84avj`` methods always be the last ones in any call chain.
+/// ``SQLReturningBuilder/returning(_:)-84avj`` methods must always be the last ones in any call chain.
 ///
 /// Example:
 ///
@@ -43,20 +43,21 @@ extension SQLReturningBuilder {
 ///     // Incorrect:
 ///     db.insert(into: "foo").returning("id").model(foo).first() // Syntax error
 ///
-/// - Note: The only reason we can't make ``SQLReturningResultBuilder`` conditionally conform to the
-///   other builder protocols and thus remove the "last-in-chain" restriction is that it has historically
-///   exposed its ``query`` and ``database`` properties as both mutable and public, whereas they are
-///   get-only in the ``SQLQueryBuilder`` protocol. As a result, we cannot simply store the original
-///   builder instead, because users may have been leveraging the ability to modify the query and/or
-///   database, whereas those mutations could not be applied to the original builder. An unfortunate
-///   example of Hyrum's Law, that.
+/// > Note: The only reason we can't make ``SQLReturningResultBuilder`` conditionally conform to the
+/// > other builder protocols and thus remove the "last-in-chain" restriction is that it has historically
+/// > exposed its ``query`` and ``database`` properties as both mutable and public, whereas they are
+/// > get-only in the ``SQLQueryBuilder`` protocol - a classic example of [Hyrum's Law](https://hyrumslaw.com)
+/// > and its consequences. Conforming ``SQLReturningBuilder`` directly to ``SQLQueryFetcher`` would have been
+/// > a simpler approach, but then the availability of the fetching methods would not have been contingent upon
+/// > the presence of a returning clause.
 public final class SQLReturningResultBuilder<QueryBuilder: SQLReturningBuilder>: SQLQueryFetcher {
-    /// See ``SQLQueryBuilder/query``.
+    // See `SQLQueryBuilder.query`.
     public var query: any SQLExpression
     
-    /// See ``SQLQueryBuilder/database``.
+    // See `SQLQueryBuilder.database`.
     public var database: any SQLDatabase
-
+    
+    /// Create a new last-in-chain fetching query wrapper.
     @usableFromInline
     init(_ builder: QueryBuilder) {
         self.query = builder.query

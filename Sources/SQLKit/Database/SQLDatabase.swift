@@ -1,22 +1,29 @@
-import Logging
-import NIOCore
+import protocol NIOCore.EventLoop
+import class NIOCore.EventLoopFuture
+import struct Logging.Logger
 
-/// The core of an SQLKit driver. This common interface is the access point of both SQLKit itself and
-/// SQLKit clients to all of the information and behaviors necessary to provide and leverage the
-/// package's functionality.
+/// The common interface to SQLKit for both drivers and client code.
+///
+/// ``SQLDatabase`` is the core of an SQLKit driver and the primary entry point for user code. This common interface
+/// provides the information and behaviors necessary to define and leverage the package's functionality.
 ///
 /// Conformances to ``SQLDatabase`` are typically provided by an external database-specific driver
-/// package, alongside a few utility wrapper types for handling deferred and pooled connection
-/// logic and for substituting ``Logger``s. A driver package must also provide concrete
-/// implementations of ``SQLDialect`` and ``SQLRow`` (both of which are hooked up via ``SQLDatabase``).
+/// package, alongside several wrapper types for handling connection logic and other details.
+/// A driver package must at minimum provide concrete implementations of ``SQLDatabase``, ``SQLDialect``,
+/// and ``SQLRow``.
 ///
-/// - Note: Most of ``SQLDatabase``'s functionality is relatively low-level. Clients of SQLKit
-///   who want to query a database should use the higher-level API rooted at ``SQLQueryBuilder``.
+/// The API described by the base ``SQLDatabase`` protocol is low-level, meant for SQLKit drivers to
+/// implement; most users will not need to interact with these APIs directly. The high-level starting point
+/// for SQLKit is ``SQLQueryBuilder``; the various query builders provide extension methods on ``SQLDatabase``
+/// which are the intended public interface.
 ///
-/// Example of manually constructing and executing a query from expressions without a query builder:
+/// For comparison, this is an example of using ``SQLDatabase`` and ``SQLExpression``s directly:
 ///
 /// ```swift
+/// let database: SQLDatabase = ...
+///
 /// var select = SQLSelect()
+///
 /// select.columns = [SQLColumn(SQLIdentifier("x"))]
 /// select.tables = [SQLIdentifier("y")]
 /// select.predicate = SQLBinaryExpression(
@@ -24,117 +31,235 @@ import NIOCore
 ///     op: SQLBinaryOperator.equal,
 ///     right: SQLLiteral.numeric("1")
 /// )
-/// var resultRows: [SQLRow] = []
-/// let sqlDb = // obtain an SQLDatabase from somewhere
 ///
-/// try await sqlDb.execute(sql: select, resultRows.append(_:))
-/// // Executed query: SELECT x FROM y WHERE z = 1, as represented in the database's SQL dialect.
+/// nonisolated(unsafe) var resultRows: [SQLRow] = []
+///
+/// try await database.execute(sql: select, { resultRows.append($0) })
+/// // Executed query: SELECT x FROM y WHERE z = 1
+///
+/// var resultValues: [Int] = try resultRows.map {
+///     try $0.decode(column: "x", as: Int.self)
+/// }
 /// ```
 ///
-/// It should almost never be necessary for a client to call ``SQLDatabase/execute(sql:_:)-90wi9``
-/// directly; such a need usually indicates a design flaw or functionality gap in SQLKit itself.
-public protocol SQLDatabase {
-    /// The ``Logger`` to be used for logging all SQLKit operations relating to a given database.
+/// And this is the same example, written to make use of ``SQLSelectBuilder``:
+///
+/// ```swift
+/// let database: SQLDatabase = ...
+/// let resultValues: [Int] = try await database.select()
+///     .column("x")
+///     .from("y")
+///     .where("z", .equal, 1)
+///     .all(decodingColumn: "x", as: Int.self)
+/// ```
+public protocol SQLDatabase: Sendable {
+    /// The `Logger` used for logging all operations relating to a given database.
     var logger: Logger { get }
     
-    /// The ``NIOCore/EventLoop`` used for asynchronous operations on a given database. If there is no
-    /// specific ``NIOCore/EventLoop`` which handles the database (such as because it is a connection
-    /// pool which assigns loops to connections at point of use, or because the underlying implementation
-    /// is based on Swift Concurrency or some other asynchronous execution technology), it is recommended
-    /// to return an event loop from ``NIOCore/EventLoopGroup/any()``.
+    /// The `EventLoop` used for asynchronous operations on a given database.
+    ///
+    /// If there is no specific `EventLoop` which handles the database (such as because it is a connection pool which
+    /// assigns loops to connections at point of use, or because the underlying implementation is based on Swift
+    /// Concurrency or some other asynchronous execution technology), a single consistent `EventLoop` must be chosen
+    /// for the database and returned for this property nonetheless.
     var eventLoop: any EventLoop { get }
     
-    /// The version number the connection reports for itself, provided as a type conforming to the
-    /// ``SQLDatabaseReportedVersion`` protocol. If the version number is not applicable (such as for
-    /// a connection pool dispatch wrapper) or not yet known, `nil` may be returned. Version numbers
-    /// may also change at runtime (for example, if a connection is auto-reconnected after a remote
-    /// update), or even become unknown again after being known.
+    /// The version number the database reports for itself.
     ///
-    /// - Warning: This version number has nothing to do with ``SQLKit`` or (usually) of the driver
-    ///   implementation for the database, nor does it represent any data stored within the database;
-    ///   it is the version of the database implementation _itself_ (such as of a MySQL server or
-    ///   `libsqlite3` library). A significant part of the motivation to finally add this property comes
-    ///   from a larger desire to enable customizing a given ``SQLDialect``'s configuration based on the
-    ///   actual feature set available at runtime instead of having to hardcode a "safe" baseline.
+    /// The version must be provided via a type conforming to the ``SQLDatabaseReportedVersion`` protocol. If the
+    /// version number is not applicable (such as for a connection pool dispatch wrapper) or not yet known, `nil` may
+    /// be returned. Version numbers may also change at runtime (for example, if a connection is auto-reconnected
+    /// after a remote update), or even become unknown again after being known.
+    ///
+    /// > Note: This version number has nothing to do with SQLKit or the driver implementation for the
+    /// > database, nor does it represent any data stored within the database; it is the version of the
+    /// > database to which the ``SQLDatabase`` object represents a connection (such as a MySQL server, or
+    /// > a linked `libsqlite3` library). The primary motivation for finally adding this property stemmed
+    /// > from the desire to enable customizing ``SQLDialect`` configurations based on the actual feature set
+    /// > available at runtime, rather than the old solution of hardcoding a "safe" (but limited) baseline.
     var version: (any SQLDatabaseReportedVersion)? { get }
 
-    /// The descriptor for the SQL dialect supported by the given database. It is permitted for different
-    /// connections to the same database to have different dialects, though it's unclear how this would
-    /// be useful in practice.
+    /// The descriptor for the dialect of SQL supported by the given database.
+    ///
+    /// The dialect must be provided via a type conforming to the ``SQLDialect`` protocol. It is permitted for
+    /// different connections to the same database to report different dialects, although it's unclear how this would
+    /// be useful in practice; a dialect that differs based on database version should differentiate based on the
+    /// ``version-22wnn`` property instead.
     var dialect: any SQLDialect { get }
     
     /// The logging level used for reporting queries run on the given database to the database's logger.
-    /// Defaults to ``Logging/Logger/Level/debug``.
+    /// Defaults to `.debug`.
     ///
     /// This log level applies _only_ to logging the serialized SQL text and bound parameter values (if
     /// any) of queries; it does not affect any logging performed by the underlying driver or any other
     /// subsystem. If the value is `nil`, query logging is disabled.
     ///
-    /// - Important: Conforming drivers must provide a means to configure this value and to use the default
-    ///   ``Logging/Logger/Level/debug`` level if no explicit value is provided. It is also the responsibility
-    ///   of the driver to actually perform the query logging, including respecting the logging level.
-    ///
-    ///   The lack of enforcement of these requirements is obviously less than ideal, but unavoidable due to
-    ///   the lack of direct entry points to SQLKit not provided by driver implementations.
+    /// > Important: Conforming drivers must provide a means to configure this value and to use the default
+    /// > `.debug` level if no explicit value is provided. It is also the responsibility of the driver to
+    /// > actually perform the query logging, including respecting the logging level.
+    /// >
+    /// > The lack of enforcement of these requirements is obviously less than ideal, but for the moment
+    /// > it's unavoidable, as there are no direct entry points to SQLKit without a driver.
     var queryLogLevel: Logger.Level? { get }
 
     /// Requests that the given generic SQL query be serialized and executed on the database, and that
-    /// the ``onRow`` closure be invoked once for each result row the query returns (if any).
+    /// the `onRow` closure be invoked once for each result row the query returns (if any).
+    ///
+    /// Although it is a protocol requirement for historical reasons, this is considered a legacy interface thanks
+    /// to its reliance on `EventLoopFuture`. Implementers should implement both this method and
+    /// ``execute(sql:_:)-7trgm`` if they can, and users should use ``execute(sql:_:)-7trgm`` whenever possible.
+    ///
+    /// - Parameters:
+    ///   - query: An ``SQLExpression`` representing a complete query to execute.
+    ///   - onRow: A closure which is invoked once for each result row returned by the query (if any).
+    /// - Returns: An `EventLoopFuture`.
+    @preconcurrency
     func execute(
         sql query: any SQLExpression,
-        _ onRow: @escaping (any SQLRow) -> ()
+        _ onRow: @escaping @Sendable (any SQLRow) -> ()
     ) -> EventLoopFuture<Void>
+
+    /// Requests that the given generic SQL query be serialized and executed on the database, and that
+    /// the `onRow` closure be invoked once for each result row the query returns (if any).
+    ///
+    /// If a concrete type conforming to ``SQLDatabase`` can provide a more efficient Concurrency-based implementation
+    /// than forwarding the invocation through the legacy `EventLoopFuture`-based API, it should override this method
+    /// in order to do so.
+    ///
+    /// - Parameters:
+    ///   - query: An ``SQLExpression`` representing a complete query to execute.
+    ///   - onRow: A closure which is invoked once for each result row returned by the query (if any).
+    func execute(
+        sql query: any SQLExpression,
+        _ onRow: @escaping @Sendable (any SQLRow) -> ()
+    ) async throws
+    
+    /// Requests the provided closure be called with a database which is guaranteed to represent a single
+    /// "session", suitable for e.g. executing a series of queries representing a transaction.
+    ///
+    /// This method is provided for the benefit of SQLKit drivers which vend concrete database objects which may not
+    /// necessarily always execute consecutive queries in the same remote context, such as in the case of connection
+    /// pooling or multiplexing. The default implementation simply passes `self` to the closure; it is the
+    /// responsibility of individual drivers to do otherwise as needed.
+    ///
+    /// - Parameter closure: A closure to invoke. The single parameter shall be an implementation of ``SQLDatabase``
+    ///   which represents a single "session". Implementations may pass the same database on which this method was
+    ///   originally invoked.
+    func withSession<R>(
+        _ closure: @escaping @Sendable (any SQLDatabase) async throws -> R
+    ) async throws -> R
 }
 
 extension SQLDatabase {
     /// The ``version-22wnn`` property was added to ``SQLDatabase`` multiple years after the protocol's
     /// original definition; it was in fact the first change of any kind to the protocol since Fluent 4's
-    /// original release. As such, we must provide a default value so that drivers which haven't been
-    /// updated don't lose source compatibility. Conveniently, a value of `nil` represents "database
-    /// version is unknown", an obvious choice for this scenario.
-    public var version: SQLDatabaseReportedVersion? { nil }
+    /// original release. Therefore it is necessary to provide a default value for the benefit of drivers
+    /// which haven't been updated, to avoid a source compatibility break. Conveniently, a `nil` version
+    /// represents an obviously desirable default: "database version is unknown".
+    public var version: (any SQLDatabaseReportedVersion)? { nil }
     
     /// Drivers which do not provide the ``queryLogLevel-991s4`` property must be given the automatic default
-    /// of ``Logging/Logger/Level/debug``. It would be preferable not to provide a default conformance,
-    /// but this is unfortunately impractical, as the property was another late addition to the protocol.
+    /// of `.debug`. It would be preferable not to provide a default conformance, but as the property was
+    /// another late addition to the protocol, it is required for source compatibility.
     public var queryLogLevel: Logger.Level? { .debug }
 }
 
 extension SQLDatabase {
-    /// Convenience utility for serializing arbitrary ``SQLExpression``s.
+    /// Serialize an arbitrary ``SQLExpression`` using the database's dialect.
     ///
     /// The expression need not represent a complete query. Serialization transforms the expression into:
     ///
-    /// 1. A corresponding string of raw SQL in the database's dialect, and,
-    /// 2. An array of inputs to use as the values of any bound parameters of the query.
-    public func serialize(_ expression: any SQLExpression) -> (sql: String, binds: [any Encodable]) {
+    /// 1. A string containing raw SQL text rendered in the database's dialect, and,
+    /// 2. A potentially empty array of values for any bound parameters referenced by the query.
+    public func serialize(_ expression: any SQLExpression) -> (sql: String, binds: [any Encodable & Sendable]) {
         var serializer = SQLSerializer(database: self)
         expression.serialize(to: &serializer)
         return (serializer.sql, serializer.binds)
     }
- }
+}
 
 extension SQLDatabase {
-    /// Returns a ``SQLDatabase`` which is exactly the same database as the original, except that
-    /// all logging done to the new ``SQLDatabase`` will go to the specified ``Logger`` instead.
+    /// Return a new ``SQLDatabase`` which is indistinguishable from the original save that its
+    /// ``SQLDatabase/logger`` property is replaced by the given `Logger`.
+    /// 
+    /// This has the effect of redirecting logging performed on or by the original database to the
+    /// provided `Logger`.
+    ///
+    /// > Warning: The log redirection applies only to the new ``SQLDatabase`` that is returned from
+    /// > this method; logging operations performed on the original (i.e. `self`) are unaffected.
+    ///
+    /// > Note: Because this method returns a generic ``SQLDatabase``, the type it returns need not be public
+    /// > API. Unfortunately, this also means that no inlining or static dispatch of the implementation is
+    /// > possible, thus imposing a performance penalty on the use of this otherwise trivial utility.
+    ///
+    /// - Parameter logger: The new `Logger` to use.
+    /// - Returns: A database object which logs to the new `Logger`.
     public func logging(to logger: Logger) -> any SQLDatabase {
         CustomLoggerSQLDatabase(database: self, logger: logger)
     }
 }
 
-/// An ``SQLDatabase`` which trivially wraps another ``SQLDatabase`` in order to substitute the
-/// original's ``Logger`` with another.
-///
-/// - Note: Since ``SQLDatabase/logging(to:)`` returns a generic ``SQLDatabase``, this type's
-///   actual implementation need not be part of the public API.
+extension SQLDatabase {
+    /// The default implementation for ``execute(sql:_:)-4eg19``.
+    @inlinable
+    public func execute(
+        sql query: any SQLExpression,
+        _ onRow: @escaping @Sendable (any SQLRow) -> ()
+    ) async throws {
+        try await self.execute(sql: query, onRow).get()
+    }
+    
+    /// The default implementation for ``withSession(_:)-9b68j``.
+    @inlinable
+    public func withSession<R>(
+        _ closure: @escaping @Sendable (any SQLDatabase) async throws -> R
+    ) async throws -> R {
+        try await closure(self)
+    }
+}
+
+/// Replaces the `Logger` of an existing ``SQLDatabase`` while forwarding all other properties and methods
+/// to the original.
 private struct CustomLoggerSQLDatabase<D: SQLDatabase>: SQLDatabase {
+    /// The underlying database.
     let database: D
+
+    // See `SQLDatabase.logger`.
     let logger: Logger
-    var eventLoop: any EventLoop { self.database.eventLoop }
-    var version: (any SQLDatabaseReportedVersion)? { self.database.version }
-    var dialect: any SQLDialect { self.database.dialect }
-    func execute(sql query: any SQLExpression, _ onRow: @escaping (any SQLRow) -> ()) -> EventLoopFuture<Void> {
+    
+    // See `SQLDatabase.eventLoop`.
+    var eventLoop: any EventLoop {
+        self.database.eventLoop
+    }
+
+    // See `SQLDatabase.version`.
+    var version: (any SQLDatabaseReportedVersion)? {
+        self.database.version
+    }
+
+    // See `SQLDatabase.dialect`.
+    var dialect: any SQLDialect {
+        self.database.dialect
+    }
+
+    // See `SQLDatabase.queryLogLevel`.
+    var queryLogLevel: Logger.Level? {
+        self.database.queryLogLevel
+    }
+    
+    // See `SQLDatabase.execute(sql:_:)`.
+    func execute(
+        sql query: any SQLExpression,
+        _ onRow: @escaping @Sendable (any SQLRow) -> ()
+    ) -> EventLoopFuture<Void> {
         self.database.execute(sql: query, onRow)
     }
-    var queryLogLevel: Logger.Level? { self.database.queryLogLevel }
+
+    // See `SQLDatabase.execute(sql:_:)`.
+    func execute(
+        sql query: any SQLExpression,
+        _ onRow: @escaping @Sendable (any SQLRow) -> ()
+    ) async throws {
+        try await self.database.execute(sql: query, onRow)
+    }
 }

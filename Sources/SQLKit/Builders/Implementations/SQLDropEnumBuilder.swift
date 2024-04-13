@@ -1,14 +1,12 @@
-import NIOCore
-
 /// Builds ``SQLDropEnum`` queries.
 public final class SQLDropEnumBuilder: SQLQueryBuilder {
     /// ``SQLDropEnum`` query being built.
     public var dropEnum: SQLDropEnum
 
-    /// See ``SQLQueryBuilder/database``.
+    // See `SQLQueryBuilder.database`.
     public var database: any SQLDatabase
 
-    /// See ``SQLQueryBuilder/query``.
+    // See `SQLQueryBuilder.query`.
     @inlinable
     public var query: any SQLExpression {
         self.dropEnum
@@ -30,24 +28,30 @@ public final class SQLDropEnumBuilder: SQLQueryBuilder {
         return self
     }
 
-    /// The optional `CASCADE` clause drops other objects that depend on this type
-    /// (such as table columns, functions, and operators), and in turn all objects
-    /// that depend on those objects.
+    /// The drop behavior clause specifies if objects that depend on a type
+    /// should also be dropped or not when the type is dropped, for databases
+    /// that support this.
+    @inlinable
+    @discardableResult
+    public func behavior(_ behavior: SQLDropBehavior) -> Self {
+        self.dropEnum.dropBehavior = behavior
+        return self
+    }
+
+    /// Adds a `CASCADE` clause to the `DROP TYPE` statement instructing that
+    /// objects that depend on this type should also be dropped.
     @inlinable
     @discardableResult
     public func cascade() -> Self {
-        self.dropEnum.cascade = true
-        return self
+        self.behavior(.cascade)
     }
-    
-    /// See ``SQLQueryBuilder/run()-2sxsg``.
+
+    /// Adds a `RESTRICT` clause to the `DROP TYPE` statement instructing that
+    /// if any objects depend on this type, the drop should be refused.
     @inlinable
-    public func run() -> EventLoopFuture<Void> {
-        guard self.database.dialect.enumSyntax == .typeName else {
-            self.database.logger.warning("Database does not support standalone enum types.")
-            return self.database.eventLoop.makeSucceededFuture(())
-        }
-        return self.database.execute(sql: self.query) { _ in }
+    @discardableResult
+    public func restrict() -> Self {
+        self.behavior(.restrict)
     }
 }
 

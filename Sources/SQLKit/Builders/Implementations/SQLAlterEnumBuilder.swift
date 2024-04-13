@@ -1,14 +1,12 @@
-import NIOCore
-
 /// Builds ``SQLAlterEnum`` queries.
 public final class SQLAlterEnumBuilder: SQLQueryBuilder {
     /// ``SQLAlterEnum`` query being built.
     public var alterEnum: SQLAlterEnum
 
-    /// See ``SQLQueryBuilder/database``.
+    // See `SQLQueryBuilder.database`.
     public var database: any SQLDatabase
     
-    /// See ``SQLQueryBuilder/query``.
+    // See `SQLQueryBuilder.query`.
     @inlinable
     public var query: any SQLExpression {
         self.alterEnum
@@ -34,16 +32,6 @@ public final class SQLAlterEnumBuilder: SQLQueryBuilder {
     public func add(value: any SQLExpression) -> Self {
         self.alterEnum.value = value
         return self
-    }
-    
-    /// See ``SQLQueryBuilder/run()-2zws8``.
-    @inlinable
-    public func run() -> EventLoopFuture<Void> {
-        guard self.database.dialect.enumSyntax == .typeName else {
-            self.database.logger.warning("Database does not support standalone enum types.")
-            return self.database.eventLoop.makeSucceededFuture(())
-        }
-        return self.database.execute(sql: self.query) { _ in }
     }
 }
 

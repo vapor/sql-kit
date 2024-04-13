@@ -2,7 +2,6 @@
 /.build
 /Packages
 /*.xcodeproj
-Package.resolved
+/Package.resolved
 DerivedData
-.swiftpm
-Tests/LinuxMain.swift
+/.swiftpm

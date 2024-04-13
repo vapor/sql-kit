@@ -17,21 +17,21 @@ jobs:
     if: ${{ !(github.event.pull_request.draft || false) }}
     services:
       mysql-a:
-        image: mysql:8
+        image: mysql:latest
         env: { MYSQL_USER: test_username, MYSQL_PASSWORD: test_password, MYSQL_DATABASE: test_database, MYSQL_ALLOW_EMPTY_PASSWORD: true }
       mysql-b:
-        image: mysql:8
+        image: mysql:latest
         env: { MYSQL_USER: test_username, MYSQL_PASSWORD: test_password, MYSQL_DATABASE: test_database, MYSQL_ALLOW_EMPTY_PASSWORD: true }
       psql-a:
-        image: postgres:16
+        image: postgres:latest
         env: { POSTGRES_USER: test_username, POSTGRES_PASSWORD: test_password, POSTGRES_DB: test_database }
       psql-b:
-        image: postgres:16
+        image: postgres:latest
         env: { POSTGRES_USER: test_username, POSTGRES_PASSWORD: test_password, POSTGRES_DB: test_database }
     strategy:
       fail-fast: false
       matrix:
-        swift-image: ['swift:5.9-jammy']
+        swift-image: ['swift:5.10-jammy']
         driver:
           - { sqlkit: 'sqlite-kit',   fluent: 'fluent-sqlite-driver' }
           - { sqlkit: 'mysql-kit',    fluent: 'fluent-mysql-driver' }

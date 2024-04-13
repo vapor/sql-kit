@@ -1,19 +1,12 @@
 /// Builds ``SQLCreateTable`` queries.
-///
-///     db.create(table: Planet.self).ifNotExists()
-///        .column("id", type: .int, .primaryKey)
-///        .column("galaxy_id", type: .int, .references(Galaxy.schema, "id"))
-///        .run()
-///
-/// See `SQLColumnBuilder` and `SQLQueryBuilder` for more information.
 public final class SQLCreateTableBuilder: SQLQueryBuilder {
     /// ``SQLCreateTable`` query being built.
     public var createTable: SQLCreateTable
     
-    /// See ``SQLQueryBuilder/database``.
+    // See `SQLQueryBuilder.database`.
     public var database: any SQLDatabase
 
-    /// See ``SQLQueryBuilder/query``.
+    // See `SQLQueryBuilder.query`.
     @inlinable
     public var query: any SQLExpression {
         self.createTable
@@ -102,8 +95,8 @@ public final class SQLCreateTableBuilder: SQLQueryBuilder {
     /// If called more than once, each subsequent invocation overwrites the query from the one before.
     @inlinable
     @discardableResult
-    public func select(_ closure: (SQLCreateTableAsSubqueryBuilder) throws -> SQLCreateTableAsSubqueryBuilder) rethrows -> Self {
-        let builder = SQLCreateTableAsSubqueryBuilder()
+    public func select(_ closure: (SQLSubqueryBuilder) throws -> SQLSubqueryBuilder) rethrows -> Self {
+        let builder = SQLSubqueryBuilder()
         _ = try closure(builder)
         self.createTable.asQuery = builder.select
         return self
@@ -280,6 +273,7 @@ extension SQLDatabase {
     }
     
     /// Create a new ``SQLCreateTableBuilder``.
+    @inlinable
     public func create(table: any SQLExpression) -> SQLCreateTableBuilder {
         .init(.init(name: table), on: self)
     }

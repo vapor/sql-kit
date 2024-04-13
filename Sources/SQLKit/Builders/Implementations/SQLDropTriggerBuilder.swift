@@ -3,10 +3,10 @@ public final class SQLDropTriggerBuilder: SQLQueryBuilder {
     /// ``SQLDropTrigger`` query being built.
     public var dropTrigger: SQLDropTrigger
 
-    /// See ``SQLQueryBuilder/database``.
+    // See `SQLQueryBuilder.database`.
     public var database: any SQLDatabase
 
-    /// See ``SQLQueryBuilder/query``.
+    // See `SQLQueryBuilder.query`.
     @inlinable
     public var query: any SQLExpression {
         self.dropTrigger
@@ -28,16 +28,32 @@ public final class SQLDropTriggerBuilder: SQLQueryBuilder {
         return self 
     }
 
-    /// The optional `CASCADE` clause drops other objects that depend on this type
-    /// (such as table columns, functions, and operators), and in turn all objects
-    /// that depend on those objects.
+    /// The drop behavior clause specifies if objects that depend on a trigger
+    /// should also be dropped or not when the trigger is dropped, for databases
+    /// that support this.
+    @inlinable
+    @discardableResult
+    public func behavior(_ behavior: SQLDropBehavior) -> Self {
+        self.dropTrigger.dropBehavior = behavior
+        return self
+    }
+
+    /// Adds a `CASCADE` clause to the `DROP TRIGGER` statement instructing that
+    /// objects that depend on this trigger should also be dropped.
     @inlinable
     @discardableResult
     public func cascade() -> Self {
-        self.dropTrigger.cascade = true
-        return self
+        self.behavior(.cascade)
     }
-    
+
+    /// Adds a `RESTRICT` clause to the `DROP TRIGGER` statement instructing that
+    /// if any objects depend on this trigger, the drop should be refused.
+    @inlinable
+    @discardableResult
+    public func restrict() -> Self {
+        self.behavior(.restrict)
+    }
+
     /// Specify an associated table that owns the trigger to drop, for dialects that require it.
     @inlinable
     @discardableResult

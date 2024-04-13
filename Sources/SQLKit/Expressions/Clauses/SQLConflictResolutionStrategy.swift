@@ -45,8 +45,28 @@ public struct SQLConflictResolutionStrategy: SQLExpression {
     /// An expression to be embedded into the same `INSERT` query as the strategy expression to
     /// work around MySQL's desire to make life difficult.
     @inlinable
+    public func queryModifier(for database: any SQLDatabase) -> (any SQLExpression)? {
+        if database.dialect.upsertSyntax == .mysqlLike, case .noAction = self.action {
+            return SQLInsertModifier()
+        }
+        return nil
+    }
+
+    /// An expression to be embedded into the same `INSERT` query as the strategy expression to
+    /// work around MySQL's desire to make life difficult.
+    @inlinable
     public func queryModifier(for serializer: SQLSerializer) -> (any SQLExpression)? {
         if serializer.dialect.upsertSyntax == .mysqlLike, case .noAction = self.action {
+            return SQLInsertModifier()
+        }
+        return nil
+    }
+
+    /// An expression to be embedded into the same `INSERT` query as the strategy expression to
+    /// work around MySQL's desire to make life difficult.
+    @inlinable
+    public func queryModifier(for statement: SQLStatement) -> (any SQLExpression)? {
+        if statement.dialect.upsertSyntax == .mysqlLike, case .noAction = self.action {
             return SQLInsertModifier()
         }
         return nil
@@ -63,7 +83,6 @@ public struct SQLConflictResolutionStrategy: SQLExpression {
                     }
                     $0.append("DO NOTHING")
                 case (.standard, .update(let assignments, let predicate)):
-                    assert(!assignments.isEmpty, "Must specify at least one column for updates; consider using noAction instead.")
                     $0.append("ON CONFLICT")
                     if !self.targetColumns.isEmpty {
                         $0.append(SQLGroupExpression(self.targetColumns))
@@ -73,7 +92,6 @@ public struct SQLConflictResolutionStrategy: SQLExpression {
                 case (.mysqlLike, .noAction):
                     break
                 case (.mysqlLike, .update(let assignments, _)):
-                    assert(!assignments.isEmpty, "Must specify at least one column for updates; consider using noAction instead.")
                     $0.append("ON DUPLICATE KEY UPDATE", SQLList(assignments))
                 case (.unsupported, _):
                     break

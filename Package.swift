@@ -1,4 +1,4 @@
-// swift-tools-version:5.6
+// swift-tools-version:5.8
 import PackageDescription
 
 let package = Package(
@@ -14,20 +14,47 @@ let package = Package(
         .library(name: "SQLKitBenchmark", targets: ["SQLKitBenchmark"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-nio.git", from: "2.0.0"),
-        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
+        .package(url: "https://github.com/apple/swift-nio.git", from: "2.64.0"),
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.5.4"),
+        .package(url: "https://github.com/apple/swift-collections.git", from: "1.1.0"),
+        .package(url: "https://github.com/apple/swift-docc-plugin.git", from: "1.3.0"),
     ],
     targets: [
-        .target(name: "SQLKit", dependencies: [
-            .product(name: "Logging", package: "swift-log"),
-            .product(name: "NIO", package: "swift-nio"),
-        ]),
-        .target(name: "SQLKitBenchmark", dependencies: [
-            .target(name: "SQLKit")
-        ]),
-        .testTarget(name: "SQLKitTests", dependencies: [
-            .target(name: "SQLKit"),
-            .target(name: "SQLKitBenchmark"),
-        ]),
+        .target(
+            name: "SQLKit",
+            dependencies: [
+                .product(name: "Logging", package: "swift-log"),
+                .product(name: "NIOCore", package: "swift-nio"),
+                .product(name: "Collections", package: "swift-collections"),
+            ],
+            swiftSettings: swiftSettings
+        ),
+        .target(
+            name: "SQLKitBenchmark",
+            dependencies: [
+                .target(name: "SQLKit"),
+            ],
+            swiftSettings: swiftSettings
+        ),
+        .testTarget(
+            name: "SQLKitTests",
+            dependencies: [
+                .target(name: "SQLKit"),
+                .target(name: "SQLKitBenchmark"),
+            ],
+            swiftSettings: swiftSettings
+        ),
     ]
 )
+
+var swiftSettings: [SwiftSetting] { [
+    .enableUpcomingFeature("ExistentialAny"),
+    .enableUpcomingFeature("ConciseMagicFile"),
+    .enableUpcomingFeature("ForwardTrailingClosures"),
+    .enableUpcomingFeature("ImportObjcForwardDeclarations"),
+    .enableUpcomingFeature("DisableOutwardActorInference"),
+    .enableUpcomingFeature("IsolatedDefaultValues"),
+    .enableUpcomingFeature("GlobalConcurrency"),
+    .enableUpcomingFeature("StrictConcurrency"),
+    .enableExperimentalFeature("StrictConcurrency=complete"),
+] }

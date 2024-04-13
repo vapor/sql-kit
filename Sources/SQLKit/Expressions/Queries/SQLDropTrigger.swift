@@ -1,44 +1,50 @@
-/// `DROP TRIGGER` query.
+/// An expression representing a `DROP TRIGGER` query. Used to delete triggers.
+///
+/// ```sql
+/// DROP TRIGGER IF EXISTS "name" ON "table" CASCADE;
+/// ```
 ///
 /// See ``SQLDropTriggerBuilder``.
 public struct SQLDropTrigger: SQLExpression {
-    /// Trigger to drop.
-    public let name: any SQLExpression
+    /// The name of the trigger to drop.
+    public var name: any SQLExpression
 
-    /// The table the trigger is attached to
+    /// The table to which the trigger is attached.
+    ///
+    /// This value is ignored if the dialect does not support its use.
     public var table: (any SQLExpression)?
 
-    /// The optional `IF EXISTS` clause suppresses the error that would normally
-    /// result if the type does not exist.
+    /// If `true`, requests idempotent behavior (e.g. that no error be raised if the named trigger does not exist).
+    ///
+    /// Ignored if not supported by the dialect.
     public var ifExists = false
 
-    /// The optional `CASCADE` clause drops other objects that depend on this type
-    /// (such as table columns, functions, and operators), and in turn all objects
-    /// that depend on those objects.
-    public var cascade = false
+    /// A drop behavior.
+    ///
+    /// Ignored if not supported by the dialect. See ``SQLDropBehavior``.
+    public var dropBehavior = SQLDropBehavior.restrict
 
-    /// Creates a new ``SQLDropTrigger``.
+    /// Create a new trigger deletion query.
+    ///
+    /// - Parameter name: The name of the trigger to drop.
     @inlinable
     public init(name: any SQLExpression) {
         self.name = name
     }
 
-    /// See ``SQLExpression/serialize(to:)``.
+    // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
-        let dialect = serializer.dialect
-        let triggerDropSyntax = dialect.triggerSyntax.drop
-
         serializer.statement {
             $0.append("DROP TRIGGER")
-            if self.ifExists && dialect.supportsIfExists {
+            if self.ifExists && $0.dialect.supportsIfExists {
                 $0.append("IF EXISTS")
             }
             $0.append(self.name)
-            if let table = self.table, triggerDropSyntax.contains(.supportsTableName) {
+            if let table = self.table, $0.dialect.triggerSyntax.drop.contains(.supportsTableName) {
                 $0.append("ON", table)
             }
-            if self.cascade && triggerDropSyntax.contains(.supportsCascade) {
-                $0.append("CASCADE")
+            if $0.dialect.triggerSyntax.drop.contains(.supportsCascade) {
+                $0.append(self.dropBehavior)
             }
         }
     }

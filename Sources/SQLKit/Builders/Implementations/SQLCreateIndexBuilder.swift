@@ -1,19 +1,24 @@
 /// Builds ``SQLCreateIndex`` queries.
-///
-///     db.create(index: "planet_name_unique").on("planet").column("name").unique().run()
 public final class SQLCreateIndexBuilder: SQLQueryBuilder {
     /// ``SQLCreateIndex`` query being built.
     public var createIndex: SQLCreateIndex
     
-    /// See ``SQLQueryBuilder/database``.
+    // See `SQLQueryBuilder.database`.
     public var database: any SQLDatabase
     
-    /// See ``SQLQueryBuilder/query``.
+    // See `SQLQueryBuilder.query`.
     @inlinable
     public var query: any SQLExpression {
         self.createIndex
     }
     
+    /// Create a new ``SQLCreateIndexBuilder``.
+    @inlinable
+    public init(_ createIndex: SQLCreateIndex, on database: any SQLDatabase) {
+        self.createIndex = createIndex
+        self.database = database
+    }
+
     /// Adds `UNIQUE` modifier to the index being created.
     @inlinable
     @discardableResult
@@ -51,35 +56,18 @@ public final class SQLCreateIndexBuilder: SQLQueryBuilder {
         self.createIndex.columns.append(column)
         return self
     }
-    
-    /// Create a new `SQLCreateIndexBuilder`.
-    @inlinable
-    public init(_ createIndex: SQLCreateIndex, on database: any SQLDatabase) {
-        self.createIndex = createIndex
-        self.database = database
-    }
 }
 
 // MARK: Connection
 
 extension SQLDatabase {
-    /// Creates a new `SQLCreateIndexBuilder`.
-    ///
-    ///     db.create(index: "foo")...
-    ///
-    /// - Parameters:
-    ///   - name: Name for this index.
+    /// Creates a new ``SQLCreateIndexBuilder``.
     @inlinable
     public func create(index name: String) -> SQLCreateIndexBuilder {
         self.create(index: SQLIdentifier(name))
     }
     
-    /// Creates a new `SQLCreateIndexBuilder`.
-    ///
-    ///     db.create(index: "foo")...
-    ///
-    /// - Parameters:
-    ///   - name: Name for this index.
+    /// Creates a new ``SQLCreateIndexBuilder``.
     @inlinable
     public func create(index name: any SQLExpression) -> SQLCreateIndexBuilder {
         .init(.init(name: name), on: self)

@@ -1,6 +1,6 @@
 /// Nested ``SQLPredicateBuilder`` for building expression groups.
 public final class SQLPredicateGroupBuilder: SQLPredicateBuilder {
-    /// See ``SQLPredicateBuilder/predicate``.
+    // See `SQLPredicateBuilder.predicate`.
     public var predicate: (any SQLExpression)?
     
     /// Create a new ``SQLPredicateGroupBuilder``.
@@ -30,7 +30,7 @@ extension SQLPredicateBuilder {
         }
     }
     
-    /// Builds a grouped `WHERE` expression by disjunction (`OR`).
+    /// Builds a grouped `WHERE` expression by inclusive disjunction (`OR`).
     ///
     ///     builder.where("name", .equal, "Jupiter").orWhere {
     ///         $0.where("name", .equal, "Earth").where("type", .equal, PlanetType.smallRocky)

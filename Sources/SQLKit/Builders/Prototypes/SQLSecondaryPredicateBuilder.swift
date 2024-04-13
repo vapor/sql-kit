@@ -1,18 +1,73 @@
 /// Common definitions for any query builder which permits specifying a secondary predicate.
 ///
-/// A "secondary predicate" is a `HAVING` clause on a query using `GROUP BY`.
+/// - Expressions specified with ``having(_:)`` are considered conjunctive (`AND`).
+/// - Expressions specified with ``orHaving(_:)`` are considered inclusively disjunctive (`OR`).
 ///
-///     builder.having("name", .equal, "Earth")
-///
-/// Expressions specified with ``having(_:)`` are considered conjunctive (`AND`).
-/// Expressions specified with ``orHaving(_:)`` are considered inclusively disjunctive (`OR`).
-/// See ``SQLSecondaryPredicateGroupBuilder`` for details of grouping expressions (i.e. with parenthesis).
+/// See ``SQLSecondaryPredicateGroupBuilder`` for details of grouping expressions (e.g. with parenthesis).
 public protocol SQLSecondaryPredicateBuilder: AnyObject {
-    /// Expression being built.
+    /// The secondary predicate under construction.
     var secondaryPredicate: (any SQLExpression)? { get set }
 }
 
+// MARK: - Conjunctive (AND)
+
 extension SQLSecondaryPredicateBuilder {
+    // MARK: - Column/value comparison
+    
+    /// Adds a column to encodable comparison to this builder's `HAVING` clause by `AND`ing.
+    ///
+    ///     builder.having("name", .equal, "Earth")
+    ///
+    /// The encodable value supplied will be bound to the query as a parameter.
+    ///
+    ///     SELECT * FROM "planets" HAVING "name" = $0 ["Earth"]
+    @inlinable
+    @discardableResult
+    public func having(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: some Encodable & Sendable) -> Self {
+        self.having(SQLColumn(lhs), op, SQLBind(rhs))
+    }
+
+    /// Adds a column to encodable array comparison to this builder's `HAVING` clause by `AND`ing.
+    ///
+    ///     builder.having("name", .equal, ["Earth", "Mars"])
+    ///
+    /// The encodable values supplied will be bound to the query as parameters.
+    ///
+    ///     SELECT * FROM "planets" HAVING "name" IN ($0, $1) ["Earth", "Mars"]
+    @inlinable
+    @discardableResult
+    public func having(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: [some Encodable & Sendable]) -> Self {
+        self.having(SQLColumn(lhs), op, SQLBind.group(rhs))
+    }
+
+    /// Adds a column to encodable comparison to this builder's `HAVING` clause by `AND`ing.
+    ///
+    ///     builder.having("name", .equal, "Earth")
+    ///
+    /// The encodable value supplied will be bound to the query as a parameter.
+    ///
+    ///     SELECT * FROM "planets" HAVING "name" = $0 ["Earth"]
+    @inlinable
+    @discardableResult
+    public func having(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: some Encodable & Sendable) -> Self {
+        self.having(SQLColumn(lhs), op, SQLBind(rhs))
+    }
+
+    /// Adds a column to encodable array comparison to this builder's `HAVING` clause by `AND`ing.
+    ///
+    ///     builder.having("name", .in, ["Earth", "Mars"])
+    ///
+    /// The encodable values supplied will be bound to the query as parameters.
+    ///
+    ///     SELECT * FROM "planets" HAVING "name" IN ($0, $1) ["Earth", "Mars"]
+    @inlinable
+    @discardableResult
+    public func having(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: [some Encodable & Sendable]) -> Self {
+        self.having(SQLColumn(lhs), op, SQLBind.group(rhs))
+    }
+
+    // MARK: - Column/column comparison
+
     /// Adds a column to column comparison to this builder's `HAVING` clause by `AND`ing.
     ///
     ///     builder.having("firstName", .equal, column: "lastName")
@@ -39,45 +94,7 @@ extension SQLSecondaryPredicateBuilder {
         self.having(SQLColumn(lhs), op, SQLColumn(rhs))
     }
 
-    /// Adds a column to encodable comparison to this builder's `HAVING` clause by `AND`ing.
-    ///
-    ///     builder.having("name", .equal, "Earth")
-    ///
-    /// The encodable value supplied will be bound to the query as a parameter.
-    ///
-    ///     SELECT * FROM "planets" HAVING "name" = $0 ["Earth"]
-    @inlinable
-    @discardableResult
-    @_disfavoredOverload // try to prefer the generic version
-    public func having(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: any Encodable) -> Self {
-        return self.having(SQLColumn(lhs), op, SQLBind(rhs))
-    }
-
-    /// Adds a column to encodable comparison to this builder's `HAVING` clause by `AND`ing.
-    ///
-    ///     builder.having("name", .equal, "Earth")
-    ///
-    /// The encodable value supplied will be bound to the query as a parameter.
-    ///
-    ///     SELECT * FROM "planets" HAVING "name" = $0 ["Earth"]
-    @inlinable
-    @discardableResult
-    public func having<E: Encodable>(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: E) -> Self {
-        self.having(SQLColumn(lhs), op, SQLBind(rhs))
-    }
-
-    /// Adds a column to encodable array comparison to this builder's `HAVING` clause by `AND`ing.
-    ///
-    ///     builder.having("name", .in, ["Earth", "Mars"])
-    ///
-    /// The encodable values supplied will be bound to the query as parameters.
-    ///
-    ///     SELECT * FROM "planets" HAVING "name" IN ($0, $1) ["Earth", "Mars"]
-    @inlinable
-    @discardableResult
-    public func having<E: Encodable>(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: [E]) -> Self {
-        self.having(SQLColumn(lhs), op, SQLBind.group(rhs))
-    }
+    // MARK: - Column/expression comparison
 
     /// Adds a column to expression comparison to this builder' `HAVING` clause by `AND`ing.
     @inlinable
@@ -92,6 +109,8 @@ extension SQLSecondaryPredicateBuilder {
     public func having(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: any SQLExpression) -> Self {
         self.having(SQLColumn(lhs), op, rhs)
     }
+
+    // MARK: - Expressions
 
     /// Adds an expression to expression comparison to this builder's `HAVING` clause by `AND`ing.
     @inlinable
@@ -121,7 +140,41 @@ extension SQLSecondaryPredicateBuilder {
     }
 }
 
+// MARK: - Inclusively disjunctive (OR)
+
 extension SQLSecondaryPredicateBuilder {
+    // MARK: - Column/value comparison
+    
+    /// Adds a column to encodable comparison to this builder's `HAVING` clause by `OR`ing.
+    @inlinable
+    @discardableResult
+    public func orHaving(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: some Encodable & Sendable) -> Self {
+        self.orHaving(SQLColumn(lhs), op, SQLBind(rhs))
+    }
+
+    /// Adds a column to encodable array comparison to this builder's `HAVING` clause by `OR`ing.
+    @inlinable
+    @discardableResult
+    public func orHaving(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: [some Encodable & Sendable]) -> Self {
+        self.orHaving(SQLColumn(lhs), op, SQLBind.group(rhs))
+    }
+
+    /// Adds a column to encodable comparison to this builder's `HAVING` clause by `OR`ing.
+    @inlinable
+    @discardableResult
+    public func orHaving(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: some Encodable & Sendable) -> Self {
+        self.orHaving(SQLColumn(lhs), op, SQLBind(rhs))
+    }
+
+    /// Adds a column to encodable array comparison to this builder's `HAVING` clause by `OR`ing.
+    @inlinable
+    @discardableResult
+    public func orHaving(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: [some Encodable & Sendable]) -> Self {
+        self.orHaving(SQLColumn(lhs), op, SQLBind.group(rhs))
+    }
+
+    // MARK: - Column/column comparison
+
     /// Adds a column to column comparison to this builder's `HAVING` clause by `OR`ing.
     ///
     ///     builder.having(SQLLiteral.boolean(false)).orHaving("firstName", .equal, column: "lastName")
@@ -142,27 +195,7 @@ extension SQLSecondaryPredicateBuilder {
         self.orHaving(SQLColumn(lhs), op, SQLColumn(rhs))
     }
     
-    /// Adds a column to encodable comparison to this builder's `HAVING` clause by `OR`ing.
-    @inlinable
-    @discardableResult
-    @_disfavoredOverload // try to prefer the generic version
-    public func orHaving(_ lhs: String, _ op: SQLBinaryOperator, _ rhs: any Encodable) -> Self {
-        self.orHaving(SQLColumn(lhs), op, SQLBind(rhs))
-    }
-
-    /// Adds a column to encodable comparison to this builder's `HAVING` clause by `OR`ing.
-    @inlinable
-    @discardableResult
-    public func orHaving<E: Encodable>(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: E) -> Self {
-        self.orHaving(SQLColumn(lhs), op, SQLBind(rhs))
-    }
-
-    /// Adds a column to encodable array comparison to this builder's `HAVING` clause by `OR`ing.
-    @inlinable
-    @discardableResult
-    public func orHaving<E: Encodable>(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: [E]) -> Self {
-        self.orHaving(SQLColumn(lhs), op, SQLBind.group(rhs))
-    }
+    // MARK: - Column/expression comparison
 
     /// Adds a column to expression comparison to the `HAVING` clause by `OR`ing.
     @inlinable
@@ -177,6 +210,8 @@ extension SQLSecondaryPredicateBuilder {
     public func orHaving(_ lhs: SQLIdentifier, _ op: SQLBinaryOperator, _ rhs: any SQLExpression) -> Self {
         self.orHaving(SQLColumn(lhs), op, rhs)
     }
+
+    // MARK: - Expressions
 
     /// Adds an expression to expression comparison to this builder's `HAVING` clause by `OR`ing.
     @inlinable

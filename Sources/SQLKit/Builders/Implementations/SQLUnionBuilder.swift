@@ -3,10 +3,10 @@ public final class SQLUnionBuilder: SQLQueryBuilder, SQLQueryFetcher, SQLPartial
     /// The ``SQLUnion`` being built.
     public var union: SQLUnion
 
-    /// See ``SQLQueryBuilder/database``.
+    // See `SQLQueryBuilder.database`.
     public var database: any SQLDatabase
 
-    /// See ``SQLQueryBuilder/query``.
+    // See `SQLQueryBuilder.query`.
     @inlinable
     public var query: any SQLExpression {
         self.union
@@ -69,21 +69,21 @@ public final class SQLUnionBuilder: SQLQueryBuilder, SQLQueryFetcher, SQLPartial
 }
 
 extension SQLUnionBuilder {
-    /// See ``SQLPartialResultBuilder/orderBys``.
+    // See `SQLPartialResultBuilder.orderBys`.
     @inlinable
     public var orderBys: [any SQLExpression] {
         get { self.union.orderBys }
         set { self.union.orderBys = newValue }
     }
     
-    /// See ``SQLPartialResultBuilder/limit``.
+    // See `SQLPartialResultBuilder.limit`.
     @inlinable
     public var limit: Int? {
         get { self.union.limit }
         set { self.union.limit = newValue }
     }
     
-    /// See ``SQLPartialResultBuilder/offset``.
+    // See `SQLPartialResultBuilder.offset`.
     @inlinable
     public var offset: Int? {
         get { self.union.offset }
@@ -130,7 +130,7 @@ extension SQLUnionBuilder {
         try self.intersect(all: predicate(.init(on: self.database)).select)
     }
 
-    /// Alias ``intersect(distinct:)-3t74e`` so it acts as the "default".
+    /// Alias ``intersect(distinct:)-1i7fc`` so it acts as the "default".
     @inlinable
     public func intersect(_ predicate: (SQLSelectBuilder) throws -> SQLSelectBuilder) rethrows -> Self {
         try self.intersect(distinct: predicate)
@@ -148,7 +148,7 @@ extension SQLUnionBuilder {
         try self.except(all: predicate(.init(on: self.database)).select)
     }
 
-    /// Alias ``except(distinct:)-2xe8f`` so it acts as the "default".
+    /// Alias ``except(distinct:)-8pdro`` so it acts as the "default".
     @inlinable
     public func except(_ predicate: (SQLSelectBuilder) throws -> SQLSelectBuilder) rethrows -> Self {
         try self.except(distinct: predicate)
@@ -156,55 +156,55 @@ extension SQLUnionBuilder {
 }
 
 extension SQLSelectBuilder {
-    /// See ``SQLUnionBuilder/union(distinct:)-79krl``.
+    // See `SQLUnionBuilder.union(distinct:)`.
     @inlinable
     public func union(distinct predicate: (SQLSelectBuilder) throws -> SQLSelectBuilder) rethrows -> SQLUnionBuilder {
         try .init(on: self.database, initialQuery: self.select).union(distinct: predicate)
     }
 
-    /// See ``SQLUnionBuilder/union(all:)-8lkyh``.
+    // See `SQLUnionBuilder.union(all:)`.
     @inlinable
     public func union(all predicate: (SQLSelectBuilder) throws -> SQLSelectBuilder) rethrows -> SQLUnionBuilder {
         try .init(on: self.database, initialQuery: self.select).union(all: predicate)
     }
 
-    /// See ``SQLUnionBuilder/union(_:)``.
+    // See `SQLUnionBuilder.union(_:)`.
     @inlinable
     public func union(_ predicate: (SQLSelectBuilder) throws -> SQLSelectBuilder) rethrows -> SQLUnionBuilder {
         try self.union(distinct: predicate)
     }
 
-    /// See ``SQLUnionBuilder/intersect(distinct:)-15945``.
+    // See `SQLUnionBuilder.intersect(distinct:)`.
     @inlinable
     public func intersect(distinct predicate: (SQLSelectBuilder) throws -> SQLSelectBuilder) rethrows -> SQLUnionBuilder {
         try .init(on: self.database, initialQuery: self.select).intersect(distinct: predicate)
     }
 
-    /// See ``SQLUnionBuilder/intersect(all:)-8i8ic``.
+    // See `SQLUnionBuilder.intersect(all:)`.
     @inlinable
     public func intersect(all predicate: (SQLSelectBuilder) throws -> SQLSelectBuilder) rethrows -> SQLUnionBuilder {
         try .init(on: self.database, initialQuery: self.select).intersect(all: predicate)
     }
 
-    /// See ``SQLUnionBuilder/intersect(_:)``.
+    // See `SQLUnionBuilder.intersect(_:)`.
     @inlinable
     public func intersect(_ predicate: (SQLSelectBuilder) throws -> SQLSelectBuilder) rethrows -> SQLUnionBuilder {
         try self.intersect(distinct: predicate)
     }
 
-    /// See ``SQLUnionBuilder/except(distinct:)-2m81r``.
+    // See `SQLUnionBuilder.except(distinct:)`.
     @inlinable
     public func except(distinct predicate: (SQLSelectBuilder) throws -> SQLSelectBuilder) rethrows -> SQLUnionBuilder {
         try .init(on: self.database, initialQuery: self.select).except(distinct: predicate)
     }
 
-    /// See ``SQLUnionBuilder/except(all:)-16hlm``.
+    // See `SQLUnionBuilder.except(all:)`.
     @inlinable
     public func except(all predicate: (SQLSelectBuilder) throws -> SQLSelectBuilder) rethrows -> SQLUnionBuilder {
         try .init(on: self.database, initialQuery: self.select).except(all: predicate)
     }
 
-    /// See ``SQLUnionBuilder/except(_:)``.
+    // See `SQLUnionBuilder.except(_:)`.
     @inlinable
     public func except(_ predicate: (SQLSelectBuilder) throws -> SQLSelectBuilder) rethrows -> SQLUnionBuilder {
         try self.except(distinct: predicate)

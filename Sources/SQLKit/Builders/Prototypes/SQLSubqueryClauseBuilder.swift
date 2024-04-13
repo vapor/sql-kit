@@ -2,60 +2,72 @@
 /// Useful for building CTEs, `CREATE TABLE ... SELECT` clauses, etc., not to
 /// mention actual `SELECT` queries.
 ///
-/// - Important: Despite the use of the term "subquery", this builder does not provide
-///   methods for specifying subquery operators (e.g. `ANY`, `SOME`) or CTE clauses (`WITH`),
-///   nor does it enclose its result in grouping parenthesis, as all of these formations are
-///   context-specific and are the purview of builders that conform to this protocol.
+/// Due to unfortunate naming choices which this API is now stuck with until a major version bump,
+/// this protocol is very easily confused with ``SQLSubqueryBuilder``. For clarification, this protocol
+/// provides methods common to the construction of `SELECT` subqueries, whereas ``SQLSubqueryBuilder`` is
+/// a concrete type which conforms to this protocol and provides support for embedding ``SQLSubquery``
+/// expressions in other queries.
 ///
-/// - Note: The primary motivation for the existence of this protocol is to make it easier
-///   to construct `SELECT` queries without specifying a database or providing the
-///   ``SQLQueryBuilder`` and ``SQLQueryFetcher`` methods in inappropriate contexts.
-public protocol SQLSubqueryClauseBuilder: SQLJoinBuilder, SQLPredicateBuilder, SQLSecondaryPredicateBuilder, SQLPartialResultBuilder {
-    /// The ``SQLSelect`` query being built.
+/// > Important: Despite the use of the term "subquery", this builder does not provide
+/// > methods for specifying subquery operators (e.g. `ANY`, `SOME`) or CTE clauses (`WITH`),
+/// > nor does it enclose its result in grouping parenthesis, as all of these formations are
+/// > context-specific and are the purview of builders that conform to this protocol.
+///
+/// > Note: The primary motivation for the existence of this protocol is to make it easier
+/// > to construct `SELECT` queries without specifying a database or providing the
+/// > ``SQLQueryBuilder`` and ``SQLQueryFetcher`` methods in inappropriate contexts.
+public protocol SQLSubqueryClauseBuilder:
+    SQLJoinBuilder,
+    SQLPredicateBuilder,
+    SQLSecondaryPredicateBuilder,
+    SQLPartialResultBuilder,
+    SQLAliasedColumnListBuilder
+{
+    /// The ``SQLSelect`` query under construction.
     var select: SQLSelect { get set }
 }
 
 extension SQLSubqueryClauseBuilder {
-    /// See ``SQLJoinBuilder/joins``.
+    // See `SQLJoinBuilder.joins`.
     public var joins: [any SQLExpression] {
         get { self.select.joins }
         set { self.select.joins = newValue }
     }
-}
 
-extension SQLSubqueryClauseBuilder {
-    /// See ``SQLPredicateBuilder/predicate``.
+    // See `SQLPredicateBuilder.predicate`.
     public var predicate: (any SQLExpression)? {
         get { return self.select.predicate }
         set { self.select.predicate = newValue }
     }
-}
 
-extension SQLSubqueryClauseBuilder {
-    /// See ``SQLSecondaryPredicateBuilder/secondaryPredicate``.
+    // See `SQLSecondaryPredicateBuilder.secondaryPredicate`.
     public var secondaryPredicate: (any SQLExpression)? {
         get { return self.select.having }
         set { self.select.having = newValue }
     }
-}
 
-extension SQLSubqueryClauseBuilder {
-    /// See ``SQLPartialResultBuilder/orderBys``.
+    // See `SQLPartialResultBuilder.orderBys`.
     public var orderBys: [any SQLExpression] {
         get { self.select.orderBy }
         set { self.select.orderBy = newValue }
     }
     
-    /// See ``SQLPartialResultBuilder/limit``.
+    // See `SQLPartialResultBuilder.limit`.
     public var limit: Int? {
         get { self.select.limit }
         set { self.select.limit = newValue }
     }
     
-    /// See ``SQLPartialResultBuilder/offset``.
+    // See `SQLPartialResultBuilder.offset`.
     public var offset: Int? {
         get { self.select.offset }
         set { self.select.offset = newValue }
+    }
+    
+    // See `SQLUnqualifiedColumnListBuilder.columnList`.
+    public var columnList: [any SQLExpression] {
+        get { self.select.columns }
+        set { self.select.columns = newValue }
     }
 }
 
@@ -73,7 +85,7 @@ extension SQLSubqueryClauseBuilder {
     /// Adds a `DISTINCT` clause to the select statement and explicitly specifies columns to select,
     /// overwriting any previously specified columns.
     ///
-    /// - Warning: This does _NOT_ invoke PostgreSQL's `DISTINCT ON (...)` syntax!
+    /// > Warning: This does _NOT_ invoke PostgreSQL's `DISTINCT ON (...)` syntax!
     @inlinable
     @discardableResult
     public func distinct(on column: String, _ columns: String...) -> Self {
@@ -83,7 +95,7 @@ extension SQLSubqueryClauseBuilder {
     /// Adds a `DISTINCT` clause to the select statement and explicitly specifies columns to select,
     /// overwriting any previously specified columns.
     ///
-    /// - Warning: This does _NOT_ invoke PostgreSQL's `DISTINCT ON (...)` syntax!
+    /// > Warning: This does _NOT_ invoke PostgreSQL's `DISTINCT ON (...)` syntax!
     @inlinable
     @discardableResult
     public func distinct(on column: any SQLExpression, _ columns: any SQLExpression...) -> Self {
@@ -93,94 +105,12 @@ extension SQLSubqueryClauseBuilder {
     /// Adds a `DISTINCT` clause to the select statement and explicitly specifies columns to select,
     /// overwriting any previously specified columns.
     ///
-    /// - Warning: This does _NOT_ invoke PostgreSQL's `DISTINCT ON (...)` syntax!
+    /// > Warning: This does _NOT_ invoke PostgreSQL's `DISTINCT ON (...)` syntax!
     @inlinable
     @discardableResult
     public func distinct(on columns: [any SQLExpression]) -> Self {
         self.select.isDistinct = true
         self.select.columns = columns
-        return self
-    }
-}
-
-// MARK: - Columns
-
-extension SQLSubqueryClauseBuilder {
-    /// Specify a column to be part of the result set of the query.
-    ///
-    /// The string `*` (a single asterisk) is replaced with ``SQLLiteral/all``.
-    @inlinable
-    @discardableResult
-    public func column(_ column: String) -> Self {
-        self.column(column == "*" ? SQLLiteral.all : SQLColumn(column))
-    }
-    
-    /// Specify a column qualified with a table name to be part of the result set of the query.
-    ///
-    /// The string `*` (a single asterisk) is replaced with ``SQLLiteral/all``.
-    @inlinable
-    @discardableResult
-    public func column(table: String, column: String) -> Self {
-        self.column(SQLColumn(column == "*" ? SQLLiteral.all : SQLIdentifier(column), table: SQLIdentifier(table)))
-    }
-
-    /// Specify a column to retrieve with an aliased name.
-    @inlinable
-    @discardableResult
-    public func column(_ column: String, as alias: String) -> Self {
-        return self.column(SQLColumn(column), as: SQLIdentifier(alias))
-    }
-
-    /// Specify a column to retrieve with an aliased name.
-    @inlinable
-    @discardableResult
-    public func column(_ column: any SQLExpression, as alias: String) -> Self {
-        self.column(column, as: SQLIdentifier(alias))
-    }
-
-    /// Specify a column to retrieve with an aliased name.
-    @inlinable
-    @discardableResult
-    public func column(_ column: any SQLExpression, as alias: any SQLExpression) -> Self {
-        self.column(SQLAlias(column, as: alias))
-    }
-
-    /// Specify an arbitrary expression as a column to be part of the result set of the query.
-    @inlinable
-    @discardableResult
-    public func column(_ expr: any SQLExpression) -> Self {
-        self.select.columns.append(expr)
-        return self
-    }
-    
-    /// Specify a list of columns to be part of the result set of the query. The string `*` is
-    /// replaced with ``SQLLiteral/all``.
-    @inlinable
-    @discardableResult
-    public func columns(_ columns: String...) -> Self {
-        self.columns(columns)
-    }
-    
-    /// Specify a list of columns to be part of the result set of the query. The string `*` is
-    /// replaced with ``SQLLiteral/all``.
-    @inlinable
-    @discardableResult
-    public func columns(_ columns: [String]) -> Self {
-        self.columns(columns.map { $0 == "*" ? SQLLiteral.all as any SQLExpression : SQLColumn($0) })
-    }
-    
-    /// Specify a list of arbitrary expressions as columns to be part of the result set of the query.
-    @inlinable
-    @discardableResult
-    public func columns(_ columns: any SQLExpression...) -> Self {
-        self.columns(columns)
-    }
-    
-    /// Specify a list of arbitrary expressions as columns to be part of the result set of the query.
-    @inlinable
-    @discardableResult
-    public func columns(_ columns: [any SQLExpression]) -> Self {
-        self.select.columns.append(contentsOf: columns)
         return self
     }
 }
@@ -262,8 +192,8 @@ extension SQLSubqueryClauseBuilder {
     /// determined by the specific locking clause and the underlying database's support for
     /// this construct.
     ///
-    /// - Warning: If the database in use does not support locking reads, the locking clause
-    ///   will be silently ignored regardless of its value.
+    /// > Warning: If the database in use does not support locking reads, the locking clause
+    /// > will be silently ignored regardless of its value.
     @inlinable
     @discardableResult
     public func `for`(_ lockingClause: SQLLockingClause) -> Self {
@@ -281,10 +211,10 @@ extension SQLSubqueryClauseBuilder {
     /// determined by the specific locking clause and the underlying database's support for
     /// this construct.
     ///
-    /// - Note: This method allows providing an arbitrary SQL expression as the locking clause.
-    /// 
-    /// - Warning: If the database in use does not support locking reads, the locking clause
-    ///   will be silently ignored regardless of its value.
+    /// > Note: This method allows providing an arbitrary SQL expression as the locking clause.
+    ///
+    /// > Warning: If the database in use does not support locking reads, the locking clause
+    /// > will be silently ignored regardless of its value.
     @inlinable
     @discardableResult
     public func lockingClause(_ lockingClause: any SQLExpression) -> Self {

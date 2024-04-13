@@ -1,20 +1,12 @@
-import NIOCore
-
 /// Builds ``SQLCreateEnum`` queries.
-///
-///    db.create(enum: "meal")
-///        .value("breakfast")
-///        .value("lunch")
-///        .value("dinner")
-///        .run()
 public final class SQLCreateEnumBuilder: SQLQueryBuilder {
     /// ``SQLCreateEnum`` query being built.
     public var createEnum: SQLCreateEnum
 
-    /// See ``SQLQueryBuilder/database``.
+    // See `SQLQueryBuilder.database`.
     public var database: any SQLDatabase
 
-    /// See ``SQLQueryBuilder/query``.
+    // See `SQLQueryBuilder.query`.
     @inlinable
     public var query: any SQLExpression {
         self.createEnum
@@ -40,16 +32,6 @@ public final class SQLCreateEnumBuilder: SQLQueryBuilder {
     public func value(_ value: any SQLExpression) -> Self {
         self.createEnum.values.append(value)
         return self
-    }
-
-    /// See ``SQLQueryBuilder/run()-2sxsg``.
-    @inlinable
-    public func run() -> EventLoopFuture<Void> {
-        guard self.database.dialect.enumSyntax == .typeName else {
-            self.database.logger.warning("Database does not support standalone enum types.")
-            return self.database.eventLoop.makeSucceededFuture(())
-        }
-        return self.database.execute(sql: self.query) { _ in }
     }
 }
 
