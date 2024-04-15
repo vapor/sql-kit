@@ -16,7 +16,7 @@ jobs:
   pure-fluent-integration-test:
     if: ${{ !(github.event.pull_request.draft || false) }}
     runs-on: ubuntu-latest
-    container: swift-5.10:jammy
+    container: swift:5.10-jammy
     steps:
       - name: Check out sql-kit
         uses: actions/checkout@v4
