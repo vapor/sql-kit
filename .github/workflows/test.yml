@@ -13,6 +13,22 @@ jobs:
   unit-tests:
     uses: vapor/ci/.github/workflows/run-unit-tests.yml@main
 
+  pure-fluent-integration-test:
+    if: ${{ !(github.event.pull_request.draft || false) }}
+    runs-on: ubuntu-latest
+    container: swift-5.10:jammy
+    steps:
+      - name: Check out sql-kit
+        uses: actions/checkout@v4
+        with: { path: sql-kit, repository: vapor/sql-kit }
+      - name: Check out fluent-kit
+        uses: actions/checkout@v4
+        with: { path: fluent-kit, repository: vapor/fluent-kit }
+      - name: Set up and run FluentKit tests
+        run: |
+          swift package --package-path fluent-kit edit --path sql-kit sql-kit
+          swift test --package-path fluent-kit --sanitize=thread
+  
   integration-tests:
     if: ${{ !(github.event.pull_request.draft || false) }}
     services:

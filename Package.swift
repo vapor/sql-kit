@@ -24,6 +24,7 @@ let package = Package(
             name: "SQLKit",
             dependencies: [
                 .product(name: "Logging", package: "swift-log"),
+                .product(name: "NIO", package: "swift-nio"),
                 .product(name: "NIOCore", package: "swift-nio"),
                 .product(name: "Collections", package: "swift-collections"),
             ],
