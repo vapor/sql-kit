@@ -33,7 +33,7 @@ extension SQLQueryBuilder {
 /// A very minimal mock `SQLDatabase` which implements `execut(sql:_:)` by saving the serialized SQL and bindings to
 /// its internal arrays of accumulated "results". Most things about its dialect are mutable.
 final class TestDatabase: SQLDatabase, @unchecked Sendable {
-    let logger: Logger = .init(label: "codes.vapor.sql.test")
+    let logger: Logger = { var l = Logger(label: "codes.vapor.sql.test"); l.logLevel = .debug; return l }()
     let eventLoop: any EventLoop = FakeEventLoop()
     var results: [String] = []
     var bindResults: [[any Encodable & Sendable]] = []

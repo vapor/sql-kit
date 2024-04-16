@@ -19,13 +19,13 @@ public struct SQLColumnAssignment: SQLExpression {
     
     /// Create a column assignment from a column identifier and value binding.
     @inlinable
-    public init(setting columnName: any SQLExpression, to value: some Encodable & Sendable) {
+    public init(setting columnName: any SQLExpression, to value: any Encodable & Sendable) {
         self.init(setting: columnName, to: SQLBind(value))
     }
 
     /// Create a column assignment from a column name and value binding.
     @inlinable
-    public init(setting columnName: String, to value: some Encodable & Sendable) {
+    public init(setting columnName: String, to value: any Encodable & Sendable) {
         self.init(setting: columnName, to: SQLBind(value))
     }
 

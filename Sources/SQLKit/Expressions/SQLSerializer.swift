@@ -30,7 +30,7 @@ public struct SQLSerializer: Sendable {
     ///
     /// - Parameter encodable: The value to bind.
     @inlinable
-    public mutating func write(bind encodable: some Encodable & Sendable) {
+    public mutating func write(bind encodable: any Encodable & Sendable) {
         self.binds.append(encodable)
         self.dialect.bindPlaceholder(at: self.binds.count)
             .serialize(to: &self)

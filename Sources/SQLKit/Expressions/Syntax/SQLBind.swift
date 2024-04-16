@@ -5,13 +5,13 @@ public struct SQLBind: SQLExpression {
     
     /// Create a binding to a value.
     @inlinable
-    public init(_ encodable: some Encodable & Sendable) {
+    public init(_ encodable: any Encodable & Sendable) {
         self.encodable = encodable
     }
     
     /// Create a list of bindings to an array of values, with the placeholders wrapped in an ``SQLGroupExpression``.
     @inlinable
-    public static func group(_ items: some Collection<some Encodable & Sendable>) -> any SQLExpression {
+    public static func group(_ items: [any Encodable & Sendable]) -> any SQLExpression {
         SQLGroupExpression(items.map(SQLBind.init))
     }
 
