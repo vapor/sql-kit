@@ -118,7 +118,7 @@ extension SQLQueryString {
     ///
     /// This overload is provided as shorthand - `\(bind: "a")` is identical to `\(SQLBind("a"))`.
     @inlinable
-    public mutating func appendInterpolation(bind value: some Encodable & Sendable) {
+    public mutating func appendInterpolation(bind value: any Encodable & Sendable) {
         self.fragments.append(SQLBind(value))
     }
 
