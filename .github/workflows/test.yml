@@ -12,6 +12,7 @@ env:
 jobs:
   unit-tests:
     uses: vapor/ci/.github/workflows/run-unit-tests.yml@main
+    secrets: inherit
 
   pure-fluent-integration-test:
     if: ${{ !(github.event.pull_request.draft || false) }}
