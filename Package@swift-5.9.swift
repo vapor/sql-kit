@@ -14,7 +14,7 @@ let package = Package(
         .library(name: "SQLKitBenchmark", targets: ["SQLKitBenchmark"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-nio.git", from: "2.64.0"),
+        .package(url: "https://github.com/apple/swift-nio.git", from: "2.62.0"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.5.4"),
         .package(url: "https://github.com/apple/swift-collections.git", from: "1.0.1"),
     ],
