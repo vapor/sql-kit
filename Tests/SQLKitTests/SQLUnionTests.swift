@@ -8,7 +8,7 @@ final class SQLUnionTests: XCTestCase {
         XCTAssert(isLoggingConfigured)
     }
     
-    // MARK: Unions
+    // MARK: Top-level unions
 
     func testUnion_UNION() {
         // Check that queries are explicitly malformed without the feature flags
@@ -199,4 +199,168 @@ final class SQLUnionTests: XCTestCase {
         self.db._dialect.unionFeatures = [.union, .unionAll]
         XCTAssertSerialization(of: self.db.raw("\(query)"), is: "SELECT * UNION ALL SELECT * UNION SELECT *")
     }
+
+    // MARK: Subquery unions
+
+    func testUnionSubquery_UNION() {
+        // Check that queries are explicitly malformed without the feature flags
+        self.db._dialect.unionFeatures = []
+
+        XCTAssertSerialization(
+            of: self.db.select().column("id").from("t1").where("foo", .notIn, SQLSubquery
+                .union { $0 .column("id").from("t2") }
+                .union(distinct: { $0.column("id").from("t3") })
+                .finish()
+            ),
+            is: "SELECT ``id`` FROM ``t1`` WHERE ``foo`` NOT IN (SELECT ``id`` FROM ``t2`` SELECT ``id`` FROM ``t3``)"
+        )
+        XCTAssertSerialization(
+            of: self.db.select().column("id").from("t1").where("foo", .notIn, SQLSubquery
+                .union { $0 .column("id").from("t2") }
+                .union(all: { $0.column("id").from("t3") })
+                .finish()
+            ),
+            is: "SELECT ``id`` FROM ``t1`` WHERE ``foo`` NOT IN (SELECT ``id`` FROM ``t2`` SELECT ``id`` FROM ``t3``)"
+        )
+
+        // Test that queries are correctly formed with the feature flags
+        self.db._dialect.unionFeatures.formUnion([.union, .unionAll])
+
+        XCTAssertSerialization(
+            of: self.db.select().column("id").from("t1").where("foo", .notIn, SQLSubquery
+                .union { $0 .column("id").from("t2") }
+                .union(distinct: { $0.column("id").from("t3") })
+                .finish()
+            ),
+            is: "SELECT ``id`` FROM ``t1`` WHERE ``foo`` NOT IN (SELECT ``id`` FROM ``t2`` UNION SELECT ``id`` FROM ``t3``)"
+        )
+        XCTAssertSerialization(
+            of: self.db.select().column("id").from("t1").where("foo", .notIn, SQLSubquery
+                .union { $0 .column("id").from("t2") }
+                .union(all: { $0.column("id").from("t3") })
+                .finish()
+            ),
+            is: "SELECT ``id`` FROM ``t1`` WHERE ``foo`` NOT IN (SELECT ``id`` FROM ``t2`` UNION ALL SELECT ``id`` FROM ``t3``)"
+        )
+
+        // Test that the explicit distinct flag is respected
+        self.db._dialect.unionFeatures.insert(.explicitDistinct)
+        XCTAssertSerialization(
+            of: self.db.select().column("id").from("t1").where("foo", .notIn, SQLSubquery
+                .union { $0 .column("id").from("t2") }
+                .union(distinct: { $0.column("id").from("t3") })
+                .finish()
+            ),
+            is: "SELECT ``id`` FROM ``t1`` WHERE ``foo`` NOT IN (SELECT ``id`` FROM ``t2`` UNION DISTINCT SELECT ``id`` FROM ``t3``)"
+        )
+    }
+    
+    func testUnionSubquery_INTERSECT() {
+        // Check that queries are explicitly malformed without the feature flags
+        self.db._dialect.unionFeatures = []
+
+        XCTAssertSerialization(
+            of: self.db.select().column("id").from("t1").where("foo", .notIn, SQLSubquery
+                .union { $0 .column("id").from("t2") }
+                .intersect(distinct: { $0.column("id").from("t3") })
+                .finish()
+            ),
+            is: "SELECT ``id`` FROM ``t1`` WHERE ``foo`` NOT IN (SELECT ``id`` FROM ``t2`` SELECT ``id`` FROM ``t3``)"
+        )
+        XCTAssertSerialization(
+            of: self.db.select().column("id").from("t1").where("foo", .notIn, SQLSubquery
+                .union { $0 .column("id").from("t2") }
+                .intersect(all: { $0.column("id").from("t3") })
+                .finish()
+            ),
+            is: "SELECT ``id`` FROM ``t1`` WHERE ``foo`` NOT IN (SELECT ``id`` FROM ``t2`` SELECT ``id`` FROM ``t3``)"
+        )
+
+        // Test that queries are correctly formed with the feature flags
+        self.db._dialect.unionFeatures.formUnion([.intersect, .intersectAll])
+
+        XCTAssertSerialization(
+            of: self.db.select().column("id").from("t1").where("foo", .notIn, SQLSubquery
+                .union { $0 .column("id").from("t2") }
+                .intersect(distinct: { $0.column("id").from("t3") })
+                .finish()
+            ),
+            is: "SELECT ``id`` FROM ``t1`` WHERE ``foo`` NOT IN (SELECT ``id`` FROM ``t2`` INTERSECT SELECT ``id`` FROM ``t3``)"
+        )
+        XCTAssertSerialization(
+            of: self.db.select().column("id").from("t1").where("foo", .notIn, SQLSubquery
+                .union { $0 .column("id").from("t2") }
+                .intersect(all: { $0.column("id").from("t3") })
+                .finish()
+            ),
+            is: "SELECT ``id`` FROM ``t1`` WHERE ``foo`` NOT IN (SELECT ``id`` FROM ``t2`` INTERSECT ALL SELECT ``id`` FROM ``t3``)"
+        )
+
+        // Test that the explicit distinct flag is respected
+        self.db._dialect.unionFeatures.insert(.explicitDistinct)
+
+        XCTAssertSerialization(
+            of: self.db.select().column("id").from("t1").where("foo", .notIn, SQLSubquery
+                .union { $0 .column("id").from("t2") }
+                .intersect(distinct: { $0.column("id").from("t3") })
+                .finish()
+            ),
+            is: "SELECT ``id`` FROM ``t1`` WHERE ``foo`` NOT IN (SELECT ``id`` FROM ``t2`` INTERSECT DISTINCT SELECT ``id`` FROM ``t3``)"
+        )
+    }
+    
+    func testUnionSubquery_EXCEPT() {
+        // Check that queries are explicitly malformed without the feature flags
+        self.db._dialect.unionFeatures = []
+
+        XCTAssertSerialization(
+            of: self.db.select().column("id").from("t1").where("foo", .notIn, SQLSubquery
+                .union { $0 .column("id").from("t2") }
+                .except(distinct: { $0.column("id").from("t3") })
+                .finish()
+            ),
+            is: "SELECT ``id`` FROM ``t1`` WHERE ``foo`` NOT IN (SELECT ``id`` FROM ``t2`` SELECT ``id`` FROM ``t3``)"
+        )
+        XCTAssertSerialization(
+            of: self.db.select().column("id").from("t1").where("foo", .notIn, SQLSubquery
+                .union { $0 .column("id").from("t2") }
+                .except(all: { $0.column("id").from("t3") })
+                .finish()
+            ),
+            is: "SELECT ``id`` FROM ``t1`` WHERE ``foo`` NOT IN (SELECT ``id`` FROM ``t2`` SELECT ``id`` FROM ``t3``)"
+        )
+
+        // Test that queries are correctly formed with the feature flags
+        self.db._dialect.unionFeatures.formUnion([.except, .exceptAll])
+
+        XCTAssertSerialization(
+            of: self.db.select().column("id").from("t1").where("foo", .notIn, SQLSubquery
+                .union { $0 .column("id").from("t2") }
+                .except(distinct: { $0.column("id").from("t3") })
+                .finish()
+            ),
+            is: "SELECT ``id`` FROM ``t1`` WHERE ``foo`` NOT IN (SELECT ``id`` FROM ``t2`` EXCEPT SELECT ``id`` FROM ``t3``)"
+        )
+        XCTAssertSerialization(
+            of: self.db.select().column("id").from("t1").where("foo", .notIn, SQLSubquery
+                .union { $0 .column("id").from("t2") }
+                .except(all: { $0.column("id").from("t3") })
+                .finish()
+            ),
+            is: "SELECT ``id`` FROM ``t1`` WHERE ``foo`` NOT IN (SELECT ``id`` FROM ``t2`` EXCEPT ALL SELECT ``id`` FROM ``t3``)"
+        )
+        
+        // Test that the explicit distinct flag is respected
+        self.db._dialect.unionFeatures.insert(.explicitDistinct)
+
+        XCTAssertSerialization(
+            of: self.db.select().column("id").from("t1").where("foo", .notIn, SQLSubquery
+                .union { $0 .column("id").from("t2") }
+                .except(distinct: { $0.column("id").from("t3") })
+                .finish()
+            ),
+            is: "SELECT ``id`` FROM ``t1`` WHERE ``foo`` NOT IN (SELECT ``id`` FROM ``t2`` EXCEPT DISTINCT SELECT ``id`` FROM ``t3``)"
+        )
+    }
+
 }
