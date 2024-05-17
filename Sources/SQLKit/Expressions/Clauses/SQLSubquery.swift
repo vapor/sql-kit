@@ -23,3 +23,30 @@ public struct SQLSubquery: SQLExpression {
         SQLGroupExpression(self.subquery).serialize(to: &serializer)
     }
 }
+
+/// A trivial copy of ``SQLSubquery`` with a different type for its subquery property.
+///
+/// As with ``SQLCommonUnionBuilder``, this type is only necessary because of design oversights made when the original
+/// support for unions was added (the way subquery support, which was not implemented at the time, would work was not
+/// anticipated, so some types got more hardcoded than was wise); we can't fix them without breaking public API, so
+/// this annoying duplication of code is used as a workaround.
+///
+/// See also ``SQLUnionSubqueryBuilder``.
+public struct SQLUnionSubquery: SQLExpression {
+    /// The (sub)query.
+    public var subquery: SQLUnion
+    
+    /// Create a new subquery expression from a select query.
+    ///
+    /// - Parameter subquery: A ``SQLUnion`` query to use as a subquery.
+    @inlinable
+    public init(_ subquery: SQLUnion) {
+        self.subquery = subquery
+    }
+
+    // See `SQLExpression.serialize(to:)`.
+    @inlinable
+    public func serialize(to serializer: inout SQLSerializer) {
+        SQLGroupExpression(self.subquery).serialize(to: &serializer)
+    }
+}
