@@ -14,9 +14,9 @@ let package = Package(
         .library(name: "SQLKitBenchmark", targets: ["SQLKitBenchmark"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-nio.git", from: "2.62.0"),
+        .package(url: "https://github.com/apple/swift-nio.git", from: "2.65.0"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.5.4"),
-        .package(url: "https://github.com/apple/swift-collections.git", from: "1.0.1"),
+        .package(url: "https://github.com/apple/swift-collections.git", from: "1.1.0"),
     ],
     targets: [
         .target(
@@ -51,10 +51,6 @@ var swiftSettings: [SwiftSetting] { [
     .enableUpcomingFeature("ExistentialAny"),
     .enableUpcomingFeature("ConciseMagicFile"),
     .enableUpcomingFeature("ForwardTrailingClosures"),
-    .enableUpcomingFeature("ImportObjcForwardDeclarations"),
     .enableUpcomingFeature("DisableOutwardActorInference"),
-    .enableUpcomingFeature("IsolatedDefaultValues"),
-    .enableUpcomingFeature("GlobalConcurrency"),
-    .enableUpcomingFeature("StrictConcurrency"),
     .enableExperimentalFeature("StrictConcurrency=complete"),
 ] }
