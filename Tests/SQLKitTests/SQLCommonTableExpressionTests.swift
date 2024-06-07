@@ -219,5 +219,25 @@ final class SQLCommonTableExpressionTests: XCTestCase {
             is: "WITH RECURSIVE ``a`` (``b``) AS (SELECT 1) (SELECT) UNION ALL (SELECT ``a``.``b``)"
         )
     }
-
+    
+    func testMultipleCTEs() {
+        XCTAssertSerialization(
+            of: self.db.select()
+                .with("a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) })
+                .with("d", columns: ["e"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) })
+                .column(SQLColumn("b", table: "a")),
+            is: "WITH ``a`` (``b``) AS (SELECT 1), ``d`` (``e``) AS (SELECT 1) SELECT ``a``.``b``"
+        )
+    }
+    
+    func testCodeCoverage() {
+        var query = self.db.select().column(SQLColumn("b", table: "a")).select
+        query.tableExpressionGroup = .init(tableExpressions: [
+            SQLCommonTableExpression(alias: SQLIdentifier("x"), query: SQLRaw("VALUES(``1``)")),
+            SQLCommonTableExpression(alias: SQLIdentifier("x"), query: SQLGroupExpression(SQLRaw("VALUES(``1``)"))),
+            SQLGroupExpression(SQLRaw("FOO"))
+        ])
+        
+        XCTAssertSerialization(of: self.db.raw("\(query)"), is: "WITH ``x`` AS (VALUES(``1``)), ``x`` AS (VALUES(``1``)), (FOO) SELECT ``a``.``b``")
+    }
 }
