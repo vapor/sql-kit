@@ -22,6 +22,9 @@
 ///
 /// See ``SQLInsertBuilder``.
 public struct SQLInsert: SQLExpression {
+    /// An optional common table expression group.
+    public var tableExpressionGroup: SQLCommonTableExpressionGroup?
+    
     /// The table to which rows are to be added.
     public var table: any SQLExpression
     
@@ -70,6 +73,7 @@ public struct SQLInsert: SQLExpression {
     // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {
+            $0.append(self.tableExpressionGroup)
             $0.append("INSERT")
             $0.append(self.conflictStrategy?.queryModifier(for: $0))
             $0.append("INTO", self.table)

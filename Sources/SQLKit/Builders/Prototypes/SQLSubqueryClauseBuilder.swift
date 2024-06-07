@@ -9,7 +9,7 @@
 /// expressions in other queries.
 ///
 /// > Important: Despite the use of the term "subquery", this builder does not provide
-/// > methods for specifying subquery operators (e.g. `ANY`, `SOME`) or CTE clauses (`WITH`),
+/// > methods for specifying subquery operators (e.g. `ANY`, `SOME`),
 /// > nor does it enclose its result in grouping parenthesis, as all of these formations are
 /// > context-specific and are the purview of builders that conform to this protocol.
 ///
@@ -21,7 +21,8 @@ public protocol SQLSubqueryClauseBuilder:
     SQLPredicateBuilder,
     SQLSecondaryPredicateBuilder,
     SQLPartialResultBuilder,
-    SQLAliasedColumnListBuilder
+    SQLAliasedColumnListBuilder,
+    SQLCommonTableExpressionBuilder
 {
     /// The ``SQLSelect`` query under construction.
     var select: SQLSelect { get set }
@@ -68,6 +69,13 @@ extension SQLSubqueryClauseBuilder {
     public var columnList: [any SQLExpression] {
         get { self.select.columns }
         set { self.select.columns = newValue }
+    }
+
+    // See `SQLCommonTableExpressionBuilder.tableExpressionGroup`.
+    @inlinable
+    public var tableExpressionGroup: SQLCommonTableExpressionGroup? {
+        get { self.select.tableExpressionGroup }
+        set { self.select.tableExpressionGroup = newValue }
     }
 }
 

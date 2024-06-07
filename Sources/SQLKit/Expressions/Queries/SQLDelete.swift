@@ -8,6 +8,9 @@
 ///
 /// See ``SQLDeleteBuilder``.
 public struct SQLDelete: SQLExpression {
+    /// An optional common table expression group.
+    public var tableExpressionGroup: SQLCommonTableExpressionGroup?
+    
     /// The table containing rows to delete.
     public var table: any SQLExpression
     
@@ -34,6 +37,8 @@ public struct SQLDelete: SQLExpression {
     // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {
+            $0.append(self.tableExpressionGroup)
+            
             $0.append("DELETE FROM", self.table)
             if let predicate = self.predicate {
                 $0.append("WHERE", predicate)
