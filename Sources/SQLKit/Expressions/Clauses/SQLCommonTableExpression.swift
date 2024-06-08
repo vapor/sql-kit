@@ -46,6 +46,8 @@ public struct SQLCommonTableExpression: SQLExpression {
             }
             if let subqueryExpr = self.query as? SQLSubquery {
                 $0.append("AS", subqueryExpr)
+            } else if let subqueryExpr = self.query as? SQLUnionSubquery {
+                $0.append("AS", subqueryExpr)
             } else if let groupExpr = self.query as? SQLGroupExpression {
                 $0.append("AS", groupExpr)
             } else {
