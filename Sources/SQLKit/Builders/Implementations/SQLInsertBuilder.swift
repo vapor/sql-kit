@@ -5,7 +5,7 @@
 /// > ``SQLInsertBuilder``'s otherwise-identical public APIs overwrite the effects of any previous invocation. It
 /// > would ideally be preferable to change ``SQLInsertBuilder``'s semantics in this regard, but this would be a
 /// > significant breaking change in the API's behavior, and must therefore wait for a major version bump.
-public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder/*, SQLUnqualifiedColumnListBuilder*/ {
+public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder/*, SQLUnqualifiedColumnListBuilder*/, SQLCommonTableExpressionBuilder {
     /// The ``SQLInsert`` query this builder builds.
     public var insert: SQLInsert
     
@@ -23,6 +23,13 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder/*, SQL
     public var returning: SQLReturning? {
         get { self.insert.returning }
         set { self.insert.returning = newValue }
+    }
+    
+    // See `SQLCommonTableExpressionBuilder.tableExpressionGroup`.
+    @inlinable
+    public var tableExpressionGroup: SQLCommonTableExpressionGroup? {
+        get { self.insert.tableExpressionGroup }
+        set { self.insert.tableExpressionGroup = newValue }
     }
     
     /// Creates a new `SQLInsertBuilder`.

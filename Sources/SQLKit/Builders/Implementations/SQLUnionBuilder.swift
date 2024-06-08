@@ -1,5 +1,5 @@
 /// Builds top-level ``SQLUnion`` queries which may be executed on their own.
-public final class SQLUnionBuilder: SQLQueryBuilder, SQLQueryFetcher, SQLCommonUnionBuilder {
+public final class SQLUnionBuilder: SQLQueryBuilder, SQLQueryFetcher, SQLCommonUnionBuilder, SQLCommonTableExpressionBuilder {
     // See `SQLCommonUnionBuilder.union`.
     public var union: SQLUnion
 
@@ -12,6 +12,13 @@ public final class SQLUnionBuilder: SQLQueryBuilder, SQLQueryFetcher, SQLCommonU
         self.union
     }
 
+    // See `SQLCommonTableExpressionBuilder.tableExpressionGroup`.
+    @inlinable
+    public var tableExpressionGroup: SQLCommonTableExpressionGroup? {
+        get { self.union.tableExpressionGroup }
+        set { self.union.tableExpressionGroup = newValue }
+    }
+    
     /// Create a new ``SQLUnionBuilder``.
     @inlinable
     public init(on database: any SQLDatabase, initialQuery: SQLSelect) {

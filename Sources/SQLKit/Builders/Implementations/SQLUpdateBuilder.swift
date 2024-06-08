@@ -1,5 +1,5 @@
 /// Builds ``SQLUpdate`` queries.
-public final class SQLUpdateBuilder: SQLQueryBuilder, SQLPredicateBuilder, SQLReturningBuilder, SQLColumnUpdateBuilder {
+public final class SQLUpdateBuilder: SQLQueryBuilder, SQLPredicateBuilder, SQLReturningBuilder, SQLColumnUpdateBuilder, SQLCommonTableExpressionBuilder {
     /// An ``SQLUpdate`` containing the complete current state of the builder.
     public var update: SQLUpdate
     
@@ -31,6 +31,13 @@ public final class SQLUpdateBuilder: SQLQueryBuilder, SQLPredicateBuilder, SQLRe
     public var returning: SQLReturning? {
         get { self.update.returning }
         set { self.update.returning = newValue }
+    }
+    
+    // See `SQLCommonTableExpressionBuilder.tableExpressionGroup`.
+    @inlinable
+    public var tableExpressionGroup: SQLCommonTableExpressionGroup? {
+        get { self.update.tableExpressionGroup }
+        set { self.update.tableExpressionGroup = newValue }
     }
     
     /// Create a new ``SQLUpdateBuilder``.

@@ -265,7 +265,7 @@ func superCase(_ path: [any CodingKey]) -> any CodingKey {
     SomeCodingKey(stringValue: path.last!.stringValue.encapitalized)
 }
 
-extension SQLLiteral: Equatable {
+extension SQLKit.SQLLiteral: Swift.Equatable {
     public static func == (lhs: Self, rhs: Self) -> Bool {
         switch (lhs, rhs) {
         case (.all, .all), (.`default`, .`default`), (.null, .null):          return true
@@ -277,7 +277,7 @@ extension SQLLiteral: Equatable {
     }
 }
 
-extension SQLBind: Equatable {
+extension SQLKit.SQLBind: Swift.Equatable {
     // Don't do this. This is horrible.
     public static func == (lhs: Self, rhs: Self) -> Bool { (try? JSONEncoder().encode(lhs.encodable) == JSONEncoder().encode(rhs.encodable)) ?? false }
 }

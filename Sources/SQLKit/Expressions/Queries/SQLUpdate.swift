@@ -16,6 +16,9 @@
 ///
 /// See ``SQLUpdateBuilder``.
 public struct SQLUpdate: SQLExpression {
+    /// An optional common table expression group.
+    public var tableExpressionGroup: SQLCommonTableExpressionGroup?
+    
     /// The table containing the row(s) to be updated.
     public var table: any SQLExpression
     
@@ -43,6 +46,7 @@ public struct SQLUpdate: SQLExpression {
     // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {
+            $0.append(self.tableExpressionGroup)
             $0.append("UPDATE", self.table)
             $0.append("SET", SQLList(self.values))
             if let predicate = self.predicate {

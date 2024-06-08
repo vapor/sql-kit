@@ -17,6 +17,9 @@
 ///
 /// See ``SQLUnionBuilder``.
 public struct SQLUnion: SQLExpression {
+    /// An optional common table expression group.
+    public var tableExpressionGroup: SQLCommonTableExpressionGroup?
+    
     /// The required first query of the union.
     public var initialQuery: SQLSelect
     
@@ -80,6 +83,8 @@ public struct SQLUnion: SQLExpression {
     // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement { stmt in
+            stmt.append(self.tableExpressionGroup)
+            
             guard !self.unions.isEmpty else {
                 /// If no unions are specified, serialize as a plain query even if the dialect would otherwise
                 /// specify the use of parenthesized subqueries. Ignores orderBys, limit, and offset.

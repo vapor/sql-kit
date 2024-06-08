@@ -1,5 +1,5 @@
 /// Builds ``SQLDelete`` queries.
-public final class SQLDeleteBuilder: SQLQueryBuilder, SQLPredicateBuilder, SQLReturningBuilder {
+public final class SQLDeleteBuilder: SQLQueryBuilder, SQLPredicateBuilder, SQLReturningBuilder, SQLCommonTableExpressionBuilder {
     /// ``SQLDelete`` query being built.
     public var delete: SQLDelete
 
@@ -24,6 +24,13 @@ public final class SQLDeleteBuilder: SQLQueryBuilder, SQLPredicateBuilder, SQLRe
     public var returning: SQLReturning? {
         get { self.delete.returning }
         set { self.delete.returning = newValue }
+    }
+    
+    // See `SQLCommonTableExpressionBuilder.tableExpressionGroup`.
+    @inlinable
+    public var tableExpressionGroup: SQLCommonTableExpressionGroup? {
+        get { self.delete.tableExpressionGroup }
+        set { self.delete.tableExpressionGroup = newValue }
     }
     
     /// Create a new ``SQLDeleteBuilder``.

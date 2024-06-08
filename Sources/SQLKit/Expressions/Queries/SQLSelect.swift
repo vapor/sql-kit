@@ -29,6 +29,9 @@
 ///
 /// See ``SQLSelectBuilder``.
 public struct SQLSelect: SQLExpression {
+    /// An optional common table expression group.
+    public var tableExpressionGroup: SQLCommonTableExpressionGroup?
+    
     /// One or more expessions describing the data to retrieve from the database.
     public var columns: [any SQLExpression] = []
     
@@ -97,6 +100,7 @@ public struct SQLSelect: SQLExpression {
     // See `SQLExpression.serialize(to:)`.
     public func serialize(to serializer: inout SQLSerializer) {
         serializer.statement {
+            $0.append(self.tableExpressionGroup)
             $0.append("SELECT")
             if self.isDistinct {
                 $0.append("DISTINCT")

@@ -138,7 +138,7 @@ struct GenericDialect: SQLDialect {
     }
 }
 
-extension SQLDataType: Equatable {
+extension SQLKit.SQLDataType: Swift.Equatable {
     public static func == (lhs: Self, rhs: Self) -> Bool {
         switch (lhs, rhs) {
             case (.bigint, .bigint), (.blob, .blob), (.int, .int), (.real, .real),
