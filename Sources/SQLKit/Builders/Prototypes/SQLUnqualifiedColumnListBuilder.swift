@@ -14,7 +14,7 @@ extension SQLUnqualifiedColumnListBuilder {
     @inlinable
     @discardableResult
     public func column(_ column: String) -> Self {
-        self.column(column == "*" ? SQLLiteral.all : SQLColumn(column))
+        self.column(SQLColumn(column))
     }
     
     /// Specify a single column to be included in the list of columns for the query.
@@ -36,7 +36,7 @@ extension SQLUnqualifiedColumnListBuilder {
     @inlinable
     @discardableResult
     public func columns(_ columns: [String]) -> Self {
-        self.columns(columns.map { $0 == "*" ? SQLLiteral.all as any SQLExpression : SQLColumn($0) })
+        self.columns(columns.map { SQLColumn($0) })
     }
 
     /// Specify mutiple columns to be included in the list of columns for the query.

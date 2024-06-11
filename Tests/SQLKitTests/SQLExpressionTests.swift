@@ -265,4 +265,13 @@ final class SQLExpressionTests: XCTestCase {
         self.db._dialect.literalStringQuote = SQLQueryString("~")
         XCTAssertSerialization(of: self.db.raw("\(ident: "hello") \(literal: "there")"), is: "_hello_ ~there~")
     }
+    
+    func testColumns() {
+        XCTAssertSerialization(of: self.db.raw("\(SQLColumn("*"))"), is: "*")
+        XCTAssertSerialization(of: self.db.raw("\(SQLColumn(SQLIdentifier("*")))"), is: "``*``")
+        XCTAssertSerialization(of: self.db.raw("\(SQLColumn(SQLLiteral.all))"), is: "*")
+        XCTAssertSerialization(of: self.db.raw("\(SQLColumn("*", table: "foo"))"), is: "``foo``.*")
+        XCTAssertSerialization(of: self.db.raw("\(SQLColumn(SQLIdentifier("*"), table: SQLIdentifier("foo")))"), is: "``foo``.``*``")
+        XCTAssertSerialization(of: self.db.raw("\(SQLColumn(SQLLiteral.all, table: SQLIdentifier("foo")))"), is: "``foo``.*")
+    }
 }
