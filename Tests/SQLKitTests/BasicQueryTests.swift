@@ -10,16 +10,22 @@ final class BasicQueryTests: XCTestCase {
         
     // MARK: Select
     
-    func testSelect_unqualifiedColums() {
+    func testSelect_unqualifiedColumns() {
         XCTAssertSerialization(
             of: self.db.select()
+                .column("*")
                 .column("name")
+                .column(SQLLiteral.all)
                 .column(SQLIdentifier("name"))
+                .columns("*")
                 .columns("name")
+                .columns(["*"])
                 .columns(["name"])
+                .columns(SQLLiteral.all)
                 .columns(SQLIdentifier("name"))
+                .columns([SQLLiteral.all])
                 .columns([SQLIdentifier("name")]),
-            is: "SELECT ``name``, ``name``, ``name``, ``name``, ``name``, ``name``"
+            is: "SELECT *, ``name``, *, ``name``, *, ``name``, *, ``name``, *, ``name``, *, ``name``"
         )
     }
     
