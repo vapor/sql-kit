@@ -172,6 +172,17 @@ final class SQLRowDecoderTests: XCTestCase {
             XCTAssertEqual(Array<any CodingKey>().map(\.stringValue), context.codingPath.map(\.stringValue))
         }
     }
+    
+    func testSnakeCase_CodableKeyTransformation() throws {
+        struct Episode: Decodable, Equatable {
+            var userID: Int
+        }
+
+        XCTAssertEqual(
+            try SQLRowDecoder(keyDecodingStrategy: .convertFromSnakeCase).decode(Episode.self, from: TestRow(data: ["user_id": "1"])),
+            Episode(userID: 1)
+        )
+    }
 }
 
 enum TestDecEnum: Codable {
