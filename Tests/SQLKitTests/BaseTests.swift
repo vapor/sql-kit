@@ -36,7 +36,7 @@ final class SQLKitTests: XCTestCase {
     }
     
     func testInsertWithArrayOfEncodable() {
-        func weird(_ builder: SQLInsertBuilder, values: some Sequence<Encodable & Sendable>) -> SQLInsertBuilder {
+        func weird(_ builder: SQLInsertBuilder, values: some Sequence<any Encodable & Sendable>) -> SQLInsertBuilder {
             builder.values(Array(values))
         }
         
