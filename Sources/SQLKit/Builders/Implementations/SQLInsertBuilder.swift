@@ -283,6 +283,16 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder/*, SQL
         self.insert.values.append(values)
         return self
     }
+
+    /// Add multiple sequences of values each inserted as a separate row.
+    @inlinable
+    @discardableResult
+    public func rows<S1, S2>(_ valueSets: S1) -> Self
+        where S1: Sequence, S2: Sequence,
+              S1.Element == S2, S2.Element == any SQLExpression
+    {
+        valueSets.reduce(self) { $0.values(Array($1)) }
+    }
     
     /// Specify a `SELECT` query to generate rows to insert.
     ///

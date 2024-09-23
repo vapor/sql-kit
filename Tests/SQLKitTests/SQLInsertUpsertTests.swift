@@ -41,6 +41,92 @@ final class SQLInsertUpsertTests: XCTestCase {
             is: "INSERT INTO ``planets`` (``id``, ``name``) SELECT ``id``, ``name`` FROM ``other_planets``"
         )
     }
+
+    func testInsertValuesEncodable() throws {
+        // Test variadic values method
+        XCTAssertSerialization(
+            of: self.db.insert(into: "planets")
+                .columns(["name", "color"])
+                .values("Jupiter", "orange"),
+            is: "INSERT INTO ``planets`` (``name``, ``color``) VALUES (&1, &2)"
+        )
+        
+        // Test array values method
+        XCTAssertSerialization(
+            of: db.insert(into: "planets")
+                .columns(["name", "color"])
+                .values(["Jupiter", "orange"]),
+            is: "INSERT INTO ``planets`` (``name``, ``color``) VALUES (&1, &2)"
+        )
+
+        // Test nested array values method
+        XCTAssertSerialization(
+            of: db.insert(into: "planets")
+                .columns(["name", "color"])
+                .values([["Jupiter", "orange"],["Mars", "red"]]),
+            is: "INSERT INTO ``planets`` (``name``, ``color``) VALUES (&1, &2)"
+        )
+        
+        // Test multiple values calls make multiple rows
+        XCTAssertSerialization(
+            of: self.db.insert(into: "planets")
+                .columns(["name", "color"])
+                .values(["Jupiter", "orange"])
+                .values(["Mars", "red"]),
+            is: "INSERT INTO ``planets`` (``name``, ``color``) VALUES (&1, &2), (&3, &4)"
+        )
+        
+        // Test single-value input method
+        XCTAssertSerialization(
+            of: self.db.insert(into: "planets")
+                .columns(["name"])
+                .values(["Jupiter"]),
+            is: "INSERT INTO ``planets`` (``name``) VALUES (&1)"
+        )
+    }
+    
+    func testInsertValuesExpression() throws {
+        // Test variadic values method
+        XCTAssertSerialization(
+            of: self.db.insert(into: "planets")
+                .columns(["name", "color"])
+                .values(SQLBind("Jupiter"), SQLBind("orange")),
+            is: "INSERT INTO ``planets`` (``name``, ``color``) VALUES (&1, &2)"
+        )
+
+        // Test array values method
+        XCTAssertSerialization(
+            of: self.db.insert(into: "planets")
+                .columns(["name", "color"])
+                .values([SQLBind("Jupiter"), SQLBind("orange")]),
+            is: "INSERT INTO ``planets`` (``name``, ``color``) VALUES (&1, &2)"
+        )
+
+        // Test nested array values method
+        XCTAssertSerialization(
+            of: self.db.insert(into: "planets")
+                .columns(["name", "color"])
+                .rows([[SQLBind("Jupiter"), SQLBind("orange")],[SQLBind("Mars"), SQLBind("red")]]),
+            is: "INSERT INTO ``planets`` (``name``, ``color``) VALUES (&1, &2), (&3, &4)"
+        )
+
+        // Test multiple values calls make multiple rows
+        XCTAssertSerialization(
+            of: self.db.insert(into: "planets")
+                .columns(["name", "color"])
+                .values(["Jupiter", "orange"])
+                .values([SQLBind("Mars"), SQLBind("red")]),
+            is: "INSERT INTO ``planets`` (``name``, ``color``) VALUES (&1, &2), (&3, &4)"
+        )
+
+        // Test single-value input method
+        XCTAssertSerialization(
+            of: self.db.insert(into: "planets")
+                .columns(["name"])
+                .values([SQLBind("Jupiter")]),
+            is: "INSERT INTO ``planets`` (``name``) VALUES (&1)"
+        )
+    }
     
     // MARK: - Upsert
     
