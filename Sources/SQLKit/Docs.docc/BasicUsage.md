@@ -46,7 +46,7 @@ SELECT "id", "name" FROM "planets" WHERE "name" = ?1
 SELECT `id`, `name` FROM `planets` WHERE `name` = ?
 ```  
 
-## Databases, Expressions, and Builders
+### Databases, Expressions, and Builders
 
 Instances of ``SQLDatabase`` are capable of executing arbitrary ``SQLExpression``s:
 
@@ -108,7 +108,7 @@ WHERE "column1" = $1 AND "column2" IS NULL
 
 Of course, this is an _awful_ lot of code to achieve such a relatively straightforward result, which is why SQLKit provides query builders.
 
-### Rows
+#### Rows
 
 For query builders that support returning results (e.g. any builder conforming to the ``SQLQueryFetcher`` protocol), there are additional methods for handling the database output:
 
@@ -124,7 +124,7 @@ let name = try row.decode(column: "name", as: String.self)
 print(name) // String
 ```
 
-### Codable
+#### Codable
 
 ``SQLRow`` also supports decoding `Codable` models directly:
 
@@ -144,7 +144,7 @@ let planets: [Planet] = try await db.select()
     .all(decoding: Planet.self)
 ```
 
-## Select
+### Select
 
 The ``SQLDatabase/select()`` method creates a `SELECT` query builder:
 
@@ -204,7 +204,7 @@ This code generates the following SQL when used with the SQLite driver:
 WHERE "name" <> NULL AND ("name" = ?1 OR "name" = ?2) -- bindings: ["Milky Way", "Andromeda"]
 ```
 
-## Insert
+### Insert
 
 The ``SQLDatabase/insert(into:)-67oqt`` and ``SQLDatabase/insert(into:)-5n3gh`` methods create an `INSERT` query builder:
 
@@ -234,7 +234,7 @@ try builder.model(Galaxy(name: "Milky Way"))
 
 This code generates the same SQL as would `builder.columns("name").values("Milky Way")`.
 
-## Update
+### Update
 
 The ``SQLDatabase/update(_:)-2tf1c`` and ``SQLDatabase/update(_:)-80964`` methods create an `UPDATE` query builder:
 
@@ -253,7 +253,7 @@ UPDATE `planets` SET `name` = ? WHERE `name` = ? -- bindings: ["Jupiter", "Jupit
 
 The update builder supports the same `where()` and `orWhere()` methods as the select builder, via the ``SQLPredicateBuilder`` protocol.
 
-## Delete
+### Delete
 
 The ``SQLDatabase/delete(from:)-3tx4f`` and ``SQLDatabase/delete(from:)-4bqlu`` methods create a `DELETE` query builder:
 
@@ -271,7 +271,7 @@ DELETE FROM "planets" WHERE "name" = ?1 -- bindings: ["Jupiter"]
 
 The delete builder also conforms to ``SQLPredicateBuilder``.
 
-## Raw
+### Raw
 
 The ``SQLDatabase/raw(_:)`` method allows passing custom SQL query strings, with support for parameterized bindings and correctly-quoted identifiers:
 

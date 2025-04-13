@@ -284,7 +284,7 @@ extension SQLCommonTableExpressionBuilder {
     /// This is the common "funnel" method invoked by all other methods provided by
     /// ``SQLCommonTableExpressionBuilder``. Most users will not need to call this method directly.
     ///
-    /// See ``with(_:columns:as)`` and ``with(recursive:_:columns:as:)`` for usage examples.
+    /// See ``with(_:columns:as:)-28k4r`` and ``with(recursive:columns:as:)-6yef`` for usage examples.
     ///
     /// > Warning: As with ``SQLCommonTableExpression``, ``SQLCommonTableExpressionBuilder`` does _NOT_ validate
     /// > that a recursive CTE's query takes the proper form, nor that a non-recursive CTE's query is not

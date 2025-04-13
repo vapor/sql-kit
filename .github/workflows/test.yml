@@ -13,11 +13,13 @@ jobs:
   unit-tests:
     uses: vapor/ci/.github/workflows/run-unit-tests.yml@main
     secrets: inherit
+    with:
+      with_android: true
 
   pure-fluent-integration-test:
     if: ${{ !(github.event.pull_request.draft || false) }}
     runs-on: ubuntu-latest
-    container: swift:5.10-jammy
+    container: swift:6.1-noble
     steps:
       - name: Check out sql-kit
         uses: actions/checkout@v4
@@ -48,7 +50,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift-image: ['swift:5.10-jammy']
+        swift-image: ['swift:6.1-noble']
         driver:
           - { sqlkit: 'sqlite-kit',   fluent: 'fluent-sqlite-driver' }
           - { sqlkit: 'mysql-kit',    fluent: 'fluent-mysql-driver' }

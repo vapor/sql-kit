@@ -180,7 +180,7 @@ public struct SQLQueryEncoder: Sendable {
     }
 
     /// Encode an `Encodable` value to an array of key/expression pairs suitable for use as input to
-    /// ``SQLInsertBuilder/values(_:)-1pro8``, ``SQLUpdateBuilder/set(_:to:)-8mvob``, and other related APIs.
+    /// ``SQLInsertBuilder/values(_:)-1pro8``, ``SQLColumnUpdateBuilder/set(_:to:)-dnbq``, and other related APIs.
     ///
     /// - Parameter encodable: The value to encode.
     /// - Returns: A sequence of (column name, value expression) pairs representing an output row. The order of the

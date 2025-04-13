@@ -88,11 +88,11 @@ extension SQLFunction {
     ///     .all()
     /// ```
     ///
-    /// - Parameter exprs: A list of expressions to coalesce.
+    /// - Parameter expressions: A list of expressions to coalesce.
     /// - Returns: An appropriately-constructed ``SQLFunction``.
     @inlinable
-    public static func coalesce(_ exprs: any SQLExpression...) -> SQLFunction {
-        self.coalesce(exprs)
+    public static func coalesce(_ expressions: any SQLExpression...) -> SQLFunction {
+        self.coalesce(expressions)
     }
 
     /// A factory method to simplify use of the standard `COALESCE()` function.
@@ -108,7 +108,7 @@ extension SQLFunction {
     ///     .all()
     /// ```
     ///
-    /// - Parameter exprs: A list of expressions to coalesce.
+    /// - Parameter expressions: A list of expressions to coalesce.
     /// - Returns: An appropriately-constructed ``SQLFunction``.
     @inlinable
     public static func coalesce(_ expressions: [any SQLExpression]) -> SQLFunction {

@@ -26,7 +26,7 @@ extension SQLPartialResultBuilder {
 
     /// Adds a `OFFSET` clause to the query. If called more than once, the last call wins.
     ///
-    /// - Parameter max: Optional offset. If `nil`, any existing offset is removed. The value may not be negative.
+    /// - Parameter n: Optional offset. If `nil`, any existing offset is removed. The value may not be negative.
     /// - Returns: `self` for chaining.
     @inlinable
     @discardableResult

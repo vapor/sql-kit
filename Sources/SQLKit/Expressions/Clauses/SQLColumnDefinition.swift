@@ -36,7 +36,7 @@ public struct SQLColumnDefinition: SQLExpression {
     /// Create a new columm definition from a name, data type, and zero or more constraints.
     ///
     /// - Parameters:
-    ///   - column: The column name to create or alter.
+    ///   - name: The column name to create or alter.
     ///   - dataType: The desired data type of the column.
     ///   - constraints: The constraints to apply to the column, if any.
     @inlinable
