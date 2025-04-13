@@ -8,11 +8,14 @@
       "sqlkit": { "dark": "hsl(32, 77%, 63%)", "light": "hsl(32, 80%, 60%)" },
       "documentation-intro-fill": "radial-gradient(circle at top, var(--color-sqlkit) 30%, #000 100%)",
       "documentation-intro-accent": "var(--color-sqlkit)",
+      "documentation-intro-eyebrow": "white",
+      "documentation-intro-figure": "white",
+      "documentation-intro-title": "white",
       "logo-base":  { "dark": "#fff", "light": "#000" },
       "logo-shape": { "dark": "#000", "light": "#fff" },
       "fill":       { "dark": "#000", "light": "#fff" }
     },
-    "icons": { "technology": "/sqlkit/images/vapor-sqlkit-logo.svg" }
+    "icons": { "technology": "/sqlkit/images/SQLKit/vapor-sqlkit-logo.svg" }
   },
   "features": {
     "quickNavigation": { "enable": true },

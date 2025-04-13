@@ -120,14 +120,14 @@ public final class SQLAlterTableBuilder: SQLQueryBuilder {
         return self
     }
     
-    /// Drop an existing column from the table
+    /// Drop an existing column from the table.
     @inlinable
     @discardableResult
     public func dropColumn(_ column: String) -> Self {
         self.dropColumn(SQLIdentifier(column))
     }
     
-    /// Drop an existing column from the table
+    /// Drop an existing column from the table.
     @inlinable
     @discardableResult
     public func dropColumn(_ column: any SQLExpression) -> Self {

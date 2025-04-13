@@ -6,7 +6,7 @@
 
 - ``SQLQueryFetcher/run(_:)-40swz``
 - ``SQLQueryFetcher/run(decoding:_:)-476q1``
-- ``SQLQueryFetcher/run(decoding:prefix:keyDecodingStrategy:userInfo:_:)-3q92a``
+- ``SQLQueryFetcher/run(decoding:prefix:keyDecodingStrategy:userInfo:_:)-583ot``
 - ``SQLQueryFetcher/run(decoding:with:_:)-8y7ux``
 
 ### Getting All Rows
@@ -29,7 +29,7 @@
 
 - ``SQLQueryFetcher/run(_:)-542bs``
 - ``SQLQueryFetcher/run(decoding:_:)-6z89k``
-- ``SQLQueryFetcher/run(decoding:prefix:keyDecodingStrategy:userInfo:_:)-6axmo``
+- ``SQLQueryFetcher/run(decoding:prefix:keyDecodingStrategy:userInfo:_:)-2cp56``
 - ``SQLQueryFetcher/run(decoding:with:_:)-4tte7``
 - ``SQLQueryFetcher/all()-5j67e``
 - ``SQLQueryFetcher/all(decoding:)-6q02f``

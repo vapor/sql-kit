@@ -186,7 +186,7 @@ public final class SQLInsertBuilder: SQLQueryBuilder, SQLReturningBuilder/*, SQL
     /// - Parameters:
     ///   - models: Array of values of a given type to insert. The given type may be any encodable type which
     ///     represents an aggregate value.
-    ///   - encodder: A preconfigured ``SQLQueryEncoder`` to use for encoding.
+    ///   - encoder: A preconfigured ``SQLQueryEncoder`` to use for encoding.
     @discardableResult
     public func models(
         _ models: [some Encodable],

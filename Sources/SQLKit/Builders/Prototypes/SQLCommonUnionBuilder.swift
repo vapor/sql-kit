@@ -89,7 +89,7 @@ extension SQLCommonUnionBuilder {
         try self.union(all: predicate(SQLSubqueryBuilder()).select)
     }
 
-    /// Alias ``union(distinct:)-1ert0`` so it acts as the "default".
+    /// Alias ``union(distinct:)-921p6`` so it acts as the "default".
     @inlinable
     public func union(_ predicate: (any SQLSubqueryClauseBuilder) throws -> any SQLSubqueryClauseBuilder) rethrows -> Self {
         try self.union(distinct: predicate)
@@ -107,7 +107,7 @@ extension SQLCommonUnionBuilder {
         try self.intersect(all: predicate(SQLSubqueryBuilder()).select)
     }
 
-    /// Alias ``intersect(distinct:)-47w8a`` so it acts as the "default".
+    /// Alias ``intersect(distinct:)-8f71m`` so it acts as the "default".
     @inlinable
     public func intersect(_ predicate: (any SQLSubqueryClauseBuilder) throws -> any SQLSubqueryClauseBuilder) rethrows -> Self {
         try self.intersect(distinct: predicate)
@@ -125,7 +125,7 @@ extension SQLCommonUnionBuilder {
         try self.except(all: predicate(SQLSubqueryBuilder()).select)
     }
 
-    /// Alias ``except(distinct:)-6vhbz`` so it acts as the "default".
+    /// Alias ``except(distinct:)-62w7q`` so it acts as the "default".
     @inlinable
     public func except(_ predicate: (any SQLSubqueryClauseBuilder) throws -> any SQLSubqueryClauseBuilder) rethrows -> Self {
         try self.except(distinct: predicate)
