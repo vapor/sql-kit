@@ -72,8 +72,11 @@ extension SQLQueryString {
     }
 }
 
-extension SQLRaw {
-    @available(*, deprecated, message: "Binds set in an `SQLRaw` are ignored. Use `SQLBind`instead.")
+@available(*, deprecated, renamed: "SQLUnsafeRaw", message: "SQLRaw has been renamed to SQLUnsafeRaw.")
+public typealias SQLRaw = SQLUnsafeRaw
+
+extension SQLUnsafeRaw {
+    @available(*, deprecated, message: "Binds set in an `SQLUnsafeRaw` are ignored. Use `SQLBind`instead.")
     @inlinable
     public init(_ sql: String, _ binds: [any Encodable & Sendable]) {
         self.sql = sql
