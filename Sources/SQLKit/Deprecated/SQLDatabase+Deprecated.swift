@@ -38,3 +38,11 @@ extension SQLDatabaseReportedVersion {
         (otherVersion as? Self).map { !self.isOlder(than: $0) } ?? false
     }
 }
+
+extension SQLDatabase {
+    @available(*, deprecated, renamed: "unsafeRaw(_:)", message: "SQLDatabase.unsafeRaw(_:) has been renamed to SQLDatabase.unsafeRaw(_:).")
+    @inlinable
+    public func raw(_ sql: SQLQueryString) -> SQLUnsafeRawBuilder {
+        self.unsafeRaw(sql)
+    }
+}

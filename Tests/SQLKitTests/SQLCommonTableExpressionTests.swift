@@ -238,7 +238,7 @@ final class SQLCommonTableExpressionTests: XCTestCase {
             SQLGroupExpression(SQLUnsafeRaw("FOO"))
         ])
         
-        XCTAssertSerialization(of: self.db.raw("\(query)"), is: "WITH ``x`` AS (VALUES(``1``)), ``x`` AS (VALUES(``1``)), (FOO) SELECT ``a``.``b``")
+        XCTAssertSerialization(of: self.db.unsafeRaw("\(query)"), is: "WITH ``x`` AS (VALUES(``1``)), ``x`` AS (VALUES(``1``)), (FOO) SELECT ``a``.``b``")
     }
     
     func testMoreRealisticCTEs() {

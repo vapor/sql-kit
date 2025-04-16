@@ -106,7 +106,7 @@ final class SQLCreateDropTriggerTests: XCTestCase {
         var query = SQLCreateTrigger(trigger: "t", table: "tab", when: .after, event: .delete)
         query.body = self.body.map { SQLUnsafeRaw($0) }
 
-        XCTAssertSerialization(of: self.db.raw("\(query)"), is: "CREATE TRIGGER ``t`` AFTER DELETE ON ``tab`` BEGIN IF NEW.amount < 0 THEN SET NEW.amount = 0; END IF; END;")
+        XCTAssertSerialization(of: self.db.unsafeRaw("\(query)"), is: "CREATE TRIGGER ``t`` AFTER DELETE ON ``tab`` BEGIN IF NEW.amount < 0 THEN SET NEW.amount = 0; END IF; END;")
     }
     
     func testInvalidTriggerCreates() {

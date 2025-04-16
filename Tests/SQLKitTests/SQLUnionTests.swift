@@ -194,10 +194,10 @@ final class SQLUnionTests: XCTestCase {
         query.add(self.db.select().columns("*").select, all: false)
         
         self.db._dialect.unionFeatures = []
-        XCTAssertSerialization(of: self.db.raw("\(query)"), is: "SELECT * SELECT * SELECT *")
+        XCTAssertSerialization(of: self.db.unsafeRaw("\(query)"), is: "SELECT * SELECT * SELECT *")
 
         self.db._dialect.unionFeatures = [.union, .unionAll]
-        XCTAssertSerialization(of: self.db.raw("\(query)"), is: "SELECT * UNION ALL SELECT * UNION SELECT *")
+        XCTAssertSerialization(of: self.db.unsafeRaw("\(query)"), is: "SELECT * UNION ALL SELECT * UNION SELECT *")
     }
 
     // MARK: Subquery unions

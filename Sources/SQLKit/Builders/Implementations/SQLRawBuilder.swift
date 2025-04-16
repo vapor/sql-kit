@@ -1,5 +1,5 @@
 /// Builds raw SQL queries.
-public final class SQLRawBuilder: SQLQueryBuilder, SQLQueryFetcher {
+public final class SQLUnsafeRawBuilder: SQLQueryBuilder, SQLQueryFetcher {
     /// Raw query being built.
     @usableFromInline
     var sql: SQLQueryString
@@ -13,7 +13,7 @@ public final class SQLRawBuilder: SQLQueryBuilder, SQLQueryFetcher {
         self.sql
     }
 
-    /// Create a new ``SQLRawBuilder``.
+    /// Create a new ``SQLUnsafeRawBuilder``.
     @inlinable
     public init(_ sql: SQLQueryString, on database: any SQLDatabase) {
         self.database = database
@@ -22,9 +22,9 @@ public final class SQLRawBuilder: SQLQueryBuilder, SQLQueryFetcher {
 }
 
 extension SQLDatabase {
-    /// Create a new ``SQLRawBuilder``.
+    /// Create a new ``SQLUnsafeRawBuilder``.
     @inlinable
-    public func raw(_ sql: SQLQueryString) -> SQLRawBuilder {
+    public func unsafeRaw(_ sql: SQLQueryString) -> SQLUnsafeRawBuilder {
         .init(sql, on: self)
     }
 }

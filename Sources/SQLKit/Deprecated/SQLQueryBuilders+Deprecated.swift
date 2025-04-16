@@ -58,3 +58,6 @@ extension SQLJoinBuilder {
          self.join(SQLIdentifier(table), method: method, on: SQLUnsafeRaw(expression))
     }
 }
+
+@available(*, deprecated, renamed: "SQLUnsafeRawBuilder", message: "SQLRawBuilder has been renamed to SQLUnsafeRawBuilder.")
+public typealias SQLRawBuilder = SQLUnsafeRawBuilder

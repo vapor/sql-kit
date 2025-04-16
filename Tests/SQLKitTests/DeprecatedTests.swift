@@ -10,7 +10,7 @@ final class SQLDeprecatedTests: XCTestCase {
     
     @available(*, deprecated, message: "Contains tests of deprecated functionality")
     func testConcatOperator() {
-        XCTAssertSerialization(of: self.db.raw("\(SQLBinaryOperator.concatenate)"), is: "")
+        XCTAssertSerialization(of: self.db.unsafeRaw("\(SQLBinaryOperator.concatenate)"), is: "")
     }
     
     @available(*, deprecated, message: "Contains tests of deprecated functionality")
@@ -33,7 +33,7 @@ final class SQLDeprecatedTests: XCTestCase {
     
     @available(*, deprecated, message: "Contains tests of deprecated functionality")
     func testDataTypeType() {
-        XCTAssertSerialization(of: self.db.raw("\(SQLDataType.type("FOO"))"), is: "``FOO``")
+        XCTAssertSerialization(of: self.db.unsafeRaw("\(SQLDataType.type("FOO"))"), is: "``FOO``")
     }
     
     @available(*, deprecated, message: "Contains tests of deprecated functionality")
@@ -59,7 +59,7 @@ final class SQLDeprecatedTests: XCTestCase {
     
     @available(*, deprecated, message: "Contains tests of deprecated functionality")
     func testOldQueryStringInterpolations() {
-        XCTAssertSerialization(of: self.db.raw("\(raw: "X") \("x")"), is: "X x")
+        XCTAssertSerialization(of: self.db.unsafeRaw("\(raw: "X") \("x")"), is: "X x")
     }
     
     @available(*, deprecated, message: "Contains tests of deprecated functionality")
@@ -141,5 +141,10 @@ final class SQLDeprecatedTests: XCTestCase {
         XCTAssert(TestVersion(stringValue: "b").isNotOlder(than: TestVersion(stringValue: "a")))
         XCTAssert(TestVersion(stringValue: "a").isNotOlder(than: TestVersion(stringValue: "a")))
         XCTAssertFalse(TestVersion(stringValue: "b").isNotOlder(than: AnotherTestVersion(stringValue: "a")))
+    }
+
+    @available(*, deprecated, message: "Contains tests of deprecated functionality")
+    func testOldRawMethod() {
+        XCTAssertNotNil(self.db.raw("foo"))
     }
 }

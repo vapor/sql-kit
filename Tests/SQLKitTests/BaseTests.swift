@@ -66,7 +66,7 @@ final class SQLKitTests: XCTestCase {
     // MARK: Misc
         
     func testQuoting() {
-        XCTAssertSerialization(of: SQLRawBuilder("\(ident: "foo``bar``") \(literal: "foo'bar'")", on: self.db), is: "``foo````bar`````` 'foo''bar'''")
+        XCTAssertSerialization(of: SQLUnsafeRawBuilder("\(ident: "foo``bar``") \(literal: "foo'bar'")", on: self.db), is: "``foo````bar`````` 'foo''bar'''")
     }
     
     func testStringHandlingUtilities() {

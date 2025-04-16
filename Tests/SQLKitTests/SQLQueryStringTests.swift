@@ -9,17 +9,17 @@ final class SQLQueryStringTests: XCTestCase {
     }
     
     func testWithLiteralString() {
-        XCTAssertSerialization(of: self.db.raw("TEST"), is: "TEST")
+        XCTAssertSerialization(of: self.db.unsafeRaw("TEST"), is: "TEST")
     }
     
     func testRawCustomStringConvertible() {
         let field = "name"
-        XCTAssertSerialization(of: self.db.raw("SELECT \(unsafeRaw: field) FROM users"), is: "SELECT name FROM users")
+        XCTAssertSerialization(of: self.db.unsafeRaw("SELECT \(unsafeRaw: field) FROM users"), is: "SELECT name FROM users")
     }
 
     func testRawQueryStringInterpolation() {
         let (table, planet) = ("planets", "Earth")
-        let output = XCTAssertNoThrowWithResult(self.db.raw("SELECT * FROM \(ident: table) WHERE name = \(bind: planet)").advancedSerialize())
+        let output = XCTAssertNoThrowWithResult(self.db.unsafeRaw("SELECT * FROM \(ident: table) WHERE name = \(bind: planet)").advancedSerialize())
         
         XCTAssertEqual(output?.sql, "SELECT * FROM ``planets`` WHERE name = &1")
         XCTAssertEqual(output?.binds.first as? String, planet)
@@ -29,23 +29,23 @@ final class SQLQueryStringTests: XCTestCase {
         let (table, planet) = ("planets", "Earth")
 
         XCTAssertSerialization(
-            of: self.db.raw(.init("SELECT * FROM \(table) WHERE name = \(planet)")),
+            of: self.db.unsafeRaw(.init("SELECT * FROM \(table) WHERE name = \(planet)")),
             is: "SELECT * FROM planets WHERE name = Earth"
         )
         XCTAssertSerialization(
-            of: self.db.raw(.init(String("|||SELECT * FROM staticTable WHERE name = uselessUnboundValue|||".dropFirst(3).dropLast(3)))),
+            of: self.db.unsafeRaw(.init(String("|||SELECT * FROM staticTable WHERE name = uselessUnboundValue|||".dropFirst(3).dropLast(3)))),
             is: "SELECT * FROM staticTable WHERE name = uselessUnboundValue"
         )
     }
 
     func testMakeQueryStringWithoutRawBuilder() {
         let queryString = SQLQueryString("query with \(ident: "identifier") and stuff")
-        XCTAssertSerialization(of: self.db.raw(queryString), is: "query with ``identifier`` and stuff")
+        XCTAssertSerialization(of: self.db.unsafeRaw(queryString), is: "query with ``identifier`` and stuff")
     }
     
     func testAllQueryStringInterpolationTypes() {
         XCTAssertSerialization(
-            of: self.db.raw("""
+            of: self.db.unsafeRaw("""
                 Query string embeds:
                     \(unsafeRaw: "plain string embed")
                     \(bind: "single bind embed")
@@ -79,7 +79,7 @@ final class SQLQueryStringTests: XCTestCase {
     
     func testAppendingQueryStringByOperatorPlus() {
         XCTAssertSerialization(
-            of: self.db.raw(
+            of: self.db.unsafeRaw(
                 "INSERT INTO \(ident: "anything") " as SQLQueryString +
                 "(\(idents: ["col1", "col2", "col3"], joinedBy: ",")) " as SQLQueryString +
                 "VALUES (\(binds: [1, 2, 3]))" as SQLQueryString
@@ -93,17 +93,17 @@ final class SQLQueryStringTests: XCTestCase {
         query += "(\(idents: ["col1", "col2", "col3"], joinedBy: ",")) " as SQLQueryString
         query += "VALUES (\(binds: [1, 2, 3]))" as SQLQueryString
         
-        XCTAssertSerialization(of: self.db.raw(query), is: "INSERT INTO ``anything`` (``col1``,``col2``,``col3``) VALUES (&1, &2, &3)")
+        XCTAssertSerialization(of: self.db.unsafeRaw(query), is: "INSERT INTO ``anything`` (``col1``,``col2``,``col3``) VALUES (&1, &2, &3)")
     }
     
     func testQueryStringArrayJoin() {
         XCTAssertSerialization(
-            of: self.db.raw(
+            of: self.db.unsafeRaw(
                 "INSERT INTO \(ident: "anything") " as SQLQueryString +
                 ((0..<5).map { "\(literal: "\($0)")" as SQLQueryString }).joined(separator: "..")
             ),
             is: "INSERT INTO ``anything`` '0'..'1'..'2'..'3'..'4'"
         )
-        XCTAssertSerialization(of: self.db.raw(Array<SQLQueryString>().joined()), is: "")
+        XCTAssertSerialization(of: self.db.unsafeRaw(Array<SQLQueryString>().joined()), is: "")
     }
 }

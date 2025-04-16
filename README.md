@@ -258,10 +258,10 @@ The delete builder is also an `SQLPredicateBuilder`.
 
 ## Raw
 
-The `raw(_:)` method allows passing custom SQL query strings, with support for parameterized bindings and correctly-quoted identifiers:
+The `unsafeRaw(_:)` method allows passing custom SQL query strings, with support for parameterized bindings and correctly-quoted identifiers:
 
 ```swift
-let planets = try await db.raw("SELECT \(SQLLiteral.all) FROM \(ident: table) WHERE \(ident: name) = \(bind: "planet")")
+let planets = try await db.unsafeRaw("SELECT \(SQLLiteral.all) FROM \(ident: table) WHERE \(ident: name) = \(bind: "planet")")
     .all()
 ```
 
