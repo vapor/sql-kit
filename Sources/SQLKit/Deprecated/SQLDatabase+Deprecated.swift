@@ -42,7 +42,7 @@ extension SQLDatabaseReportedVersion {
 extension SQLDatabase {
     @available(*, deprecated, renamed: "unsafeRaw(_:)", message: "SQLDatabase.unsafeRaw(_:) has been renamed to SQLDatabase.unsafeRaw(_:).")
     @inlinable
-    public func raw(_ sql: SQLQueryString) -> SQLUnsafeRawBuilder {
+    public func raw(_ sql: SQLQueryString) -> SQLRawBuilder {
         self.unsafeRaw(sql)
     }
 }
