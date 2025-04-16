@@ -2,7 +2,7 @@
 ///
 /// Users should almost never need to use ``SQLUnsafeRaw`` directly; there is almost always a better/safer/more specific
 /// expression available for any given purpose. The most common use for ``SQLUnsafeRaw`` by end users is to represent SQL
-/// keywords specific to a dialect, such as `SQLRaw("EXPLAIN VERBOSE")`.
+/// keywords specific to a dialect, such as `SQLUnsafeRaw("EXPLAIN VERBOSE")`.
 ///
 /// In effect, ``SQLUnsafeRaw`` is nothing but a wrapper which makes `String`s into ``SQLExpression``s, since conforming
 /// `String` directly to the protocol would cause numerous issues with SQLKit's existing public API (yet another design
@@ -20,7 +20,7 @@ public struct SQLUnsafeRaw: SQLExpression {
     /// The original intention was that bindings set in this property be serialized along with the SQL text, but this
     /// functionality was never properly implemented and was never used, and is deprecated. Use ``SQLBind`` and/or
     /// ``SQLQueryString`` to achieve the same effect.
-    @available(*, deprecated, message: "Binds set in an `SQLRaw` are ignored. Use `SQLBind` instead.")
+    @available(*, deprecated, message: "Binds set in an `SQLUnsafeRaw` are ignored. Use `SQLBind` instead.")
     public var binds: [any Encodable & Sendable] = []
     
     /// Create a new raw SQL text expression.

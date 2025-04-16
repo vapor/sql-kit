@@ -167,7 +167,7 @@ extension SQLQueryString {
     /// Embed an array of `String`s as a list of literal values, placing the `joiner` between each pair of values.
     ///
     /// This is equivalent to adding an ``SQLList`` whose subexpressions are all ``SQLLiteral/string(_:)``s and whose
-    /// separator is the `joiner` wrapped by ``SQLRaw``.
+    /// separator is the `joiner` wrapped by ``SQLUnsafeRaw``.
     ///
     /// Example:
     ///

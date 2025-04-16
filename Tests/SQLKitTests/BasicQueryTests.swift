@@ -324,7 +324,7 @@ final class BasicQueryTests: XCTestCase {
                 .column("*")
                 .from("planets")
                 .where("name", .equal, "Earth")
-                .lockingClause(SQLRaw("LOCK IN SHARE MODE")),
+                .lockingClause(SQLUnsafeRaw("LOCK IN SHARE MODE")),
             is: "SELECT * FROM ``planets`` WHERE ``name`` = &1 LOCK IN SHARE MODE"
         )
     }
@@ -412,7 +412,7 @@ final class BasicQueryTests: XCTestCase {
                         self.db.select().column("name").from("stars").where(SQLColumn("orion"), .equal, SQLIdentifier("please space")).select
                     ), as: SQLIdentifier("star")),
                     method: SQLJoinMethod.inner,
-                    on: SQLColumn(SQLIdentifier("planet_id"), table: SQLIdentifier("moons")), SQLBinaryOperator.isNot, SQLRaw("%%%%%%")
+                    on: SQLColumn(SQLIdentifier("planet_id"), table: SQLIdentifier("moons")), SQLBinaryOperator.isNot, SQLUnsafeRaw("%%%%%%")
                 )
                 .where(SQLLiteral.null),
             is: "SELECT * FROM ``planets`` INNER JOIN (SELECT ``name`` FROM ``stars`` WHERE ``orion`` = ``please space``) AS ``star`` ON ``moons``.``planet_id`` IS NOT %%%%%% WHERE NULL"

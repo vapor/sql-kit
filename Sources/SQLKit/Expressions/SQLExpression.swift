@@ -3,7 +3,7 @@
 /// ``SQLExpression``s are not well-enough organized in practice to be considered a proper Abstract Syntax Tree
 /// representation, but they nonetheless conceptually act as AST nodes. As such, _anything_ which is executed as
 /// SQL by an ``SQLDatabase`` is represented by a value conforming to ``SQLExpression`` - even if that value is an
-/// instance of ``SQLRaw`` containing arbitrary SQL text.
+/// instance of ``SQLUnsafeRaw`` containing arbitrary SQL text.
 ///
 /// The single requirement of ``SQLExpression`` is the ``SQLExpression/serialize(to:)`` method, which must output
 /// the appropriate raw text, bindings, and/or subexpressions to the provided ``SQLSerializer`` when invoked. Most

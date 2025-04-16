@@ -18,7 +18,7 @@ public enum SQLJoinMethod: SQLExpression {
     /// An outer join not otherwise specified.
     ///
     /// Although this expression does generate `OUTER JOIN` for this case, this is not a valid join in most dialects.
-    /// It is therefore deprecated and should not be used. Users who need it can use `SQLRaw("OUTER JOIN")` instead.
+    /// It is therefore deprecated and should not be used. Users who need it can use `SQLUnsafeRaw("OUTER JOIN")` instead.
     ///
     /// > Note: Presumably, the original intention of this case was to allow expressing a `FULL JOIN` or
     /// > `FULL OUTER JOIN`, which is simply a combination of the effects of a left and right join.

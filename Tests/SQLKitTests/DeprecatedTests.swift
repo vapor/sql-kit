@@ -64,7 +64,7 @@ final class SQLDeprecatedTests: XCTestCase {
     
     @available(*, deprecated, message: "Contains tests of deprecated functionality")
     func testRawBinds() {
-        let raw = SQLRaw("SQL", ["a", "b"])
+        let raw = SQLUnsafeRaw("SQL", ["a", "b"])
         XCTAssertEqual(raw.sql, "SQL")
         XCTAssertEqual(raw.binds[0] as? String, "a")
         XCTAssertEqual(raw.binds[1] as? String, "b")

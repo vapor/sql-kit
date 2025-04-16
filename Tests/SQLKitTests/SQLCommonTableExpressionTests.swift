@@ -233,9 +233,9 @@ final class SQLCommonTableExpressionTests: XCTestCase {
     func testCodeCoverage() {
         var query = self.db.select().column(SQLColumn("b", table: "a")).select
         query.tableExpressionGroup = .init(tableExpressions: [
-            SQLCommonTableExpression(alias: SQLIdentifier("x"), query: SQLRaw("VALUES(``1``)")),
-            SQLCommonTableExpression(alias: SQLIdentifier("x"), query: SQLGroupExpression(SQLRaw("VALUES(``1``)"))),
-            SQLGroupExpression(SQLRaw("FOO"))
+            SQLCommonTableExpression(alias: SQLIdentifier("x"), query: SQLUnsafeRaw("VALUES(``1``)")),
+            SQLCommonTableExpression(alias: SQLIdentifier("x"), query: SQLGroupExpression(SQLUnsafeRaw("VALUES(``1``)"))),
+            SQLGroupExpression(SQLUnsafeRaw("FOO"))
         ])
         
         XCTAssertSerialization(of: self.db.raw("\(query)"), is: "WITH ``x`` AS (VALUES(``1``)), ``x`` AS (VALUES(``1``)), (FOO) SELECT ``a``.``b``")
@@ -244,7 +244,7 @@ final class SQLCommonTableExpressionTests: XCTestCase {
     func testMoreRealisticCTEs() {
         // Simple sub-SELECT avoidance
         // Taken from https://www.postgresql.org/docs/16/queries-with.html#QUERIES-WITH-SELECT
-        self.db._dialect.identifierQuote = SQLRaw("\"")
+        self.db._dialect.identifierQuote = SQLUnsafeRaw("\"")
         XCTAssertSerialization(
             of: self.db.select()
                 .with("regional_sales", as: SQLSubquery.select { $0
@@ -274,7 +274,7 @@ final class SQLCommonTableExpressionTests: XCTestCase {
         
         // Fibonacci series generator
         // Taken from https://dev.mysql.com/doc/refman/8.4/en/with.html#common-table-expressions-recursive-fibonacci-series
-        self.db._dialect.identifierQuote = SQLRaw("`")
+        self.db._dialect.identifierQuote = SQLUnsafeRaw("`")
         self.db._dialect.unionFeatures = [.union, .unionAll]
         XCTAssertSerialization(
             of: self.db.select()

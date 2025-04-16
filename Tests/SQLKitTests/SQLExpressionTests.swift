@@ -212,8 +212,8 @@ final class SQLExpressionTests: XCTestCase {
         XCTAssertSerialization(of: self.db.raw("\(query)"), is: "ALTER TABLE ``table`` RENAME TO ``table2`` ADD ``a`` BIGINT , ADD UNIQUE (``d``) , DROP ``c`` , DROP ``e`` , __INVALID__ ``b`` BLOB")
 
         self.db._dialect.alterTableSyntax.allowsBatch = true
-        self.db._dialect.alterTableSyntax.alterColumnDefinitionClause = SQLRaw("MODIFY")
         XCTAssertSerialization(of: self.db.raw("\(query)"), is: "ALTER TABLE ``table`` RENAME TO ``table2`` ADD ``a`` BIGINT , ADD UNIQUE (``d``) , DROP ``c`` , DROP ``e`` , MODIFY ``b`` BLOB")
+        self.db._dialect.alterTableSyntax.alterColumnDefinitionClause = SQLUnsafeRaw("MODIFY")
     }
     
     func testCreateIndexQuery() {

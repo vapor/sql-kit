@@ -31,15 +31,15 @@ extension SQLCreateTriggerBuilder {
     @inlinable
     @discardableResult
     public func condition(_ value: String) -> Self {
-        self.condition(SQLRaw(value))
+        self.condition(SQLUnsafeRaw(value))
     }
 
     /// Specify a body for the trigger.
-    @available(*, deprecated, message: "Specifying SQL statements as raw strings is unsafe. Use `SQLQueryString` or `SQLRaw` explicitly.")
+    @available(*, deprecated, message: "Specifying SQL statements as raw strings is unsafe. Use `SQLQueryString` or `SQLUnsafeRaw` explicitly.")
     @inlinable
     @discardableResult
     public func body(_ statements: [String]) -> Self {
-        self.body(statements.map { SQLRaw($0) })
+        self.body(statements.map { SQLUnsafeRaw($0) })
     }
 }
 
@@ -55,6 +55,6 @@ extension SQLJoinBuilder {
     @inlinable
     @discardableResult
     public func join(_ table: String, method: SQLJoinMethod = .inner, on expression: String) -> Self {
-         self.join(SQLIdentifier(table), method: method, on: SQLRaw(expression))
+         self.join(SQLIdentifier(table), method: method, on: SQLUnsafeRaw(expression))
     }
 }

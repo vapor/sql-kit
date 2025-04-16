@@ -18,7 +18,7 @@ public protocol SQLDialect: Sendable {
     /// No default is provided.
     var name: String { get }
     
-    /// An expression (usually an ``SQLRaw``) giving the character(s) used to quote SQL
+    /// An expression (usually an ``SQLUnsafeRaw``) giving the character(s) used to quote SQL
     /// identifiers, such as table and column names.
     ///
     /// The identifier quote is placed immediately preceding and following each identifier.
@@ -26,7 +26,7 @@ public protocol SQLDialect: Sendable {
     /// No default is provided.
     var identifierQuote: any SQLExpression { get }
     
-    /// An expression (usually an ``SQLRaw``) giving the character(s) used to quote literal
+    /// An expression (usually an ``SQLUnsafeRaw``) giving the character(s) used to quote literal
     /// string values which appear in a query, such as enumerator names.
     ///
     /// The literal quote is placed immediately preceding and following each string literal.
@@ -82,7 +82,7 @@ public protocol SQLDialect: Sendable {
     ///   the first parameter has position `1`. This value is guaranteed to be greater than zero.
     func bindPlaceholder(at position: Int) -> any SQLExpression
     
-    /// A function which returns an SQL expression (usually an ``SQLRaw``) representing the given
+    /// A function which returns an SQL expression (usually an ``SQLUnsafeRaw``) representing the given
     /// literal boolean value.
     /// 
     /// No default is provided.
@@ -90,13 +90,13 @@ public protocol SQLDialect: Sendable {
     /// - Parameter value: The boolean value to represent.
     func literalBoolean(_ value: Bool) -> any SQLExpression
     
-    /// An expression (usually an ``SQLRaw``) giving the syntax used to express both "use this as
+    /// An expression (usually an ``SQLUnsafeRaw``) giving the syntax used to express both "use this as
     /// the default value" in a column definition and "use the default value for this column" in
     /// a value list.
     ///
     /// ``SQLLiteral/default`` always serializes to this expression.
     ///
-    /// Defaults to `SQLRaw("DEFAULT")`.
+    /// Defaults to `SQLUnsafeRaw("DEFAULT")`.
     var literalDefault: any SQLExpression { get }
     
     /// `true` if the dialect supports the `IF EXISTS` modifier for all types of `DROP` queries

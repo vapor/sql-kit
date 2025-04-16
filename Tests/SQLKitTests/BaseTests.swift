@@ -152,8 +152,8 @@ final class SQLKitTests: XCTestCase {
         XCTAssertNil(db.version)
         XCTAssertEqual(db.dialect.name, self.db.dialect.name)
         XCTAssertEqual(db.queryLogLevel, self.db.queryLogLevel)
-        await XCTAssertNotNilAsync(try await db.execute(sql: SQLRaw("TEST"), { _ in }))
-        await XCTAssertNotNilAsync(try await db.execute(sql: SQLRaw("TEST"), { _ in }).get())
+        await XCTAssertNotNilAsync(try await db.execute(sql: SQLUnsafeRaw("TEST"), { _ in }))
+        await XCTAssertNotNilAsync(try await db.execute(sql: SQLUnsafeRaw("TEST"), { _ in }).get())
     }
     
     func testDatabaseDefaultAsyncImpl() async throws {
@@ -163,7 +163,7 @@ final class SQLKitTests: XCTestCase {
             var eventLoop: any EventLoop { FakeEventLoop() }
             var dialect: any SQLDialect { GenericDialect() }
         }
-        await XCTAssertNotNilAsync(try await TestNoAsyncDatabase().execute(sql: SQLRaw("TEST"), { _ in }))
+        await XCTAssertNotNilAsync(try await TestNoAsyncDatabase().execute(sql: SQLUnsafeRaw("TEST"), { _ in }))
     }
 
     func testDatabaseVersion() {
@@ -194,16 +194,16 @@ final class SQLKitTests: XCTestCase {
     func testDialectDefaultImpls() {
         struct TestDialect: SQLDialect {
             var name: String { "test" }
-            var identifierQuote: any SQLExpression { SQLRaw("`") }
+            var identifierQuote: any SQLExpression { SQLUnsafeRaw("`") }
             var supportsAutoIncrement: Bool { false }
-            var autoIncrementClause: any SQLExpression { SQLRaw("") }
+            var autoIncrementClause: any SQLExpression { SQLUnsafeRaw("") }
             func bindPlaceholder(at position: Int) -> any SQLExpression { SQLLiteral.numeric("\(position)") }
-            func literalBoolean(_ value: Bool) -> any SQLExpression { SQLRaw("\(value)") }
+            func literalBoolean(_ value: Bool) -> any SQLExpression { SQLUnsafeRaw("\(value)") }
         }
         
-        XCTAssertEqual((TestDialect().literalStringQuote as? SQLRaw)?.sql, "'")
+        XCTAssertEqual((TestDialect().literalStringQuote as? SQLUnsafeRaw)?.sql, "'")
         XCTAssertNil(TestDialect().autoIncrementFunction)
-        XCTAssertEqual((TestDialect().literalDefault as? SQLRaw)?.sql, "DEFAULT")
+        XCTAssertEqual((TestDialect().literalDefault as? SQLUnsafeRaw)?.sql, "DEFAULT")
         XCTAssert(TestDialect().supportsIfExists)
         XCTAssertEqual(TestDialect().enumSyntax, .unsupported)
         XCTAssertFalse(TestDialect().supportsDropBehavior)
@@ -214,33 +214,33 @@ final class SQLKitTests: XCTestCase {
         XCTAssertNil(TestDialect().alterTableSyntax.alterColumnDefinitionTypeKeyword)
         XCTAssert(TestDialect().alterTableSyntax.allowsBatch)
         XCTAssertNil(TestDialect().customDataType(for: .int))
-        XCTAssertEqual((TestDialect().normalizeSQLConstraint(identifier: SQLRaw("")) as? SQLRaw)?.sql, "")
+        XCTAssertEqual((TestDialect().normalizeSQLConstraint(identifier: SQLUnsafeRaw("")) as? SQLUnsafeRaw)?.sql, "")
         XCTAssertEqual(TestDialect().upsertSyntax, .unsupported)
         XCTAssertEqual(TestDialect().unionFeatures, [.union, .unionAll])
         XCTAssertNil(TestDialect().sharedSelectLockExpression)
         XCTAssertNil(TestDialect().exclusiveSelectLockExpression)
-        XCTAssertNil(TestDialect().nestedSubpathExpression(in: SQLRaw(""), for: [""]))
+        XCTAssertNil(TestDialect().nestedSubpathExpression(in: SQLUnsafeRaw(""), for: [""]))
     }
     
     func testAdditionalStatementAPI() {
         var serializer = SQLSerializer(database: self.db)
         serializer.statement {
             $0.append("a")
-            $0.append(SQLRaw("a"))
-            
+            $0.append(SQLUnsafeRaw("a"))
+
             $0.append("a", "b")
-            $0.append(SQLRaw("a"), "b")
-            $0.append("a", SQLRaw("b"))
-            $0.append(SQLRaw("a"), SQLRaw("b"))
-            
+            $0.append(SQLUnsafeRaw("a"), "b")
+            $0.append("a", SQLUnsafeRaw("b"))
+            $0.append(SQLUnsafeRaw("a"), SQLUnsafeRaw("b"))
+
             $0.append("a", "b", "c")
-            $0.append(SQLRaw("a"), "b", "c")
-            $0.append("a", SQLRaw("b"), "c")
-            $0.append("a", "b", SQLRaw("c"))
-            $0.append(SQLRaw("a"), SQLRaw("b"), "c")
-            $0.append(SQLRaw("a"), "b", SQLRaw("c"))
-            $0.append("a", SQLRaw("b"), SQLRaw("c"))
-            $0.append(SQLRaw("a"), SQLRaw("b"), SQLRaw("c"))
+            $0.append(SQLUnsafeRaw("a"), "b", "c")
+            $0.append("a", SQLUnsafeRaw("b"), "c")
+            $0.append("a", "b", SQLUnsafeRaw("c"))
+            $0.append(SQLUnsafeRaw("a"), SQLUnsafeRaw("b"), "c")
+            $0.append(SQLUnsafeRaw("a"), "b", SQLUnsafeRaw("c"))
+            $0.append("a", SQLUnsafeRaw("b"), SQLUnsafeRaw("c"))
+            $0.append(SQLUnsafeRaw("a"), SQLUnsafeRaw("b"), SQLUnsafeRaw("c"))
         }
         XCTAssertEqual(serializer.sql, "a a a b a b a b a b a b c a b c a b c a b c a b c a b c a b c a b c")
     }

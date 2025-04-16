@@ -16,10 +16,10 @@ final class SQLCreateTableTests: XCTestCase {
                 .column("id", type: .bigint, .primaryKey)
                 .column("name", type: .text, .default("unnamed"))
                 .column("galaxy_id", type: .bigint, .references("galaxies", "id"))
-                .column("diameter", type: .int, .check(SQLRaw("diameter > 0")))
+                .column("diameter", type: .int, .check(SQLUnsafeRaw("diameter > 0")))
                 .column("important", type: .text, .notNull)
                 .column("special", type: .text, .unique)
-                .column("automatic", type: .text, .generated(SQLRaw("CONCAT(name, special)")))
+                .column("automatic", type: .text, .generated(SQLUnsafeRaw("CONCAT(name, special)")))
                 .column("collated", type: .text, .collate(name: "default")),
             is: """
                 CREATE TABLE ``planets`` (``id`` BIGINT PRIMARY KEY AWWTOEINCREMENT, ``name`` TEXT DEFAULT 'unnamed', ``galaxy_id`` BIGINT REFERENCES ``galaxies`` (``id``), ``diameter`` INTEGER CHECK (diameter > 0), ``important`` TEXT NOT NULL, ``special`` TEXT UNIQUE, ``automatic`` TEXT GENERATED ALWAYS AS (CONCAT(name, special)) STORED, ``collated`` TEXT COLLATE ``default``)
@@ -76,7 +76,7 @@ final class SQLCreateTableTests: XCTestCase {
             is: "CREATE TABLE ``planets4`` (``id`` BIGINT PRIMARY KEY)"
         )
         
-        self.db._dialect.autoIncrementFunction = SQLRaw("NEXTUNIQUE")
+        self.db._dialect.autoIncrementFunction = SQLUnsafeRaw("NEXTUNIQUE")
 
         XCTAssertSerialization(
             of: self.db.create(table: "planets5").column("id", type: .bigint, .primaryKey),
@@ -102,11 +102,11 @@ final class SQLCreateTableTests: XCTestCase {
             is: "CREATE TABLE ``planets3`` (``diameter`` REAL DEFAULT 11.5)"
         )
         XCTAssertSerialization(
-            of: self.db.create(table: "planets4").column("current", type: .custom(SQLRaw("BOOLEAN")), .default(false)),
+            of: self.db.create(table: "planets4").column("current", type: .custom(SQLUnsafeRaw("BOOLEAN")), .default(false)),
             is: "CREATE TABLE ``planets4`` (``current`` BOOLEAN DEFAULT FAALS)"
         )
         XCTAssertSerialization(
-            of: self.db.create(table: "planets5").column("current", type: .custom(SQLRaw("BOOLEAN")), .default(SQLLiteral.boolean(true))),
+            of: self.db.create(table: "planets5").column("current", type: .custom(SQLUnsafeRaw("BOOLEAN")), .default(SQLLiteral.boolean(true))),
             is: "CREATE TABLE ``planets5`` (``current`` BOOLEAN DEFAULT TROO)"
         )
     }
@@ -132,7 +132,7 @@ final class SQLCreateTableTests: XCTestCase {
                 .column("galaxy_id", type: .bigint)
                 .primaryKey("id")
                 .unique("name")
-                .check(SQLRaw("diameter > 0"), named: "non-zero-diameter")
+                .check(SQLUnsafeRaw("diameter > 0"), named: "non-zero-diameter")
                 .foreignKey(
                     ["galaxy_id", "galaxy_name"],
                     references: "galaxies",

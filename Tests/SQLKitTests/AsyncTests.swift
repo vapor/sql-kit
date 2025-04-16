@@ -9,10 +9,10 @@ final class AsyncSQLKitTests: XCTestCase {
     }
     
     func testSQLDatabaseAsyncAndFutures() async throws {
-        try await self.db.execute(sql: SQLRaw("TEST"), { _ in XCTFail("Should not receive results") }).get()
+        try await self.db.execute(sql: SQLUnsafeRaw("TEST"), { _ in XCTFail("Should not receive results") }).get()
         XCTAssertEqual(self.db.results[0], "TEST")
         
-        try await self.db.execute(sql: SQLRaw("TEST"), { _ in XCTFail("Should not receive results") })
+        try await self.db.execute(sql: SQLUnsafeRaw("TEST"), { _ in XCTFail("Should not receive results") })
         XCTAssertEqual(self.db.results[1], "TEST")
     }
     

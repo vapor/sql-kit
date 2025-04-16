@@ -36,7 +36,7 @@ public struct SQLIdentifier: SQLExpression, ExpressibleByStringLiteral {
         /// seemed like a good idea for flexibility at the time, but in reality creates additional performance
         /// bottlenecks and prevents error-proof quoting, short of making ``SQLDialect`` even more confusing (or a
         /// major version bump).  Fortunately, in practice all knwon dialects always return their quoting characters
-        /// as instances of ``SQLRaw``, so we check for that case and perform the appropriate quoting and/or escaping
+        /// as instances of ``SQLUnsafeRaw``, so we check for that case and perform the appropriate quoting and/or escaping
         /// as needed, while falling back to quoting without escaping if the check fails.
         if let rawQuote = (serializer.dialect.identifierQuote as? SQLUnsafeRaw)?.sql {
             serializer.write("\(rawQuote)\(self.string.sqlkit_replacing(rawQuote, with: "\(rawQuote)\(rawQuote)"))\(rawQuote)")

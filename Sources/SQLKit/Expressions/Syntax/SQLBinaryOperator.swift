@@ -89,7 +89,7 @@ public enum SQLBinaryOperator: SQLExpression {
 
         // See https://dev.mysql.com/doc/refman/8.0/en/sql-mode.html#sqlmode_pipes_as_concat
         case .concatenate:
-            serializer.database.logger.debug("|| is not implemented, because it doesn't always work. Use `SQLFunction(\"CONCAT\", args...)` for MySQL or `SQLRaw(\"||\")` for Postgres and SQLite.")
+            serializer.database.logger.debug("|| is not implemented, because it doesn't always work. Use `SQLFunction(\"CONCAT\", args...)` for MySQL or `SQLUnsafeRaw(\"||\")` for Postgres and SQLite.")
         }
     }
 }

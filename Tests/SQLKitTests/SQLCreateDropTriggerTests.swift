@@ -36,7 +36,7 @@ final class SQLCreateDropTriggerTests: XCTestCase {
         self.db._dialect.triggerSyntax = .init(create: [.supportsBody, .supportsOrder, .supportsDefiner, .requiresForEachRow])
 
         let builder = self.db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
-                .body(self.body.map { SQLRaw($0) })
+                .body(self.body.map { SQLUnsafeRaw($0) })
                 .order(precedence: .precedes, otherTriggerName: "other")
         builder.createTrigger.definer = SQLLiteral.string("foo@bar")
         
@@ -50,7 +50,7 @@ final class SQLCreateDropTriggerTests: XCTestCase {
         self.db._dialect.triggerSyntax = .init(create: [.supportsBody, .supportsCondition])
         XCTAssertSerialization(
             of: self.db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
-                .body(self.body.map { SQLRaw($0) })
+                .body(self.body.map { SQLUnsafeRaw($0) })
                 .condition("\(ident: "foo") = \(ident: "bar")" as SQLQueryString),
             is: "CREATE TRIGGER ``foo`` BEFORE INSERT ON ``planet`` WHEN ``foo`` = ``bar`` BEGIN \(self.body.joined(separator: " ")) END;"
         )
@@ -104,7 +104,7 @@ final class SQLCreateDropTriggerTests: XCTestCase {
     func testAdditionalInitializer() {
         self.db._dialect.triggerSyntax = .init(create: [.supportsBody, .supportsCondition])
         var query = SQLCreateTrigger(trigger: "t", table: "tab", when: .after, event: .delete)
-        query.body = self.body.map { SQLRaw($0) }
+        query.body = self.body.map { SQLUnsafeRaw($0) }
 
         XCTAssertSerialization(of: self.db.raw("\(query)"), is: "CREATE TRIGGER ``t`` AFTER DELETE ON ``tab`` BEGIN IF NEW.amount < 0 THEN SET NEW.amount = 0; END IF; END;")
     }
@@ -125,7 +125,7 @@ final class SQLCreateDropTriggerTests: XCTestCase {
         )
 
         let builder = self.db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
-                .body(self.body.map { SQLRaw($0) })
+                .body(self.body.map { SQLUnsafeRaw($0) })
                 .order(precedence: .precedes, otherTriggerName: "other")
         builder.createTrigger.definer = SQLLiteral.string("foo@bar")
         
