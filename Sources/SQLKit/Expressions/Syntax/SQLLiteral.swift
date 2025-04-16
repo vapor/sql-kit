@@ -54,7 +54,7 @@ public enum SQLLiteral: SQLExpression {
         
         case .string(let string):
             /// See ``SQLIdentifier/serialize(to:)`` for a discussion on why this is written the way it is.
-            if let rawQuote = (serializer.dialect.literalStringQuote as? SQLRaw)?.sql {
+            if let rawQuote = (serializer.dialect.literalStringQuote as? SQLUnsafeRaw)?.sql {
                 serializer.write("\(rawQuote)\(string.sqlkit_replacing(rawQuote, with: "\(rawQuote)\(rawQuote)"))\(rawQuote)")
             } else {
                 serializer.dialect.literalStringQuote.serialize(to: &serializer)

@@ -60,9 +60,9 @@ public struct SQLAlterTable: SQLExpression {
             // Emit the query anyway so the error will propagate when the database rejects it.
         }
 
-        let additions = (self.addColumns  + self.addTableConstraints).map  { (verb: SQLRaw("ADD"),  definition: $0) }
-        let removals  = (self.dropColumns + self.dropTableConstraints).map { (verb: SQLRaw("DROP"), definition: $0) }
-        let modifications = self.modifyColumns.map { (verb: syntax.alterColumnDefinitionClause ?? SQLRaw("__INVALID__"), definition: $0) }
+        let additions = (self.addColumns  + self.addTableConstraints).map  { (verb: SQLUnsafeRaw("ADD"),  definition: $0) }
+        let removals  = (self.dropColumns + self.dropTableConstraints).map { (verb: SQLUnsafeRaw("DROP"), definition: $0) }
+        let modifications = self.modifyColumns.map { (verb: syntax.alterColumnDefinitionClause ?? SQLUnsafeRaw("__INVALID__"), definition: $0) }
         let alterations = additions + removals + modifications
 
         serializer.statement {

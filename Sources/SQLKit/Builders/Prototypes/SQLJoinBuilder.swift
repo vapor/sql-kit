@@ -82,8 +82,8 @@ extension SQLJoinBuilder {
     public func join(_ table: any SQLExpression, method: any SQLExpression = SQLJoinMethod.inner, using columns: any SQLExpression) -> Self {
         // TODO: Make ``SQLJoin`` aware of the `USING` syntax; this method is hacky and somewhat driver-specific.
         self.joins.append(SQLList([
-            method, SQLRaw("JOIN"), table, SQLRaw("USING"), SQLGroupExpression(columns)
-        ], separator: SQLRaw(" ")))
+            method, SQLUnsafeRaw("JOIN"), table, SQLUnsafeRaw("USING"), SQLGroupExpression(columns)
+        ], separator: SQLUnsafeRaw(" ")))
         return self
     }
 }

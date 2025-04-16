@@ -16,7 +16,7 @@ extension SQLBenchmarker {
             try await $0.create(table: "planets")
                 .column("id", type: .bigint, .primaryKey)
                 .column("name", type: .text, [.default(SQLLiteral.string("Unamed Planet")), .notNull])
-                .column("is_inhabited", type: .custom(SQLRaw("boolean")), .notNull)
+                .column("is_inhabited", type: .custom(SQLUnsafeRaw("boolean")), .notNull)
                 .column("galaxyID", type: .bigint, .references("galaxies", "id"))
                 .run()
 

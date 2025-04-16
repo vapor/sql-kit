@@ -53,7 +53,7 @@ public struct SQLColumnDefinition: SQLExpression {
         serializer.statement {
             $0.append(self.column, self.dataType)
             if !self.constraints.isEmpty {
-                $0.append(SQLList(self.constraints, separator: SQLRaw(" ")))
+                $0.append(SQLList(self.constraints, separator: SQLUnsafeRaw(" ")))
             }
         }
     }

@@ -483,7 +483,7 @@ extension SQLDialect {
     /// Default implementation of ``literalStringQuote-3ur0m``.
     @inlinable
     public var literalStringQuote: any SQLExpression {
-        SQLRaw("'")
+        SQLUnsafeRaw("'")
     }
 
     /// Default implementation of ``autoIncrementFunction-1ktxy``.
@@ -495,7 +495,7 @@ extension SQLDialect {
     /// Default implementation of ``literalDefault-7nz7t``.
     @inlinable
     public var literalDefault: any SQLExpression {
-        SQLRaw("DEFAULT")
+        SQLUnsafeRaw("DEFAULT")
     }
 
     /// Default implementation of ``supportsIfExists-5dxcu``.

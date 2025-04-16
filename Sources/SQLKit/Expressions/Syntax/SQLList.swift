@@ -11,7 +11,7 @@
 /// // "'a', 'b'"
 /// print(database.serialize(SQLList(SQLLiteral.string("a"), SQLLiteral.string("b"), separator: SQLBinaryOperator.and)).sql)
 /// // "'a'AND'b'"
-/// print(database.serialize(SQLList(SQLLiteral.string("a"), SQLLiteral.string("b"), separator: SQLRaw(" AND ")).sql)
+/// print(database.serialize(SQLList(SQLLiteral.string("a"), SQLLiteral.string("b"), separator: SQLUnsafeRaw(" AND ")).sql)
 /// // "'a' AND 'b'"
 /// ```
 public struct SQLList: SQLExpression {
@@ -25,9 +25,9 @@ public struct SQLList: SQLExpression {
     ///
     /// - Parameters:
     ///   - expressions: The list of expressions.
-    ///   - separator: A separator expression. If not given, defaults to `SQLRaw(", ")`.
+    ///   - separator: A separator expression. If not given, defaults to `SQLUnsafeRaw(", ")`.
     @inlinable
-    public init(_ expressions: [any SQLExpression], separator: any SQLExpression = SQLRaw(", ")) {
+    public init(_ expressions: [any SQLExpression], separator: any SQLExpression = SQLUnsafeRaw(", ")) {
         self.expressions = expressions
         self.separator = separator
     }

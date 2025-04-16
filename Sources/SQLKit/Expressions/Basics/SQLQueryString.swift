@@ -62,7 +62,7 @@ public struct SQLQueryString: SQLExpression, ExpressibleByStringInterpolation, S
     /// Create a query string from a plain string containing raw SQL.
     @inlinable
     public init(_ string: String) {
-        self.fragments = [SQLRaw(string)]
+        self.fragments = [SQLUnsafeRaw(string)]
     }
 
     // See `SQLExpression.serialize(to:)`.
@@ -98,7 +98,7 @@ extension SQLQueryString {
     // See `StringInterpolationProtocol.appendLiteral(_:)`.
     @inlinable
     public mutating func appendLiteral(_ literal: String) {
-        self.fragments.append(SQLRaw(literal))
+        self.fragments.append(SQLUnsafeRaw(literal))
     }
 }
 
@@ -111,7 +111,7 @@ extension SQLQueryString {
     /// > a purpose-specific expression instead whenever possible.
     @inlinable
     public mutating func appendInterpolation(unsafeRaw value: String) {
-        self.fragments.append(SQLRaw(value))
+        self.fragments.append(SQLUnsafeRaw(value))
     }
 
     /// Embed an `Encodable` value as a binding in the SQL query.
@@ -180,7 +180,7 @@ extension SQLQueryString {
     /// ```
     @inlinable
     public mutating func appendInterpolation(literals: [String], joinedBy joiner: String) {
-        self.fragments.append(SQLList(literals.map { SQLLiteral.string($0) }, separator: SQLRaw(joiner)))
+        self.fragments.append(SQLList(literals.map { SQLLiteral.string($0) }, separator: SQLUnsafeRaw(joiner)))
     }
 
     /// Embed a `String` as an identifier, as if via ``SQLIdentifier``.
@@ -210,7 +210,7 @@ extension SQLQueryString {
     /// ```
     @inlinable
     public mutating func appendInterpolation(idents: [String], joinedBy joiner: String) {
-        self.fragments.append(SQLList(idents.map { SQLIdentifier($0) }, separator: SQLRaw(joiner)))
+        self.fragments.append(SQLList(idents.map { SQLIdentifier($0) }, separator: SQLUnsafeRaw(joiner)))
     }
 
     /// Embed an arbitary ``SQLExpression`` in the string.
@@ -245,7 +245,7 @@ extension Sequence<SQLQueryString> {
     /// - Returns: A single, concatenated string.
     @inlinable
     public func joined(separator: String = "") -> SQLQueryString {
-        self.joined(separator: SQLRaw(separator))
+        self.joined(separator: SQLUnsafeRaw(separator))
     }
 
     /// Returns a new ``SQLQueryString`` formed by concatenating the elements of the sequence, adding the given
