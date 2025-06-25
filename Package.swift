@@ -16,9 +16,11 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-collections.git", from: "1.1.0"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.5.4"),
-        // TODO: SM: Require a minimum swift-nio version once latest nio core fixes are versionized.
-        // .package(url: "https://github.com/apple/swift-nio.git", from: "2.65.0.TBD"),
-        .package(url: "https://github.com/apple/swift-nio.git", branch: "main"),
+        // NOTE: Compiling to wasm requires specific versions of swift-nio.
+        // This older version is left as-is to avoid placing restrictions
+        // on other targets. But to compile for wasm, make sure you have
+        // a version of swift-nio with a passing build for the NIOCore module.
+        .package(url: "https://github.com/apple/swift-nio.git", from: "2.65.0"),
     ],
     targets: [
         .target(
