@@ -15,6 +15,7 @@ jobs:
     secrets: inherit
     with:
       with_android: true
+      with_wasm: true
 
   pure-fluent-integration-test:
     if: ${{ !(github.event.pull_request.draft || false) }}
