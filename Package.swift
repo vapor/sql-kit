@@ -16,7 +16,9 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-collections.git", from: "1.1.0"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.5.4"),
-        .package(url: "https://github.com/apple/swift-nio.git", from: "2.65.0"),
+        // TODO: SM: Require a minimum swift-nio version once latest nio core fixes are versionized.
+        // .package(url: "https://github.com/apple/swift-nio.git", from: "2.65.0.TBD"),
+        .package(url: "https://github.com/apple/swift-nio.git", branch: "main"),
     ],
     targets: [
         .target(
@@ -24,7 +26,6 @@ let package = Package(
             dependencies: [
                 .product(name: "Collections", package: "swift-collections"),
                 .product(name: "Logging", package: "swift-log"),
-                .product(name: "NIO", package: "swift-nio"),
                 .product(name: "NIOCore", package: "swift-nio"),
             ],
             swiftSettings: swiftSettings
