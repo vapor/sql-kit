@@ -1,21 +1,6 @@
 // swift-tools-version:5.10
 import PackageDescription
 
-let nonWASIPlatforms: [Platform] = [
-    .macOS,
-    .macCatalyst,
-    .iOS,
-    .tvOS,
-    .watchOS,
-    .visionOS,
-    .driverKit,
-    .linux,
-    .windows,
-    .android,
-    // .wasi, // Everything but WASI
-    .openbsd,
-]
-
 let package = Package(
     name: "sql-kit",
     platforms: [
@@ -39,7 +24,6 @@ let package = Package(
             dependencies: [
                 .product(name: "Collections", package: "swift-collections"),
                 .product(name: "Logging", package: "swift-log"),
-                .product(name: "NIO", package: "swift-nio", condition: .when(platforms: nonWASIPlatforms)),
                 .product(name: "NIOCore", package: "swift-nio"),
             ],
             swiftSettings: swiftSettings
