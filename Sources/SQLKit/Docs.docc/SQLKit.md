@@ -69,12 +69,12 @@ SQLKit does _not_ provide facilities for creating or managing database connectio
 - ``SQLDropTriggerBuilder``
 - ``SQLInsertBuilder``
 - ``SQLPredicateGroupBuilder``
-- ``SQLRawBuilder``
 - ``SQLReturningResultBuilder``
 - ``SQLSecondaryPredicateGroupBuilder``
 - ``SQLSelectBuilder``
 - ``SQLSubqueryBuilder``
 - ``SQLUnionBuilder``
+- ``SQLUnsafeRawBuilder``
 - ``SQLUpdateBuilder``
 
 ### Syntactic Expressions
@@ -87,7 +87,7 @@ SQLKit does _not_ provide facilities for creating or managing database connectio
 - ``SQLIdentifier``
 - ``SQLList``
 - ``SQLLiteral``
-- ``SQLRaw``
+- ``SQLUnsafeRaw``
 
 ### Basic Expressions
 

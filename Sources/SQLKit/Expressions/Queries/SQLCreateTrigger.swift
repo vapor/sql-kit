@@ -196,7 +196,7 @@ public struct SQLCreateTrigger: SQLExpression {
             }
 
             if syntax.contains(.supportsBody), let body = self.body {
-                $0.append("BEGIN", SQLList(body, separator: SQLRaw(" ")), "END;")
+                $0.append("BEGIN", SQLList(body, separator: SQLUnsafeRaw(" ")), "END;")
             } else if let procedure = self.procedure {
                 $0.append("EXECUTE PROCEDURE", procedure)
             }
