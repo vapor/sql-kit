@@ -23,10 +23,10 @@ jobs:
     container: swift:6.1-noble
     steps:
       - name: Check out sql-kit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with: { path: sql-kit, repository: vapor/sql-kit }
       - name: Check out fluent-kit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with: { path: fluent-kit, repository: vapor/fluent-kit }
       - name: Set up and run FluentKit tests
         run: |
@@ -69,15 +69,15 @@ jobs:
       MYSQL_HOSTNAME_B: mysql-b
     steps:
       - name: Check out sql-kit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with: { path: sql-kit, repository: vapor/sql-kit }
       - name: Check out SQLKit driver
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: ${{ matrix.driver.sqlkit }}
           repository: vapor/${{ matrix.driver.sqlkit }}
       - name: Check out Fluent driver
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: ${{ matrix.driver.fluent }}
           repository: vapor/${{ matrix.driver.fluent }}
