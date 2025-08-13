@@ -112,7 +112,7 @@ public struct SQLSelect: SQLExpression {
                 $0.append("FROM", SQLList(self.tables))
             }
             if !self.joins.isEmpty {
-                $0.append(SQLList(self.joins, separator: SQLRaw(" ")))
+                $0.append(SQLList(self.joins, separator: SQLUnsafeRaw(" ")))
             }
             if self.predicate != nil {
                 $0.append("WHERE", self.predicate)

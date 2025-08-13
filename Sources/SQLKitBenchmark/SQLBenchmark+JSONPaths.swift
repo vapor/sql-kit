@@ -9,7 +9,7 @@ extension SQLBenchmarker {
                 .run()
             try await $0.create(table: "planet_metadata")
                 .column("id",       type: .bigint, .primaryKey(autoIncrement: $0.dialect.supportsAutoIncrement))
-                .column("metadata", type: .custom(SQLRaw($0.dialect.name == "postgresql" ? "jsonb" : "json")))
+                .column("metadata", type: .custom(SQLUnsafeRaw($0.dialect.name == "postgresql" ? "jsonb" : "json")))
                 .run()
 
             // insert

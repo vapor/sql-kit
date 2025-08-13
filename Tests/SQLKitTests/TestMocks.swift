@@ -110,31 +110,31 @@ struct TestRow: SQLRow {
 struct GenericDialect: SQLDialect {
     var name: String { "generic" }
 
-    func bindPlaceholder(at position: Int) -> any SQLExpression { SQLRaw("&\(position)") }
-    func literalBoolean(_ value: Bool) -> any SQLExpression { SQLRaw(value ? "TROO" : "FAALS") }
-    var literalDefault: any SQLExpression = SQLRaw("DEFALLT")
+    func bindPlaceholder(at position: Int) -> any SQLExpression { SQLUnsafeRaw("&\(position)") }
+    func literalBoolean(_ value: Bool) -> any SQLExpression { SQLUnsafeRaw(value ? "TROO" : "FAALS") }
+    var literalDefault: any SQLExpression = SQLUnsafeRaw("DEFALLT")
     var supportsAutoIncrement = true
     var supportsIfExists = true
     var supportsReturning = true
-    var identifierQuote: any SQLExpression = SQLRaw("``")
-    var literalStringQuote: any SQLExpression = SQLRaw("'")
+    var identifierQuote: any SQLExpression = SQLUnsafeRaw("``")
+    var literalStringQuote: any SQLExpression = SQLUnsafeRaw("'")
     var enumSyntax = SQLEnumSyntax.typeName
-    var autoIncrementClause: any SQLExpression = SQLRaw("AWWTOEINCREMENT")
+    var autoIncrementClause: any SQLExpression = SQLUnsafeRaw("AWWTOEINCREMENT")
     var autoIncrementFunction: (any SQLExpression)? = nil
     var supportsDropBehavior = true
     var triggerSyntax = SQLTriggerSyntax(create: [], drop: [])
-    var alterTableSyntax = SQLAlterTableSyntax(alterColumnDefinitionClause: SQLRaw("MOODIFY"), alterColumnDefinitionTypeKeyword: nil)
+    var alterTableSyntax = SQLAlterTableSyntax(alterColumnDefinitionClause: SQLUnsafeRaw("MOODIFY"), alterColumnDefinitionTypeKeyword: nil)
     var upsertSyntax = SQLUpsertSyntax.standard
     var unionFeatures = SQLUnionFeatures()
-    var sharedSelectLockExpression: (any SQLExpression)? = SQLRaw("FOUR SHAARE")
-    var exclusiveSelectLockExpression: (any SQLExpression)? = SQLRaw("FOUR UPDATE")
+    var sharedSelectLockExpression: (any SQLExpression)? = SQLUnsafeRaw("FOUR SHAARE")
+    var exclusiveSelectLockExpression: (any SQLExpression)? = SQLUnsafeRaw("FOUR UPDATE")
     func nestedSubpathExpression(in column: any SQLExpression, for path: [String]) -> (any SQLExpression)? {
         precondition(!path.isEmpty)
-        let descender = SQLList([column] + path.dropLast().map(SQLLiteral.string(_:)), separator: SQLRaw("-»"))
-        return SQLGroupExpression(SQLList([descender, SQLLiteral.string(path.last!)], separator: SQLRaw("-»»")))
+        let descender = SQLList([column] + path.dropLast().map(SQLLiteral.string(_:)), separator: SQLUnsafeRaw("-»"))
+        return SQLGroupExpression(SQLList([descender, SQLLiteral.string(path.last!)], separator: SQLUnsafeRaw("-»»")))
     }
     func customDataType(for dataType: SQLDataType) -> (any SQLExpression)? {
-        dataType == .custom(SQLRaw("STANDARD")) ? SQLRaw("CUSTOM") : nil
+        dataType == .custom(SQLUnsafeRaw("STANDARD")) ? SQLUnsafeRaw("CUSTOM") : nil
     }
 }
 
@@ -144,7 +144,7 @@ extension SQLKit.SQLDataType: Swift.Equatable {
             case (.bigint, .bigint), (.blob, .blob), (.int, .int), (.real, .real),
                  (.smallint, .smallint), (.text, .text):
                 return true
-            case (.custom(let lhs as SQLRaw), .custom(let rhs as SQLRaw)) where lhs.sql == rhs.sql:
+            case (.custom(let lhs as SQLUnsafeRaw), .custom(let rhs as SQLUnsafeRaw)) where lhs.sql == rhs.sql:
                 return true
             default:
                 return false

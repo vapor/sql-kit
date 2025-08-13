@@ -32,7 +32,7 @@ public enum SQLDataType: SQLExpression {
     /// > Note: Implemented as a static var rather than a new case for now because adding new cases to a public enum
     /// > is a source-breaking change.
     public static var timestamp: Self {
-        .custom(SQLRaw("TIMESTAMP"))
+        .custom(SQLUnsafeRaw("TIMESTAMP"))
     }
     
     /// Translates to the serialization of the given expression, unless overridden by dialect.
@@ -48,17 +48,17 @@ public enum SQLDataType: SQLExpression {
         } else {
             switch self {
             case .smallint:
-                sql = SQLRaw("SMALLINT")
+                sql = SQLUnsafeRaw("SMALLINT")
             case .int:
-                sql = SQLRaw("INTEGER")
+                sql = SQLUnsafeRaw("INTEGER")
             case .bigint:
-                sql = SQLRaw("BIGINT")
+                sql = SQLUnsafeRaw("BIGINT")
             case .text:
-                sql = SQLRaw("TEXT")
+                sql = SQLUnsafeRaw("TEXT")
             case .real:
-                sql = SQLRaw("REAL")
+                sql = SQLUnsafeRaw("REAL")
             case .blob:
-                sql = SQLRaw("BLOB")
+                sql = SQLUnsafeRaw("BLOB")
             case .custom(let exp):
                 sql = exp
             }
