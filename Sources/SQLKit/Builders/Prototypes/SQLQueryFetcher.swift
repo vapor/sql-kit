@@ -13,7 +13,7 @@ extension SQLQueryFetcher {
     ///   - type: The type of the desired value.
     /// - Returns: A future containing the decoded value, if any.
     @inlinable
-    public func first<D: Decodable>(decodingColumn column: String, as type: D.Type) -> EventLoopFuture<D?> {
+    public func first<D: Decodable & _SQLKitSendableMetatype>(decodingColumn column: String, as type: D.Type) -> EventLoopFuture<D?> {
         self.first().flatMapThrowing { try $0?.decode(column: column, as: D.self) }
     }
 
@@ -22,7 +22,7 @@ extension SQLQueryFetcher {
     /// - Parameter type: The type of the desired value.
     /// - Returns: A future containing the decoded value, if any.
     @inlinable
-    public func first<D: Decodable>(decoding type: D.Type) -> EventLoopFuture<D?> {
+    public func first<D: Decodable & _SQLKitSendableMetatype>(decoding type: D.Type) -> EventLoopFuture<D?> {
         self.first(decoding: D.self, with: .init())
     }
 
@@ -36,7 +36,7 @@ extension SQLQueryFetcher {
     ///   - userInfo: See ``SQLRowDecoder/userInfo``.
     /// - Returns: A future containing the decoded value, if any.
     @inlinable
-    public func first<D: Decodable>(
+    public func first<D: Decodable & _SQLKitSendableMetatype>(
         decoding type: D.Type,
         prefix: String? = nil,
         keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys,
@@ -52,7 +52,7 @@ extension SQLQueryFetcher {
     ///   - decoder: A configured ``SQLRowDecoder`` to use.
     /// - Returns: A future containing the decoded value, if any.
     @inlinable
-    public func first<D: Decodable>(decoding type: D.Type, with decoder: SQLRowDecoder) -> EventLoopFuture<D?> {
+    public func first<D: Decodable & _SQLKitSendableMetatype>(decoding type: D.Type, with decoder: SQLRowDecoder) -> EventLoopFuture<D?> {
         self.first().flatMapThrowing { try $0?.decode(model: D.self, with: decoder) }
     }
 
@@ -65,13 +65,8 @@ extension SQLQueryFetcher {
     @inlinable
     public func first() -> EventLoopFuture<(any SQLRow)?> {
         (self as? any SQLPartialResultBuilder)?.limit(1)
-        #if swift(>=5.10)
         nonisolated(unsafe) var rows = [any SQLRow]()
         return self.run { if rows.isEmpty { rows.append($0) } }.map { rows.first }
-        #else
-        let rows = RowsBox()
-        return self.run { if rows.all.isEmpty { rows.all.append($0) } }.map { rows.all.first }
-        #endif
     }
 }
 
@@ -137,15 +132,9 @@ extension SQLQueryFetcher {
     @inlinable
     public func first() async throws -> (any SQLRow)? {
         (self as? any SQLPartialResultBuilder)?.limit(1)
-        #if swift(>=5.10)
         nonisolated(unsafe) var rows = [any SQLRow]()
         try await self.run { if rows.isEmpty { rows.append($0) } }
         return rows.first
-        #else
-        let rows = RowsBox()
-        try await self.run { if rows.all.isEmpty { rows.all.append($0) } }
-        return rows.all.first
-        #endif
     }
 }
 
@@ -159,7 +148,7 @@ extension SQLQueryFetcher {
     ///   - type: The type of the desired values.
     /// - Returns: A future containing the decoded values, if any.
     @inlinable
-    public func all<D: Decodable>(decodingColumn column: String, as type: D.Type) -> EventLoopFuture<[D]> {
+    public func all<D: Decodable & _SQLKitSendableMetatype>(decodingColumn column: String, as type: D.Type) -> EventLoopFuture<[D]> {
         self.all().flatMapThrowing { try $0.map { try $0.decode(column: column, as: D.self) } }
     }
 
@@ -168,7 +157,7 @@ extension SQLQueryFetcher {
     /// - Parameter type: The type of the desired values.
     /// - Returns: A future containing the decoded values, if any.
     @inlinable
-    public func all<D: Decodable>(decoding type: D.Type) -> EventLoopFuture<[D]> {
+    public func all<D: Decodable & _SQLKitSendableMetatype>(decoding type: D.Type) -> EventLoopFuture<[D]> {
         self.all(decoding: D.self, with: .init())
     }
     
@@ -182,7 +171,7 @@ extension SQLQueryFetcher {
     ///   - userInfo: See ``SQLRowDecoder/userInfo``.
     /// - Returns: A future containing the decoded values, if any.
     @inlinable
-    public func all<D: Decodable>(
+    public func all<D: Decodable & _SQLKitSendableMetatype>(
         decoding type: D.Type,
         prefix: String? = nil,
         keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys,
@@ -198,7 +187,7 @@ extension SQLQueryFetcher {
     ///   - decoder: A configured ``SQLRowDecoder`` to use.
     /// - Returns: A future containing the decoded values, if any.
     @inlinable
-    public func all<D: Decodable>(decoding type: D.Type, with decoder: SQLRowDecoder) -> EventLoopFuture<[D]> {
+    public func all<D: Decodable & _SQLKitSendableMetatype>(decoding type: D.Type, with decoder: SQLRowDecoder) -> EventLoopFuture<[D]> {
         self.all().flatMapThrowing { try $0.map { try $0.decode(model: D.self, with: decoder) } }
     }
 
@@ -207,13 +196,8 @@ extension SQLQueryFetcher {
     /// - Returns: A future containing the output rows, if any.
     @inlinable
     public func all() -> EventLoopFuture<[any SQLRow]> {
-        #if swift(>=5.10)
         nonisolated(unsafe) var rows = [any SQLRow]()
         return self.run { row in rows.append(row) }.map { rows }
-        #else
-        let rows = RowsBox()
-        return self.run { row in rows.all.append(row) }.map { rows.all }
-        #endif
     }
 }
 
@@ -275,15 +259,9 @@ extension SQLQueryFetcher {
     /// - Returns: The output rows, if any.
     @inlinable
     public func all() async throws -> [any SQLRow] {
-        #if swift(>=5.10)
         nonisolated(unsafe) var rows = [any SQLRow]()
         try await self.run { rows.append($0) }
         return rows
-        #else
-        let rows = RowsBox()
-        try await self.run { rows.all.append($0) }
-        return rows.all
-        #endif
     }
 }
 
@@ -299,7 +277,7 @@ extension SQLQueryFetcher {
     /// - Returns: A completion future.
     @preconcurrency
     @inlinable
-    public func run<D: Decodable>(decoding type: D.Type, _ handler: @escaping @Sendable (Result<D, any Error>) -> ()) -> EventLoopFuture<Void> {
+    public func run<D: Decodable & _SQLKitSendableMetatype>(decoding type: D.Type, _ handler: @escaping @Sendable (Result<D, any Error>) -> ()) -> EventLoopFuture<Void> {
         self.run(decoding: D.self, with: .init(), handler)
     }
     
@@ -315,7 +293,7 @@ extension SQLQueryFetcher {
     /// - Returns: A completion future.
     @preconcurrency
     @inlinable
-    public func run<D: Decodable>(
+    public func run<D: Decodable & _SQLKitSendableMetatype>(
         decoding type: D.Type,
         prefix: String? = nil,
         keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys,
@@ -335,7 +313,7 @@ extension SQLQueryFetcher {
     /// - Returns: A completion future.
     @preconcurrency
     @inlinable
-    public func run<D: Decodable>(
+    public func run<D: Decodable & _SQLKitSendableMetatype>(
         decoding type: D.Type,
         with decoder: SQLRowDecoder,
         _ handler: @escaping @Sendable (Result<D, any Error>) -> ()
@@ -365,7 +343,7 @@ extension SQLQueryFetcher {
     ///   - type: The type of the desired values.
     ///   - handler: A closure which receives the result of each decoding operation, row by row.
     @inlinable
-    public func run<D: Decodable>(decoding type: D.Type, _ handler: @escaping @Sendable (Result<D, any Error>) -> ()) async throws {
+    public func run<D: Decodable & _SQLKitSendableMetatype>(decoding type: D.Type, _ handler: @escaping @Sendable (Result<D, any Error>) -> ()) async throws {
         try await self.run(decoding: D.self, with: .init(), handler)
     }
 
@@ -380,7 +358,7 @@ extension SQLQueryFetcher {
     ///   - handler: A closure which receives the result of each decoding operation, row by row.
     @inlinable
     @preconcurrency
-    public func run<D: Decodable>(
+    public func run<D: Decodable & _SQLKitSendableMetatype>(
         decoding type: D.Type,
         prefix: String? = nil,
         keyDecodingStrategy: SQLRowDecoder.KeyDecodingStrategy = .useDefaultKeys,
@@ -399,7 +377,7 @@ extension SQLQueryFetcher {
     ///   - handler: A closure which receives the result of each decoding operation, row by row.
     @inlinable
     @preconcurrency
-    public func run<D: Decodable>(
+    public func run<D: Decodable & _SQLKitSendableMetatype>(
         decoding type: D.Type,
         with decoder: SQLRowDecoder,
         _ handler: @escaping @Sendable (Result<D, any Error>) -> ()
@@ -419,18 +397,8 @@ extension SQLQueryFetcher {
 
 // MARK: - Utility
 
-#if swift(<5.10)
-
-/// A simple helper type for working with a mutable value capture across concurrency domains.
-///
-/// Only used before Swift 5.10.
-@usableFromInline
-final class RowsBox: @unchecked Sendable {
-    @usableFromInline
-    var all: [any SQLRow] = []
-    
-    @usableFromInline
-    init() {}
-}
-
+#if compiler(>=6.2)
+public typealias _SQLKitSendableMetatype = SendableMetatype
+#else
+public typealias _SQLKitSendableMetatype = Any
 #endif
