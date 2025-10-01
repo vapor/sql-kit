@@ -57,7 +57,7 @@ final class SQLCreateDropTriggerTests: XCTestCase {
     }
 
     func testPostgreSqlTriggerCreates() {
-        self.db._dialect.triggerSyntax = .init(create: [.supportsForEach, .postgreSQLChecks, .supportsCondition, .conditionRequiresParentheses, .supportsConstraints])
+        self.db._dialect.triggerSyntax = .init(create: [.supportsForEach, .postgreSQLChecks, .supportsCondition, .conditionRequiresParentheses, .supportsConstraints, .supportsOrReplace])
         XCTAssertSerialization(
             of: self.db.create(trigger: "foo", table: "planet", when: .after, event: .insert)
                 .each(.row)
@@ -80,6 +80,10 @@ final class SQLCreateDropTriggerTests: XCTestCase {
                 .procedure("qwer"),
             is: "CREATE TRIGGER ``foo`` INSTEAD OF UPDATE ON ``planet`` FOR EACH ROW EXECUTE PROCEDURE ``qwer``"
         )
+        XCTAssertSerialization(
+            of: self.db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
+                .orReplace(),
+            is: "CREATE OR REPLACE TRIGGER ``foo`` BEFORE INSERT ON ``planet``")
     }
     
     func testPostgreSqlTriggerCreateWithColumns() {
