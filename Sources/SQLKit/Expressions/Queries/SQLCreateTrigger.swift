@@ -178,11 +178,14 @@ public struct SQLCreateTrigger: SQLExpression {
             if let definer = self.definer, syntax.contains(.supportsDefiner) {
                 $0.append("DEFINER =", definer)
             }
-            $0.append("TRIGGER", self.name)
+            
+            $0.append("TRIGGER")
             
             if self.ifNotExists, syntax.contains(.supportsIfNotExists) {
               $0.append("IF NOT EXISTS")
             }
+            
+            $0.append(self.name)
             
             $0.append(self.when, self.event)
             if let columns = self.columns, !columns.isEmpty, syntax.contains(.supportsUpdateColumns) {
