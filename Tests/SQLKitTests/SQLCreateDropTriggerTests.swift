@@ -47,12 +47,17 @@ final class SQLCreateDropTriggerTests: XCTestCase {
     }
 
     func testSqliteTriggerCreates() {
-        self.db._dialect.triggerSyntax = .init(create: [.supportsBody, .supportsCondition])
+        self.db._dialect.triggerSyntax = .init(create: [.supportsBody, .supportsCondition, .supportsIfNotExists])
         XCTAssertSerialization(
             of: self.db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
                 .body(self.body.map { SQLRaw($0) })
                 .condition("\(ident: "foo") = \(ident: "bar")" as SQLQueryString),
             is: "CREATE TRIGGER ``foo`` BEFORE INSERT ON ``planet`` WHEN ``foo`` = ``bar`` BEGIN \(self.body.joined(separator: " ")) END;"
+        )
+        XCTAssertSerialization(
+            of: self.db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
+                .ifNotExists(),
+            is: "CREATE TRIGGER ``foo`` IF NOT EXISTS BEFORE INSERT ON ``planet``"
         )
     }
 
