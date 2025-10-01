@@ -175,14 +175,15 @@ public struct SQLCreateTrigger: SQLExpression {
               $0.append("OR REPLACE")
             }
             
-            if self.ifNotExists, syntax.contains(.supportsIfNotExists) {
-              $0.append("IF NOT EXISTS")
-            }
-            
             if let definer = self.definer, syntax.contains(.supportsDefiner) {
                 $0.append("DEFINER =", definer)
             }
             $0.append("TRIGGER", self.name)
+            
+            if self.ifNotExists, syntax.contains(.supportsIfNotExists) {
+              $0.append("IF NOT EXISTS")
+            }
+            
             $0.append(self.when, self.event)
             if let columns = self.columns, !columns.isEmpty, syntax.contains(.supportsUpdateColumns) {
                 $0.append("OF", SQLList(columns))
