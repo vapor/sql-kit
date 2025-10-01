@@ -368,6 +368,16 @@ public struct SQLTriggerSyntax: Sendable {
         public static var conditionRequiresParentheses: Self {
             .init(rawValue: 1 << 9)
         }
+        
+        /// Indicates support for `OR REPLACE` syntax.
+        public static var supportsOrReplace: Self {
+            .init(rawValue: 1 << 10)
+        }
+        
+        /// Indicates support for an `IF NOT EXISTS`  syntax.
+        public static var supportsIfNotExists: Self {
+            .init(rawValue: 1 << 11)
+        }
     }
 
     /// Describes specific feature support for `CREATE TRIGGER` syntax.

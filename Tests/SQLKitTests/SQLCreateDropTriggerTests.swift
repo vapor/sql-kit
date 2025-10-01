@@ -33,7 +33,7 @@ final class SQLCreateDropTriggerTests: XCTestCase {
     }
 
     func testMySqlTriggerCreates() {
-        self.db._dialect.triggerSyntax = .init(create: [.supportsBody, .supportsOrder, .supportsDefiner, .requiresForEachRow])
+        self.db._dialect.triggerSyntax = .init(create: [.supportsBody, .supportsOrder, .supportsDefiner, .requiresForEachRow, .supportsIfNotExists])
 
         let builder = self.db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
                 .body(self.body.map { SQLRaw($0) })
@@ -44,20 +44,30 @@ final class SQLCreateDropTriggerTests: XCTestCase {
             of: builder,
             is: "CREATE DEFINER = 'foo@bar' TRIGGER ``foo`` BEFORE INSERT ON ``planet`` FOR EACH ROW PRECEDES ``other`` BEGIN \(self.body.joined(separator: " ")) END;"
         )
+        XCTAssertSerialization(
+            of: self.db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
+                .ifNotExists(),
+            is: "CREATE TRIGGER IF NOT EXISTS ``foo`` BEFORE INSERT ON ``planet`` FOR EACH ROW"
+        )
     }
 
     func testSqliteTriggerCreates() {
-        self.db._dialect.triggerSyntax = .init(create: [.supportsBody, .supportsCondition])
+        self.db._dialect.triggerSyntax = .init(create: [.supportsBody, .supportsCondition, .supportsIfNotExists])
         XCTAssertSerialization(
             of: self.db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
                 .body(self.body.map { SQLRaw($0) })
                 .condition("\(ident: "foo") = \(ident: "bar")" as SQLQueryString),
             is: "CREATE TRIGGER ``foo`` BEFORE INSERT ON ``planet`` WHEN ``foo`` = ``bar`` BEGIN \(self.body.joined(separator: " ")) END;"
         )
+        XCTAssertSerialization(
+            of: self.db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
+                .ifNotExists(),
+            is: "CREATE TRIGGER IF NOT EXISTS ``foo`` BEFORE INSERT ON ``planet``"
+        )
     }
 
     func testPostgreSqlTriggerCreates() {
-        self.db._dialect.triggerSyntax = .init(create: [.supportsForEach, .postgreSQLChecks, .supportsCondition, .conditionRequiresParentheses, .supportsConstraints])
+        self.db._dialect.triggerSyntax = .init(create: [.supportsForEach, .postgreSQLChecks, .supportsCondition, .conditionRequiresParentheses, .supportsConstraints, .supportsOrReplace])
         XCTAssertSerialization(
             of: self.db.create(trigger: "foo", table: "planet", when: .after, event: .insert)
                 .each(.row)
@@ -80,6 +90,10 @@ final class SQLCreateDropTriggerTests: XCTestCase {
                 .procedure("qwer"),
             is: "CREATE TRIGGER ``foo`` INSTEAD OF UPDATE ON ``planet`` FOR EACH ROW EXECUTE PROCEDURE ``qwer``"
         )
+        XCTAssertSerialization(
+            of: self.db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
+                .orReplace(),
+            is: "CREATE OR REPLACE TRIGGER ``foo`` BEFORE INSERT ON ``planet``")
     }
     
     func testPostgreSqlTriggerCreateWithColumns() {
