@@ -174,7 +174,7 @@ public struct SQLCreateTrigger: SQLExpression {
             if self.orReplace, syntax.contains(.supportsOrReplace) {
               $0.append("OR REPLACE")
             }
-            $0.append("TRIGGER")
+            
             if self.ifNotExists, syntax.contains(.supportsIfNotExists) {
               $0.append("IF NOT EXISTS")
             }
