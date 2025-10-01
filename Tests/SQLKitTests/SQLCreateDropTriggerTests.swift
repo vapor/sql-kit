@@ -33,7 +33,7 @@ final class SQLCreateDropTriggerTests: XCTestCase {
     }
 
     func testMySqlTriggerCreates() {
-        self.db._dialect.triggerSyntax = .init(create: [.supportsBody, .supportsOrder, .supportsDefiner, .requiresForEachRow])
+        self.db._dialect.triggerSyntax = .init(create: [.supportsBody, .supportsOrder, .supportsDefiner, .requiresForEachRow, .supportsIfNotExists])
 
         let builder = self.db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
                 .body(self.body.map { SQLRaw($0) })
@@ -43,6 +43,11 @@ final class SQLCreateDropTriggerTests: XCTestCase {
         XCTAssertSerialization(
             of: builder,
             is: "CREATE DEFINER = 'foo@bar' TRIGGER ``foo`` BEFORE INSERT ON ``planet`` FOR EACH ROW PRECEDES ``other`` BEGIN \(self.body.joined(separator: " ")) END;"
+        )
+        XCTAssertSerialization(
+            of: self.db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
+                .ifNotExists(),
+            is: "CREATE TRIGGER IF NOT EXISTS ``foo`` BEFORE INSERT ON ``planet`` FOR EACH ROW"
         )
     }
 
@@ -57,7 +62,7 @@ final class SQLCreateDropTriggerTests: XCTestCase {
         XCTAssertSerialization(
             of: self.db.create(trigger: "foo", table: "planet", when: .before, event: .insert)
                 .ifNotExists(),
-            is: "CREATE TRIGGER ``foo`` IF NOT EXISTS BEFORE INSERT ON ``planet``"
+            is: "CREATE TRIGGER IF NOT EXISTS ``foo`` BEFORE INSERT ON ``planet``"
         )
     }
 
