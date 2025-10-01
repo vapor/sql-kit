@@ -158,6 +158,22 @@ public final class SQLCreateTriggerBuilder: SQLQueryBuilder {
         self.createTrigger.orderTriggerName = otherTriggerName
         return self
     }
+    
+    
+    @inlinable
+    @discardableResult
+    public func orReplace(orReplace: Bool = true) -> Self {
+        self.createTrigger.orReplace = orReplace
+        return self
+    }
+    
+    
+    @inlinable
+    @discardableResult
+    public func ifNotExists(ifNotExists: Bool = true) -> Self {
+        self.createTrigger.ifNotExists = ifNotExists
+        return self
+    }
 }
 
 extension SQLDatabase {
