@@ -7,7 +7,8 @@ on:
   push: { branches: [ main ] }
 env:
   LOG_LEVEL: info
-  SWIFT_DETERMINISTIC_HASHING: 1
+permissions:
+  contents: read
 
 jobs:
   unit-tests:
@@ -20,7 +21,7 @@ jobs:
   pure-fluent-integration-test:
     if: ${{ !(github.event.pull_request.draft || false) }}
     runs-on: ubuntu-latest
-    container: swift:6.1-noble
+    container: swift:6.2-noble
     steps:
       - name: Check out sql-kit
         uses: actions/checkout@v6
@@ -51,7 +52,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift-image: ['swift:6.1-noble']
+        swift-image: ['swift:6.2-noble']
         driver:
           - { sqlkit: 'sqlite-kit',   fluent: 'fluent-sqlite-driver' }
           - { sqlkit: 'mysql-kit',    fluent: 'fluent-mysql-driver' }
