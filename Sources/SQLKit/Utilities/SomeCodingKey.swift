@@ -9,7 +9,7 @@
 ///
 /// ![Quotation](codingkey-quotation)
 ///
-/// [`_DictionaryCodingKey`]: https://github.com/apple/swift/blob/swift-6.0-RELEASE/stdlib/public/core/Codable.swift#L5509
+/// [`_DictionaryCodingKey`]: https://github.com/swiftlang/swift/blob/swift-6.0-RELEASE/stdlib/public/core/Codable.swift#L6124
 /// [`CodingKeyRepresentable`]: https://developer.apple.com/documentation/swift/codingkeyrepresentable
 public struct SomeCodingKey: CodingKey, Hashable, Sendable {
     // See `CodingKey.stringValue`.

@@ -31,7 +31,7 @@ let package = Package(
         .target(
             name: "SQLKitBenchmark",
             dependencies: [
-                .target(name: "SQLKit")
+                .target(name: "SQLKit"),
             ],
             swiftSettings: swiftSettings
         ),
@@ -46,13 +46,11 @@ let package = Package(
     ]
 )
 
-var swiftSettings: [SwiftSetting] {
-    [
-        //.enableUpcomingFeature("ExistentialAny"),
-        //.enableUpcomingFeature("InternalImportsByDefault"),
-        .enableUpcomingFeature("MemberImportVisibility"),
-        .enableUpcomingFeature("InferIsolatedConformances"),
-        //.enableUpcomingFeature("NonisolatedNonsendingByDefault"),
-        .enableUpcomingFeature("ImmutableWeakCaptures"),
-    ]
-}
+var swiftSettings: [SwiftSetting] { [
+    .enableUpcomingFeature("ExistentialAny"),
+    // .enableUpcomingFeature("InternalImportsByDefault"),
+    .enableUpcomingFeature("MemberImportVisibility"),
+    .enableUpcomingFeature("InferIsolatedConformances"),
+    .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
+    .enableUpcomingFeature("ImmutableWeakCaptures"),
+] }

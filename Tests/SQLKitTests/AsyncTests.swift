@@ -1,7 +1,7 @@
-import SQLKit
-import XCTest
 import NIOCore
 import OrderedCollections
+import SQLKit
+import XCTest
 
 final class AsyncSQLKitTests: XCTestCase {
     var db = TestDatabase()
