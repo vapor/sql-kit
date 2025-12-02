@@ -1,4 +1,4 @@
-// swift-tools-version:5.10
+// swift-tools-version:6.0
 import PackageDescription
 
 let package = Package(
@@ -31,7 +31,7 @@ let package = Package(
         .target(
             name: "SQLKitBenchmark",
             dependencies: [
-                .target(name: "SQLKit"),
+                .target(name: "SQLKit")
             ],
             swiftSettings: swiftSettings
         ),
@@ -46,10 +46,9 @@ let package = Package(
     ]
 )
 
-var swiftSettings: [SwiftSetting] { [
-    .enableUpcomingFeature("ExistentialAny"),
-    .enableUpcomingFeature("ConciseMagicFile"),
-    .enableUpcomingFeature("ForwardTrailingClosures"),
-    .enableUpcomingFeature("DisableOutwardActorInference"),
-    .enableExperimentalFeature("StrictConcurrency=complete"),
-] }
+var swiftSettings: [SwiftSetting] {
+    [
+        .enableUpcomingFeature("ExistentialAny"),
+        .enableExperimentalFeature("StrictConcurrency=complete"),
+    ]
+}

@@ -7,7 +7,7 @@
 <a href="LICENSE"><img src="https://design.vapor.codes/images/mitlicense.svg" alt="MIT License"></a>
 <a href="https://github.com/vapor/sql-kit/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/vapor/sql-kit/test.yml?event=push&style=plastic&logo=github&label=tests&logoColor=%23ccc" alt="Continuous Integration"></a>
 <a href="https://codecov.io/github/vapor/sql-kit"><img src="https://img.shields.io/codecov/c/github/vapor/sql-kit?style=plastic&logo=codecov&label=codecov"></a>
-<a href="https://swift.org"><img src="https://design.vapor.codes/images/swift510up.svg" alt="Swift 5.10+"></a>
+<a href="https://swift.org"><img src="https://design.vapor.codes/images/swift60up.svg" alt="Swift 6.0+"></a>
 </p>
 
 <br>
