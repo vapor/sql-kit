@@ -1,5 +1,7 @@
 import SQLKit
 import XCTest
+import NIOCore
+import Logging
 
 public final class SQLBenchmarker: Sendable {
     let database: any SQLDatabase

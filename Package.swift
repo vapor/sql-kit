@@ -48,7 +48,11 @@ let package = Package(
 
 var swiftSettings: [SwiftSetting] {
     [
-        .enableUpcomingFeature("ExistentialAny"),
-        .enableExperimentalFeature("StrictConcurrency=complete"),
+        //.enableUpcomingFeature("ExistentialAny"),
+        //.enableUpcomingFeature("InternalImportsByDefault"),
+        .enableUpcomingFeature("MemberImportVisibility"),
+        .enableUpcomingFeature("InferIsolatedConformances"),
+        //.enableUpcomingFeature("NonisolatedNonsendingByDefault"),
+        .enableUpcomingFeature("ImmutableWeakCaptures"),
     ]
 }

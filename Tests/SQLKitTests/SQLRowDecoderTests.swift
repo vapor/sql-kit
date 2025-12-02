@@ -1,5 +1,6 @@
 @testable @_spi(CodableUtilities) import SQLKit
 import XCTest
+import OrderedCollections
 
 final class SQLRowDecoderTests: XCTestCase {
     func testRowDecoderBasicConfigurations() {
