@@ -1,3 +1,5 @@
+import Logging
+import NIOCore
 import SQLKit
 import XCTest
 

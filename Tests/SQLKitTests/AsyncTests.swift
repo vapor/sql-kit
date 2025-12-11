@@ -1,3 +1,5 @@
+import NIOCore
+import OrderedCollections
 import SQLKit
 import XCTest
 

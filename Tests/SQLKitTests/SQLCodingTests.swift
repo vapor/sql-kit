@@ -1,3 +1,4 @@
+import OrderedCollections
 @testable @_spi(CodableUtilities) import SQLKit
 import XCTest
 
