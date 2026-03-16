@@ -34,4 +34,3 @@ ignore:
 - ^Tests/.*
 - ^.build/.*
 slack_app: false
-

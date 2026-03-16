@@ -52,10 +52,21 @@ public struct SQLInsert: SQLExpression {
     /// is generated.
     public var valueQuery: (any SQLExpression)? = nil
 
-    /// If not `nil`, a strategy for resolving conflicts created by violations of applicable constraints.
+    /// The actual conflict resolution strategy serialized by this query. This property is provided to enable easier use
+    /// of database-specific conflict resolution syntax, as changing ``conflictStrategy`` to have the more generic type
+    /// would be API-breaking.
+    public var genericConflictStrategy: (any SQLExpression)? = nil
+
+    /// If not `nil`, a database-agnostic strategy for resolving conflicts created by violations of applicable constraints.
     ///
-    /// See ``SQLConflictResolutionStrategy``.
-    public var conflictStrategy: SQLConflictResolutionStrategy? = nil
+    /// If ``genericConflictStrategy`` is set to an expression which is not castable to ``SQLConflictResolutionStrategy``,
+    /// this property will be `nil`. Setting this property unconditionally overwrites ``genericConflictStrategy``.
+    ///
+    /// See ``SQLConflictResolutionStrategy`` and ``genericConflictStrategy``.
+    public var conflictStrategy: SQLConflictResolutionStrategy? {
+        get { self.genericConflictStrategy as? SQLConflictResolutionStrategy }
+        set { self.genericConflictStrategy = newValue }
+    }
 
     /// An optional ``SQLReturning`` clause specifying data to return from the inserted rows.
     ///
@@ -75,7 +86,7 @@ public struct SQLInsert: SQLExpression {
         serializer.statement {
             $0.append(self.tableExpressionGroup)
             $0.append("INSERT")
-            $0.append(self.conflictStrategy?.queryModifier(for: $0))
+            $0.append(self.conflictStrategy?.queryModifier(for: $0)) // will be `nil` if genericConflictStrategy is in use
             $0.append("INTO", self.table)
             $0.append(SQLGroupExpression(self.columns))
             if !self.values.isEmpty {
@@ -83,8 +94,9 @@ public struct SQLInsert: SQLExpression {
             } else if let subquery = self.valueQuery {
                 $0.append(subquery)
             }
-            $0.append(self.conflictStrategy)
+            $0.append(self.genericConflictStrategy)
             $0.append(self.returning)
         }
     }
 }
+

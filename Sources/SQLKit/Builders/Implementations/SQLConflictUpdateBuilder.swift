@@ -8,8 +8,8 @@ public final class SQLConflictUpdateBuilder: SQLColumnUpdateBuilder, SQLPredicat
     public var predicate: (any SQLExpression)? = nil
     
     /// Create a conflict update builder.
-    @usableFromInline
-    init() {}
+    @inlinable
+    public init() {}
 
     /// Add an assignment of the column with the given name, using the value the column was
     /// given in the `INSERT` query's `VALUES` list.

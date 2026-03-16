@@ -5,13 +5,11 @@ concurrency:
 on:
   pull_request: { types: [opened, reopened, synchronize, ready_for_review] }
   push: { branches: [ main ] }
-env:
-  LOG_LEVEL: info
-permissions:
-  contents: read
 
 jobs:
   unit-tests:
+    permissions:
+      contents: read
     uses: vapor/ci/.github/workflows/run-unit-tests.yml@main
     secrets: inherit
     with:
@@ -20,6 +18,8 @@ jobs:
 
   pure-fluent-integration-test:
     if: ${{ !(github.event.pull_request.draft || false) }}
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     container: swift:6.2-noble
     steps:
@@ -36,19 +36,21 @@ jobs:
   
   integration-tests:
     if: ${{ !(github.event.pull_request.draft || false) }}
+    permissions:
+      contents: read
     services:
       mysql-a:
         image: mysql:latest
-        env: { MYSQL_USER: test_username, MYSQL_PASSWORD: test_password, MYSQL_DATABASE: test_database, MYSQL_ALLOW_EMPTY_PASSWORD: true }
+        env: &common_mysql_env { MYSQL_USER: test_username, MYSQL_PASSWORD: test_password, MYSQL_DATABASE: test_database, MYSQL_ALLOW_EMPTY_PASSWORD: true }
       mysql-b:
         image: mysql:latest
-        env: { MYSQL_USER: test_username, MYSQL_PASSWORD: test_password, MYSQL_DATABASE: test_database, MYSQL_ALLOW_EMPTY_PASSWORD: true }
+        env: *common_mysql_env
       psql-a:
         image: postgres:latest
-        env: { POSTGRES_USER: test_username, POSTGRES_PASSWORD: test_password, POSTGRES_DB: test_database }
+        env: &common_psql_env { POSTGRES_USER: test_username, POSTGRES_PASSWORD: test_password, POSTGRES_DB: test_database }
       psql-b:
         image: postgres:latest
-        env: { POSTGRES_USER: test_username, POSTGRES_PASSWORD: test_password, POSTGRES_DB: test_database }
+        env: *common_psql_env
     strategy:
       fail-fast: false
       matrix:
@@ -90,3 +92,10 @@ jobs:
         run: |
           swift package --package-path "${FLUENT_DRIVER}" edit --path sql-kit sql-kit
           swift test --package-path "${FLUENT_DRIVER}" --sanitize=thread
+
+  submit-dependencies:
+    permissions:
+      contents: write
+    if: ${{ github.event_name == 'push' }}
+    uses: vapor/ci/.github/workflows/submit-deps.yml@main
+    secrets: inherit

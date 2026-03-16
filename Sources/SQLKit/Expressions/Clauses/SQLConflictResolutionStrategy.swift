@@ -88,7 +88,7 @@ public struct SQLConflictResolutionStrategy: SQLExpression {
                         $0.append(SQLGroupExpression(self.targetColumns))
                     }
                     $0.append("DO UPDATE SET", SQLList(assignments))
-                    if let predicate = predicate { $0.append("WHERE", predicate) }
+                    if let predicate { $0.append("WHERE", predicate) }
                 case (.mysqlLike, .noAction):
                     break
                 case (.mysqlLike, .update(let assignments, _)):

@@ -204,4 +204,64 @@ final class SQLInsertUpsertTests: XCTestCase {
             is: "INSERT INTO ``jumpgates`` (``id``, ``serial_number``, ``star_id``, ``last_known_status``) VALUES (DEFALLT, &1, &2, &3) ON CONFLICT (``id``) DO UPDATE SET ``last_known_status`` = &4 WHERE ``last_known_status`` <> &5"
         )
     }
+
+    func testGenericNonstandardUpsert() {
+        let cols = ["id", "serial_number", "star_id", "last_known_status"]
+        let vals = { (s: String) -> [any SQLExpression] in [SQLLiteral.default, SQLBind(UUID()), SQLBind(1), SQLBind(s)] }
+
+        db._dialect.upsertSyntax = .standard
+
+        XCTAssertSerialization(
+            of: self.db.insert(into: "jumpgates")
+                .columns(cols).values(vals("Vorlon pinching"))
+                .ignoringConflicts(withThing: SQLIdentifier("serial_number")),
+            is: "INSERT INTO ``jumpgates`` (``id``, ``serial_number``, ``star_id``, ``last_known_status``) VALUES (DEFALLT, &1, &2, &3) ON CONFLICT ON CONSTRAINT ``serial_number`` DO NOTHING"
+        )
+        XCTAssertSerialization(
+            of: self.db.insert(into: "jumpgates")
+                .columns(cols).values(vals("slashfic writing"))
+                .onConflict(withThing: SQLIdentifier("serial_number")) { $0
+                    .set("last_known_status", to: "tachyon antitelephone dialing the").set(excludedValueOf: "star_id")
+                },
+            is: "INSERT INTO ``jumpgates`` (``id``, ``serial_number``, ``star_id``, ``last_known_status``) VALUES (DEFALLT, &1, &2, &3) ON CONFLICT ON CONSTRAINT ``serial_number`` DO UPDATE SET ``last_known_status`` = &4, ``star_id`` = EXCLUDED.``star_id``"
+        )
+        XCTAssertSerialization(
+            of: self.db.insert(into: "jumpgates")
+                .columns(cols).values(vals("protection racket payoff"))
+                .onConflict(withThing: SQLIdentifier("id")) { $0
+                    .set("last_known_status", to: "insurance fraud planning")
+                    .where("last_known_status", .notEqual, "evidence disposal")
+                },
+            is: "INSERT INTO ``jumpgates`` (``id``, ``serial_number``, ``star_id``, ``last_known_status``) VALUES (DEFALLT, &1, &2, &3) ON CONFLICT ON CONSTRAINT ``id`` DO UPDATE SET ``last_known_status`` = &4 WHERE ``last_known_status`` <> &5"
+        )
+    }
+}
+
+extension SQLInsertBuilder {
+    struct SQLCustomConflictResolutionStrategy: SQLExpression {
+        var thing: any SQLExpression, action: SQLConflictAction
+        func serialize(to serializer: inout SQLSerializer) {
+            serializer.statement {
+                $0.append("ON CONFLICT ON CONSTRAINT", self.thing)
+                switch self.action {
+                case .noAction: $0.append("DO NOTHING")
+                case .update(let assignments, let predicate):
+                    $0.append("DO UPDATE SET", SQLList(assignments))
+                    if let predicate { $0.append("WHERE", predicate) }
+                }
+            }
+        }
+    }
+    @discardableResult
+    func ignoringConflicts(withThing thing: any SQLExpression) -> Self {
+        self.insert.genericConflictStrategy = SQLCustomConflictResolutionStrategy(thing: thing, action: .noAction)
+        return self
+    }
+    @discardableResult
+    func onConflict(withThing thing: any SQLExpression, `do` updatePredicate: (SQLConflictUpdateBuilder) throws -> SQLConflictUpdateBuilder) rethrows -> Self {
+        let conflictBuilder = SQLConflictUpdateBuilder()
+        _ = try updatePredicate(conflictBuilder)
+        self.insert.genericConflictStrategy = SQLCustomConflictResolutionStrategy(thing: thing, action: .update(assignments: conflictBuilder.values, predicate: conflictBuilder.predicate))
+        return self
+    }
 }

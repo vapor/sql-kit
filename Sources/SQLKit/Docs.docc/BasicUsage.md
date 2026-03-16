@@ -206,7 +206,7 @@ WHERE "name" <> NULL AND ("name" = ?1 OR "name" = ?2) -- bindings: ["Milky Way",
 
 ### Insert
 
-The ``SQLDatabase/insert(into:)-67oqt`` and ``SQLDatabase/insert(into:)-5n3gh`` methods create an `INSERT` query builder:
+The ``SQLDatabase/insert(into:)-(String)`` and ``SQLDatabase/insert(into:)-(SQLExpression)`` methods create an `INSERT` query builder:
 
 ```swift
 try await db.insert(into: "galaxies")
@@ -236,7 +236,7 @@ This code generates the same SQL as would `builder.columns("name").values("Milky
 
 ### Update
 
-The ``SQLDatabase/update(_:)-2tf1c`` and ``SQLDatabase/update(_:)-80964`` methods create an `UPDATE` query builder:
+The ``SQLDatabase/update(_:)-(String)`` and ``SQLDatabase/update(_:)-(SQLExpression)`` methods create an `UPDATE` query builder:
 
 ```swift
 try await db.update("planets")
@@ -255,7 +255,7 @@ The update builder supports the same `where()` and `orWhere()` methods as the se
 
 ### Delete
 
-The ``SQLDatabase/delete(from:)-3tx4f`` and ``SQLDatabase/delete(from:)-4bqlu`` methods create a `DELETE` query builder:
+The ``SQLDatabase/delete(from:)-(String)`` and ``SQLDatabase/delete(from:)-(SQLExpression)`` methods create a `DELETE` query builder:
 
 ```swift
 try await db.delete(from: "planets")
