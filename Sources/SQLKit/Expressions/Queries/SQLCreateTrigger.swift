@@ -36,6 +36,12 @@ public struct SQLCreateTrigger: SQLExpression {
 
     /// `true` if the new trigger will be a constraint trigger, if supported.
     public var isConstraint: Bool
+    
+    /// Include `OR REPLACE` to the trigger syntax.
+    public var orReplace: Bool
+    
+    /// Whether to include `IF NOT EXISTS` syntax.
+    public var ifNotExists: Bool
 
     /// The ordering of the trigger's execution relative to the triggering event.
     ///
@@ -122,6 +128,8 @@ public struct SQLCreateTrigger: SQLExpression {
         self.when = when
         self.event = event
         self.isConstraint = false
+        self.orReplace = false
+        self.ifNotExists = false
     }
 
     /// Create a new trigger creation query.
@@ -162,10 +170,23 @@ public struct SQLCreateTrigger: SQLExpression {
             if syntax.contains(.supportsConstraints), self.isConstraint {
                 $0.append("CONSTRAINT")
             }
+            
+            if self.orReplace, syntax.contains(.supportsOrReplace) {
+              $0.append("OR REPLACE")
+            }
+            
             if let definer = self.definer, syntax.contains(.supportsDefiner) {
                 $0.append("DEFINER =", definer)
             }
-            $0.append("TRIGGER", self.name)
+            
+            $0.append("TRIGGER")
+            
+            if self.ifNotExists, syntax.contains(.supportsIfNotExists) {
+              $0.append("IF NOT EXISTS")
+            }
+            
+            $0.append(self.name)
+            
             $0.append(self.when, self.event)
             if let columns = self.columns, !columns.isEmpty, syntax.contains(.supportsUpdateColumns) {
                 $0.append("OF", SQLList(columns))
