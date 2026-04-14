@@ -1,6 +1,6 @@
 import Logging
 import NIOCore
-import SQLKit
+public import SQLKit
 import XCTest
 
 public final class SQLBenchmarker: Sendable {
