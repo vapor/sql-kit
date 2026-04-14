@@ -1,4 +1,4 @@
-// swift-tools-version:6.0
+// swift-tools-version:6.1
 import PackageDescription
 
 let package = Package(
@@ -38,6 +38,8 @@ let package = Package(
         .testTarget(
             name: "SQLKitTests",
             dependencies: [
+                .product(name: "NIOCore", package: "swift-nio"),
+                .product(name: "NIOEmbedded", package: "swift-nio"),
                 .target(name: "SQLKit"),
                 .target(name: "SQLKitBenchmark"),
             ],
@@ -48,7 +50,7 @@ let package = Package(
 
 var swiftSettings: [SwiftSetting] { [
     .enableUpcomingFeature("ExistentialAny"),
-    // .enableUpcomingFeature("InternalImportsByDefault"),
+    .enableUpcomingFeature("InternalImportsByDefault"),
     .enableUpcomingFeature("MemberImportVisibility"),
     .enableUpcomingFeature("InferIsolatedConformances"),
     // .enableUpcomingFeature("NonisolatedNonsendingByDefault"),

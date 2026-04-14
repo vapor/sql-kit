@@ -1,9 +1,7 @@
 extension StringProtocol where Self: RangeReplaceableCollection, Self.Element: Equatable {
-    /// Provides a version of `StringProtocol.firstRange(of:)` which is guaranteed to be available on
-    /// pre-Ventura Apple platforms.
+    /// Provides a version of `StringProtocol.firstRange(of:)` guaranteed to be available.
     @inlinable
     func sqlkit_firstRange(of other: some StringProtocol) -> Range<Self.Index>? {
-        /// N.B.: This implementation is apparently some 650% faster than `firstRange(of:)`, at least on macOS...
         guard self.count >= other.count, let starter = other.first else { return nil }
         var index = self.startIndex
         let lastIndex = self.index(self.endIndex, offsetBy: -other.count)
@@ -21,15 +19,17 @@ extension StringProtocol where Self: RangeReplaceableCollection, Self.Element: E
         return nil
     }
 
-    /// Provides a version of `StringProtocol.replacing(_:with:)` which is guaranteed to be available on
-    /// pre-Ventura Apple platforms.
+    /// Provides a version of `StringProtocol.replacing(_:with:)` which is guaranteed to be available.
+    #if !DEBUG && !canImport(Darwin)
+    @inline(__always)
+    #endif
     @inlinable
     func sqlkit_replacing(_ search: some StringProtocol, with replacement: some StringProtocol) -> String {
-        /// N.B.: Even on Ventura/Sonoma, the handwritten implementation is orders of magnitude faster than
-        /// `replacing(_:with:)`, at least as of the time of this writing. Thus we use the handwritten version
-        /// unconditionally. It's still 4x slower than Foundation's version, but that's a lot better than 25x.
+        #if DEBUG || canImport(Darwin)
+        // On Apple platforms, this hand-rolled implementation is MUCH faster (10x or more) than the stdlib version, for some reason.
+        // We also want to use this implementation in debug builds, so that the tests test it rather than the stdlib.
         guard !self.isEmpty, !search.isEmpty, self.count >= search.count else { return .init(self) }
-        
+
         var result = "", prevIndex = self.startIndex
         
         result.reserveCapacity(self.count + replacement.count)
@@ -40,6 +40,10 @@ extension StringProtocol where Self: RangeReplaceableCollection, Self.Element: E
         }
         result.append(contentsOf: self[prevIndex...])
         return result
+        #else
+        // On non-Apple platforms, the stdlib's version is better than our hand-rolled one.
+        return String(self.replacing(search, with: replacement))
+        #endif
     }
 
     /// Returns the string with its first character lowercased.

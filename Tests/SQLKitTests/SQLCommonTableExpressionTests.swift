@@ -1,252 +1,270 @@
 import SQLKit
-import XCTest
+import Testing
 
-final class SQLCommonTableExpressionTests: XCTestCase {
-    var db = TestDatabase()
+@Suite("CTE tests")
+struct CommonTableExpressionTests {
+    @Test("SELECT query with CTE")
+    func selectQueryWithCTE() throws {
+        let db = TestDatabase()
 
-    override class func setUp() {
-        XCTAssert(isLoggingConfigured)
-    }
-    
-    func testSelectQueryWithCTE() {
-        XCTAssertSerialization(
-            of: self.db.select().with("a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).column(SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.select().with("a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).column(SQLColumn("b", table: "a")),
             is: "WITH ``a`` (``b``) AS (SELECT 1) SELECT ``a``.``b``"
         )
 
-        XCTAssertSerialization(
-            of: self.db.select().with(SQLIdentifier("a"), columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).column(SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.select().with(SQLIdentifier("a"), columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).column(SQLColumn("b", table: "a")),
             is: "WITH ``a`` (``b``) AS (SELECT 1) SELECT ``a``.``b``"
         )
 
-        XCTAssertSerialization(
-            of: self.db.select().with("a", columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).column(SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.select().with("a", columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).column(SQLColumn("b", table: "a")),
             is: "WITH ``a`` (``b``) AS (SELECT 1) SELECT ``a``.``b``"
         )
 
-        XCTAssertSerialization(
-            of: self.db.select().with(SQLIdentifier("a"), columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).column(SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.select().with(SQLIdentifier("a"), columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).column(SQLColumn("b", table: "a")),
             is: "WITH ``a`` (``b``) AS (SELECT 1) SELECT ``a``.``b``"
         )
 
-        XCTAssertSerialization(
-            of: self.db.select().with(recursive: "a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).column(SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.select().with(recursive: "a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).column(SQLColumn("b", table: "a")),
             is: "WITH RECURSIVE ``a`` (``b``) AS (SELECT 1) SELECT ``a``.``b``"
         )
 
-        XCTAssertSerialization(
-            of: self.db.select().with(recursive: SQLIdentifier("a"), columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).column(SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.select().with(recursive: SQLIdentifier("a"), columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).column(SQLColumn("b", table: "a")),
             is: "WITH RECURSIVE ``a`` (``b``) AS (SELECT 1) SELECT ``a``.``b``"
         )
 
-        XCTAssertSerialization(
-            of: self.db.select().with(recursive: "a", columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).column(SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.select().with(recursive: "a", columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).column(SQLColumn("b", table: "a")),
             is: "WITH RECURSIVE ``a`` (``b``) AS (SELECT 1) SELECT ``a``.``b``"
         )
 
-        XCTAssertSerialization(
-            of: self.db.select().with(recursive: SQLIdentifier("a"), columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).column(SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.select().with(recursive: SQLIdentifier("a"), columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).column(SQLColumn("b", table: "a")),
             is: "WITH RECURSIVE ``a`` (``b``) AS (SELECT 1) SELECT ``a``.``b``"
         )
     }
 
-    func testUpdateQueryWithCTE() {
-        XCTAssertSerialization(
-            of: self.db.update("t").with("a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).set("c", to: SQLColumn("b", table: "a")),
+    @Test("UPDATE query with CTE")
+    func updateQueryWithCTE() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.update("t").with("a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).set("c", to: SQLColumn("b", table: "a")),
             is: "WITH ``a`` (``b``) AS (SELECT 1) UPDATE ``t`` SET ``c`` = ``a``.``b``"
         )
 
-        XCTAssertSerialization(
-            of: self.db.update("t").with(SQLIdentifier("a"), columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).set("c", to: SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.update("t").with(SQLIdentifier("a"), columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).set("c", to: SQLColumn("b", table: "a")),
             is: "WITH ``a`` (``b``) AS (SELECT 1) UPDATE ``t`` SET ``c`` = ``a``.``b``"
         )
 
-        XCTAssertSerialization(
-            of: self.db.update("t").with("a", columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).set("c", to: SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.update("t").with("a", columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).set("c", to: SQLColumn("b", table: "a")),
             is: "WITH ``a`` (``b``) AS (SELECT 1) UPDATE ``t`` SET ``c`` = ``a``.``b``"
         )
 
-        XCTAssertSerialization(
-            of: self.db.update("t").with(SQLIdentifier("a"), columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).set("c", to: SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.update("t").with(SQLIdentifier("a"), columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).set("c", to: SQLColumn("b", table: "a")),
             is: "WITH ``a`` (``b``) AS (SELECT 1) UPDATE ``t`` SET ``c`` = ``a``.``b``"
         )
 
-        XCTAssertSerialization(
-            of: self.db.update("t").with(recursive: "a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).set("c", to: SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.update("t").with(recursive: "a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).set("c", to: SQLColumn("b", table: "a")),
             is: "WITH RECURSIVE ``a`` (``b``) AS (SELECT 1) UPDATE ``t`` SET ``c`` = ``a``.``b``"
         )
 
-        XCTAssertSerialization(
-            of: self.db.update("t").with(recursive: SQLIdentifier("a"), columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).set("c", to: SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.update("t").with(recursive: SQLIdentifier("a"), columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).set("c", to: SQLColumn("b", table: "a")),
             is: "WITH RECURSIVE ``a`` (``b``) AS (SELECT 1) UPDATE ``t`` SET ``c`` = ``a``.``b``"
         )
 
-        XCTAssertSerialization(
-            of: self.db.update("t").with(recursive: "a", columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).set("c", to: SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.update("t").with(recursive: "a", columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).set("c", to: SQLColumn("b", table: "a")),
             is: "WITH RECURSIVE ``a`` (``b``) AS (SELECT 1) UPDATE ``t`` SET ``c`` = ``a``.``b``"
         )
 
-        XCTAssertSerialization(
-            of: self.db.update("t").with(recursive: SQLIdentifier("a"), columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).set("c", to: SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.update("t").with(recursive: SQLIdentifier("a"), columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).set("c", to: SQLColumn("b", table: "a")),
             is: "WITH RECURSIVE ``a`` (``b``) AS (SELECT 1) UPDATE ``t`` SET ``c`` = ``a``.``b``"
         )
     }
 
-    func testInsertQueryWithCTE() {
-        XCTAssertSerialization(
-            of: self.db.insert(into: "t").with("a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).columns("c").values(SQLColumn("b", table: "a")),
+    @Test("INSERT query with CTE")
+    func insertQueryWithCTE() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.insert(into: "t").with("a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).columns("c").values(SQLColumn("b", table: "a")),
             is: "WITH ``a`` (``b``) AS (SELECT 1) INSERT INTO ``t`` (``c``) VALUES (``a``.``b``)"
         )
 
-        XCTAssertSerialization(
-            of: self.db.insert(into: "t").with(SQLIdentifier("a"), columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).columns("c").values(SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.insert(into: "t").with(SQLIdentifier("a"), columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).columns("c").values(SQLColumn("b", table: "a")),
             is: "WITH ``a`` (``b``) AS (SELECT 1) INSERT INTO ``t`` (``c``) VALUES (``a``.``b``)"
         )
 
-        XCTAssertSerialization(
-            of: self.db.insert(into: "t").with("a", columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).columns("c").values(SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.insert(into: "t").with("a", columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).columns("c").values(SQLColumn("b", table: "a")),
             is: "WITH ``a`` (``b``) AS (SELECT 1) INSERT INTO ``t`` (``c``) VALUES (``a``.``b``)"
         )
 
-        XCTAssertSerialization(
-            of: self.db.insert(into: "t").with(SQLIdentifier("a"), columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).columns("c").values(SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.insert(into: "t").with(SQLIdentifier("a"), columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).columns("c").values(SQLColumn("b", table: "a")),
             is: "WITH ``a`` (``b``) AS (SELECT 1) INSERT INTO ``t`` (``c``) VALUES (``a``.``b``)"
         )
 
-        XCTAssertSerialization(
-            of: self.db.insert(into: "t").with(recursive: "a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).columns("c").values(SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.insert(into: "t").with(recursive: "a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).columns("c").values(SQLColumn("b", table: "a")),
             is: "WITH RECURSIVE ``a`` (``b``) AS (SELECT 1) INSERT INTO ``t`` (``c``) VALUES (``a``.``b``)"
         )
 
-        XCTAssertSerialization(
-            of: self.db.insert(into: "t").with(recursive: SQLIdentifier("a"), columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).columns("c").values(SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.insert(into: "t").with(recursive: SQLIdentifier("a"), columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).columns("c").values(SQLColumn("b", table: "a")),
             is: "WITH RECURSIVE ``a`` (``b``) AS (SELECT 1) INSERT INTO ``t`` (``c``) VALUES (``a``.``b``)"
         )
 
-        XCTAssertSerialization(
-            of: self.db.insert(into: "t").with(recursive: "a", columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).columns("c").values(SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.insert(into: "t").with(recursive: "a", columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).columns("c").values(SQLColumn("b", table: "a")),
             is: "WITH RECURSIVE ``a`` (``b``) AS (SELECT 1) INSERT INTO ``t`` (``c``) VALUES (``a``.``b``)"
         )
 
-        XCTAssertSerialization(
-            of: self.db.insert(into: "t").with(recursive: SQLIdentifier("a"), columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).columns("c").values(SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.insert(into: "t").with(recursive: SQLIdentifier("a"), columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).columns("c").values(SQLColumn("b", table: "a")),
             is: "WITH RECURSIVE ``a`` (``b``) AS (SELECT 1) INSERT INTO ``t`` (``c``) VALUES (``a``.``b``)"
         )
     }
 
-    func testDeleteQueryWithCTE() {
-        XCTAssertSerialization(
-            of: self.db.delete(from: "t").with("a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).where("c", .equal, SQLColumn("b", table: "a")),
+    @Test("DELETE query with CTE")
+    func deleteQueryWithCTE() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.delete(from: "t").with("a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).where("c", .equal, SQLColumn("b", table: "a")),
             is: "WITH ``a`` (``b``) AS (SELECT 1) DELETE FROM ``t`` WHERE ``c`` = ``a``.``b``"
         )
 
-        XCTAssertSerialization(
-            of: self.db.delete(from: "t").with(SQLIdentifier("a"), columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).where("c", .equal, SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.delete(from: "t").with(SQLIdentifier("a"), columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).where("c", .equal, SQLColumn("b", table: "a")),
             is: "WITH ``a`` (``b``) AS (SELECT 1) DELETE FROM ``t`` WHERE ``c`` = ``a``.``b``"
         )
 
-        XCTAssertSerialization(
-            of: self.db.delete(from: "t").with("a", columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).where("c", .equal, SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.delete(from: "t").with("a", columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).where("c", .equal, SQLColumn("b", table: "a")),
             is: "WITH ``a`` (``b``) AS (SELECT 1) DELETE FROM ``t`` WHERE ``c`` = ``a``.``b``"
         )
 
-        XCTAssertSerialization(
-            of: self.db.delete(from: "t").with(SQLIdentifier("a"), columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).where("c", .equal, SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.delete(from: "t").with(SQLIdentifier("a"), columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).where("c", .equal, SQLColumn("b", table: "a")),
             is: "WITH ``a`` (``b``) AS (SELECT 1) DELETE FROM ``t`` WHERE ``c`` = ``a``.``b``"
         )
 
-        XCTAssertSerialization(
-            of: self.db.delete(from: "t").with(recursive: "a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).where("c", .equal, SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.delete(from: "t").with(recursive: "a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).where("c", .equal, SQLColumn("b", table: "a")),
             is: "WITH RECURSIVE ``a`` (``b``) AS (SELECT 1) DELETE FROM ``t`` WHERE ``c`` = ``a``.``b``"
         )
 
-        XCTAssertSerialization(
-            of: self.db.delete(from: "t").with(recursive: SQLIdentifier("a"), columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).where("c", .equal, SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.delete(from: "t").with(recursive: SQLIdentifier("a"), columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).where("c", .equal, SQLColumn("b", table: "a")),
             is: "WITH RECURSIVE ``a`` (``b``) AS (SELECT 1) DELETE FROM ``t`` WHERE ``c`` = ``a``.``b``"
         )
 
-        XCTAssertSerialization(
-            of: self.db.delete(from: "t").with(recursive: "a", columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).where("c", .equal, SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.delete(from: "t").with(recursive: "a", columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).where("c", .equal, SQLColumn("b", table: "a")),
             is: "WITH RECURSIVE ``a`` (``b``) AS (SELECT 1) DELETE FROM ``t`` WHERE ``c`` = ``a``.``b``"
         )
 
-        XCTAssertSerialization(
-            of: self.db.delete(from: "t").with(recursive: SQLIdentifier("a"), columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).where("c", .equal, SQLColumn("b", table: "a")),
+        try expectSerialization(
+            of: db.delete(from: "t").with(recursive: SQLIdentifier("a"), columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).where("c", .equal, SQLColumn("b", table: "a")),
             is: "WITH RECURSIVE ``a`` (``b``) AS (SELECT 1) DELETE FROM ``t`` WHERE ``c`` = ``a``.``b``"
         )
     }
 
-    func testUnionQueryWithCTE() {
-        self.db._dialect.unionFeatures = [.union, .unionAll, .intersect, .intersectAll, .except, .exceptAll, .parenthesizedSubqueries]
+    @Test("UNION query with CTE")
+    func unionQueryWithCTE() throws {
+        let db = TestDatabase()
 
-        XCTAssertSerialization(
-            of: self.db.union { $0 }.with("a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).union(all: { $0.column(SQLColumn("b", table: "a")) }),
+        db._dialect.unionFeatures = [.union, .unionAll, .intersect, .intersectAll, .except, .exceptAll, .parenthesizedSubqueries]
+
+        try expectSerialization(
+            of: db.union { $0 }.with("a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).union(all: { $0.column(SQLColumn("b", table: "a")) }),
             is: "WITH ``a`` (``b``) AS (SELECT 1) (SELECT) UNION ALL (SELECT ``a``.``b``)"
         )
 
-        XCTAssertSerialization(
-            of: self.db.union { $0 }.with(SQLIdentifier("a"), columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).union(all: { $0.column(SQLColumn("b", table: "a")) }),
+        try expectSerialization(
+            of: db.union { $0 }.with(SQLIdentifier("a"), columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).union(all: { $0.column(SQLColumn("b", table: "a")) }),
             is: "WITH ``a`` (``b``) AS (SELECT 1) (SELECT) UNION ALL (SELECT ``a``.``b``)"
         )
 
-        XCTAssertSerialization(
-            of: self.db.union { $0 }.with("a", columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).union(all: { $0.column(SQLColumn("b", table: "a")) }),
+        try expectSerialization(
+            of: db.union { $0 }.with("a", columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).union(all: { $0.column(SQLColumn("b", table: "a")) }),
             is: "WITH ``a`` (``b``) AS (SELECT 1) (SELECT) UNION ALL (SELECT ``a``.``b``)"
         )
 
-        XCTAssertSerialization(
-            of: self.db.union { $0 }.with(SQLIdentifier("a"), columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).union(all: { $0.column(SQLColumn("b", table: "a")) }),
+        try expectSerialization(
+            of: db.union { $0 }.with(SQLIdentifier("a"), columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).union(all: { $0.column(SQLColumn("b", table: "a")) }),
             is: "WITH ``a`` (``b``) AS (SELECT 1) (SELECT) UNION ALL (SELECT ``a``.``b``)"
         )
 
-        XCTAssertSerialization(
-            of: self.db.union { $0 }.with(recursive: "a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).union(all: { $0.column(SQLColumn("b", table: "a")) }),
+        try expectSerialization(
+            of: db.union { $0 }.with(recursive: "a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).union(all: { $0.column(SQLColumn("b", table: "a")) }),
             is: "WITH RECURSIVE ``a`` (``b``) AS (SELECT 1) (SELECT) UNION ALL (SELECT ``a``.``b``)"
         )
 
-        XCTAssertSerialization(
-            of: self.db.union { $0 }.with(recursive: SQLIdentifier("a"), columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).union(all: { $0.column(SQLColumn("b", table: "a")) }),
+        try expectSerialization(
+            of: db.union { $0 }.with(recursive: SQLIdentifier("a"), columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).union(all: { $0.column(SQLColumn("b", table: "a")) }),
             is: "WITH RECURSIVE ``a`` (``b``) AS (SELECT 1) (SELECT) UNION ALL (SELECT ``a``.``b``)"
         )
 
-        XCTAssertSerialization(
-            of: self.db.union { $0 }.with(recursive: "a", columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).union(all: { $0.column(SQLColumn("b", table: "a")) }),
+        try expectSerialization(
+            of: db.union { $0 }.with(recursive: "a", columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).union(all: { $0.column(SQLColumn("b", table: "a")) }),
             is: "WITH RECURSIVE ``a`` (``b``) AS (SELECT 1) (SELECT) UNION ALL (SELECT ``a``.``b``)"
         )
 
-        XCTAssertSerialization(
-            of: self.db.union { $0 }.with(recursive: SQLIdentifier("a"), columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).union(all: { $0.column(SQLColumn("b", table: "a")) }),
+        try expectSerialization(
+            of: db.union { $0 }.with(recursive: SQLIdentifier("a"), columns: [SQLIdentifier("b")], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) }).union(all: { $0.column(SQLColumn("b", table: "a")) }),
             is: "WITH RECURSIVE ``a`` (``b``) AS (SELECT 1) (SELECT) UNION ALL (SELECT ``a``.``b``)"
         )
     }
-    
-    func testMultipleCTEs() {
-        XCTAssertSerialization(
-            of: self.db.select()
+
+    @Test("multiple CTEs")
+    func multipleCTEs() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select()
                 .with("a", columns: ["b"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) })
                 .with("d", columns: ["e"], as: SQLSubquery.select { $0.column(SQLLiteral.numeric("1")) })
                 .column(SQLColumn("b", table: "a")),
             is: "WITH ``a`` (``b``) AS (SELECT 1), ``d`` (``e``) AS (SELECT 1) SELECT ``a``.``b``"
         )
     }
-    
-    func testCodeCoverage() {
-        var query = self.db.select().column(SQLColumn("b", table: "a")).select
+
+    @Test("code coverage")
+    func codeCoverage() throws {
+        let db = TestDatabase()
+        var query = db.select().column(SQLColumn("b", table: "a")).select
         query.tableExpressionGroup = .init(tableExpressions: [
             SQLCommonTableExpression(alias: SQLIdentifier("x"), query: SQLRaw("VALUES(``1``)")),
             SQLCommonTableExpression(alias: SQLIdentifier("x"), query: SQLGroupExpression(SQLRaw("VALUES(``1``)"))),
             SQLGroupExpression(SQLRaw("FOO"))
         ])
-        
-        XCTAssertSerialization(of: self.db.raw("\(query)"), is: "WITH ``x`` AS (VALUES(``1``)), ``x`` AS (VALUES(``1``)), (FOO) SELECT ``a``.``b``")
+
+        try expectSerialization(of: db.raw("\(query)"), is: "WITH ``x`` AS (VALUES(``1``)), ``x`` AS (VALUES(``1``)), (FOO) SELECT ``a``.``b``")
     }
-    
-    func testMoreRealisticCTEs() {
+
+    @Test("more realistic CTEs")
+    func moreRealisticCTEs() throws {
+        let db = TestDatabase()
+
         // Simple sub-SELECT avoidance
         // Taken from https://www.postgresql.org/docs/16/queries-with.html#QUERIES-WITH-SELECT
-        self.db._dialect.identifierQuote = SQLRaw("\"")
-        XCTAssertSerialization(
-            of: self.db.select()
+        db._dialect.identifierQuote = SQLRaw("\"")
+        try expectSerialization(
+            of: db.select()
                 .with("regional_sales", as: SQLSubquery.select { $0
                     .column("region").column(SQLFunction("SUM", args: SQLColumn("amount")), as: "total_sales").from("orders").groupBy("region")
                 })
@@ -271,13 +289,13 @@ final class SQLCommonTableExpressionTests: XCTestCase {
                 GROUP BY "region", "product"
                 """.replacing("\n", with: " ")
         )
-        
+
         // Fibonacci series generator
         // Taken from https://dev.mysql.com/doc/refman/8.4/en/with.html#common-table-expressions-recursive-fibonacci-series
-        self.db._dialect.identifierQuote = SQLRaw("`")
-        self.db._dialect.unionFeatures = [.union, .unionAll]
-        XCTAssertSerialization(
-            of: self.db.select()
+        db._dialect.identifierQuote = SQLRaw("`")
+        db._dialect.unionFeatures = [.union, .unionAll]
+        try expectSerialization(
+            of: db.select()
                 .with(recursive: "fibonacci", columns: ["n", "fib_n", "next_fib_n"], as: SQLSubquery.union { $0
                     .columns(SQLLiteral.numeric("1"), SQLLiteral.numeric("0"), SQLLiteral.numeric("1"))
                 }.union(all: { $0

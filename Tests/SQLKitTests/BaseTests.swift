@@ -3,18 +3,19 @@ import struct Logging.Logger
 import protocol NIOCore.EventLoop
 import class NIOCore.EventLoopFuture
 import SQLKitBenchmark
-import XCTest
+import Testing
 
-final class SQLKitTests: XCTestCase {
-    var db = TestDatabase()
-
-    override class func setUp() {
-        XCTAssert(isLoggingConfigured)
+@Suite("Base tests")
+struct BaseTests {
+    init() {
+        #expect(isLoggingConfigured)
     }
-    
+
     // MARK: SQLBenchmark
 
-    func testBenchmark() async throws {
+    @Test("benchmark")
+    func benchmark() async throws {
+        let db = TestDatabase()
         let benchmarker = SQLBenchmarker(on: db)
         
         try await benchmarker.runAllTests()
@@ -22,9 +23,12 @@ final class SQLKitTests: XCTestCase {
     
     // MARK: Operators
     
-    func testBinaryOperators() {
-        XCTAssertSerialization(
-            of: self.db.update("planets")
+    @Test("binary operators")
+    func binaryOperators() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.update("planets")
                 .set(SQLIdentifier("moons"), to: SQLBinaryExpression(
                     left: SQLIdentifier("moons"),
                     op: SQLBinaryOperator.add,
@@ -35,26 +39,30 @@ final class SQLKitTests: XCTestCase {
         )
     }
     
-    func testInsertWithArrayOfEncodable() {
+    @Test("insert with array of Encodable")
+    func insertWithArrayOfEncodable() {
+        let db = TestDatabase()
+
         func weird(_ builder: SQLInsertBuilder, values: some Sequence<any Encodable & Sendable>) -> SQLInsertBuilder {
             builder.values(Array(values))
         }
         
-        let output = XCTAssertNoThrowWithResult(weird(
-                self.db.insert(into: "planets").columns("name"),
-                values: ["Jupiter"]
-            )
-            .advancedSerialize()
-        )
-        XCTAssertEqual(output?.sql, "INSERT INTO ``planets`` (``name``) VALUES (&1)")
-        XCTAssertEqual(output?.binds as? [String], ["Jupiter"]) // instead of [["Jupiter"]]
+        let output = weird(
+            db.insert(into: "planets").columns("name"),
+            values: ["Jupiter"]
+        ).advancedSerialize()
+        #expect(output.sql == "INSERT INTO ``planets`` (``name``) VALUES (&1)")
+        #expect(output.binds as? [String] == ["Jupiter"]) // instead of [["Jupiter"]]
     }
 
     // MARK: JSON paths
 
-    func testJSONPaths() {
-        XCTAssertSerialization(
-            of: self.db.select()
+    @Test("JSON paths")
+    func JSONPaths() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select()
                 .column(SQLNestedSubpathExpression(column: "json", path: ["a"]))
                 .column(SQLNestedSubpathExpression(column: "json", path: ["a", "b"]))
                 .column(SQLNestedSubpathExpression(column: "json", path: ["a", "b", "c"]))
@@ -65,108 +73,114 @@ final class SQLKitTests: XCTestCase {
     
     // MARK: Misc
         
-    func testQuoting() {
-        XCTAssertSerialization(of: SQLRawBuilder("\(ident: "foo``bar``") \(literal: "foo'bar'")", on: self.db), is: "``foo````bar`````` 'foo''bar'''")
+    @Test("quoting")
+    func quoting() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(of: SQLRawBuilder("\(ident: "foo``bar``") \(literal: "foo'bar'")", on: db), is: "``foo````bar`````` 'foo''bar'''")
     }
     
-    func testStringHandlingUtilities() {
+    @Test("string handling utilities")
+    func stringHandlingUtilities() {
         /// `encapitalized`
-        XCTAssertEqual("".encapitalized, "")
-        XCTAssertEqual("a".encapitalized, "A")
-        XCTAssertEqual("A".encapitalized, "A")
-        XCTAssertEqual("aa".encapitalized, "Aa")
-        XCTAssertEqual("Aa".encapitalized, "Aa")
-        XCTAssertEqual("aA".encapitalized, "AA")
-        XCTAssertEqual("AA".encapitalized, "AA")
+        #expect("".encapitalized == "")
+        #expect("a".encapitalized == "A")
+        #expect("A".encapitalized == "A")
+        #expect("aa".encapitalized == "Aa")
+        #expect("Aa".encapitalized == "Aa")
+        #expect("aA".encapitalized == "AA")
+        #expect("AA".encapitalized == "AA")
 
         /// `decapitalized`
-        XCTAssertEqual("".decapitalized, "")
-        XCTAssertEqual("a".decapitalized, "a")
-        XCTAssertEqual("A".decapitalized, "a")
-        XCTAssertEqual("aa".decapitalized, "aa")
-        XCTAssertEqual("Aa".decapitalized, "aa")
-        XCTAssertEqual("aA".decapitalized, "aA")
-        XCTAssertEqual("AA".decapitalized, "aA")
+        #expect("".decapitalized == "")
+        #expect("a".decapitalized == "a")
+        #expect("A".decapitalized == "a")
+        #expect("aa".decapitalized == "aa")
+        #expect("Aa".decapitalized == "aa")
+        #expect("aA".decapitalized == "aA")
+        #expect("AA".decapitalized == "aA")
 
         /// `convertedFromSnakeCase`
-        XCTAssertEqual("".convertedFromSnakeCase, "")
-        XCTAssertEqual("_".convertedFromSnakeCase, "_")
-        XCTAssertEqual("__".convertedFromSnakeCase, "__")
-        XCTAssertEqual("a".convertedFromSnakeCase, "a")
-        XCTAssertEqual("a_".convertedFromSnakeCase, "a_")
-        XCTAssertEqual("a_a".convertedFromSnakeCase, "aA")
-        XCTAssertEqual("aA_a".convertedFromSnakeCase, "aAA")
-        XCTAssertEqual("_a".convertedFromSnakeCase, "_a")
-        XCTAssertEqual("_a_".convertedFromSnakeCase, "_a_")
-        XCTAssertEqual("a_b_c".convertedFromSnakeCase, "aBC")
-        XCTAssertEqual("_a_b_c_".convertedFromSnakeCase, "_aBC_")
-        XCTAssertEqual("_a_b_bcc_".convertedFromSnakeCase, "_aBBcc_")
+        #expect("".convertedFromSnakeCase == "")
+        #expect("_".convertedFromSnakeCase == "_")
+        #expect("__".convertedFromSnakeCase == "__")
+        #expect("a".convertedFromSnakeCase == "a")
+        #expect("a_".convertedFromSnakeCase == "a_")
+        #expect("a_a".convertedFromSnakeCase == "aA")
+        #expect("aA_a".convertedFromSnakeCase == "aAA")
+        #expect("_a".convertedFromSnakeCase == "_a")
+        #expect("_a_".convertedFromSnakeCase == "_a_")
+        #expect("a_b_c".convertedFromSnakeCase == "aBC")
+        #expect("_a_b_c_".convertedFromSnakeCase == "_aBC_")
+        #expect("_a_b_bcc_".convertedFromSnakeCase == "_aBBcc_")
 
         /// `convertedToSnakeCase`
-        XCTAssertEqual("".convertedToSnakeCase, "")
-        XCTAssertEqual("_".convertedToSnakeCase, "_")
-        XCTAssertEqual("__".convertedToSnakeCase, "__")
-        XCTAssertEqual("a".convertedToSnakeCase, "a")
-        XCTAssertEqual("a_".convertedToSnakeCase, "a_")
-        XCTAssertEqual("aA".convertedToSnakeCase, "a_a")
-        XCTAssertEqual("aAA".convertedToSnakeCase, "a_aA")
-        XCTAssertEqual("_a".convertedToSnakeCase, "_a")
-        XCTAssertEqual("_a_".convertedToSnakeCase, "_a_")
-        XCTAssertEqual("aBC".convertedToSnakeCase, "a_bC")
-        XCTAssertEqual("_aBC_".convertedToSnakeCase, "_a_bC_")
-        XCTAssertEqual("aBBcc".convertedToSnakeCase, "a_b_bcc")
-        XCTAssertEqual("_aBBcc_".convertedToSnakeCase, "_a_b_bcc_")
+        #expect("".convertedToSnakeCase == "")
+        #expect("_".convertedToSnakeCase == "_")
+        #expect("__".convertedToSnakeCase == "__")
+        #expect("a".convertedToSnakeCase == "a")
+        #expect("a_".convertedToSnakeCase == "a_")
+        #expect("aA".convertedToSnakeCase == "a_a")
+        #expect("aAA".convertedToSnakeCase == "a_aA")
+        #expect("_a".convertedToSnakeCase == "_a")
+        #expect("_a_".convertedToSnakeCase == "_a_")
+        #expect("aBC".convertedToSnakeCase == "a_bC")
+        #expect("_aBC_".convertedToSnakeCase == "_a_bC_")
+        #expect("aBBcc".convertedToSnakeCase == "a_b_bcc")
+        #expect("_aBBcc_".convertedToSnakeCase == "_a_b_bcc_")
         
         /// `sqlkit_firstRange(of:)`
-        XCTAssertEqual("a".sqlkit_firstRange(of: "abc"), nil)
-        XCTAssertEqual("abba".sqlkit_firstRange(of: "abc"), nil)
-        XCTAssertEqual("abc".sqlkit_firstRange(of: "abc"), "abc".startIndex ..< "abc".endIndex)
-        XCTAssertEqual("aabca".sqlkit_firstRange(of: "abc"), "aabca".index(after: "aabca".startIndex) ..< "aabca".index(before: "aabca".endIndex))
-        XCTAssertEqual("abcabc".sqlkit_firstRange(of: "abc"), "abcabc".startIndex ..< "abcabc".index("abcabc".startIndex, offsetBy: 3))
-        XCTAssertEqual("aabc_abca".sqlkit_firstRange(of: "abc"), "aabc_abca".index(after: "aabc_abca".startIndex) ..< "aabc_abca".index("aabc_abca".startIndex, offsetBy: 4))
+        #expect("a".sqlkit_firstRange(of: "abc") == nil)
+        #expect("abba".sqlkit_firstRange(of: "abc") == nil)
+        #expect("abc".sqlkit_firstRange(of: "abc") == "abc".startIndex ..< "abc".endIndex)
+        #expect("aabca".sqlkit_firstRange(of: "abc") == "aabca".index(after: "aabca".startIndex) ..< "aabca".index(before: "aabca".endIndex))
+        #expect("abcabc".sqlkit_firstRange(of: "abc") == "abcabc".startIndex ..< "abcabc".index("abcabc".startIndex, offsetBy: 3))
+        #expect("aabc_abca".sqlkit_firstRange(of: "abc") == "aabc_abca".index(after: "aabc_abca".startIndex) ..< "aabc_abca".index("aabc_abca".startIndex, offsetBy: 4))
 
         /// `sqlkit_replacing(_:with:)`
-        XCTAssertEqual("abc".sqlkit_replacing("abc", with: "def"), "def")
-        XCTAssertEqual("aabca".sqlkit_replacing("abc", with: "def"), "adefa")
-        XCTAssertEqual("abcabc".sqlkit_replacing("abc", with: "def"), "defdef")
-        XCTAssertEqual("aabc_abca".sqlkit_replacing("abc", with: "def"), "adef_defa")
-        
+        #expect("abc".sqlkit_replacing("abc", with: "def") == "def")
+        #expect("aabca".sqlkit_replacing("abc", with: "def") == "adefa")
+        #expect("abcabc".sqlkit_replacing("abc", with: "def") == "defdef")
+        #expect("aabc_abca".sqlkit_replacing("abc", with: "def") == "adef_defa")
+
         /// `codingKeyValue`
-        XCTAssertEqual("a".codingKeyValue.stringValue, "a")
+        #expect("a".codingKeyValue.stringValue == "a")
         
         /// `drop(prefix:)`
-        XCTAssertEqual("abcdef".drop(prefix: "abc"), "def")
-        XCTAssertEqual("acbdef".drop(prefix: "abc"), "acbdef")
-        XCTAssertEqual("abcdef".drop(prefix: String?.none), "abcdef")
+        #expect("abcdef".drop(prefix: "abc") == "def")
+        #expect("acbdef".drop(prefix: "abc") == "acbdef")
+        #expect("abcdef".drop(prefix: String?.none) == "abcdef")
     }
     
-    func testDatabaseDefaultProperties() {
-        XCTAssertNil(self.db.version)
-        XCTAssertEqual(self.db.queryLogLevel, .debug)
+    @Test("database default properties")
+    func databaseDefaultProperties() {
+        let db = TestDatabase()
+
+        #expect(db.version == nil)
+        #expect(db.queryLogLevel == .debug)
     }
     
-    func testDatabaseLoggerDatabase() async throws {
-        let db = self.db.logging(to: .init(label: "l"))
-        
-        XCTAssertNotNil(db.eventLoop)
-        XCTAssertNil(db.version)
-        XCTAssertEqual(db.dialect.name, self.db.dialect.name)
-        XCTAssertEqual(db.queryLogLevel, self.db.queryLogLevel)
-        await XCTAssertNotNilAsync(try await db.execute(sql: SQLRaw("TEST"), { _ in }))
-        await XCTAssertNotNilAsync(try await db.execute(sql: SQLRaw("TEST"), { _ in }).get())
+    @Test("logger database")
+    func loggerDatabase() async throws {
+        let sdb = TestDatabase()
+        let db = sdb.logging(to: .init(label: "l"))
+
+        #expect(db.version == nil)
+        #expect(db.logger.logLevel == Logger(label: "l").logLevel)
+        #expect(ObjectIdentifier(db.eventLoop) == ObjectIdentifier(sdb.eventLoop))
+        #expect(db.dialect.name == db.dialect.name)
+        #expect(db.queryLogLevel == db.queryLogLevel)
+        await #expect(throws: Never.self) { try await db.execute(sql: SQLRaw("TEST"), { _ in }) }
+        await #expect(throws: Never.self) { try await db.execute(sql: SQLRaw("TEST"), { _ in }).get() }
     }
     
-    func testDatabaseDefaultAsyncImpl() async throws {
-        struct TestNoAsyncDatabase: SQLDatabase {
-            func execute(sql query: any SQLExpression, _ onRow: @escaping @Sendable (any SQLRow) -> ()) -> EventLoopFuture<Void> { self.eventLoop.makeSucceededVoidFuture() }
-            var logger: Logger { .init(label: "l") }
-            var eventLoop: any EventLoop { FakeEventLoop() }
-            var dialect: any SQLDialect { GenericDialect() }
-        }
-        await XCTAssertNotNilAsync(try await TestNoAsyncDatabase().execute(sql: SQLRaw("TEST"), { _ in }))
+    @Test("database default async impl")
+    func databaseDefaultAsyncImpl() async throws {
+        await #expect(throws: Never.self) { try await TestNoAsyncDatabase().execute(sql: SQLRaw("TEST"), { _ in }) }
     }
 
-    func testDatabaseVersion() {
+    @Test("database version")
+    func databaseVersion() {
         struct TestVersion: SQLDatabaseReportedVersion {
             let stringValue: String
         }
@@ -174,24 +188,25 @@ final class SQLKitTests: XCTestCase {
             let stringValue: String
         }
         
-        XCTAssert(TestVersion(stringValue: "a") == TestVersion(stringValue: "a"))
-        XCTAssertFalse(TestVersion(stringValue: "a").isEqual(to: AnotherTestVersion(stringValue: "a")))
-        XCTAssert(TestVersion(stringValue: "a") != TestVersion(stringValue: "b"))
-        XCTAssert(TestVersion(stringValue: "a") < TestVersion(stringValue: "b"))
-        XCTAssertFalse(TestVersion(stringValue: "a").isOlder(than: AnotherTestVersion(stringValue: "a")))
-        XCTAssert(TestVersion(stringValue: "a") <= TestVersion(stringValue: "a"))
-        XCTAssert(TestVersion(stringValue: "b") > TestVersion(stringValue: "a"))
-        XCTAssert(TestVersion(stringValue: "a") >= TestVersion(stringValue: "a"))
+        #expect(TestVersion(stringValue: "a") == TestVersion(stringValue: "a"))
+        #expect(!TestVersion(stringValue: "a").isEqual(to: AnotherTestVersion(stringValue: "a")))
+        #expect(TestVersion(stringValue: "a") != TestVersion(stringValue: "b"))
+        #expect(TestVersion(stringValue: "a") < TestVersion(stringValue: "b"))
+        #expect(!TestVersion(stringValue: "a").isOlder(than: AnotherTestVersion(stringValue: "a")))
+        #expect(TestVersion(stringValue: "a") <= TestVersion(stringValue: "a"))
+        #expect(TestVersion(stringValue: "b") > TestVersion(stringValue: "a"))
+        #expect(TestVersion(stringValue: "a") >= TestVersion(stringValue: "a"))
     }
     
-    func testDatabaseWithSession() async {
-        await XCTAssertAsync(try await self.db.withSession {
-            XCTAssertNotNil($0)
-            return true
-        })
+    @Test("database with session")
+    func databaseWithSession() async throws {
+        let db = TestDatabase()
+
+        #expect(try await db.withSession { _ in true })
     }
     
-    func testDialectDefaultImpls() {
+    @Test("dialect default implementations")
+    func dialectDefaultImplementations() {
         struct TestDialect: SQLDialect {
             var name: String { "test" }
             var identifierQuote: any SQLExpression { SQLRaw("`") }
@@ -201,29 +216,31 @@ final class SQLKitTests: XCTestCase {
             func literalBoolean(_ value: Bool) -> any SQLExpression { SQLRaw("\(value)") }
         }
         
-        XCTAssertEqual((TestDialect().literalStringQuote as? SQLRaw)?.sql, "'")
-        XCTAssertNil(TestDialect().autoIncrementFunction)
-        XCTAssertEqual((TestDialect().literalDefault as? SQLRaw)?.sql, "DEFAULT")
-        XCTAssert(TestDialect().supportsIfExists)
-        XCTAssertEqual(TestDialect().enumSyntax, .unsupported)
-        XCTAssertFalse(TestDialect().supportsDropBehavior)
-        XCTAssertFalse(TestDialect().supportsReturning)
-        XCTAssertEqual(TestDialect().triggerSyntax.create, [])
-        XCTAssertEqual(TestDialect().triggerSyntax.drop, [])
-        XCTAssertNil(TestDialect().alterTableSyntax.alterColumnDefinitionClause)
-        XCTAssertNil(TestDialect().alterTableSyntax.alterColumnDefinitionTypeKeyword)
-        XCTAssert(TestDialect().alterTableSyntax.allowsBatch)
-        XCTAssertNil(TestDialect().customDataType(for: .int))
-        XCTAssertEqual((TestDialect().normalizeSQLConstraint(identifier: SQLRaw("")) as? SQLRaw)?.sql, "")
-        XCTAssertEqual(TestDialect().upsertSyntax, .unsupported)
-        XCTAssertEqual(TestDialect().unionFeatures, [.union, .unionAll])
-        XCTAssertNil(TestDialect().sharedSelectLockExpression)
-        XCTAssertNil(TestDialect().exclusiveSelectLockExpression)
-        XCTAssertNil(TestDialect().nestedSubpathExpression(in: SQLRaw(""), for: [""]))
+        #expect((TestDialect().literalStringQuote as? SQLRaw)?.sql == "'")
+        #expect(TestDialect().autoIncrementFunction == nil)
+        #expect((TestDialect().literalDefault as? SQLRaw)?.sql == "DEFAULT")
+        #expect(TestDialect().supportsIfExists)
+        #expect(TestDialect().enumSyntax == .unsupported)
+        #expect(!TestDialect().supportsDropBehavior)
+        #expect(!TestDialect().supportsReturning)
+        #expect(TestDialect().triggerSyntax.create == [])
+        #expect(TestDialect().triggerSyntax.drop == [])
+        #expect(TestDialect().alterTableSyntax.alterColumnDefinitionClause == nil)
+        #expect(TestDialect().alterTableSyntax.alterColumnDefinitionTypeKeyword == nil)
+        #expect(TestDialect().alterTableSyntax.allowsBatch)
+        #expect(TestDialect().customDataType(for: .int) == nil)
+        #expect((TestDialect().normalizeSQLConstraint(identifier: SQLRaw("")) as? SQLRaw)?.sql == "")
+        #expect(TestDialect().upsertSyntax == .unsupported)
+        #expect(TestDialect().unionFeatures == [.union, .unionAll])
+        #expect(TestDialect().sharedSelectLockExpression == nil)
+        #expect(TestDialect().exclusiveSelectLockExpression == nil)
+        #expect(TestDialect().nestedSubpathExpression(in: SQLRaw(""), for: [""]) == nil)
     }
     
-    func testAdditionalStatementAPI() {
-        var serializer = SQLSerializer(database: self.db)
+    @Test("additional SQLStatement API")
+    func additionalSQLStatementAPI() {
+        let db = TestDatabase()
+        var serializer = SQLSerializer(database: db)
         serializer.statement {
             $0.append("a")
             $0.append(SQLRaw("a"))
@@ -242,6 +259,6 @@ final class SQLKitTests: XCTestCase {
             $0.append("a", SQLRaw("b"), SQLRaw("c"))
             $0.append(SQLRaw("a"), SQLRaw("b"), SQLRaw("c"))
         }
-        XCTAssertEqual(serializer.sql, "a a a b a b a b a b a b c a b c a b c a b c a b c a b c a b c a b c")
+        #expect(serializer.sql == "a a a b a b a b a b a b c a b c a b c a b c a b c a b c a b c a b c")
     }
 }

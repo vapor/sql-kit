@@ -1,18 +1,16 @@
 import SQLKit
-import XCTest
+import Testing
 
-final class SQLCreateTableTests: XCTestCase {
-    var db = TestDatabase()
-
-    override class func setUp() {
-        XCTAssert(isLoggingConfigured)
-    }
-    
+@Suite("CREATE TABLE tests")
+struct CreateTableTests {
     // MARK: Table Creation
 
-    func testColumnConstraints() {
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets")
+    @Test("column constraints")
+    func columnConstraints() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.create(table: "planets")
                 .column("id", type: .bigint, .primaryKey)
                 .column("name", type: .text, .default("unnamed"))
                 .column("galaxy_id", type: .bigint, .references("galaxies", "id"))
@@ -26,105 +24,126 @@ final class SQLCreateTableTests: XCTestCase {
                 """
        )
     }
-    
-    func testConstraintLengthNormalization() {
+
+    @Test("constraint length normalization")
+    func constraintLengthNormalization() {
+        let db = TestDatabase()
+
         // Default impl is to leave as-is
-        XCTAssertEqual(
-            (db.dialect.normalizeSQLConstraint(identifier: SQLIdentifier("fk:obnoxiously_long_table_name.other_table_name_id+other_table_name.id")) as! SQLIdentifier).string,
+        #expect(
+            (db.dialect.normalizeSQLConstraint(identifier: SQLIdentifier("fk:obnoxiously_long_table_name.other_table_name_id+other_table_name.id")) as! SQLIdentifier).string ==
             SQLIdentifier("fk:obnoxiously_long_table_name.other_table_name_id+other_table_name.id").string
         )
     }
 
-    func testMultipleColumnConstraintsPerRow() {
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets").column("id", type: .bigint, .notNull, .primaryKey),
+    @Test("multiple column constraints per row")
+    func multipleColumnConstraintsPerRow() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.create(table: "planets").column("id", type: .bigint, .notNull, .primaryKey),
             is: "CREATE TABLE ``planets`` (``id`` BIGINT NOT NULL PRIMARY KEY AWWTOEINCREMENT)"
         )
     }
 
-    func testPrimaryKeyColumnConstraintVariants() {
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets1").column("id", type: .bigint, .primaryKey),
+    @Test("PRIMARY KEY column constraint variants")
+    func primaryKeyColumnConstraintVariants() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.create(table: "planets1").column("id", type: .bigint, .primaryKey),
             is: "CREATE TABLE ``planets1`` (``id`` BIGINT PRIMARY KEY AWWTOEINCREMENT)"
         )
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets2").column("id", type: .bigint, .primaryKey(autoIncrement: false)),
+        try expectSerialization(
+            of: db.create(table: "planets2").column("id", type: .bigint, .primaryKey(autoIncrement: false)),
             is: "CREATE TABLE ``planets2`` (``id`` BIGINT PRIMARY KEY)"
         )
     }
 
-    func testPrimaryKeyAutoIncrementVariants() {
-        self.db._dialect.supportsAutoIncrement = false
+    @Test("PRIMARY KEY auto-increment variants")
+    func primaryKeyAutoIncrementVariants() throws {
+        let db = TestDatabase()
 
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets1").column("id", type: .bigint, .primaryKey),
+        db._dialect.supportsAutoIncrement = false
+
+        try expectSerialization(
+            of: db.create(table: "planets1").column("id", type: .bigint, .primaryKey),
             is: "CREATE TABLE ``planets1`` (``id`` BIGINT PRIMARY KEY)"
         )
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets2").column("id", type: .bigint, .primaryKey(autoIncrement: false)),
+        try expectSerialization(
+            of: db.create(table: "planets2").column("id", type: .bigint, .primaryKey(autoIncrement: false)),
             is: "CREATE TABLE ``planets2`` (``id`` BIGINT PRIMARY KEY)"
         )
 
-        self.db._dialect.supportsAutoIncrement = true
+        db._dialect.supportsAutoIncrement = true
 
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets3").column("id", type: .bigint, .primaryKey),
+        try expectSerialization(
+            of: db.create(table: "planets3").column("id", type: .bigint, .primaryKey),
             is: "CREATE TABLE ``planets3`` (``id`` BIGINT PRIMARY KEY AWWTOEINCREMENT)"
         )
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets4").column("id", type: .bigint, .primaryKey(autoIncrement: false)),
+        try expectSerialization(
+            of: db.create(table: "planets4").column("id", type: .bigint, .primaryKey(autoIncrement: false)),
             is: "CREATE TABLE ``planets4`` (``id`` BIGINT PRIMARY KEY)"
         )
-        
-        self.db._dialect.autoIncrementFunction = SQLRaw("NEXTUNIQUE")
 
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets5").column("id", type: .bigint, .primaryKey),
+        db._dialect.autoIncrementFunction = SQLRaw("NEXTUNIQUE")
+
+        try expectSerialization(
+            of: db.create(table: "planets5").column("id", type: .bigint, .primaryKey),
             is: "CREATE TABLE ``planets5`` (``id`` BIGINT DEFAULT NEXTUNIQUE PRIMARY KEY)"
         )
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets6").column("id", type: .bigint, .primaryKey(autoIncrement: false)),
+        try expectSerialization(
+            of: db.create(table: "planets6").column("id", type: .bigint, .primaryKey(autoIncrement: false)),
             is: "CREATE TABLE ``planets6`` (``id`` BIGINT PRIMARY KEY)"
         )
     }
 
-    func testDefaultColumnConstraintVariants() {
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets1").column("name", type: .text, .default("unnamed")),
+    @Test("DEFAULT column constraint variants")
+    func defaultColumnConstraintVariants() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.create(table: "planets1").column("name", type: .text, .default("unnamed")),
             is: "CREATE TABLE ``planets1`` (``name`` TEXT DEFAULT 'unnamed')"
         )
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets2").column("diameter", type: .int, .default(10)),
+        try expectSerialization(
+            of: db.create(table: "planets2").column("diameter", type: .int, .default(10)),
             is: "CREATE TABLE ``planets2`` (``diameter`` INTEGER DEFAULT 10)"
         )
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets3").column("diameter", type: .real, .default(11.5)),
+        try expectSerialization(
+            of: db.create(table: "planets3").column("diameter", type: .real, .default(11.5)),
             is: "CREATE TABLE ``planets3`` (``diameter`` REAL DEFAULT 11.5)"
         )
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets4").column("current", type: .custom(SQLRaw("BOOLEAN")), .default(false)),
+        try expectSerialization(
+            of: db.create(table: "planets4").column("current", type: .custom(SQLRaw("BOOLEAN")), .default(false)),
             is: "CREATE TABLE ``planets4`` (``current`` BOOLEAN DEFAULT FAALS)"
         )
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets5").column("current", type: .custom(SQLRaw("BOOLEAN")), .default(SQLLiteral.boolean(true))),
+        try expectSerialization(
+            of: db.create(table: "planets5").column("current", type: .custom(SQLRaw("BOOLEAN")), .default(SQLLiteral.boolean(true))),
             is: "CREATE TABLE ``planets5`` (``current`` BOOLEAN DEFAULT TROO)"
         )
     }
 
-    func testForeignKeyColumnConstraintVariants() {
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets1").column("galaxy_id", type: .bigint, .references("galaxies", "id")),
+    @Test("FOREIGN KEY column constraint variants")
+    func foreignKeyColumnConstraintVariants() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.create(table: "planets1").column("galaxy_id", type: .bigint, .references("galaxies", "id")),
             is: "CREATE TABLE ``planets1`` (``galaxy_id`` BIGINT REFERENCES ``galaxies`` (``id``))"
         )
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets2").column("galaxy_id", type: .bigint, .references("galaxies", "id", onDelete: .cascade, onUpdate: .restrict)),
+        try expectSerialization(
+            of: db.create(table: "planets2").column("galaxy_id", type: .bigint, .references("galaxies", "id", onDelete: .cascade, onUpdate: .restrict)),
             is: "CREATE TABLE ``planets2`` (``galaxy_id`` BIGINT REFERENCES ``galaxies`` (``id``) ON DELETE CASCADE ON UPDATE RESTRICT)"
         )
     }
 
-    func testTableConstraints() {
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets")
+    @Test("table constraints")
+    func tableConstraints() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.create(table: "planets")
                 .column("id", type: .bigint)
                 .column("name", type: .text)
                 .column("diameter", type: .int)
@@ -144,44 +163,56 @@ final class SQLCreateTableTests: XCTestCase {
         )
     }
 
-    func testCompositePrimaryKeyTableConstraint() {
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets1").column("id1", type: .bigint).column("id2", type: .bigint).primaryKey("id1", "id2"),
+    @Test("composite PRIMARY KEY table constraint")
+    func compositePrimaryKeyTableConstraint() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.create(table: "planets1").column("id1", type: .bigint).column("id2", type: .bigint).primaryKey("id1", "id2"),
             is: "CREATE TABLE ``planets1`` (``id1`` BIGINT, ``id2`` BIGINT, PRIMARY KEY (``id1``, ``id2``))"
         )
     }
 
-    func testCompositeUniqueTableConstraint() {
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets1").column("id1", type: .bigint).column("id2", type: .bigint).unique("id1", "id2"),
+    @Test("composite UNIQUE table constraint")
+    func compositeUniqueTableConstraint() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.create(table: "planets1").column("id1", type: .bigint).column("id2", type: .bigint).unique("id1", "id2"),
             is: "CREATE TABLE ``planets1`` (``id1`` BIGINT, ``id2`` BIGINT, UNIQUE (``id1``, ``id2``))"
         )
     }
 
-    func testPrimaryKeyTableConstraintVariants() {
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets1").column("galaxy_name", type: .text)
+    @Test("PRIMARY KEY table constraint variants")
+    func primaryKeyTableConstraintVariants() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.create(table: "planets1").column("galaxy_name", type: .text)
                 .column("galaxy_id", type: .bigint)
                 .foreignKey(["galaxy_id", "galaxy_name"], references: "galaxies", ["id", "name"]),
             is: "CREATE TABLE ``planets1`` (``galaxy_name`` TEXT, ``galaxy_id`` BIGINT, FOREIGN KEY (``galaxy_id``, ``galaxy_name``) REFERENCES ``galaxies`` (``id``, ``name``))"
         )
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets2")
+        try expectSerialization(
+            of: db.create(table: "planets2")
                 .column("galaxy_id", type: .bigint)
                 .foreignKey(["galaxy_id"], references: "galaxies", ["id"]),
             is: "CREATE TABLE ``planets2`` (``galaxy_id`` BIGINT, FOREIGN KEY (``galaxy_id``) REFERENCES ``galaxies`` (``id``))"
         )
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets3")
+        try expectSerialization(
+            of: db.create(table: "planets3")
                 .column("galaxy_id", type: .bigint)
                 .foreignKey(["galaxy_id"], references: "galaxies", ["id"], onDelete: .restrict, onUpdate: .cascade),
             is: "CREATE TABLE ``planets3`` (``galaxy_id`` BIGINT, FOREIGN KEY (``galaxy_id``) REFERENCES ``galaxies`` (``id``) ON DELETE RESTRICT ON UPDATE CASCADE)"
         )
     }
-    
-    func testCreateTableAsSelectQuery() {
-        XCTAssertSerialization(
-            of: self.db.create(table: "normalized_planet_names")
+
+    @Test("CREATE TABLE AS SELECT query")
+    func createTableAsSelectQuery() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.create(table: "normalized_planet_names")
                 .column("id", type: .bigint, .primaryKey(autoIncrement: false), .notNull)
                 .column("name", type: .text, .unique, .notNull)
                 .select { $0
@@ -194,26 +225,35 @@ final class SQLCreateTableTests: XCTestCase {
             is: "CREATE TABLE ``normalized_planet_names`` (``id`` BIGINT PRIMARY KEY NOT NULL, ``name`` TEXT UNIQUE NOT NULL) AS SELECT DISTINCT ``id`` AS ``id``, LOWER(``name``) AS ``name`` FROM ``planets`` WHERE ``galaxy_id`` = &1"
         )
     }
-    
-    func testCreateTableWithVariantMethods() {
-        XCTAssertSerialization(
-            of: self.db .create(table: "planets")
+
+    @Test("CREATE TABLE with variant methods")
+    func createTableWithVariantMethods() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db .create(table: "planets")
                 .column(definitions: [.init("id", dataType: .bigint)])
                 .column(SQLIdentifier("id2"), type: SQLDataType.bigint, SQLColumnConstraintAlgorithm.notNull),
             is: "CREATE TABLE ``planets`` (``id`` BIGINT, ``id2`` BIGINT NOT NULL)"
         )
     }
-    
-    func testCreateTemporaryTable() {
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets").temporary().column("id", type: .bigint),
+
+    @Test("CREATE TEMPORARY TABLE query")
+    func createTemporaryTable() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.create(table: "planets").temporary().column("id", type: .bigint),
             is: "CREATE TEMPORARY TABLE ``planets`` (``id`` BIGINT)"
         )
     }
-    
-    func testCreateTableWithNamedConstraints() {
-        XCTAssertSerialization(
-            of: self.db.create(table: "planets")
+
+    @Test("CREATE TABLE with named constraints")
+    func createTableWithNamedConstraints() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.create(table: "planets")
                 .column("id", type: .bigint)
                 .primaryKey(["id"], named: "PRIMARY")
                 .unique("id", named: "unique")
