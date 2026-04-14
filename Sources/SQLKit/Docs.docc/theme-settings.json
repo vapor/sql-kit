@@ -14,9 +14,11 @@
         "light": "radial-gradient(circle at top, var(--color-sqlkit) 0%, #f0f0f0 100%)"
       },
       "documentation-intro-accent": "var(--color-sqlkit)",
-      "logo-base":  { "dark": "#fff", "light": "#000" },
-      "logo-shape": { "dark": "#000", "light": "#fff" },
-      "fill":       { "dark": "#000", "light": "#fff" }
+      "hero-eyebrow": { "dark": "#fff", "light": "#000" },
+      "hero-title":   { "dark": "#fff", "light": "#000" },
+      "logo-base":    { "dark": "#fff", "light": "#000" },
+      "logo-shape":   { "dark": "#000", "light": "#fff" },
+      "fill":         { "dark": "#000", "light": "#fff" }
     },
     "icons": { "technology": "/sqlkit/images/SQLKit/vapor-sqlkit-logo.svg" }
   },
