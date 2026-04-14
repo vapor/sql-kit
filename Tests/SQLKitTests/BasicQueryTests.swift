@@ -1,18 +1,16 @@
 import SQLKit
-import XCTest
+import Testing
 
-final class BasicQueryTests: XCTestCase {
-    var db = TestDatabase()
-
-    override class func setUp() {
-        XCTAssert(isLoggingConfigured)
-    }
-        
+@Suite("Basic query tests")
+struct BasicQueryTests {
     // MARK: Select
     
-    func testSelect_unqualifiedColumns() {
-        XCTAssertSerialization(
-            of: self.db.select()
+    @Test("SELECT unqualified columns")
+    func selectUnqualifiedColumns() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select()
                 .column("*")
                 .column("name")
                 .column(SQLLiteral.all)
@@ -29,9 +27,12 @@ final class BasicQueryTests: XCTestCase {
         )
     }
     
-    func testSelect_columnAliasing() {
-        XCTAssertSerialization(
-            of: self.db.select()
+    @Test("SELECT column aliasing")
+    func selectColumnAliasing() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select()
                 .column("name", as: "n")
                 .column(SQLIdentifier("name"), as: "n")
                 .column(SQLIdentifier("name"), as: SQLIdentifier("n"))
@@ -42,54 +43,72 @@ final class BasicQueryTests: XCTestCase {
         )
     }
     
-    func testSelect_fromAliasing() {
-        XCTAssertSerialization(
-            of: self.db.select()
+    @Test("SELECT FROM aliasing")
+    func selectFROMAliasing() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select()
                 .from("planets", as: "p"),
             is: "SELECT FROM ``planets`` AS ``p``"
         )
-        XCTAssertSerialization(
-            of: self.db.select()
+        try expectSerialization(
+            of: db.select()
                 .from(SQLIdentifier("planets"), as: SQLIdentifier("p")),
             is: "SELECT FROM ``planets`` AS ``p``"
         )
     }
     
-    func testSelect_tableAllCols() {
-        XCTAssertSerialization(
-            of: self.db.select().columns(["*"]).from("planets").where("name", .equal, SQLBind("Earth")),
+    @Test("SELECT all table columns")
+    func selectAllTableColumns() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select().columns(["*"]).from("planets").where("name", .equal, SQLBind("Earth")),
             is: "SELECT * FROM ``planets`` WHERE ``name`` = &1"
         )
-        XCTAssertSerialization(
-            of: self.db.select().column(SQLColumn(SQLLiteral.all, table: SQLIdentifier("planets"))).from("planets").where("name", .equal, SQLBind("Earth")),
+        try expectSerialization(
+            of: db.select().column(SQLColumn(SQLLiteral.all, table: SQLIdentifier("planets"))).from("planets").where("name", .equal, SQLBind("Earth")),
             is: "SELECT ``planets``.* FROM ``planets`` WHERE ``name`` = &1"
         )
     }
     
-    func testSelect_whereEncodable() {
-        XCTAssertSerialization(
-            of: self.db.select().column("*").from("planets").where("name", .equal, "Earth").orWhere("name", .equal, "Mars"),
+    @Test("SELECT WHERE Encodable")
+    func selectWHEREEncodable() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select().column("*").from("planets").where("name", .equal, "Earth").orWhere("name", .equal, "Mars"),
             is: "SELECT * FROM ``planets`` WHERE ``name`` = &1 OR ``name`` = &2"
         )
     }
     
-    func testSelect_whereArrayEncodableWithString() {
-        XCTAssertSerialization(
-            of: self.db.select().column("*").from("planets").where("name", .in, ["Earth", "Mars"]).orWhere("name", .in, ["Venus", "Mercury"]),
+    @Test("SELECT WHERE array Encodable with string")
+    func selectWHEREArrayEncodableWithString() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select().column("*").from("planets").where("name", .in, ["Earth", "Mars"]).orWhere("name", .in, ["Venus", "Mercury"]),
             is: "SELECT * FROM ``planets`` WHERE ``name`` IN (&1, &2) OR ``name`` IN (&3, &4)"
         )
     }
 
-    func testSelect_whereArrayEncodableWithIdentifier() {
-        XCTAssertSerialization(
-            of: self.db.select().column("*").from("planets").where(SQLIdentifier("name"), .in, ["Earth", "Mars"]).orWhere(SQLIdentifier("name"), .in, ["Venus", "Mercury"]),
+    @Test("SELECT WHERE array Encodable with identifier")
+    func selectWHEREArrayEncodableWithIdentifier() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select().column("*").from("planets").where(SQLIdentifier("name"), .in, ["Earth", "Mars"]).orWhere(SQLIdentifier("name"), .in, ["Venus", "Mercury"]),
             is: "SELECT * FROM ``planets`` WHERE ``name`` IN (&1, &2) OR ``name`` IN (&3, &4)"
         )
     }
 
-    func testSelect_whereGroup() {
-        XCTAssertSerialization(
-            of: self.db.select().column("*").from("planets")
+    @Test("SELECT WHERE group")
+    func selectWHEREGroup() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select().column("*").from("planets")
                 .where { $0.where("name", .equal, "Earth").orWhere("name", .equal, "Mars") }
                 .orWhere { $0.where("color", .notEqual, "yellow") }
                 .where("color", .equal, "blue"),
@@ -97,56 +116,65 @@ final class BasicQueryTests: XCTestCase {
         )
     }
     
-    func testSelect_whereEmptyGroup() {
-        XCTAssertSerialization(
-            of: self.db.select().column("*").from("planets").where { $0 }.orWhere { $0 }.where("color", .equal, "blue"),
+    @Test("SELECT WHERE empty group")
+    func selectWHEREEmptyGroup() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select().column("*").from("planets").where { $0 }.orWhere { $0 }.where("color", .equal, "blue"),
             is: "SELECT * FROM ``planets`` WHERE ``color`` = &1"
         )
     }
     
     
-    func testSelect_whereColumn() {
-        XCTAssertSerialization(
-            of: self.db.select().column("*").from("planets").where("name", .notEqual, column: "color").orWhere("name", .equal, column: "greekName"),
+    @Test("SELECT WHERE column")
+    func selectWHEREColumn() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select().column("*").from("planets").where("name", .notEqual, column: "color").orWhere("name", .equal, column: "greekName"),
             is: "SELECT * FROM ``planets`` WHERE ``name`` <> ``color`` OR ``name`` = ``greekName``"
         )
 	}
 
-    func testSelect_otherWheres() {
-        XCTAssertSerialization(
-            of: self.db.select()
+    @Test("SELECT other WHEREs")
+    func selectOtherWHEREs() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select()
                 .column("*")
                 .from("planets")
                 .where("name", .notEqual, SQLBind("color"))
                 .orWhere("name", .notEqual, SQLBind("color")),
             is: "SELECT * FROM ``planets`` WHERE ``name`` <> &1 OR ``name`` <> &2"
         )
-        XCTAssertSerialization(
-            of: self.db.select()
+        try expectSerialization(
+            of: db.select()
                 .column("*")
                 .from("planets")
                 .where(SQLIdentifier("name"), .notEqual, column: SQLIdentifier("color"))
                 .orWhere(SQLIdentifier("name"), .equal, column: SQLIdentifier("greekName")),
             is: "SELECT * FROM ``planets`` WHERE ``name`` <> ``color`` OR ``name`` = ``greekName``"
         )
-        XCTAssertSerialization(
-            of: self.db.select()
+        try expectSerialization(
+            of: db.select()
                 .column("*")
                 .from("planets")
                 .where(SQLIdentifier("name"), .notEqual, "color")
                 .orWhere(SQLIdentifier("name"), .equal, "greekName"),
             is: "SELECT * FROM ``planets`` WHERE ``name`` <> &1 OR ``name`` = &2"
         )
-        XCTAssertSerialization(
-            of: self.db.select()
+        try expectSerialization(
+            of: db.select()
                 .column("*")
                 .from("planets")
                 .where(SQLIdentifier("name"), .notEqual, SQLBind("color"))
                 .orWhere(SQLIdentifier("name"), .equal, SQLBind("greekName")),
             is: "SELECT * FROM ``planets`` WHERE ``name`` <> &1 OR ``name`` = &2"
         )
-        XCTAssertSerialization(
-            of: self.db.select()
+        try expectSerialization(
+            of: db.select()
                 .column("*")
                 .from("planets")
                 .orWhere(SQLIdentifier("name"), .equal, SQLBind("greekName")),
@@ -154,30 +182,42 @@ final class BasicQueryTests: XCTestCase {
         )
 	}
 
-    func testSelect_havingEncodable() {
-        XCTAssertSerialization(
-            of: self.db.select().column("*").from("planets").having("name", .equal, "Earth").orHaving("name", .equal, "Mars"),
+    @Test("SELECT HAVING Encodable")
+    func selectHAVINGEncodable() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select().column("*").from("planets").having("name", .equal, "Earth").orHaving("name", .equal, "Mars"),
             is: "SELECT * FROM ``planets`` HAVING ``name`` = &1 OR ``name`` = &2"
         )
     }
     
-    func testSelect_havingArrayEncodableWithString() {
-        XCTAssertSerialization(
-            of: self.db.select().column("*").from("planets").having("name", .in, ["Earth", "Mars"]).orHaving("name", .in, ["Venus", "Mercury"]),
+    @Test("SELECT HAVING array Encodable with string")
+    func selectHAVINGArrayEncodableWithString() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select().column("*").from("planets").having("name", .in, ["Earth", "Mars"]).orHaving("name", .in, ["Venus", "Mercury"]),
             is: "SELECT * FROM ``planets`` HAVING ``name`` IN (&1, &2) OR ``name`` IN (&3, &4)"
         )
     }
 
-    func testSelect_havingArrayEncodableWithIdentifier() {
-        XCTAssertSerialization(
-            of: self.db.select().column("*").from("planets").having(SQLIdentifier("name"), .in, ["Earth", "Mars"]).orHaving(SQLIdentifier("name"), .in, ["Venus", "Mercury"]),
+    @Test("SELECT HAVING array Encodable with identifier")
+    func selectHAVINGArrayEncodableWithIdentifier() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select().column("*").from("planets").having(SQLIdentifier("name"), .in, ["Earth", "Mars"]).orHaving(SQLIdentifier("name"), .in, ["Venus", "Mercury"]),
             is: "SELECT * FROM ``planets`` HAVING ``name`` IN (&1, &2) OR ``name`` IN (&3, &4)"
         )
     }
 
-    func testSelect_havingGroup() {
-        XCTAssertSerialization(
-            of: self.db.select().column("*").from("planets")
+    @Test("SELECT HAVING group")
+    func selectHAVINGGroup() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select().column("*").from("planets")
                 .having { $0.having("name", .equal, "Earth").orHaving("name", .equal, "Mars") }
                 .orHaving { $0.having("color", .notEqual, "yellow") }
                 .having("color", .equal, "blue"),
@@ -185,56 +225,65 @@ final class BasicQueryTests: XCTestCase {
         )
     }
     
-    func testSelect_havingEmptyGroup() {
-        XCTAssertSerialization(
-            of: self.db.select().column("*").from("planets").having { $0 }.orHaving { $0 }.having("color", .equal, "blue"),
+    @Test("SELECT HAVING empty group")
+    func selectHAVINGEmptyGroup() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select().column("*").from("planets").having { $0 }.orHaving { $0 }.having("color", .equal, "blue"),
             is: "SELECT * FROM ``planets`` HAVING ``color`` = &1"
         )
     }
     
     
-    func testSelect_havingColumn() {
-        XCTAssertSerialization(
-            of: self.db.select().column("*").from("planets").having("name", .notEqual, column: "color").orHaving("name", .equal, column: "greekName"),
+    @Test("SELECT HAVING column")
+    func selectHAVINGColumn() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select().column("*").from("planets").having("name", .notEqual, column: "color").orHaving("name", .equal, column: "greekName"),
             is: "SELECT * FROM ``planets`` HAVING ``name`` <> ``color`` OR ``name`` = ``greekName``"
         )
 	}
 
-    func testSelect_otherHavings() {
-        XCTAssertSerialization(
-            of: self.db.select()
+    @Test("SELECT other HAVINGs")
+    func selectOtherHAVINGs() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select()
                 .column("*")
                 .from("planets")
                 .having("name", .notEqual, SQLBind("color"))
                 .orHaving("name", .notEqual, SQLBind("color")),
             is: "SELECT * FROM ``planets`` HAVING ``name`` <> &1 OR ``name`` <> &2"
         )
-        XCTAssertSerialization(
-            of: self.db.select()
+        try expectSerialization(
+            of: db.select()
                 .column("*")
                 .from("planets")
                 .having(SQLIdentifier("name"), .notEqual, column: SQLIdentifier("color"))
                 .orHaving(SQLIdentifier("name"), .equal, column: SQLIdentifier("greekName")),
             is: "SELECT * FROM ``planets`` HAVING ``name`` <> ``color`` OR ``name`` = ``greekName``"
         )
-        XCTAssertSerialization(
-            of: self.db.select()
+        try expectSerialization(
+            of: db.select()
                 .column("*")
                 .from("planets")
                 .having(SQLIdentifier("name"), .notEqual, "color")
                 .orHaving(SQLIdentifier("name"), .equal, "greekName"),
             is: "SELECT * FROM ``planets`` HAVING ``name`` <> &1 OR ``name`` = &2"
         )
-        XCTAssertSerialization(
-            of: self.db.select()
+        try expectSerialization(
+            of: db.select()
                 .column("*")
                 .from("planets")
                 .having(SQLIdentifier("name"), .notEqual, SQLBind("color"))
                 .orHaving(SQLIdentifier("name"), .equal, SQLBind("greekName")),
             is: "SELECT * FROM ``planets`` HAVING ``name`` <> &1 OR ``name`` = &2"
         )
-        XCTAssertSerialization(
-            of: self.db.select()
+        try expectSerialization(
+            of: db.select()
                 .column("*")
                 .from("planets")
                 .orHaving(SQLIdentifier("name"), .equal, SQLBind("greekName")),
@@ -242,16 +291,22 @@ final class BasicQueryTests: XCTestCase {
         )
 	}
 
-    func testSelect_withoutFrom() {
-        XCTAssertSerialization(
-            of: self.db.select().column(SQLAlias(SQLFunction("LAST_INSERT_ID"), as: SQLIdentifier("id"))),
+    @Test("SELECT without FROM")
+    func selectWithoutFROM() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select().column(SQLAlias(SQLFunction("LAST_INSERT_ID"), as: SQLIdentifier("id"))),
             is: "SELECT LAST_INSERT_ID() AS ``id``"
         )
     }
     
-    func testSelect_limitAndOrder() {
-        XCTAssertSerialization(
-            of: self.db.select()
+    @Test("SELECT limit and order")
+    func selectLimitAndOrder() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select()
                 .column("*")
                 .from("planets")
                 .limit(3)
@@ -260,16 +315,19 @@ final class BasicQueryTests: XCTestCase {
             is: "SELECT * FROM ``planets`` ORDER BY ``name`` ASC LIMIT 3 OFFSET 5"
         )
 
-        let builder = self.db.select().where(SQLLiteral.boolean(true)).limit(1).offset(2)
-        XCTAssertEqual(builder.limit, 1)
-        XCTAssertEqual(builder.offset, 2)
+        let builder = db.select().where(SQLLiteral.boolean(true)).limit(1).offset(2)
+        #expect(builder.limit == 1)
+        #expect(builder.offset == 2)
     }
     
     // MARK: Update/delete
     
-    func testUpdate() {
-        XCTAssertSerialization(
-            of: self.db.update("planets")
+    @Test("UPDATE")
+    func update() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.update("planets")
                 .where("name", .equal, "Jpuiter")
                 .set("name", to: "Jupiter")
                 .set(SQLIdentifier("name"), to: "Jupiter")
@@ -277,28 +335,34 @@ final class BasicQueryTests: XCTestCase {
             is: "UPDATE ``planets`` SET ``name`` = &1, ``name`` = &2, ``name`` = &3 WHERE ``name`` = &4"
         )
 
-        let builder = self.db.update("planets")
+        let builder = db.update("planets")
         builder.returning = .init(.init("id"))
-        XCTAssertNotNil(builder.returning)
+        #expect(builder.returning != nil)
     }
 
-    func testDelete() {
-        XCTAssertSerialization(
-            of: self.db.delete(from: "planets")
+    @Test("DELETE")
+    func delete() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.delete(from: "planets")
                 .where("name", .equal, "Jupiter"),
             is: "DELETE FROM ``planets`` WHERE ``name`` = &1"
         )
         
-        let builder = self.db.delete(from: "planets")
+        let builder = db.delete(from: "planets")
         builder.returning = .init(.init("id"))
-        XCTAssertNotNil(builder.returning)
+        #expect(builder.returning != nil)
     }
     
     // MARK: Locking Clauses
     
-    func testLockingClause_forUpdate() {
-        XCTAssertSerialization(
-            of: self.db.select()
+    @Test("locking FOR UPDATE")
+    func lockingForUpdate() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select()
                 .column("*")
                 .from("planets")
                 .where("name", .equal, "Earth")
@@ -307,9 +371,12 @@ final class BasicQueryTests: XCTestCase {
         )
     }
     
-    func testLockingClause_forShare() {
-        XCTAssertSerialization(
-            of: self.db.select()
+    @Test("locking FOR SHARE")
+    func lockingForShare() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select()
                 .column("*")
                 .from("planets")
                 .where("name", .equal, "Earth")
@@ -318,9 +385,12 @@ final class BasicQueryTests: XCTestCase {
         )
     }
     
-    func testLockingClause_raw() {
-        XCTAssertSerialization(
-            of: self.db.select()
+    @Test("raw locking clause")
+    func rawLockingClause() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select()
                 .column("*")
                 .from("planets")
                 .where("name", .equal, "Earth")
@@ -331,9 +401,12 @@ final class BasicQueryTests: XCTestCase {
     
     // MARK: Group By/Having
     
-    func testGroupByHaving() {
-        XCTAssertSerialization(
-            of: self.db.select()
+    @Test("GROUP BY with HAVING")
+    func groupByWithHAVING() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select()
                 .column("*")
                 .from("planets")
                 .groupBy("color")
@@ -344,9 +417,12 @@ final class BasicQueryTests: XCTestCase {
 
     // MARK: Distinct
     
-    func testDistinct() {
-        XCTAssertSerialization(
-            of: self.db.select()
+    @Test("DISTINCT")
+    func distinct() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select()
                 .column("*")
                 .from("planets")
                 .groupBy("color")
@@ -356,24 +432,30 @@ final class BasicQueryTests: XCTestCase {
         )
     }
     
-    func testDistinctColumns() {
-        XCTAssertSerialization(
-            of: self.db.select()
+    @Test("DISTINCT columns")
+    func distinctColumns() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select()
                 .distinct(on: "name", "color")
                 .from("planets"),
             is: "SELECT DISTINCT ``name``, ``color`` FROM ``planets``"
         )
-        XCTAssertSerialization(
-            of: self.db.select()
+        try expectSerialization(
+            of: db.select()
                 .distinct(on: SQLIdentifier("name"), SQLIdentifier("color"))
                 .from("planets"),
             is: "SELECT DISTINCT ``name``, ``color`` FROM ``planets``"
         )
     }
     
-    func testDistinctExpression() {
-        XCTAssertSerialization(
-            of: self.db.select()
+    @Test("DISTINCT expression")
+    func distinctExpression() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select()
                 .column(SQLFunction("COUNT", args: SQLDistinct("name", "color")))
                 .from("planets"),
             is: "SELECT COUNT(DISTINCT ``name``, ``color``) FROM ``planets``"
@@ -382,9 +464,12 @@ final class BasicQueryTests: XCTestCase {
     
     // MARK: Joins
     
-    func testSimpleJoin() {
-        XCTAssertSerialization(
-            of: self.db.select()
+    @Test("simple JOIN")
+    func simpleJOIN() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select()
                 .column("*")
                 .from("planets")
                 .join("moons", on: SQLColumn("planet_id", table: "moons"), .equal, SQLColumn("id", table: "planets")),
@@ -392,9 +477,12 @@ final class BasicQueryTests: XCTestCase {
         )
     }
     
-    func testSimpleJoinWithSingleExpr() {
-        XCTAssertSerialization(
-            of: self.db.select()
+    @Test("simple JOIN with single expression")
+    func simpleJOINWithSingleExpression() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select()
                 .column("*")
                 .from("planets")
                 .join("moons", on: "\(ident: "moons").\(ident: "planet_id")=\(ident: "planets").\(ident: "id")" as SQLQueryString),
@@ -402,14 +490,17 @@ final class BasicQueryTests: XCTestCase {
         )
     }
 
-    func testMessyJoin() {
-        XCTAssertSerialization(
-            of: self.db.select()
+    @Test("messy JOIN")
+    func messyJOIN() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select()
                 .column("*")
                 .from("planets")
                 .join(
                     SQLAlias(SQLGroupExpression(
-                        self.db.select().column("name").from("stars").where(SQLColumn("orion"), .equal, SQLIdentifier("please space")).select
+                        db.select().column("name").from("stars").where(SQLColumn("orion"), .equal, SQLIdentifier("please space")).select
                     ), as: SQLIdentifier("star")),
                     method: SQLJoinMethod.inner,
                     on: SQLColumn(SQLIdentifier("planet_id"), table: SQLIdentifier("moons")), SQLBinaryOperator.isNot, SQLRaw("%%%%%%")
@@ -419,9 +510,12 @@ final class BasicQueryTests: XCTestCase {
         )
     }
     
-    func testJoinWithUsingClause() {
-        XCTAssertSerialization(
-            of: self.db.select()
+    @Test("JOIN with USING clause")
+    func joinWithUSINGClause() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select()
                 .column("*")
                 .from("stars")
                 .join(SQLIdentifier("black_holes"), using: SQLIdentifier("galaxy_id")),
@@ -431,9 +525,12 @@ final class BasicQueryTests: XCTestCase {
     
     // MARK: - Subquery
     
-    func testBasicSubquery() {
-        XCTAssertSerialization(
-            of: self.db.select().column(SQLSubquery.select { $0.column("foo").from("bar").limit(1) }),
+    @Test("basic subquery")
+    func basicSubquery() throws {
+        let db = TestDatabase()
+
+        try expectSerialization(
+            of: db.select().column(SQLSubquery.select { $0.column("foo").from("bar").limit(1) }),
             is: "SELECT (SELECT ``foo`` FROM ``bar`` LIMIT 1)"
         )
     }

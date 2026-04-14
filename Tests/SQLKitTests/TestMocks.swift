@@ -1,18 +1,12 @@
 import OrderedCollections
-@testable import SQLKit
-import NIOCore
+public import SQLKit
+import protocol NIOCore.EventLoop
+import class NIOCore.EventLoopFuture
+import class NIOEmbedded.NIOAsyncTestingEventLoop
 import Logging
-import Dispatch
-
-/// An extremely incorrect implementation of the bare minimum of the `EventLoop` protocol, 'cause we have to have
-/// _something_ for a database's event loop property despite never doing anything async.
-final class FakeEventLoop: EventLoop, @unchecked Sendable {
-    func shutdownGracefully(queue: DispatchQueue, _: @escaping @Sendable ((any Error)?) -> Void) {}
-    var inEventLoop: Bool = false
-    func execute(_ work: @escaping @Sendable () -> Void) { self.inEventLoop = true; work(); self.inEventLoop = false }
-    @discardableResult func scheduleTask<T>(deadline: NIODeadline, _: @escaping @Sendable () throws -> T) -> Scheduled<T> { fatalError() }
-    @discardableResult func scheduleTask<T>(in: TimeAmount, _: @escaping @Sendable () throws -> T) -> Scheduled<T> { fatalError() }
-}
+#if canImport(Dispatch)
+import class Dispatch.DispatchQueue
+#endif
 
 extension SQLQueryBuilder {
     /// Serialize this builder's query and return the textual SQL, discarding any bindings.
@@ -30,11 +24,11 @@ extension SQLQueryBuilder {
     }
 }
 
-/// A very minimal mock `SQLDatabase` which implements `execut(sql:_:)` by saving the serialized SQL and bindings to
+/// A very minimal mock `SQLDatabase` which implements `execute(sql:_:)` by saving the serialized SQL and bindings to
 /// its internal arrays of accumulated "results". Most things about its dialect are mutable.
 final class TestDatabase: SQLDatabase, @unchecked Sendable {
     let logger: Logger = { var l = Logger(label: "codes.vapor.sql.test"); l.logLevel = .debug; return l }()
-    let eventLoop: any EventLoop = FakeEventLoop()
+    let eventLoop: any EventLoop = NIOAsyncTestingEventLoop()
     var results: [String] = []
     var bindResults: [[any Encodable & Sendable]] = []
     var outputs: [any SQLRow] = []
@@ -150,4 +144,12 @@ extension SQLKit.SQLDataType: Swift.Equatable {
                 return false
         }
     }
+}
+
+/// Used when testing defaulted async implementations
+struct TestNoAsyncDatabase: SQLDatabase {
+    func execute(sql query: any SQLExpression, _ onRow: @escaping @Sendable (any SQLRow) -> ()) -> EventLoopFuture<Void> { self.eventLoop.makeSucceededVoidFuture() }
+    var logger: Logger { .init(label: "l") }
+    var eventLoop: any EventLoop { NIOAsyncTestingEventLoop() }
+    var dialect: any SQLDialect { GenericDialect() }
 }

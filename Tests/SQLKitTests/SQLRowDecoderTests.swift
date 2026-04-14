@@ -1,9 +1,16 @@
+#if canImport(FoundationEssentials)
+import struct FoundationEssentials.Date
+#else
+import struct Foundation.Date
+#endif
 import OrderedCollections
 @testable @_spi(CodableUtilities) import SQLKit
-import XCTest
+import Testing
 
-final class SQLRowDecoderTests: XCTestCase {
-    func testRowDecoderBasicConfigurations() {
+@Suite("SQLRowDecoder tests")
+struct RowDecoderTests {
+    @Test("row decoder basic configurations")
+    func rowDecoderBasicConfigurations() throws {
         func row1(nulls: Bool, xform: Bool?, prefix: String = "") -> TestRow {
             let raw: [String: (any Codable & Sendable)?] = [
                 "boolValue": true,           "optBoolValue": Bool?.none,     "stringValue": "hello",      "optStringValue": "olleh",
@@ -59,119 +66,112 @@ final class SQLRowDecoderTests: XCTestCase {
         )
 
         // Model 1 with key strategies
-        XCTAssertDecoding(BasicDecModel.self, from: row1(nulls: false, xform: nil), using: SQLRowDecoder(keyDecodingStrategy: .useDefaultKeys), outputs: model1)
-        XCTAssertDecoding(BasicDecModel.self, from: row1(nulls: true, xform: nil), using: SQLRowDecoder(keyDecodingStrategy: .useDefaultKeys), outputs: model1)
+        try expectDecoding(BasicDecModel.self, from: row1(nulls: false, xform: nil), using: SQLRowDecoder(keyDecodingStrategy: .useDefaultKeys), outputs: model1)
+        try expectDecoding(BasicDecModel.self, from: row1(nulls: true, xform: nil), using: SQLRowDecoder(keyDecodingStrategy: .useDefaultKeys), outputs: model1)
 
-        XCTAssertDecoding(BasicDecModel.self, from: row1(nulls: false, xform: false), using: SQLRowDecoder(keyDecodingStrategy: .convertFromSnakeCase), outputs: model1)
-        XCTAssertDecoding(BasicDecModel.self, from: row1(nulls: true, xform: false), using: SQLRowDecoder(keyDecodingStrategy: .convertFromSnakeCase), outputs: model1)
+        try expectDecoding(BasicDecModel.self, from: row1(nulls: false, xform: false), using: SQLRowDecoder(keyDecodingStrategy: .convertFromSnakeCase), outputs: model1)
+        try expectDecoding(BasicDecModel.self, from: row1(nulls: true, xform: false), using: SQLRowDecoder(keyDecodingStrategy: .convertFromSnakeCase), outputs: model1)
 
-        XCTAssertDecoding(BasicDecModel.self, from: row1(nulls: false, xform: true), using: SQLRowDecoder(keyDecodingStrategy: .custom({ superCase($0) })), outputs: model1)
-        XCTAssertDecoding(BasicDecModel.self, from: row1(nulls: true, xform: true), using: SQLRowDecoder(keyDecodingStrategy: .custom({ superCase($0) })), outputs: model1)
-        
+        try expectDecoding(BasicDecModel.self, from: row1(nulls: false, xform: true), using: SQLRowDecoder(keyDecodingStrategy: .custom({ superCase($0) })), outputs: model1)
+        try expectDecoding(BasicDecModel.self, from: row1(nulls: true, xform: true), using: SQLRowDecoder(keyDecodingStrategy: .custom({ superCase($0) })), outputs: model1)
+
         // Model 1 with prefix and key strategies
-        XCTAssertDecoding(BasicDecModel.self, from: row1(nulls: false, xform: nil, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .useDefaultKeys), outputs: model1)
-        XCTAssertDecoding(BasicDecModel.self, from: row1(nulls: true, xform: nil, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .useDefaultKeys), outputs: model1)
+        try expectDecoding(BasicDecModel.self, from: row1(nulls: false, xform: nil, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .useDefaultKeys), outputs: model1)
+        try expectDecoding(BasicDecModel.self, from: row1(nulls: true, xform: nil, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .useDefaultKeys), outputs: model1)
 
-        XCTAssertDecoding(BasicDecModel.self, from: row1(nulls: false, xform: false, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .convertFromSnakeCase), outputs: model1)
-        XCTAssertDecoding(BasicDecModel.self, from: row1(nulls: true, xform: false, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .convertFromSnakeCase), outputs: model1)
+        try expectDecoding(BasicDecModel.self, from: row1(nulls: false, xform: false, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .convertFromSnakeCase), outputs: model1)
+        try expectDecoding(BasicDecModel.self, from: row1(nulls: true, xform: false, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .convertFromSnakeCase), outputs: model1)
 
-        XCTAssertDecoding(BasicDecModel.self, from: row1(nulls: false, xform: true, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .custom({ superCase($0) })), outputs: model1)
-        XCTAssertDecoding(BasicDecModel.self, from: row1(nulls: true, xform: true, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .custom({ superCase($0) })), outputs: model1)
+        try expectDecoding(BasicDecModel.self, from: row1(nulls: false, xform: true, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .custom({ superCase($0) })), outputs: model1)
+        try expectDecoding(BasicDecModel.self, from: row1(nulls: true, xform: true, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .custom({ superCase($0) })), outputs: model1)
 
         // Model 2 with key strategies
-        XCTAssertDecoding(BasicDecModel.self, from: row2(nulls: false, xform: nil), using: SQLRowDecoder(keyDecodingStrategy: .useDefaultKeys), outputs: model2)
-        XCTAssertDecoding(BasicDecModel.self, from: row2(nulls: true, xform: nil), using: SQLRowDecoder(keyDecodingStrategy: .useDefaultKeys), outputs: model2)
+        try expectDecoding(BasicDecModel.self, from: row2(nulls: false, xform: nil), using: SQLRowDecoder(keyDecodingStrategy: .useDefaultKeys), outputs: model2)
+        try expectDecoding(BasicDecModel.self, from: row2(nulls: true, xform: nil), using: SQLRowDecoder(keyDecodingStrategy: .useDefaultKeys), outputs: model2)
 
-        XCTAssertDecoding(BasicDecModel.self, from: row2(nulls: false, xform: false), using: SQLRowDecoder(keyDecodingStrategy: .convertFromSnakeCase), outputs: model2)
-        XCTAssertDecoding(BasicDecModel.self, from: row2(nulls: true, xform: false), using: SQLRowDecoder(keyDecodingStrategy: .convertFromSnakeCase), outputs: model2)
+        try expectDecoding(BasicDecModel.self, from: row2(nulls: false, xform: false), using: SQLRowDecoder(keyDecodingStrategy: .convertFromSnakeCase), outputs: model2)
+        try expectDecoding(BasicDecModel.self, from: row2(nulls: true, xform: false), using: SQLRowDecoder(keyDecodingStrategy: .convertFromSnakeCase), outputs: model2)
 
-        XCTAssertDecoding(BasicDecModel.self, from: row2(nulls: false, xform: true), using: SQLRowDecoder(keyDecodingStrategy: .custom({ superCase($0) })), outputs: model2)
-        XCTAssertDecoding(BasicDecModel.self, from: row2(nulls: true, xform: true), using: SQLRowDecoder(keyDecodingStrategy: .custom({ superCase($0) })), outputs: model2)
-        
+        try expectDecoding(BasicDecModel.self, from: row2(nulls: false, xform: true), using: SQLRowDecoder(keyDecodingStrategy: .custom({ superCase($0) })), outputs: model2)
+        try expectDecoding(BasicDecModel.self, from: row2(nulls: true, xform: true), using: SQLRowDecoder(keyDecodingStrategy: .custom({ superCase($0) })), outputs: model2)
+
         // Model 2 with prefix and key strategies
-        XCTAssertDecoding(BasicDecModel.self, from: row2(nulls: false, xform: nil, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .useDefaultKeys), outputs: model2)
-        XCTAssertDecoding(BasicDecModel.self, from: row2(nulls: true, xform: nil, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .useDefaultKeys), outputs: model2)
+        try expectDecoding(BasicDecModel.self, from: row2(nulls: false, xform: nil, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .useDefaultKeys), outputs: model2)
+        try expectDecoding(BasicDecModel.self, from: row2(nulls: true, xform: nil, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .useDefaultKeys), outputs: model2)
 
-        XCTAssertDecoding(BasicDecModel.self, from: row2(nulls: false, xform: false, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .convertFromSnakeCase), outputs: model2)
-        XCTAssertDecoding(BasicDecModel.self, from: row2(nulls: true, xform: false, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .convertFromSnakeCase), outputs: model2)
+        try expectDecoding(BasicDecModel.self, from: row2(nulls: false, xform: false, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .convertFromSnakeCase), outputs: model2)
+        try expectDecoding(BasicDecModel.self, from: row2(nulls: true, xform: false, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .convertFromSnakeCase), outputs: model2)
 
-        XCTAssertDecoding(BasicDecModel.self, from: row2(nulls: false, xform: true, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .custom({ superCase($0) })), outputs: model2)
-        XCTAssertDecoding(BasicDecModel.self, from: row2(nulls: true, xform: true, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .custom({ superCase($0) })), outputs: model2)
+        try expectDecoding(BasicDecModel.self, from: row2(nulls: false, xform: true, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .custom({ superCase($0) })), outputs: model2)
+        try expectDecoding(BasicDecModel.self, from: row2(nulls: true, xform: true, prefix: "p_"), using: SQLRowDecoder(prefix: "p_", keyDecodingStrategy: .custom({ superCase($0) })), outputs: model2)
     }
-    
-    func testDecodeUnkeyedValues() {
-        XCTAssertThrowsError(try SQLRowDecoder().decode(Array<UInt8>.self, from: TestRow(data: [:]))) { XCTAssert($0 is SQLCodingError, "Expected SQLCodingError, got \(String(reflecting: $0))") }
+
+    @Test("decode unkeyed values")
+    func decodeUnkeyedValues() {
+        #expect(throws: SQLCodingError.self) { try SQLRowDecoder().decode(Array<UInt8>.self, from: TestRow(data: [:])) }
     }
-    
-    func testDecodeTopLevelValues() {
-        XCTAssertThrowsError(try SQLRowDecoder().decode(Bool.self, from: TestRow(data: [:]))) { XCTAssert($0 is SQLCodingError, "Expected SQLCodingError, got \(String(reflecting: $0))") }
-        XCTAssertThrowsError(try SQLRowDecoder().decode(String.self, from: TestRow(data: [:]))) { XCTAssert($0 is SQLCodingError, "Expected SQLCodingError, got \(String(reflecting: $0))") }
-        XCTAssertThrowsError(try SQLRowDecoder().decode(Double.self, from: TestRow(data: [:]))) { XCTAssert($0 is SQLCodingError, "Expected SQLCodingError, got \(String(reflecting: $0))") }
-        XCTAssertThrowsError(try SQLRowDecoder().decode(Float.self, from: TestRow(data: [:]))) { XCTAssert($0 is SQLCodingError, "Expected SQLCodingError, got \(String(reflecting: $0))") }
-        XCTAssertThrowsError(try SQLRowDecoder().decode(Int8.self, from: TestRow(data: [:]))) { XCTAssert($0 is SQLCodingError, "Expected SQLCodingError, got \(String(reflecting: $0))") }
-        XCTAssertThrowsError(try SQLRowDecoder().decode(Int16.self, from: TestRow(data: [:]))) { XCTAssert($0 is SQLCodingError, "Expected SQLCodingError, got \(String(reflecting: $0))") }
-        XCTAssertThrowsError(try SQLRowDecoder().decode(Int32.self, from: TestRow(data: [:]))) { XCTAssert($0 is SQLCodingError, "Expected SQLCodingError, got \(String(reflecting: $0))") }
-        XCTAssertThrowsError(try SQLRowDecoder().decode(Int64.self, from: TestRow(data: [:]))) { XCTAssert($0 is SQLCodingError, "Expected SQLCodingError, got \(String(reflecting: $0))") }
-        XCTAssertThrowsError(try SQLRowDecoder().decode(UInt8.self, from: TestRow(data: [:]))) { XCTAssert($0 is SQLCodingError, "Expected SQLCodingError, got \(String(reflecting: $0))") }
-        XCTAssertThrowsError(try SQLRowDecoder().decode(UInt16.self, from: TestRow(data: [:]))) { XCTAssert($0 is SQLCodingError, "Expected SQLCodingError, got \(String(reflecting: $0))") }
-        XCTAssertThrowsError(try SQLRowDecoder().decode(UInt32.self, from: TestRow(data: [:]))) { XCTAssert($0 is SQLCodingError, "Expected SQLCodingError, got \(String(reflecting: $0))") }
-        XCTAssertThrowsError(try SQLRowDecoder().decode(UInt64.self, from: TestRow(data: [:]))) { XCTAssert($0 is SQLCodingError, "Expected SQLCodingError, got \(String(reflecting: $0))") }
-        XCTAssertThrowsError(try SQLRowDecoder().decode(Int.self, from: TestRow(data: [:]))) { XCTAssert($0 is SQLCodingError, "Expected SQLCodingError, got \(String(reflecting: $0))") }
-        XCTAssertThrowsError(try SQLRowDecoder().decode(UInt.self, from: TestRow(data: [:]))) { XCTAssert($0 is SQLCodingError, "Expected SQLCodingError, got \(String(reflecting: $0))") }
+
+    @Test("decode top-level values")
+    func decodeTopLevelValues() {
+        #expect(throws: SQLCodingError.self) { try SQLRowDecoder().decode(Bool.self, from: TestRow(data: [:])) }
+        #expect(throws: SQLCodingError.self) { try SQLRowDecoder().decode(String.self, from: TestRow(data: [:])) }
+        #expect(throws: SQLCodingError.self) { try SQLRowDecoder().decode(Double.self, from: TestRow(data: [:])) }
+        #expect(throws: SQLCodingError.self) { try SQLRowDecoder().decode(Float.self, from: TestRow(data: [:])) }
+        #expect(throws: SQLCodingError.self) { try SQLRowDecoder().decode(Int8.self, from: TestRow(data: [:])) }
+        #expect(throws: SQLCodingError.self) { try SQLRowDecoder().decode(Int16.self, from: TestRow(data: [:])) }
+        #expect(throws: SQLCodingError.self) { try SQLRowDecoder().decode(Int32.self, from: TestRow(data: [:])) }
+        #expect(throws: SQLCodingError.self) { try SQLRowDecoder().decode(Int64.self, from: TestRow(data: [:])) }
+        #expect(throws: SQLCodingError.self) { try SQLRowDecoder().decode(UInt8.self, from: TestRow(data: [:])) }
+        #expect(throws: SQLCodingError.self) { try SQLRowDecoder().decode(UInt16.self, from: TestRow(data: [:])) }
+        #expect(throws: SQLCodingError.self) { try SQLRowDecoder().decode(UInt32.self, from: TestRow(data: [:])) }
+        #expect(throws: SQLCodingError.self) { try SQLRowDecoder().decode(UInt64.self, from: TestRow(data: [:])) }
+        #expect(throws: SQLCodingError.self) { try SQLRowDecoder().decode(Int.self, from: TestRow(data: [:])) }
+        #expect(throws: SQLCodingError.self) { try SQLRowDecoder().decode(UInt.self, from: TestRow(data: [:])) }
     }
-    
-    func testDecodeNestedKeyedValues() {
-        XCTAssertNoThrow(try SQLRowDecoder().decode(TestDecodableIfPresent.self, from: TestRow(data: ["foo": Date()])))
-        XCTAssertNoThrow(try SQLRowDecoder().decode(TestDecodableIfPresent.self, from: TestRow(data: ["foo": Date?.none])))
-        XCTAssertNoThrow(try SQLRowDecoder().decode(Dictionary<String, Dictionary<String, String>>.self, from: TestRow(data: ["a": ["b": "c"]])))
-        XCTAssertNoThrow(try SQLRowDecoder(keyDecodingStrategy: .convertFromSnakeCase).decode(Dictionary<String, Dictionary<String, String>>.self, from: TestRow(data: ["a": ["b": "c"]])))
-        XCTAssertNoThrow(try SQLRowDecoder(keyDecodingStrategy: .custom({ superCase($0) })).decode(Dictionary<String, Dictionary<String, String>>.self, from: TestRow(data: ["A": ["b": "c"]])))
-        XCTAssertNoThrow(try SQLRowDecoder().decode(Dictionary<String, Array<String>>.self, from: TestRow(data: ["a": ["b", "c"]])))
-        XCTAssertThrowsError(try SQLRowDecoder().decode(TestDecNestedKeyedContainers.self, from: TestRow(data: [:])))  { XCTAssert($0 is SQLCodingError, "Expected SQLCodingError, got \(String(reflecting: $0))") }
-        XCTAssertThrowsError(try SQLRowDecoder().decode(TestDecNestedUnkeyedContainer.self, from: TestRow(data: [:])))  { XCTAssert($0 is SQLCodingError, "Expected SQLCodingError, got \(String(reflecting: $0))") }
-        XCTAssertThrowsError(try SQLRowDecoder().decode(TestKeylessSuperDecoder.self, from: TestRow(data: [:])))  { XCTAssert($0 is SQLCodingError, "Expected SQLCodingError, got \(String(reflecting: $0))") }
-        XCTAssertNoThrow(try SQLRowDecoder().decode(TestDecNestedSingleValueContainer.self, from: TestRow(data: ["foo": ["_0": 1, "_1": 1]])))
-        XCTAssertNoThrow(try SQLRowDecoder().decode(TestDecNestedSingleValueContainer.self, from: TestRow(data: ["foo": Dictionary<String, Int>?.none])))
-        XCTAssertThrowsError(try SQLRowDecoder().decode(TestDecEnum.self, from: TestRow(data: ["foo": Dictionary<String, String>()]))) { XCTAssert($0 is SQLCodingError, "Expected SQLCodingError, got \(String(reflecting: $0))") }
+
+    @Test("decode nested keyed values")
+    func decodeNestedKeyedValues() {
+        #expect(throws: Never.self) { try SQLRowDecoder().decode(TestDecodableIfPresent.self, from: TestRow(data: ["foo": Date()])) }
+        #expect(throws: Never.self) { try SQLRowDecoder().decode(TestDecodableIfPresent.self, from: TestRow(data: ["foo": Date?.none])) }
+        #expect(throws: Never.self) { try SQLRowDecoder().decode(Dictionary<String, Dictionary<String, String>>.self, from: TestRow(data: ["a": ["b": "c"]])) }
+        #expect(throws: Never.self) { try SQLRowDecoder(keyDecodingStrategy: .convertFromSnakeCase).decode(Dictionary<String, Dictionary<String, String>>.self, from: TestRow(data: ["a": ["b": "c"]])) }
+        #expect(throws: Never.self) { try SQLRowDecoder(keyDecodingStrategy: .custom({ superCase($0) })).decode(Dictionary<String, Dictionary<String, String>>.self, from: TestRow(data: ["A": ["b": "c"]])) }
+        #expect(throws: Never.self) { try SQLRowDecoder().decode(Dictionary<String, Array<String>>.self, from: TestRow(data: ["a": ["b", "c"]])) }
+        #expect(throws: SQLCodingError.self) { try SQLRowDecoder().decode(TestDecNestedKeyedContainers.self, from: TestRow(data: [:])) }
+        #expect(throws: SQLCodingError.self) { try SQLRowDecoder().decode(TestDecNestedUnkeyedContainer.self, from: TestRow(data: [:])) }
+        #expect(throws: SQLCodingError.self) { try SQLRowDecoder().decode(TestKeylessSuperDecoder.self, from: TestRow(data: [:])) }
+        #expect(throws: Never.self) { try SQLRowDecoder().decode(TestDecNestedSingleValueContainer.self, from: TestRow(data: ["foo": ["_0": 1, "_1": 1]])) }
+        #expect(throws: Never.self) { try SQLRowDecoder().decode(TestDecNestedSingleValueContainer.self, from: TestRow(data: ["foo": Dictionary<String, Int>?.none])) }
+        #expect(throws: SQLCodingError.self) { try SQLRowDecoder().decode(TestDecEnum.self, from: TestRow(data: ["foo": Dictionary<String, String>()])) }
     }
-    
-    func testDecoderMiscErrorHandling() {
+
+    @Test("decoder misc. error handling")
+    func decoderMiscErrorHandling() {
         struct ErroringRow: SQLRow {
             let allColumns: [String]
             func contains(column: String) -> Bool { column == "foo" }
             func decodeNil(column: String) throws -> Bool { throw DecodingError.valueNotFound(Optional<Void>.self, .init(codingPath: [], debugDescription: "")) }
             func decode<D: Decodable>(column: String, as: D.Type) throws -> D { throw DecodingError.valueNotFound(Optional<Void>.self, .init(codingPath: [], debugDescription: "")) }
         }
-        XCTAssertThrowsError(try SQLRowDecoder().decode(TestDecodableIfPresent.self, from: ErroringRow(allColumns: ["foo"]))) {
-            guard case .valueNotFound(_, let context) = $0 as? DecodingError else {
-                return XCTFail("Expected DecodingError.valueNotFound(), got \(String(reflecting: $0))")
-            }
-            XCTAssertEqual(["foo"], context.codingPath.map(\.stringValue))
-        }
-        XCTAssertThrowsError(try SQLRowDecoder().decode(TestDecNestedSingleValueContainer.self, from: ErroringRow(allColumns: ["foo"]))) {
-            guard case .valueNotFound(_, let context) = $0 as? DecodingError else {
-                return XCTFail("Expected DecodingError.valueNotFound(), got \(String(reflecting: $0))")
-            }
-            XCTAssertEqual(["foo", "foo"], context.codingPath.map(\.stringValue))
-        }
-        XCTAssertThrowsError(try SQLRowDecoder().decode(TestDecNestedSingleValueContainer?.self, from: ErroringRow(allColumns: ["foo"]))) {
-            guard case .valueNotFound(_, let context) = $0 as? DecodingError else {
-                return XCTFail("Expected DecodingError.valueNotFound(), got \(String(reflecting: $0))")
-            }
-            XCTAssertEqual(["foo", "foo"], context.codingPath.map(\.stringValue))
-        }
-        XCTAssertThrowsError(try SQLRowDecoder().decode([String: String].self, from: ErroringRow(allColumns: ["foo"]))) {
-            guard case .valueNotFound(_, let context) = $0 as? DecodingError else {
-                return XCTFail("Expected DecodingError.valueNotFound(), got \(String(reflecting: $0))")
-            }
-            XCTAssertEqual([SomeCodingKey(stringValue: "foo")].map(\.stringValue), context.codingPath.map(\.stringValue))
-        }
-        XCTAssertThrowsError(try SQLRowDecoder().decode([String: String].self, from: ErroringRow(allColumns: ["b"]))) {
-            guard case .keyNotFound(_, let context) = $0 as? DecodingError else {
-                return XCTFail("Expected DecodingError.keyNotFound(), got \(String(reflecting: $0))")
-            }
-            XCTAssertEqual(Array<any CodingKey>().map(\.stringValue), context.codingPath.map(\.stringValue))
-        }
+        let error1 = #expect(throws: DecodingError.self) { try SQLRowDecoder().decode(TestDecodableIfPresent.self, from: ErroringRow(allColumns: ["foo"])) }
+        guard case .valueNotFound(_, let context) = error1 else { Issue.record("Expected .valueNotFound, got \(String(reflecting: error1))"); return }
+        #expect(["foo"] == context.codingPath.map(\.stringValue))
+
+        let error2 = #expect(throws: DecodingError.self) { try SQLRowDecoder().decode(TestDecNestedSingleValueContainer.self, from: ErroringRow(allColumns: ["foo"])) }
+        guard case .valueNotFound(_, let context) = error2 else { Issue.record("Expected .valueNotFound, got \(String(reflecting: error2))"); return }
+        #expect(["foo", "foo"] == context.codingPath.map(\.stringValue))
+
+        let error3 = #expect(throws: DecodingError.self) { try SQLRowDecoder().decode(TestDecNestedSingleValueContainer?.self, from: ErroringRow(allColumns: ["foo"])) }
+        guard case .valueNotFound(_, let context) = error3 else { Issue.record("Expected .valueNotFound, got \(String(reflecting: error3))"); return }
+        #expect(["foo", "foo"] == context.codingPath.map(\.stringValue))
+
+        let error4 = #expect(throws: DecodingError.self) { try SQLRowDecoder().decode([String: String].self, from: ErroringRow(allColumns: ["foo"])) }
+        guard case .valueNotFound(_, let context) = error4 else { Issue.record("Expected .valueNotFound, got \(String(reflecting: error4))"); return }
+        #expect([SomeCodingKey(stringValue: "foo")].map(\.stringValue) == context.codingPath.map(\.stringValue))
+
+        let error5 = #expect(throws: DecodingError.self) { try SQLRowDecoder().decode([String: String].self, from: ErroringRow(allColumns: ["b"])) }
+        guard case .keyNotFound(_, let context) = error5 else { Issue.record("Expected .keyNotFound, got \(String(reflecting: error5))"); return }
+        #expect(Array<any CodingKey>().map(\.stringValue) == context.codingPath.map(\.stringValue))
     }
 }
 
@@ -186,9 +186,9 @@ struct TestDecodableIfPresent: Decodable {
 
 struct TestKeylessSuperDecoder: Decodable {
     let foo: Bool
-    
+
     init(from decoder: any Decoder) throws {
-        XCTAssertNil(decoder.userInfo[.init(rawValue: "a")!]) // for completeness of code coverage
+        #expect(decoder.userInfo[.init(rawValue: "a")!] == nil) // for completeness of code coverage
         let container = try decoder.container(keyedBy: SomeCodingKey.self)
         let superDecoder = try container.superDecoder()
         let subcontainer = try superDecoder.singleValueContainer()
@@ -198,7 +198,7 @@ struct TestKeylessSuperDecoder: Decodable {
 
 struct TestDecNestedUnkeyedContainer: Decodable {
     let foo: Bool
-    
+
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: SomeCodingKey.self)
         var subcontainer = try container.nestedUnkeyedContainer(forKey: .init(stringValue: "foo"))
@@ -208,12 +208,12 @@ struct TestDecNestedUnkeyedContainer: Decodable {
 
 struct TestDecNestedKeyedContainers: Decodable {
     let foo: (Int, Int)
-    
+
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: SomeCodingKey.self)
         let superDecoder = try container.superDecoder(forKey: .init(stringValue: "foo"))
         let subcontainer = try superDecoder.container(keyedBy: SomeCodingKey.self)
-        
+
         self.foo = (
             try subcontainer.decode(Int.self, forKey: .init(stringValue: "_0")),
             try subcontainer.decode(Int.self, forKey: .init(stringValue: "_1"))
@@ -223,12 +223,12 @@ struct TestDecNestedKeyedContainers: Decodable {
 
 struct TestDecNestedSingleValueContainer: Decodable {
     let foo: (Int, Int)?
-    
+
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: SomeCodingKey.self)
         let superDecoder = try container.superDecoder(forKey: .init(stringValue: "foo"))
         let subcontainer = try superDecoder.singleValueContainer()
-        
+
         if subcontainer.decodeNil() {
             self.foo = nil
         } else {
