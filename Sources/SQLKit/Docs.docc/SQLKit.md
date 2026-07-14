@@ -43,6 +43,8 @@ SQLKit does _not_ provide facilities for creating or managing database connectio
 
 - ``SQLAliasedColumnListBuilder``
 - ``SQLColumnUpdateBuilder``
+- ``SQLCommonTableExpressionBuilder``
+- ``SQLCommonUnionBuilder``
 - ``SQLJoinBuilder``
 - ``SQLPartialResultBuilder``
 - ``SQLPredicateBuilder``
@@ -75,6 +77,7 @@ SQLKit does _not_ provide facilities for creating or managing database connectio
 - ``SQLSelectBuilder``
 - ``SQLSubqueryBuilder``
 - ``SQLUnionBuilder``
+- ``SQLUnionSubqueryBuilder``
 - ``SQLUpdateBuilder``
 
 ### Syntactic Expressions
@@ -109,6 +112,8 @@ SQLKit does _not_ provide facilities for creating or managing database connectio
 - ``SQLColumnAssignment``
 - ``SQLColumnConstraintAlgorithm``
 - ``SQLColumnDefinition``
+- ``SQLCommonTableExpression``
+- ``SQLCommonTableExpressionGroup``
 - ``SQLConflictAction``
 - ``SQLConflictResolutionStrategy``
 - ``SQLDropBehavior``
@@ -124,6 +129,7 @@ SQLKit does _not_ provide facilities for creating or managing database connectio
 - ``SQLSubquery``
 - ``SQLTableConstraintAlgorithm``
 - ``SQLUnionJoiner``
+- ``SQLUnionSubquery``
 
 ### Query Expressions
 
