@@ -128,9 +128,13 @@ extension SQLQueryFetcher {
     /// If `self` conforms to ``SQLPartialResultBuilder``, ``SQLPartialResultBuilder/limit(_:)`` is used to avoid
     /// loading more rows than necessary from the database.
     ///
+    /// > Note: This method returns `Optional<any SQLRow>` rather than the semantically identical `(any SQLRow)?`
+    /// > due to a bug in Swift DocC causing it to become confused by the latter. The syntactic sugar will be
+    /// > restored once the bug is fixed.
+    ///
     /// - Returns: The first output row, if any.
     @inlinable
-    public func first() async throws -> (any SQLRow)? {
+    public func first() async throws -> Optional<any SQLRow> {
         (self as? any SQLPartialResultBuilder)?.limit(1)
         nonisolated(unsafe) var rows = [any SQLRow]()
         try await self.run { if rows.isEmpty { rows.append($0) } }

@@ -11,7 +11,7 @@
 
 ### Getting All Rows
 
-- ``SQLQueryFetcher/all(decoding:with:)->[D]``
+- ``SQLQueryFetcher/all()->[SQLRow]``
 - ``SQLQueryFetcher/all(decoding:)->[D]``
 - ``SQLQueryFetcher/all(decoding:prefix:keyDecodingStrategy:userInfo:)->[D]``
 - ``SQLQueryFetcher/all(decoding:with:)->[D]``
@@ -19,7 +19,7 @@
 
 ### Getting One Row
 
-- ``SQLQueryFetcher/first()->EventLoopFuture<(SQLRow)?>``
+- ``SQLQueryFetcher/first()->SQLRow?``
 - ``SQLQueryFetcher/first(decoding:)->D?``
 - ``SQLQueryFetcher/first(decoding:prefix:keyDecodingStrategy:userInfo:)->D?``
 - ``SQLQueryFetcher/first(decoding:with:)->D?``

@@ -166,16 +166,16 @@ Notice that `Encodable` values are automatically bound as parameters instead of 
 
 The select builder includes the following methods (most of which have numerous variations):
 
-- `columns()` (specify a list of columns and/or expressions to return)
-- `from()` (specify a table to select from)
-- `join()` (specify additional tables and how to relate them to others)
-- `where()` and `orWhere()` (specify conditions that narrow down the possible results)
-- `limit()` and `offset()` (specify a limited and/or offsetted range of results to return)
-- `orderBy()` (specify how to sort results before returning them)
-- `groupBy()` (specify columns and/or expressions for aggregating results)
-- `having()` and `orHaving()` (specify secondary conditions to apply to the results after aggregation)
-- `distinct()` (specify coalescing of duplicate results)
-- `for()` and `lockingClause()` (specify locking behavior for rows that appear in results)
+- ``SQLSelectBuilder/columns(_:)-([SQLExpression])`` (specify a list of columns and/or expressions to return)
+- ``SQLSelectBuilder/from(_:)-(String)`` (specify a table to select from)
+- ``SQLSelectBuilder/join(_:method:on:_:_:)-(SQLExpression,_,_,_,_)`` (specify additional tables and how to relate them to others)
+- ``SQLSelectBuilder/where(_:_:_:)-(SQLExpression,SQLBinaryOperator,_)`` and ``SQLSelectBuilder/orWhere(_:_:_:)-(SQLExpression,SQLBinaryOperator,_)`` (specify conditions that narrow down the possible results)
+- ``SQLSelectBuilder/limit(_:)`` and ``SQLSelectBuilder/offset(_:)`` (specify a limited and/or offsetted range of results to return)
+- ``SQLSelectBuilder/orderBy(_:_:)-(String,_)`` (specify how to sort results before returning them)
+- ``SQLSelectBuilder/groupBy(_:)-(SQLExpression)`` (specify columns and/or expressions for aggregating results)
+- ``SQLSelectBuilder/having(_:_:_:)-(SQLExpression,SQLBinaryOperator,_)`` and ``SQLSelectBuilder/orHaving(_:_:_:)-(SQLExpression,SQLBinaryOperator,_)`` (specify secondary conditions to apply to the results after aggregation)
+- ``SQLSelectBuilder/distinct()`` (specify coalescing of duplicate results)
+- ``SQLSelectBuilder/for(_:)`` and ``SQLSelectBuilder/lockingClause(_:)`` (specify locking behavior for rows that appear in results)
 
 Conditional expressions provided to `where()` or `having()` are joined with `AND`. Corresponding `orWhere()` and `orHaving()` methods join conditions with `OR` instead.
 
