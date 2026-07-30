@@ -1,5 +1,9 @@
+// SwiftNIO is not linked on every platform SQLKit supports (see Package.swift); the
+// EventLoopFuture surface below is elided where it is absent.
+#if canImport(NIOCore)
 import protocol NIOCore.EventLoop
 import class NIOCore.EventLoopFuture
+#endif
 import struct Logging.Logger
 
 /// The common interface to SQLKit for both drivers and client code.
@@ -56,6 +60,9 @@ public protocol SQLDatabase: Sendable {
     /// The `Logger` used for logging all operations relating to a given database.
     var logger: Logger { get }
     
+    // N.B.: Each `#if` encloses the doc comment of the declaration it gates; placed between the
+    // two it would silently detach the doc from the symbol graph.
+    #if canImport(NIOCore)
     /// The `EventLoop` used for asynchronous operations on a given database.
     ///
     /// If there is no specific `EventLoop` which handles the database (such as because it is a connection pool which
@@ -63,7 +70,8 @@ public protocol SQLDatabase: Sendable {
     /// Concurrency or some other asynchronous execution technology), a single consistent `EventLoop` must be chosen
     /// for the database and returned for this property nonetheless.
     var eventLoop: any EventLoop { get }
-    
+    #endif  // canImport(NIOCore)
+
     /// The version number the database reports for itself.
     ///
     /// The version must be provided via a type conforming to the ``SQLDatabaseReportedVersion`` protocol. If the
@@ -102,6 +110,7 @@ public protocol SQLDatabase: Sendable {
     /// > it's unavoidable, as there are no direct entry points to SQLKit without a driver.
     var queryLogLevel: Logger.Level? { get }
 
+    #if canImport(NIOCore)
     /// Requests that the given generic SQL query be serialized and executed on the database, and that
     /// the `onRow` closure be invoked once for each result row the query returns (if any).
     ///
@@ -118,6 +127,7 @@ public protocol SQLDatabase: Sendable {
         sql query: any SQLExpression,
         _ onRow: @escaping @Sendable (any SQLRow) -> ()
     ) -> EventLoopFuture<Void>
+    #endif  // canImport(NIOCore)
 
     /// Requests that the given generic SQL query be serialized and executed on the database, and that
     /// the `onRow` closure be invoked once for each result row the query returns (if any).
@@ -200,6 +210,10 @@ extension SQLDatabase {
 }
 
 extension SQLDatabase {
+    // This default bridges the `async` requirement to the legacy `EventLoopFuture` one, so it can
+    // only exist where the latter does. Without SwiftNIO there is no future overload to forward to
+    // and conformers implement the `async` `execute` directly.
+    #if canImport(NIOCore)
     /// The default implementation for ``execute(sql:_:)-4eg19``.
     @inlinable
     public func execute(
@@ -208,7 +222,8 @@ extension SQLDatabase {
     ) async throws {
         try await self.execute(sql: query, onRow).get()
     }
-    
+    #endif  // canImport(NIOCore)
+
     /// The default implementation for ``withSession(_:)-9b68j``.
     @inlinable
     public func withSession<R>(
@@ -227,10 +242,12 @@ private struct CustomLoggerSQLDatabase<D: SQLDatabase>: SQLDatabase {
     // See `SQLDatabase.logger`.
     let logger: Logger
     
+    #if canImport(NIOCore)
     // See `SQLDatabase.eventLoop`.
     var eventLoop: any EventLoop {
         self.database.eventLoop
     }
+    #endif
 
     // See `SQLDatabase.version`.
     var version: (any SQLDatabaseReportedVersion)? {
@@ -247,6 +264,7 @@ private struct CustomLoggerSQLDatabase<D: SQLDatabase>: SQLDatabase {
         self.database.queryLogLevel
     }
     
+    #if canImport(NIOCore)
     // See `SQLDatabase.execute(sql:_:)`.
     func execute(
         sql query: any SQLExpression,
@@ -254,6 +272,7 @@ private struct CustomLoggerSQLDatabase<D: SQLDatabase>: SQLDatabase {
     ) -> EventLoopFuture<Void> {
         self.database.execute(sql: query, onRow)
     }
+    #endif  // canImport(NIOCore)
 
     // See `SQLDatabase.execute(sql:_:)`.
     func execute(

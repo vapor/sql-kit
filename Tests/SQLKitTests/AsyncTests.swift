@@ -1,4 +1,6 @@
+#if canImport(NIOCore)
 import NIOCore
+#endif
 import OrderedCollections
 import SQLKit
 import Testing

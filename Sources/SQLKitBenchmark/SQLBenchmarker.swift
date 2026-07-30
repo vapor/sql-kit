@@ -1,5 +1,7 @@
 import Logging
+#if canImport(NIOCore)
 import NIOCore
+#endif
 public import SQLKit
 import XCTest
 
@@ -21,6 +23,8 @@ public final class SQLBenchmarker: Sendable {
         }
     }
     
+    // The deprecated EventLoopFuture bridges are elided where SwiftNIO is unavailable.
+    #if canImport(NIOCore)
     @available(*, deprecated, renamed: "runAllTests()", message: "Use `runAllTests()` instead.")
     public func testAll() throws {
         try database.eventLoop.makeFutureWithTask { try await self.runAllTests() }.wait()
@@ -30,6 +34,7 @@ public final class SQLBenchmarker: Sendable {
     public func run() throws {
         try self.testAll()
     }
+    #endif  // canImport(NIOCore)
     
     func runTest(
         _ name: String = #function,

@@ -1,6 +1,12 @@
 // swift-tools-version:6.1
 import PackageDescription
 
+/// `.when(platforms:)` can only include, never exclude, so excluding WASI means listing everything else.
+/// This list matches the [supported platforms on the Swift 6.1 release of SPM](https://github.com/swiftlang/swift-package-manager/blob/release/6.1/Sources/PackageDescription/SupportedPlatforms.swift).
+/// Don't add new platforms here unless raising the swift-tools-version of this manifest.
+let allPlatforms: [Platform] = [.macOS, .macCatalyst, .iOS, .tvOS, .watchOS, .visionOS, .driverKit, .linux, .windows, .android, .wasi, .openbsd]
+let nonWASIPlatforms: [Platform] = allPlatforms.filter { $0 != .wasi }
+
 let package = Package(
     name: "sql-kit",
     platforms: [
@@ -24,7 +30,13 @@ let package = Package(
             dependencies: [
                 .product(name: "Collections", package: "swift-collections"),
                 .product(name: "Logging", package: "swift-log"),
-                .product(name: "NIOCore", package: "swift-nio"),
+                // NIOCore itself builds for wasm32-unknown-wasip1, but the drivers beneath SQLKit
+                // cannot build SwiftNIO there (NIOPosix needs POSIX sockets and threads), so no
+                // driver on that platform could implement an `EventLoopFuture` surface. Target
+                // dependency conditions are evaluated per platform, so on WASI NIOCore is simply
+                // not linked and that surface drops out via `#if canImport(NIOCore)`; the async
+                // surface is unaffected.
+                .product(name: "NIOCore", package: "swift-nio", condition: .when(platforms: nonWASIPlatforms)),
             ],
             swiftSettings: swiftSettings
         ),
@@ -38,8 +50,9 @@ let package = Package(
         .testTarget(
             name: "SQLKitTests",
             dependencies: [
-                .product(name: "NIOCore", package: "swift-nio"),
-                .product(name: "NIOEmbedded", package: "swift-nio"),
+                // The test suite exercises the SwiftNIO surface, so it is not built for WASI.
+                .product(name: "NIOCore", package: "swift-nio", condition: .when(platforms: nonWASIPlatforms)),
+                .product(name: "NIOEmbedded", package: "swift-nio", condition: .when(platforms: nonWASIPlatforms)),
                 .target(name: "SQLKit"),
                 .target(name: "SQLKitBenchmark"),
             ],

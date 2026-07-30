@@ -1,10 +1,15 @@
+// `EventLoopFuture` is unavailable where SwiftNIO is not linked. The `async` `first()`/`all()`/
+// `run(_:)` families further down are unconditional and carry the whole surface there.
+#if canImport(NIOCore)
 import class NIOCore.EventLoopFuture
+#endif
 
 /// Common definitions for ``SQLQueryBuilder``s which support retrieving result rows.
 public protocol SQLQueryFetcher: SQLQueryBuilder {}
 
 // MARK: - First (EventLoopFuture)
 
+#if canImport(NIOCore)
 extension SQLQueryFetcher {
     /// Returns the named column from the first output row, if any, decoded as a given type.
     ///
@@ -69,6 +74,8 @@ extension SQLQueryFetcher {
         return self.run { if rows.isEmpty { rows.append($0) } }.map { rows.first }
     }
 }
+
+#endif  // canImport(NIOCore)
 
 // MARK: - First (async)
 
@@ -144,6 +151,7 @@ extension SQLQueryFetcher {
 
 // MARK: - All (EventLoopFuture)
 
+#if canImport(NIOCore)
 extension SQLQueryFetcher {
     /// Returns the named column from each output row, if any, decoded as a given type.
     ///
@@ -204,6 +212,8 @@ extension SQLQueryFetcher {
         return self.run { row in rows.append(row) }.map { rows }
     }
 }
+
+#endif  // canImport(NIOCore)
 
 // MARK: - All (async)
 
@@ -271,6 +281,7 @@ extension SQLQueryFetcher {
 
 // MARK: - Run (EventLoopFuture)
 
+#if canImport(NIOCore)
 extension SQLQueryFetcher {
     /// Using a default-configured ``SQLRowDecoder``, call the provided handler closure with the result of decoding
     /// each output row, if any, as a given type.
@@ -336,6 +347,8 @@ extension SQLQueryFetcher {
         self.database.execute(sql: self.query, handler)
     }
 }
+
+#endif  // canImport(NIOCore)
 
 // MARK: - Run (async)
 

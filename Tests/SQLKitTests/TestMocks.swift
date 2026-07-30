@@ -1,8 +1,10 @@
 import OrderedCollections
 public import SQLKit
+#if canImport(NIOCore)
 import protocol NIOCore.EventLoop
 import class NIOCore.EventLoopFuture
 import class NIOEmbedded.NIOAsyncTestingEventLoop
+#endif
 import Logging
 #if canImport(Dispatch)
 import class Dispatch.DispatchQueue

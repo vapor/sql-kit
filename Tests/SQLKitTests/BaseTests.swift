@@ -1,7 +1,9 @@
 @testable import SQLKit
 import struct Logging.Logger
+#if canImport(NIOCore)
 import protocol NIOCore.EventLoop
 import class NIOCore.EventLoopFuture
+#endif
 import SQLKitBenchmark
 import Testing
 
