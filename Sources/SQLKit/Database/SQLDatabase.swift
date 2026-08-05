@@ -1,5 +1,3 @@
-import protocol NIOCore.EventLoop
-import class NIOCore.EventLoopFuture
 import struct Logging.Logger
 
 /// The common interface to SQLKit for both drivers and client code.
@@ -56,14 +54,6 @@ public protocol SQLDatabase: Sendable {
     /// The `Logger` used for logging all operations relating to a given database.
     var logger: Logger { get }
     
-    /// The `EventLoop` used for asynchronous operations on a given database.
-    ///
-    /// If there is no specific `EventLoop` which handles the database (such as because it is a connection pool which
-    /// assigns loops to connections at point of use, or because the underlying implementation is based on Swift
-    /// Concurrency or some other asynchronous execution technology), a single consistent `EventLoop` must be chosen
-    /// for the database and returned for this property nonetheless.
-    var eventLoop: any EventLoop { get }
-    
     /// The version number the database reports for itself.
     ///
     /// The version must be provided via a type conforming to the ``SQLDatabaseReportedVersion`` protocol. If the
@@ -104,27 +94,6 @@ public protocol SQLDatabase: Sendable {
 
     /// Requests that the given generic SQL query be serialized and executed on the database, and that
     /// the `onRow` closure be invoked once for each result row the query returns (if any).
-    ///
-    /// Although it is a protocol requirement for historical reasons, this is considered a legacy interface thanks
-    /// to its reliance on `EventLoopFuture`. Implementers should implement both this method and
-    /// ``execute(sql:_:)-7trgm`` if they can, and users should use ``execute(sql:_:)-7trgm`` whenever possible.
-    ///
-    /// - Parameters:
-    ///   - query: An ``SQLExpression`` representing a complete query to execute.
-    ///   - onRow: A closure which is invoked once for each result row returned by the query (if any).
-    /// - Returns: An `EventLoopFuture`.
-    @preconcurrency
-    func execute(
-        sql query: any SQLExpression,
-        _ onRow: @escaping @Sendable (any SQLRow) -> ()
-    ) -> EventLoopFuture<Void>
-
-    /// Requests that the given generic SQL query be serialized and executed on the database, and that
-    /// the `onRow` closure be invoked once for each result row the query returns (if any).
-    ///
-    /// If a concrete type conforming to ``SQLDatabase`` can provide a more efficient Concurrency-based implementation
-    /// than forwarding the invocation through the legacy `EventLoopFuture`-based API, it should override this method
-    /// in order to do so.
     ///
     /// - Parameters:
     ///   - query: An ``SQLExpression`` representing a complete query to execute.
@@ -226,11 +195,6 @@ private struct CustomLoggerSQLDatabase<D: SQLDatabase>: SQLDatabase {
 
     // See `SQLDatabase.logger`.
     let logger: Logger
-    
-    // See `SQLDatabase.eventLoop`.
-    var eventLoop: any EventLoop {
-        self.database.eventLoop
-    }
 
     // See `SQLDatabase.version`.
     var version: (any SQLDatabaseReportedVersion)? {
@@ -245,14 +209,6 @@ private struct CustomLoggerSQLDatabase<D: SQLDatabase>: SQLDatabase {
     // See `SQLDatabase.queryLogLevel`.
     var queryLogLevel: Logger.Level? {
         self.database.queryLogLevel
-    }
-    
-    // See `SQLDatabase.execute(sql:_:)`.
-    func execute(
-        sql query: any SQLExpression,
-        _ onRow: @escaping @Sendable (any SQLRow) -> ()
-    ) -> EventLoopFuture<Void> {
-        self.database.execute(sql: query, onRow)
     }
 
     // See `SQLDatabase.execute(sql:_:)`.
