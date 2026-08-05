@@ -175,7 +175,7 @@ extension SQLDatabase {
         sql query: any SQLExpression,
         _ onRow: @escaping @Sendable (any SQLRow) -> ()
     ) async throws {
-        try await self.execute(sql: query, onRow).get()
+        try await self.execute(sql: query, onRow)
     }
     
     /// The default implementation for ``withSession(_:)-9b68j``.
