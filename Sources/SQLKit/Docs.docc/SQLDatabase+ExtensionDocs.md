@@ -5,7 +5,6 @@
 ### Properties
 
 - ``SQLDatabase/logger``
-- ``SQLDatabase/eventLoop``
 - ``SQLDatabase/version``
 - ``SQLDatabase/dialect``
 - ``SQLDatabase/queryLogLevel``
