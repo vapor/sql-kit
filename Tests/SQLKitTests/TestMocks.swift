@@ -1,12 +1,6 @@
 import OrderedCollections
 public import SQLKit
-import protocol NIOCore.EventLoop
-import class NIOCore.EventLoopFuture
-import class NIOEmbedded.NIOAsyncTestingEventLoop
 import Logging
-#if canImport(Dispatch)
-import class Dispatch.DispatchQueue
-#endif
 
 extension SQLQueryBuilder {
     /// Serialize this builder's query and return the textual SQL, discarding any bindings.
@@ -28,23 +22,11 @@ extension SQLQueryBuilder {
 /// its internal arrays of accumulated "results". Most things about its dialect are mutable.
 final class TestDatabase: SQLDatabase, @unchecked Sendable {
     let logger: Logger = { var l = Logger(label: "codes.vapor.sql.test"); l.logLevel = .debug; return l }()
-    let eventLoop: any EventLoop = NIOAsyncTestingEventLoop()
     var results: [String] = []
     var bindResults: [[any Encodable & Sendable]] = []
     var outputs: [any SQLRow] = []
     var dialect: any SQLDialect { self._dialect }
     var _dialect: GenericDialect = .init()
-    
-    func execute(sql query: any SQLExpression, _ onRow: @escaping (any SQLRow) -> ()) -> EventLoopFuture<Void> {
-        let (sql, binds) = self.serialize(query)
-
-        self.results.append(sql)
-        self.bindResults.append(binds)
-        while let row = self.outputs.popLast() {
-            onRow(row)
-        }
-        return self.eventLoop.makeSucceededFuture(())
-    }
 
     func execute(sql query: any SQLExpression, _ onRow: @escaping (any SQLRow) -> ()) async throws {
         let (sql, binds) = self.serialize(query)
@@ -144,12 +126,4 @@ extension SQLKit.SQLDataType: Swift.Equatable {
                 return false
         }
     }
-}
-
-/// Used when testing defaulted async implementations
-struct TestNoAsyncDatabase: SQLDatabase {
-    func execute(sql query: any SQLExpression, _ onRow: @escaping @Sendable (any SQLRow) -> ()) -> EventLoopFuture<Void> { self.eventLoop.makeSucceededVoidFuture() }
-    var logger: Logger { .init(label: "l") }
-    var eventLoop: any EventLoop { NIOAsyncTestingEventLoop() }
-    var dialect: any SQLDialect { GenericDialect() }
 }
