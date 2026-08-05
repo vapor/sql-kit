@@ -1,7 +1,5 @@
 @testable import SQLKit
 import struct Logging.Logger
-import protocol NIOCore.EventLoop
-import class NIOCore.EventLoopFuture
 import SQLKitBenchmark
 import Testing
 
@@ -170,11 +168,6 @@ struct BaseTests {
         #expect(db.dialect.name == db.dialect.name)
         #expect(db.queryLogLevel == db.queryLogLevel)
         await #expect(throws: Never.self) { try await db.execute(sql: SQLRaw("TEST"), { _ in }) }
-    }
-    
-    @Test("database default async impl")
-    func databaseDefaultAsyncImpl() async throws {
-        await #expect(throws: Never.self) { try await TestNoAsyncDatabase().execute(sql: SQLRaw("TEST"), { _ in }) }
     }
 
     @Test("database version")
