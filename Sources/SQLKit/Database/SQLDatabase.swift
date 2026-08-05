@@ -169,15 +169,6 @@ extension SQLDatabase {
 }
 
 extension SQLDatabase {
-    /// The default implementation for ``execute(sql:_:)-4eg19``.
-    @inlinable
-    public func execute(
-        sql query: any SQLExpression,
-        _ onRow: @escaping @Sendable (any SQLRow) -> ()
-    ) async throws {
-        try await self.execute(sql: query, onRow)
-    }
-    
     /// The default implementation for ``withSession(_:)-9b68j``.
     @inlinable
     public func withSession<R>(

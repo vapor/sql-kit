@@ -60,7 +60,3 @@
 ### Logging
 
 - ``SQLDatabase/logging(to:)``
-
-### Legacy query interface
-
-- ``SQLDatabase/execute(sql:_:)->_``
