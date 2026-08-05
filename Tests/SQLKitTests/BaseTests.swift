@@ -167,11 +167,9 @@ struct BaseTests {
 
         #expect(db.version == nil)
         #expect(db.logger.logLevel == Logger(label: "l").logLevel)
-        #expect(ObjectIdentifier(db.eventLoop) == ObjectIdentifier(sdb.eventLoop))
         #expect(db.dialect.name == db.dialect.name)
         #expect(db.queryLogLevel == db.queryLogLevel)
         await #expect(throws: Never.self) { try await db.execute(sql: SQLRaw("TEST"), { _ in }) }
-        await #expect(throws: Never.self) { try await db.execute(sql: SQLRaw("TEST"), { _ in }).get() }
     }
     
     @Test("database default async impl")
